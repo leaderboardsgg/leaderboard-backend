@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace LeaderboardBackendCsPoc.Models
+namespace LeaderboardBackend.Models
 {
     public class UserContext : DbContext
     {

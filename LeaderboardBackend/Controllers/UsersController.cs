@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using LeaderboardBackendCsPoc.Models;
-using LeaderboardBackendCsPoc.Controllers.Requests;
+using LeaderboardBackend.Models;
+using LeaderboardBackend.Controllers.Requests;
 using BCryptNet = BCrypt.Net.BCrypt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -15,7 +15,7 @@ using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-namespace LeaderboardBackendCsPoc.Controllers
+namespace LeaderboardBackend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

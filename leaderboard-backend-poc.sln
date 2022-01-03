@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeaderboardBackend", "LeaderboardBackend\LeaderboardBackend.csproj", "{D2C139ED-89F9-4A66-8584-A5DD9937B3C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeaderboardBackend.Test", "LeaderboardBackend.Test\LeaderboardBackend.Test.csproj", "{CBE28D24-9004-4CE2-93C7-9719B8E96017}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D2C139ED-89F9-4A66-8584-A5DD9937B3C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2C139ED-89F9-4A66-8584-A5DD9937B3C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2C139ED-89F9-4A66-8584-A5DD9937B3C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2C139ED-89F9-4A66-8584-A5DD9937B3C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBE28D24-9004-4CE2-93C7-9719B8E96017}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBE28D24-9004-4CE2-93C7-9719B8E96017}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBE28D24-9004-4CE2-93C7-9719B8E96017}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBE28D24-9004-4CE2-93C7-9719B8E96017}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

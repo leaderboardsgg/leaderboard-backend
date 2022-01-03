@@ -1,5 +1,5 @@
 
-namespace LeaderboardBackendCsPoc.Controllers.Requests
+namespace LeaderboardBackend.Controllers.Requests
 {
     public class LoginRequest
     {

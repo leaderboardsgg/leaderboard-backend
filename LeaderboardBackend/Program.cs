@@ -1,4 +1,4 @@
-using LeaderboardBackendCsPoc.Models;
+using LeaderboardBackend.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
