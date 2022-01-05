@@ -12,25 +12,22 @@ namespace LeaderboardBackend.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly IConfiguration _config;
+        private readonly IAuthService _authService;
 
-        public UsersController(IUserService userService, IConfiguration config)
-        {
+        public UsersController(
+            IUserService userService, 
+            IAuthService authService
+        ) {
             _userService = userService;
-            _config = config;
+            _authService = authService;
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(long id)
         {
-            User user;
-            try
-            {
-                user = await _userService.GetUser(id);
-            }
-            catch (UserNotFoundException)
-            {
-                // TODO Can we make certain exceptions like UserNotFoundException map to NotFound automatically?
+            User? user = await _userService.GetUser(id);
+            if (user == null) 
+			{
                 return NotFound();
             }
 
@@ -59,13 +56,9 @@ namespace LeaderboardBackend.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<User>> Login([FromBody] LoginRequest body)
         {
-            User user;
-            try
-            {
-                user = await _userService.GetUserByEmail(body.Email);
-            }
-            catch (UserNotFoundException)
-            {
+            User? user = await _userService.GetUserByEmail(body.Email);
+            if (user == null) 
+			{
                 return NotFound();
             }
 
@@ -73,7 +66,7 @@ namespace LeaderboardBackend.Controllers
             {
                 return Unauthorized();
             }
-            string token = _userService.GenerateJSONWebToken(user);
+            string token = _authService.GenerateJSONWebToken(user);
             return Ok(new { token });
         }
 
@@ -81,7 +74,11 @@ namespace LeaderboardBackend.Controllers
         [HttpGet("me")]
         public async Task<ActionResult<User>> Me()
         {
-            User user = await _userService.GetUserFromClaims(HttpContext.User);
+            User? user = await _userService.GetUserFromClaims(HttpContext.User);
+			if (user == null) 
+			{
+				return Forbid();
+			}
             return Ok(User);
         }
     }
