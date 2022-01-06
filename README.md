@@ -1,0 +1,84 @@
+# leaderboard-backend-poc
+An open-source community-driven leaderboard backend for the upcoming leaderboards.gg.  
+This repo is a proof-of-concept for switching to a C# with ASP.NET Core stack. The original backend, written in Go, can be found [here](https://github.com/leaderboardsgg/leaderboard-backend-go).
+
+## Links
+- Website: https://leaderboards.gg
+- Other Repos: https://github.com/leaderboardsgg
+- Discord: https://discord.gg/TZvfau25Vb
+
+# Tech-Stack Information
+
+* JSON REST API intended for the leaderboards.gg site
+* C# with ASP.NET Core
+
+# Development
+
+## Editor/IDE
+
+You can use any editor you would like for this project. Visual Studio is the easiest, and if you are on Windows/are a beginner it will likely be easiest to use this. The next easiest is Visual Studio Code, which is supported on all major platforms.
+
+### Visual Studio for Windows
+
+* Download [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) (Community edition is free) or Modify your existing install
+* In the section where you choose your Workloads, select at least "ASP.NET and Web Development"
+
+That should be it! Any other requirements to set up and run the application should be a directed process through the IDE.
+
+### Visual Studio Code/Other editors
+
+* Download the [.NET 6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) for your platform
+* After cloning the repo, run the command `dotnet restore` to install all required dependencies
+* You will likely want to set up [Omnisharp](http://www.omnisharp.net/) for easier development with your editor
+	* In Visual Studio Code, you can simply install the [C# extenstion](https://github.com/OmniSharp/omnisharp-vscode) (use this link or the editor UI)
+	* Other editors will need to follow instructions to install the Language Server on their system manually
+
+We will do our best to ensure any processes in this repo will work with or without Visual Studio, allowing for free editor choice.
+
+## Running the Application
+
+### Visual Studio
+
+#### First Time Setup
+
+After opening the solution, right click the `LeaderboardBackend` project and click "Set as Startup Project". 
+
+#### Run the App
+
+Press F5 or the green play button at the top of the IDE.
+Note: The first time running the app, the IDE will prompt you to trust the HTTPS development certs.
+
+#### Test the App
+
+After expanding the `LeaderboardBackend.Test` project, you should be able to select `Test > Run All Tests` from the top of the top menu. Alternatively, you can use the Test Explorer by selecting `Test > Test Explorer`.
+
+### `dotnet` CLI
+
+#### First Time Setup
+
+You will need to trust the HTTPS development certs.  
+On Windows/Mac, you can run the following command:
+
+```
+dotnet dev-certs https --trust
+```
+
+If you are on Linux, you will need to follow your distribution's documentation to trust a certificate.
+
+#### Run the App
+
+To run the application on the CLI, run the following commands from the root of the project:
+
+```
+cd LeaderboardBackend
+dotnet run
+```
+
+#### Test the App
+
+To run the tests, run the following commands from the root of the project:
+
+```
+cd LeaderboardBackend.Test
+dotnet test
+```
