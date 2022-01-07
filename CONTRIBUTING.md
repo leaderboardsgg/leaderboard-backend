@@ -2,9 +2,9 @@
 We appreciate your help!
 
 ## Before filing an issue
-If you are unsure whether you have found a bug, please consider asking in [our discord](discord) first.
+If you are unsure whether you have found a bug, please consider asking in [our discord][discord] first.
 
-Similarly, if you have a question about a potential feature, [the discord](discord) can be a fantastic resource for first comments.
+Similarly, if you have a question about a potential feature, [the discord][discord] can be a fantastic resource for first comments.
 
 ## Filing issues
 Filing issues is as simple as going to [the issue tracker](https://github.com/speedrun-website/leaderboard-backend/issues), and adding an issue using one of the below templates.
@@ -50,7 +50,7 @@ Bug: {short description}
 1. Open a pull request to `leaderboardsgg/leaderboard-backend-poc`. If working on a particular issue, please mention that issue in the pull request and describe your changes.
 1. Get your pull request approved.
 1. Get someone to click `Squash and merge`.
-1. [Celebrate](discord) your amazing changes! 🎉
+1. [Celebrate][discord] your amazing changes! 🎉
 
 ## Style guide
 ### General
