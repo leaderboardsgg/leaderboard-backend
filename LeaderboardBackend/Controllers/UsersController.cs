@@ -31,7 +31,7 @@ namespace LeaderboardBackend.Controllers
                 return NotFound();
             }
 
-            return user;
+            return Ok(user);
         }
 
         [AllowAnonymous]
@@ -79,7 +79,7 @@ namespace LeaderboardBackend.Controllers
 			{
 				return Forbid();
 			}
-            return Ok(User);
+            return Ok(user);
         }
     }
 }
