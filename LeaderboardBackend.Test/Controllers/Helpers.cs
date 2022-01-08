@@ -29,10 +29,9 @@ namespace LeaderboardBackend.Test.Controllers
 			// a Forbidden 403 result.
 		}
 
-		public static TResult? GetValueFromObjectResult<
-			TObjectResult,
-			TResult
-		>(ActionResult<TResult> result) where TObjectResult : ObjectResult
+		public static TResult? GetValueFromObjectResult<TObjectResult, TResult>(
+			ActionResult<TResult> result
+		) where TObjectResult : ObjectResult
 		{
 			TObjectResult? objectResult = null;
 			try
