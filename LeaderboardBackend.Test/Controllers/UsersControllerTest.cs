@@ -28,9 +28,9 @@ public class Tests
 		Password = BCryptNet.EnhancedHashPassword(defaultPlaintextPassword),
 	};
 
-    [SetUp]
-    public void Setup()
-    {
+	[SetUp]
+	public void Setup()
+	{
 		_userServiceMock = new Mock<IUserService>();
 		_authServiceMock = new Mock<IAuthService>();
 
@@ -40,11 +40,11 @@ public class Tests
 		);
 		_controller.ControllerContext = new ControllerContext();
 		_controller.ControllerContext.HttpContext = new DefaultHttpContext();
-    }
+	}
 
-    [Test]
-    public async Task GetUser_NotFound_UserDoesNotExist()
-    {
+	[Test]
+	public async Task GetUser_NotFound_UserDoesNotExist()
+	{
 		_userServiceMock
 			.Setup(x => x.GetUser(It.IsAny<long>()))
 			.Returns(Task.FromResult<User?>(null));
@@ -52,7 +52,7 @@ public class Tests
 		ActionResult<User> response = await _controller.GetUser(1);
 
 		Helpers.AssertResponseNotFound(response);
-    }
+	}
 
 	[Test]
 	public async Task GetUser_Ok_UserExists()
@@ -80,7 +80,7 @@ public class Tests
 		};
 		ActionResult<User> response = await _controller.Register(body);
 
-		Helpers.AssertResponseBadRequest(response);	
+		Helpers.AssertResponseBadRequest(response);
 	}
 
 	[Test]

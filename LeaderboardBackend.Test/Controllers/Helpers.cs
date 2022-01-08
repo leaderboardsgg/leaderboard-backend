@@ -5,7 +5,7 @@ using System;
 namespace LeaderboardBackend.Test.Controllers
 {
 	internal static class Helpers
-	{ 
+	{
 		public static void AssertResponseNotFound<T>(ActionResult<T> response)
 		{
 			var actual = response.Result as NotFoundResult;
@@ -30,15 +30,16 @@ namespace LeaderboardBackend.Test.Controllers
 		}
 
 		public static TResult? GetValueFromObjectResult<
-			TObjectResult, 
+			TObjectResult,
 			TResult
-		>(ActionResult<TResult> result) where TObjectResult : ObjectResult 
+		>(ActionResult<TResult> result) where TObjectResult : ObjectResult
 		{
 			TObjectResult? objectResult = null;
 			try
 			{
 				objectResult = (TObjectResult?)result?.Result;
-			} catch(InvalidCastException e)
+			}
+			catch (InvalidCastException e)
 			{
 				Assert.Fail(e.Message);
 			}
