@@ -17,6 +17,7 @@ An open-source community-driven leaderboard backend for the gaming community.
 
 ## Useful Links
 - [Visual Studio](https://visualstudio.microsoft.com/downloads), for obvious reasons.
+- [Monodevelop](https://www.monodevelop.com/) is a cross-platform IDE for C#, among other things.
 - [VSCode](https://code.visualstudio.com/download) is a pretty good editor (or [Codium](https://vscodium.com/)).
 - [.NET docs](https://docs.microsoft.com/en-us/dotnet/core/get-started) are here.
 - [Set up git](https://docs.github.com/en/get-started/quickstart/set-up-git) is GitHub's guide on how to set up and begin using git.
