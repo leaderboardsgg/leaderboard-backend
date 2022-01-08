@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using NUnit.Framework;
+using System;
 
 namespace LeaderboardBackend.Test.Controllers
 {
@@ -33,11 +34,15 @@ namespace LeaderboardBackend.Test.Controllers
 			TResult
 		>(ActionResult<TResult> result) where TObjectResult : ObjectResult 
 		{
-			Assert.NotNull(result);
-			var objectResult = (TObjectResult?)result.Result;
-			Assert.NotNull(objectResult);
-			TResult? value = (TResult?)objectResult?.Value;
-			return value;
+			TObjectResult? objectResult = null;
+			try
+			{
+				objectResult = (TObjectResult?)result?.Result;
+			} catch(InvalidCastException e)
+			{
+				Assert.Fail(e.Message);
+			}
+			return (TResult?)objectResult?.Value;
 		}
 	}
 }
