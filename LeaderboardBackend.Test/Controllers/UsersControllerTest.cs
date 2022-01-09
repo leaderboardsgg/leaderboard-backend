@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace LeaderboardBackend.Test.Controllers;
 
-public class Tests
+public class UsersControllerTests
 {
 	private UsersController _controller = null!;
 
