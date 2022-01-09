@@ -3,14 +3,14 @@ using LeaderboardBackend.Models;
 
 namespace LeaderboardBackend.Services
 {
-    public interface IUserService
-    {
-        Task<User?> GetUser(long id);
+	public interface IUserService
+	{
+		Task<User?> GetUser(long id);
 
-        Task<User?> GetUserByEmail(string email);
+		Task<User?> GetUserByEmail(string email);
 
-        Task<User?> GetUserFromClaims(ClaimsPrincipal claims);
+		Task<User?> GetUserFromClaims(ClaimsPrincipal claims);
 
-        Task CreateUser(User user);
-    }
+		Task CreateUser(User user);
+	}
 }
