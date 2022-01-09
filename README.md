@@ -28,15 +28,16 @@ That should be it! Any other requirements to set up and run the application shou
 
 ### Visual Studio Code/Other Editors
 
-A couple other, cross-platform choices would be:
+A few cross-platform editor choices would be:
 
 * [Monodevelop (IDE)](https://www.monodevelop.com)
-* [Visual Studio Code (Code Editor)](https://code.visualstudio.com/Download) (and its open source equivalent, [Codium](https://vscodium.com/#install))
+* [Visual Studio Code (Code Editor)](https://code.visualstudio.com/Download) 
+* Other editors with [Omnisharp integrations](http://www.omnisharp.net/#integrations)
 
 After installing a code editor:
 
 * Download the [.NET 6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) for your platform
-* After cloning the repo, run the command `dotnet restore` to install all required dependencies
+* After cloning this repo, run the command `dotnet restore` to install all required dependencies
 * You will likely want to set up [Omnisharp](http://www.omnisharp.net/) for easier development with your editor
 	* In Visual Studio Code, you can simply install the [C# extenstion](https://github.com/OmniSharp/omnisharp-vscode) (use this link or the editor UI)
 	* Other editors will need to follow instructions to install the Language Server on their system manually
@@ -71,7 +72,7 @@ dotnet dev-certs https --trust
 
 If you are on Linux, you will need to follow your distribution's documentation to trust a certificate.
 
-* [This chapter](https://docs.microsoft.com/en-us/aspnet/core/security/enforcing-ssl?view=aspnetcore-6.0&tabs=visual-studio#trust-https-certificate-on-linux) in the .NET docs covers how to generate and then trust the dev cert for service-to-service (e.g. cURLing) and browser communications.
+* [This chapter](https://docs.microsoft.com/en-us/aspnet/core/security/enforcing-ssl?view=aspnetcore-6.0&tabs=visual-studio#trust-https-certificate-on-linux) in the .NET docs covers how to generate and then trust the dev cert for service-to-service (e.g. cURLing) and browser communications on Ubuntu.
   * Trusting certs on Fedora and other distros(??) are linked at the bottom of the chapter.
 
 You can read [this chapter](https://docs.microsoft.com/en-us/dotnet/core/additional-tools/self-signed-certificates-guide#clean-up) if you'd like to clear all certs and start over.
