@@ -12,7 +12,6 @@ namespace LeaderboardBackend.Models
         [Required]
         public string? Slug { get; set; }
 
-        [Required]
         public string? Rules { get; set; }
     }
 }
