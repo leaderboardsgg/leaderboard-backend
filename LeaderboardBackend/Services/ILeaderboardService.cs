@@ -6,7 +6,7 @@ namespace LeaderboardBackend.Services
     {
         Task<Leaderboard?> GetLeaderboard(long id);
 
-        Task<List<Leaderboard[]>> GetLeaderboards(long[] ?ids = null);
+        Task<List<Leaderboard>> GetLeaderboards(long[] ?ids = null);
         Task CreateLeaderboard(Leaderboard leaderboard);
     }
 }

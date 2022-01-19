@@ -30,7 +30,7 @@ namespace LeaderboardBackend.Controllers
         }
 
         [HttpGet]
-        public async Task<List<Leaderboard[]>> GetLeaderboards([FromQuery]long[] ?ids)
+        public async Task<ActionResult<List<Leaderboard>>> GetLeaderboards([FromQuery]long[] ids)
         {
             return await _leaderboardService.GetLeaderboards(ids);
         }

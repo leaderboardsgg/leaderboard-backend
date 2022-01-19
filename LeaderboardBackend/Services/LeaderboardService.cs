@@ -19,12 +19,13 @@ namespace LeaderboardBackend.Services
             return leaderboard;
         }
 
-        public async Task<List<Leaderboard[]>> GetLeaderboards(long[] ?ids = null)
+        // FIXME: Paginate this
+        public async Task<List<Leaderboard>> GetLeaderboards(long[] ?ids = null)
         {
             if (ids == null) {
-                return await _leaderboardContext.Leaderboards.Chunk(20).ToListAsync();
+                return await _leaderboardContext.Leaderboards.ToListAsync();
             } else {
-                return await _leaderboardContext.Leaderboards.Where(l => ids.Contains(l.Id)).Chunk(20).ToListAsync();
+                return await _leaderboardContext.Leaderboards.Where(l => ids.Contains(l.Id)).ToListAsync();
             }
         }
 
