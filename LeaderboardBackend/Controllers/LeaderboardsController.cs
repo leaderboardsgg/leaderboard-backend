@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Services;
+using Microsoft.AspNetCore.Authorization;
+using LeaderboardBackend.Controllers.Requests;
 
 namespace LeaderboardBackend.Controllers
 {
@@ -27,9 +29,23 @@ namespace LeaderboardBackend.Controllers
             return leaderboard;
         }
 
+        [HttpGet]
         public async Task<List<Leaderboard[]>> GetLeaderboards([FromQuery]long[] ?ids)
         {
             return await _leaderboardService.GetLeaderboards(ids);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<ActionResult<Leaderboard>> CreateLeaderboard([FromBody]CreateLeaderboardRequest body)
+        {
+            Leaderboard leaderboard = new Leaderboard
+            {
+                Name = body.Name,
+                Slug = body.Slug,
+            };
+            await _leaderboardService.CreateLeaderboard(leaderboard);
+            return CreatedAtAction(nameof(GetLeaderboard), new { id = leaderboard.Id }, leaderboard);
         }
     }
 }
