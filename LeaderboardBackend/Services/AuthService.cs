@@ -33,7 +33,6 @@ namespace LeaderboardBackend.Services
 			);
 
 			return new JwtSecurityTokenHandler().WriteToken(token);
-
 		}
 	}
 }
