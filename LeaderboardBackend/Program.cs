@@ -4,9 +4,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using LeaderboardBackend.Services;
-using System.IdentityModel.Tokens.Jwt;
-
-JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 // FIXME: temp
 const string DbName = "Leaderboard";
@@ -16,8 +13,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddDbContext<UserContext>(opt => opt.UseInMemoryDatabase(DbName));
+builder.Services.AddDbContext<LeaderboardContext>(opt => opt.UseInMemoryDatabase(DbName));
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
