@@ -35,7 +35,7 @@ namespace LeaderboardBackend.Controllers
             return await _leaderboardService.GetLeaderboards(ids);
         }
 
-        [Authorize]
+        // FIXME: Only allow admins to call this route
         [HttpPost]
         public async Task<ActionResult<Leaderboard>> CreateLeaderboard([FromBody]CreateLeaderboardRequest body)
         {
