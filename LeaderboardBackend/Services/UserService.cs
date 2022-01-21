@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using LeaderboardBackend.Models;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +29,7 @@ namespace LeaderboardBackend.Services
 
 		public async Task<User?> GetUserFromClaims(ClaimsPrincipal claims)
 		{
-			if (!claims.HasClaim(c => c.Type == "Email"))
+			if (!claims.HasClaim(c => c.Type == JwtRegisteredClaimNames.Email))
 			{
 				return null;
 			}
