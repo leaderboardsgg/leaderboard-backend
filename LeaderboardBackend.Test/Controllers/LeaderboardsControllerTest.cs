@@ -27,7 +27,7 @@ public class LeaderboardTests
     }
 
     [Test]
-    public async Task TestGetLeaderboardNotFoundIfLeaderboardNotFound()
+    public async Task GetLeaderboard_NotFound_LeaderboardDoesNotExist()
     {
 		_leaderboardServiceMock
 			.Setup(x => x.GetLeaderboard(It.IsAny<long>()))
@@ -41,7 +41,7 @@ public class LeaderboardTests
     }
 
 	[Test]
-	public async Task TestGetLeaderboardById()
+	public async Task GetLeaderboard_Ok_LeaderboardExists()
 	{
 		_leaderboardServiceMock
 			.Setup(x => x.GetLeaderboard(It.IsAny<long>()))
@@ -54,7 +54,7 @@ public class LeaderboardTests
 	}
 
 	[Test]
-	public async Task TestGetMultipleLeaderboards()
+	public async Task GetLeaderboards_Ok_ListExists()
 	{
 		List<Leaderboard> mockList = new List<Leaderboard> {
 			new Leaderboard { Id = 1 },
