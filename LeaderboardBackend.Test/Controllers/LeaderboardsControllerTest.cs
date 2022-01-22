@@ -16,19 +16,19 @@ public class LeaderboardTests
 
 	private LeaderboardsController _controller = null!;
 
-    [SetUp]
-    public void Setup()
-    {
+	[SetUp]
+	public void Setup()
+	{
 		_leaderboardServiceMock = new Mock<ILeaderboardService>();
 
 		_controller = new LeaderboardsController(
 			_leaderboardServiceMock.Object
 		);
-    }
+	}
 
-    [Test]
-    public async Task GetLeaderboard_NotFound_LeaderboardDoesNotExist()
-    {
+	[Test]
+	public async Task GetLeaderboard_NotFound_LeaderboardDoesNotExist()
+	{
 		_leaderboardServiceMock
 			.Setup(x => x.GetLeaderboard(It.IsAny<long>()))
 			.Returns(Task.FromResult<Leaderboard?>(null));
@@ -38,7 +38,7 @@ public class LeaderboardTests
 		NotFoundResult? actual = response.Result as NotFoundResult;
 		Assert.NotNull(actual);
 		Assert.AreEqual(404, actual!.StatusCode);
-    }
+	}
 
 	[Test]
 	public async Task GetLeaderboard_Ok_LeaderboardExists()
