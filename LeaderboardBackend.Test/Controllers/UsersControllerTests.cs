@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using Moq;
+using System;
 using LeaderboardBackend.Controllers;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Models;
@@ -20,7 +21,7 @@ public class UsersControllerTests
 	private Mock<IAuthService> _authServiceMock = null!;
 
 	private static readonly string defaultPlaintextPassword = "beepboop";
-	private static readonly long defaultUserId = 1;
+	private static readonly Guid defaultUserId = Guid.NewGuid();
 	private static readonly User defaultUser = new User
 	{
 		Username = "RageCage",
@@ -46,10 +47,10 @@ public class UsersControllerTests
 	public async Task GetUser_NotFound_UserDoesNotExist()
 	{
 		_userServiceMock
-			.Setup(x => x.GetUser(It.IsAny<long>()))
+			.Setup(x => x.GetUser(It.IsAny<Guid>()))
 			.Returns(Task.FromResult<User?>(null));
 
-		ActionResult<User> response = await _controller.GetUser(1);
+		ActionResult<User> response = await _controller.GetUser(defaultUserId);
 
 		Helpers.AssertResponseNotFound(response);
 	}
@@ -61,7 +62,7 @@ public class UsersControllerTests
 			.Setup(x => x.GetUser(defaultUserId))
 			.Returns(Task.FromResult<User?>(defaultUser));
 
-		ActionResult<User> response = await _controller.GetUser(1);
+		ActionResult<User> response = await _controller.GetUser(defaultUserId);
 
 		User? user = Helpers.GetValueFromObjectResult<OkObjectResult, User>(response);
 		Assert.NotNull(user);
@@ -100,7 +101,7 @@ public class UsersControllerTests
 		Assert.AreEqual(defaultUser.Username, user!.Username);
 		Assert.AreEqual(defaultUser.Email, user!.Email);
 		// This route creates a new user, and thus does a new password hash.
-		// Since hashing the password again won't produce the same hash as 
+		// Since hashing the password again won't produce the same hash as
 		// defaultUser, we do a cryptographic verify instead.
 		Assert.True(BCryptNet.EnhancedVerify(defaultPlaintextPassword, user!.Password));
 	}

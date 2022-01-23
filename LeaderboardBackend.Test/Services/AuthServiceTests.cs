@@ -2,6 +2,7 @@ using NUnit.Framework;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Models;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
@@ -31,7 +32,7 @@ public class AuthServiceTests
 
 		User user = new User
 		{
-			Id = 1,
+			Id = Guid.NewGuid(),
 			Username = "RageCage",
 			Email = "x@y.com"
 		};
