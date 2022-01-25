@@ -12,6 +12,7 @@ This repo is a proof-of-concept for switching to a C# with ASP.NET Core stack. T
 
 * JSON REST API intended for the leaderboards.gg site
 * C# with ASP.NET Core
+* Docker containers for PostgreSQL hosting and management run via [Docker Compose](https://docs.docker.com/compose/install/)
 
 ## Editor/IDE
 
@@ -32,7 +33,7 @@ That should be it! Any other requirements to set up and run the application shou
 A few cross-platform editor choices would be:
 
 * [Monodevelop (IDE)](https://www.monodevelop.com)
-* [Visual Studio Code (Code Editor)](https://code.visualstudio.com/Download) 
+* [Visual Studio Code (Code Editor)](https://code.visualstudio.com/Download)
 * Other editors with [Omnisharp integrations](http://www.omnisharp.net/#integrations)
 
 After installing a code editor:
@@ -44,6 +45,30 @@ After installing a code editor:
 	* Other editors will need to follow instructions to install the Language Server on their system manually
 
 ## Running the Application
+
+### Running the Database(s)
+
+As mentioned above, we run Docker containers for the DB. After [installing Docker Compose](https://docs.docker.com/compose/install/), run these commands in the project root:
+
+```bash
+cp example.env .env
+sudo docker-compose (or docker compose) up -d
+```
+
+This starts up:
+- Adminer which is a GUI manager for the databases
+- The main Postgres DB
+- The test Postgres DB
+
+Using the default values provided in `example.env`, input these values in Adminer for access:
+
+| Field | Value |
+| --- | --- |
+| System | PostgreSQL |
+| Server | db (for main) / db-test (for test) |
+| Username | admin |
+| Password | example |
+| Database | leaderboardsmain / leaderboardstest |
 
 ### Visual Studio
 
