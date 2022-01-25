@@ -111,7 +111,7 @@ Then run the following commands to run the DB migrations:
 # Install project tools
 dotnet tool restore
 # Run migrations
-dotnet ef database update
+. ./scripts/migrate.sh
 ```
 
 #### Run the App
