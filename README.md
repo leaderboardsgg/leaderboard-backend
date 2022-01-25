@@ -94,7 +94,7 @@ After expanding the `LeaderboardBackend.Test` project, you should be able to sel
 You will need to trust the HTTPS development certs.
 On Windows/Mac, you can run the following command (from the [.NET docs](https://docs.microsoft.com/en-us/dotnet/core/additional-tools/self-signed-certificates-guide#create-a-self-signed-certificate)):
 
-```
+```bash
 dotnet dev-certs https --trust
 ```
 
@@ -104,6 +104,15 @@ If you are on Linux, you will need to follow your distribution's documentation t
   * Trusting certs on Fedora and other distros(??) are linked at the bottom of the chapter.
 
 You can read [this chapter](https://docs.microsoft.com/en-us/dotnet/core/additional-tools/self-signed-certificates-guide#clean-up) if you'd like to clear all certs and start over.
+
+Then run the following commands to run the DB migrations:
+
+```bash
+# Install project tools
+dotnet tool restore
+# Run migrations
+dotnet ef database update
+```
 
 #### Run the App
 
