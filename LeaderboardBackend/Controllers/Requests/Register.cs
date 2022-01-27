@@ -4,6 +4,7 @@ namespace LeaderboardBackend.Controllers.Requests;
 public record RegisterRequest
 {
 	[Required]
+	[RegularExpression("/([a-zA-Z][-_']?){1,12}[a-zA-Z]/")]
 	public string Username { get; set; } = null!;
 
 	[Required]

@@ -5,7 +5,6 @@ namespace LeaderboardBackend.Models;
 public class User
 {
 	[Required] public Guid Id { get; set; }
-	[Required] public string Username { get; set; } = null!;
 
 	[Required]
 	[EmailAddress]
