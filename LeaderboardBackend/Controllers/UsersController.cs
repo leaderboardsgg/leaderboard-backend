@@ -41,6 +41,16 @@ public class UsersController : ControllerBase
 			return BadRequest();
 		}
 
+		if (await _userService.GetUserByEmail(body.Email) != null)
+		{
+			return Conflict("A user already exists with this email.");
+		}
+
+		if (await _userService.GetUserByName(body.Username) != null)
+		{
+			return Conflict("A user already exists with this name.");
+		}
+
 		User newUser = new()
 		{
 			Username = body.Username,
