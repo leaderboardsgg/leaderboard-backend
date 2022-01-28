@@ -14,10 +14,12 @@ public record RegisterRequest
 	[Required]
 	[MinLength(8)]
 	[MaxLength(80)]
+	[Password]
 	public string Password { get; set; } = null!;
 
 	[Required]
 	[MinLength(8)]
 	[MaxLength(80)]
+	[Password]
 	public string PasswordConfirm { get; set; } = null!;
 }
