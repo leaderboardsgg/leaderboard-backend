@@ -36,6 +36,7 @@ public class UsersController : ControllerBase
 	[HttpPost("register")]
 	public async Task<ActionResult<User>> Register([FromBody] RegisterRequest body)
 	{
+		// This shouldn't hit normally, since we have the CompareAttribute in Register.cs
 		if (body.Password != body.PasswordConfirm)
 		{
 			return BadRequest();
