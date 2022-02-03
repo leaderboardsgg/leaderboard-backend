@@ -24,12 +24,10 @@ namespace LeaderboardBackend.Migrations
 
 			modelBuilder.Entity("LeaderboardBackend.Models.Leaderboard", b =>
 				{
-					b.Property<long>("Id")
+					b.Property<decimal>("Id")
 						.ValueGeneratedOnAdd()
-						.HasColumnType("bigint")
+						.HasColumnType("numeric(20,0)")
 						.HasColumnName("id");
-
-					NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
 					b.Property<string>("Name")
 						.IsRequired()
@@ -49,6 +47,33 @@ namespace LeaderboardBackend.Migrations
 						.HasName("pk_leaderboards");
 
 					b.ToTable("leaderboards", (string)null);
+				});
+
+			modelBuilder.Entity("LeaderboardBackend.Models.Modship", b =>
+				{
+					b.Property<decimal>("Id")
+						.ValueGeneratedOnAdd()
+						.HasColumnType("numeric(20,0)")
+						.HasColumnName("id");
+
+					b.Property<decimal>("LeaderboardId")
+						.HasColumnType("numeric(20,0)")
+						.HasColumnName("leaderboard_id");
+
+					b.Property<Guid>("UserId")
+						.HasColumnType("uuid")
+						.HasColumnName("user_id");
+
+					b.HasKey("Id")
+						.HasName("pk_modships");
+
+					b.HasIndex("LeaderboardId")
+						.HasDatabaseName("ix_modships_leaderboard_id");
+
+					b.HasIndex("UserId")
+						.HasDatabaseName("ix_modships_user_id");
+
+					b.ToTable("modships", (string)null);
 				});
 
 			modelBuilder.Entity("LeaderboardBackend.Models.User", b =>
@@ -77,6 +102,37 @@ namespace LeaderboardBackend.Migrations
 						.HasName("pk_users");
 
 					b.ToTable("users", (string)null);
+				});
+
+			modelBuilder.Entity("LeaderboardBackend.Models.Modship", b =>
+				{
+					b.HasOne("LeaderboardBackend.Models.Leaderboard", "Leaderboard")
+						.WithMany("Modships")
+						.HasForeignKey("LeaderboardId")
+						.OnDelete(DeleteBehavior.Cascade)
+						.IsRequired()
+						.HasConstraintName("fk_modships_leaderboards_leaderboard_id");
+
+					b.HasOne("LeaderboardBackend.Models.User", "User")
+						.WithMany("Modships")
+						.HasForeignKey("UserId")
+						.OnDelete(DeleteBehavior.Cascade)
+						.IsRequired()
+						.HasConstraintName("fk_modships_users_user_id");
+
+					b.Navigation("Leaderboard");
+
+					b.Navigation("User");
+				});
+
+			modelBuilder.Entity("LeaderboardBackend.Models.Leaderboard", b =>
+				{
+					b.Navigation("Modships");
+				});
+
+			modelBuilder.Entity("LeaderboardBackend.Models.User", b =>
+				{
+					b.Navigation("Modships");
 				});
 #pragma warning restore 612, 618
 		}
