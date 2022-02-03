@@ -22,6 +22,7 @@ There are a couple options available for you to choose, depending on your OS.
 If you are on Windows/are a beginner, this will likely be the easiest to use.
 
 * Download [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) (Community edition is free) or modify your existing install
+  * It's important that you choose this version, as we use the .NET 6 SDK, which older versions of VS do not have support for
 * In the section where you choose your Workloads, select at least "ASP.NET and Web Development"
 
 That should be it! Any other requirements to set up and run the application should be a directed process through the IDE.
