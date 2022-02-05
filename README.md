@@ -48,6 +48,8 @@ After installing a code editor:
 
 ### Running the Database(s)
 
+If you would like to forgo running a Postgres database, you can set `USE_IN_MEMORY_DB` in your `.env` file to `true`, or not make a `.env` file at all, and skip to the next section. If you would like to run the Postgres database, follow these instructions:
+
 As mentioned above, we run Docker containers for the DB. After [installing Docker Compose](https://docs.docker.com/compose/install/), run these commands in the project root:
 
 ```bash
