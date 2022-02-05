@@ -8,8 +8,6 @@ using System.IdentityModel.Tokens.Jwt;
 using dotenv.net;
 using dotenv.net.Utilities;
 
-JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-
 var builder = WebApplication.CreateBuilder(args);
 
 DotEnv.Load(options: new DotEnvOptions(
@@ -18,44 +16,61 @@ DotEnv.Load(options: new DotEnvOptions(
 	trimValues: true // Trims whitespace from values
 ));
 
+// Add Database Contexts to the container.
 static string GetConnectionString()
 {
-	string host, user, password, db;
-	int port;
-
 	if (
-		!EnvReader.TryGetStringValue("POSTGRES_HOST", out host) ||
-		!EnvReader.TryGetIntValue("POSTGRES_PORT", out port) ||
-		!EnvReader.TryGetStringValue("POSTGRES_USER", out user) ||
-		!EnvReader.TryGetStringValue("POSTGRES_PASSWORD", out password) ||
-		!EnvReader.TryGetStringValue("POSTGRES_DB", out db)
+		!EnvReader.TryGetStringValue("POSTGRES_HOST", out string host) ||
+		!EnvReader.TryGetIntValue("POSTGRES_PORT", out int port) ||
+		!EnvReader.TryGetStringValue("POSTGRES_USER", out string user) ||
+		!EnvReader.TryGetStringValue("POSTGRES_PASSWORD", out string password) ||
+		!EnvReader.TryGetStringValue("POSTGRES_DB", out string db)
 	)
 	{
 		throw new Exception("Database env var(s) not set. Is there a .env?");
 	}
-	return String.Format(
-		"Server={0};Port={1};User Id={2};Password={3};Database={4};Include Error Detail=true",
-		host,
-		port,
-		user,
-		password,
-		db
-	);
+	return $"Server={host};Port={port};User Id={user};Password={password};Database={db};Include Error Detail=true";
 }
+
+static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb) where T : DbContext {
+	if (inMemoryDb)
+	{
+		builder.Services.AddDbContext<UserContext>(opt => opt.UseInMemoryDatabase("LeaderboardBackend"));
+	} else
+	{
+		builder.Services.AddDbContext<T>(
+			opt => {
+				opt.UseNpgsql(
+					GetConnectionString()
+				).UseSnakeCaseNamingConvention();
+			}
+		);
+	}
+}
+
+bool exists = EnvReader.TryGetBooleanValue("USE_IN_MEMORY_DB", out bool inMemoryDb);
+bool useInMemoryDb = exists && inMemoryDb;
+
+ConfigureDbContext<UserContext>(builder, useInMemoryDb);
+ConfigureDbContext<LeaderboardContext>(builder, useInMemoryDb);
 
 // Add services to the container.
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddDbContext<UserContext>(opt => opt.UseInMemoryDatabase(DbName));
-builder.Services.AddDbContext<LeaderboardContext>(opt => opt.UseInMemoryDatabase(DbName));
+
+// Add controllers to the container.
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
 	c.SwaggerDoc("v1", new() { Title = "LeaderboardBackend", Version = "v1" });
 });
+
+// Configure JWT Authentication.
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 	.AddJwtBearer(options =>
 	{
