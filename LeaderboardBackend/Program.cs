@@ -7,6 +7,7 @@ using LeaderboardBackend.Services;
 using System.IdentityModel.Tokens.Jwt;
 using dotenv.net;
 using dotenv.net.Utilities;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,7 +61,10 @@ builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Add controllers to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(opt =>
+{
+	opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
