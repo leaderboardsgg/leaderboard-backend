@@ -45,7 +45,6 @@ namespace LeaderboardBackend.Controllers
 			}
 			var newUser = new User
 			{
-				Id = Guid.NewGuid(),
 				Username = body.Username,
 				Email = body.Email,
 				Password = BCryptNet.EnhancedHashPassword(body.Password)
