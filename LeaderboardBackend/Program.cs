@@ -36,7 +36,7 @@ static string GetConnectionString()
 static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb) where T : DbContext {
 	if (inMemoryDb)
 	{
-		builder.Services.AddDbContext<UserContext>(opt => opt.UseInMemoryDatabase("LeaderboardBackend"));
+		builder.Services.AddDbContext<T>(opt => opt.UseInMemoryDatabase("LeaderboardBackend"));
 	} else
 	{
 		builder.Services.AddDbContext<T>(
