@@ -4,7 +4,7 @@ namespace LeaderboardBackend.Models
 {
 	public class User
 	{
-		public long Id { get; set; }
+		public Guid Id { get; set; }
 
 		[Required]
 		public string? Username { get; set; }

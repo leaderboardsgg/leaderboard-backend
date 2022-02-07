@@ -24,7 +24,7 @@ namespace LeaderboardBackend.Controllers
 		}
 
 		[HttpGet("{id}")]
-		public async Task<ActionResult<User>> GetUser(long id)
+		public async Task<ActionResult<User>> GetUser(Guid id)
 		{
 			User? user = await _userService.GetUser(id);
 			if (user == null)

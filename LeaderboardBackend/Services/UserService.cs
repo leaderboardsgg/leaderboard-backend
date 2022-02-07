@@ -15,7 +15,7 @@ namespace LeaderboardBackend.Services
 			_config = config;
 		}
 
-		public async Task<User?> GetUser(long id)
+		public async Task<User?> GetUser(Guid id)
 		{
 			User? user = await _userContext.Users.FindAsync(id);
 			return user;
