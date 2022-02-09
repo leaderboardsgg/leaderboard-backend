@@ -5,17 +5,17 @@ namespace LeaderboardBackend.Services
 {
 	public class LeaderboardService : ILeaderboardService
 	{
-		private LeaderboardContext _leaderboardContext;
+		private ApplicationContext _applicationContext;
 		private IConfiguration _config;
-		public LeaderboardService(LeaderboardContext leaderboardContext, IConfiguration config)
+		public LeaderboardService(ApplicationContext applicationContext, IConfiguration config)
 		{
-			_leaderboardContext = leaderboardContext;
+			_applicationContext = applicationContext;
 			_config = config;
 		}
 
 		public async Task<Leaderboard?> GetLeaderboard(long id)
 		{
-			Leaderboard? leaderboard = await _leaderboardContext.Leaderboards.FindAsync(id);
+			Leaderboard? leaderboard = await _applicationContext.Leaderboards.FindAsync(id);
 			return leaderboard;
 		}
 
@@ -24,18 +24,18 @@ namespace LeaderboardBackend.Services
 		{
 			if (ids == null)
 			{
-				return await _leaderboardContext.Leaderboards.ToListAsync();
+				return await _applicationContext.Leaderboards.ToListAsync();
 			}
 			else
 			{
-				return await _leaderboardContext.Leaderboards.Where(l => ids.Contains(l.Id)).ToListAsync();
+				return await _applicationContext.Leaderboards.Where(l => ids.Contains(l.Id)).ToListAsync();
 			}
 		}
 
 		public async Task CreateLeaderboard(Leaderboard leaderboard)
 		{
-			_leaderboardContext.Leaderboards.Add(leaderboard);
-			await _leaderboardContext.SaveChangesAsync();
+			_applicationContext.Leaderboards.Add(leaderboard);
+			await _applicationContext.SaveChangesAsync();
 		}
 	}
 }

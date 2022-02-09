@@ -7,23 +7,23 @@ namespace LeaderboardBackend.Services
 {
 	public class UserService : IUserService
 	{
-		private UserContext _userContext;
+		private ApplicationContext _applicationContext;
 		private IConfiguration _config;
-		public UserService(UserContext userContext, IConfiguration config)
+		public UserService(ApplicationContext applicationContext, IConfiguration config)
 		{
-			_userContext = userContext;
+			_applicationContext = applicationContext;
 			_config = config;
 		}
 
 		public async Task<User?> GetUser(Guid id)
 		{
-			User? user = await _userContext.Users.FindAsync(id);
+			User? user = await _applicationContext.Users.FindAsync(id);
 			return user;
 		}
 
 		public async Task<User?> GetUserByEmail(string email)
 		{
-			User? user = await _userContext.Users.SingleAsync(u => u.Email == email);
+			User? user = await _applicationContext.Users.SingleAsync(u => u.Email == email);
 			return user;
 		}
 
@@ -39,8 +39,8 @@ namespace LeaderboardBackend.Services
 
 		public async Task CreateUser(User user)
 		{
-			_userContext.Users.Add(user);
-			await _userContext.SaveChangesAsync();
+			_applicationContext.Users.Add(user);
+			await _applicationContext.SaveChangesAsync();
 		}
 	}
 }
