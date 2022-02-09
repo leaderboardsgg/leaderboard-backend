@@ -17,7 +17,7 @@ DotEnv.Load(options: new DotEnvOptions(
 	trimValues: true // Trims whitespace from values
 ));
 
-// Add Database Contexts to the container.
+// Add application's Database Context to the container.
 static string GetConnectionString()
 {
 	if (
