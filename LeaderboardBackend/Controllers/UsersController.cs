@@ -20,6 +20,10 @@ public class UsersController : ControllerBase
 		_authService = authService;
 	}
 
+	/// <summary>Gets a user.</summary>
+	/// <param name="id">The user's ID. It must be a GUID.</param>
+	/// <response code="200">The User with the provided ID.</response>
+	/// <response code="404">If no User is found with the provided ID.</response>
 	[HttpGet("{id}")]
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.Get))]
@@ -34,6 +38,10 @@ public class UsersController : ControllerBase
 		return Ok(user);
 	}
 
+	/// <summary>Registers a new user.</summary>
+	/// <param name="body">A RegisterRequest instance.</param>
+	/// <response code="201">The created User object.</response>
+	/// <response code="400">If the passwords don't match.</response>
 	[AllowAnonymous]
 	[HttpPost("register")]
 	public async Task<ActionResult<User>> Register([FromBody] RegisterRequest body)
@@ -67,6 +75,11 @@ public class UsersController : ControllerBase
 		return CreatedAtAction(nameof(GetUser), new { id = newUser.Id }, newUser);
 	}
 
+	/// <summary>Logs a new user in.</summary>
+	/// <param name="body">A LoginRequest instance.</param>
+	/// <response code="200">An object <code>{ token: JWT }</code></response>
+	/// <response code="401">If the wrong details were passed.</response>
+	/// <response code="404">If a User can't be found.</response>
 	[AllowAnonymous]
 	[HttpPost("login")]
 	public async Task<ActionResult<User>> Login([FromBody] LoginRequest body)
@@ -86,6 +99,13 @@ public class UsersController : ControllerBase
 		return Ok(new { token });
 	}
 
+	/// <summary>Gets the currently logged-in user.</summary>
+	/// <remarks>
+	/// <p>You <em>must</em> call this with the 'Authorization' header, passing a valid JWT bearer token. </p>
+	/// <p>I.e. <code>{ 'Authorization': 'Bearer JWT' }</code></p>
+	/// </remarks>
+	/// <response code="200">Returns with the User's details.</response>
+	/// <response code="404">If a User can't be found.</response>
 	[Authorize]
 	[HttpGet("me")]
 	public async Task<ActionResult<User>> Me()
