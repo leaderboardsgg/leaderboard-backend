@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json;
+using System.Reflection;
 
 #region WebApplicationBuilder
 
@@ -40,6 +41,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
 	c.SwaggerDoc("v1", new() { Title = "LeaderboardBackend", Version = "v1" });
+
+	// Enable adding XML comments to controllers to populate Swagger UI
+	var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+	c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
 // Configure JWT Authentication.

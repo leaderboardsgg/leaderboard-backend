@@ -6,6 +6,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+	<PropertyGroup>
+		<!-- Enable adding XML comments to controllers to populate Swagger UI -->
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<!-- Suppresses warnings for controller actions with no custom Swagger XML comments defined -->
+		<!-- Ref: https://docs.microsoft.com/en-us/aspnet/core/tutorials/getting-started-with-swashbuckle?view=aspnetcore-6.0&tabs=netcore-cli#xml-comments -->
+		<NoWarn>$(NoWarn);1591</NoWarn>
+	</PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.2" />
     <PackageReference Include="dotenv.net" Version="3.1.1" />
