@@ -107,12 +107,13 @@ You can read [this chapter](https://docs.microsoft.com/en-us/dotnet/core/additio
 
 #### Run the App
 
-To run the application on the CLI, run the following commands from the root of the project:
+To run the application from the CLI, run the following command from the root of the project:
 
 ```
-cd LeaderboardBackend
-dotnet run
+dotnet run --project LeaderboardBackend --urls https://localhost:7128 // dotnet watch run ... for hotfixing
 ```
+
+The value provided to `--urls` has to match what's listed under `applicationUrl` in `LeaderboardBackend/Properties/launchSettings.json`. As of this writing, it's `https://localhost:7128`.
 
 #### Test the App
 
@@ -122,3 +123,4 @@ To run the tests, run the following commands from the root of the project:
 cd LeaderboardBackend.Test
 dotnet test
 ```
+
