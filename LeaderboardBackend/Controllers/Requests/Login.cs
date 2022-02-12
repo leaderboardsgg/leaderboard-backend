@@ -8,7 +8,6 @@ public record LoginRequest
 	public string Email { get; set; } = null!;
 
 	[Required]
-	[MinLength(8)]
-	[MaxLength(80)]
+	[Password]
 	public string Password { get; set; } = null!;
 }

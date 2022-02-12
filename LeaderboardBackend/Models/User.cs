@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using LeaderboardBackend.Controllers.Requests;
 
 namespace LeaderboardBackend.Models;
 
@@ -15,7 +16,6 @@ public class User
 	public string? Email { get; set; }
 
 	[Required]
-	[MinLength(8, ErrorMessage = "Your password must be at least 8 characters long.")]
-	[MaxLength(80, ErrorMessage = "Your password must be at most 80 characters long.")]
+	[Password]
 	public string Password { get; set; } = null!;
 }
