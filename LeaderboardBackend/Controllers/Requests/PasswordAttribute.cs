@@ -5,7 +5,18 @@ namespace LeaderboardBackend.Controllers.Requests
 {
 	public class PasswordAttribute : ValidationAttribute
 	{
-		public string GetErrorMessage(List<string> missing)
+		private static readonly int MIN = 8;
+		private static readonly int MAX = 80;
+
+		public string GetErrorMessageLength(bool tooShort)
+		{
+			if (tooShort) {
+				return $"Your password needs to be at least {MIN} characters long.";
+			}
+			return $"Your password needs to be at most {MAX} characters long.";
+		}
+
+		public string GetErrorMessageMissing(List<string> missing)
 		{
 			if (missing.Count == 1) {
 				return $"Your password still needs {missing[0]}.";
@@ -21,6 +32,14 @@ namespace LeaderboardBackend.Controllers.Requests
 			var user = (RegisterRequest)validationContext.ObjectInstance;
 			var password = user.Password!;
 
+			// Validate length
+			if (password.Length < MIN) {
+				return new ValidationResult(GetErrorMessageLength(true));
+			} else if (password.Length > MAX) {
+				return new ValidationResult(GetErrorMessageLength(false));
+			}
+
+			// Validate content
 			var missing = new List<string>();
 
 			if (!new Regex(@"[a-z]").IsMatch(password)) {
@@ -37,7 +56,7 @@ namespace LeaderboardBackend.Controllers.Requests
 
 			if (missing.Count > 0)
 			{
-				return new ValidationResult(GetErrorMessage(missing));
+				return new ValidationResult(GetErrorMessageMissing(missing));
 			}
 
 			return ValidationResult.Success;
