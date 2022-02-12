@@ -2,13 +2,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LeaderboardBackend.Models
 {
-	public class LeaderboardContext : DbContext
+	public class ApplicationContext : DbContext
 	{
-		public LeaderboardContext(DbContextOptions<LeaderboardContext> options)
+		public ApplicationContext(DbContextOptions<ApplicationContext> options)
 			: base(options)
 		{
 		}
 
 		public DbSet<Leaderboard> Leaderboards { get; set; } = null!;
+		public DbSet<User> Users { get; set; } = null!;
 	}
 }

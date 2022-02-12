@@ -17,7 +17,7 @@ DotEnv.Load(options: new DotEnvOptions(
 	trimValues: true // Trims whitespace from values
 ));
 
-// Add Database Contexts to the container.
+// Add application's Database Context to the container.
 static string GetConnectionString()
 {
 	if (
@@ -52,8 +52,7 @@ static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb
 bool exists = EnvReader.TryGetBooleanValue("USE_IN_MEMORY_DB", out bool inMemoryDb);
 bool useInMemoryDb = exists && inMemoryDb;
 
-ConfigureDbContext<UserContext>(builder, useInMemoryDb);
-ConfigureDbContext<LeaderboardContext>(builder, useInMemoryDb);
+ConfigureDbContext<ApplicationContext>(builder, useInMemoryDb);
 
 // Add services to the container.
 builder.Services.AddScoped<IUserService, UserService>();
