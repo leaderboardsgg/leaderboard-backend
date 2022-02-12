@@ -18,6 +18,5 @@ public record RegisterRequest
 
 	[Required]
 	[Compare("Password", ErrorMessage = "This must match your password.")]
-	[Password]
 	public string PasswordConfirm { get; set; } = null!;
 }
