@@ -5,7 +5,7 @@ namespace LeaderboardBackend.Services;
 
 public interface IUserService
 {
-	Task<User?> GetUser(Guid id);
+	Task<User?> GetUserById(Guid id);
 	Task<User?> GetUserByEmail(string email);
 	Task<User?> GetUserByName(string name);
 	Task<User?> GetUserFromClaims(ClaimsPrincipal claims);
