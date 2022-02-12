@@ -29,7 +29,7 @@ namespace LeaderboardBackend.Controllers.Requests
 
 		protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
 		{
-			var user = (RegisterRequest)validationContext.ObjectInstance;
+			var user = (LoginRequest)validationContext.ObjectInstance;
 			var password = user.Password!;
 
 			// Validate length
