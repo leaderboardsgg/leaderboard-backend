@@ -22,5 +22,7 @@ namespace LeaderboardBackend.Models
 
 		[Required]
 		public RunStatus? Status { get; set; }
+
+		public List<Judgement>? Judgements { get; set; }
 	}
 }
