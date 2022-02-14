@@ -57,6 +57,7 @@ ConfigureDbContext<ApplicationContext>(builder, useInMemoryDb);
 // Add services to the container.
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
+builder.Services.AddScoped<IParticipationService, ParticipationService>();
 builder.Services.AddScoped<IRunService, RunService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
