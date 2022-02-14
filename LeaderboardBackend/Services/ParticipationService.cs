@@ -15,5 +15,11 @@ namespace LeaderboardBackend.Services
 			Participation? participation = await _applicationContext.Participations.FindAsync(id);
 			return participation;
 		}
+
+		public async Task CreateParticipation(Participation participation)
+		{
+			_applicationContext.Participations.Add(participation);
+			await _applicationContext.SaveChangesAsync();
+		}
 	}
 }
