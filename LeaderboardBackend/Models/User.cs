@@ -14,5 +14,7 @@ namespace LeaderboardBackend.Models
 
 		[Required]
 		public string? Password { get; set; }
+
+		public List<Participation>? Participations { get; set; }
 	}
 }
