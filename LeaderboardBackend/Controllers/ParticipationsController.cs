@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Controllers.Requests;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LeaderboardBackend.Controllers
 {
@@ -74,6 +75,29 @@ namespace LeaderboardBackend.Controllers
 
 			await _participationService.CreateParticipation(participation);
 			return CreatedAtAction(nameof(CreateParticipation), new { id = participation.Id });
+		}
+
+		[Authorize]
+		[HttpPut]
+		public async Task<ActionResult> UpdateParticipation([FromBody] UpdateParticipationRequest request)
+		{
+			User? user = await _userService.GetUserFromClaims(HttpContext.User);
+			if (user == null)
+			{
+				return Forbid();
+			}
+			Participation? participation = await _participationService.GetParticipationForUser(user);
+			if (participation == null)
+			{
+				return NotFound();
+			}
+
+			participation.Comment = request.Comment;
+			participation.Vod = request.Vod;
+
+			await _participationService.UpdateParticipation(participation);
+
+			return Ok();
 		}
 	}
 }
