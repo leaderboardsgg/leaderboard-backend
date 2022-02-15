@@ -53,14 +53,14 @@ namespace LeaderboardBackend.Controllers
 			{
 				if (request.IsSubmitter)
 				{
-					return BadRequest("We can't add your participation because we can't.. find.. your ID? On our end???");
+					return StatusCode(StatusCodes.Status500InternalServerError, "We can't add your participation because we can't.. find.. your ID? On our end???");
 				}
-				return BadRequest("We can't find the user with the provided ID on our end.");
+				return StatusCode(StatusCodes.Status500InternalServerError, "We can't find the user with the provided ID on our end.");
 			}
 
 			if (run == null)
 			{
-				return BadRequest("We can't find the associated run on our end.");
+				return StatusCode(StatusCodes.Status500InternalServerError, "We can't find the associated run on our end.");
 			}
 
 			Participation participation = new Participation
