@@ -41,7 +41,7 @@ namespace LeaderboardBackend.Controllers
 		public async Task<ActionResult> CreateParticipation([FromBody] CreateParticipationRequest request)
 		{
 			// TODO: Maybe create validation middleware
-			if (request.IsRunner && (request.Comment == null || request.Vod == null))
+			if (request.IsSubmitter && (request.Comment == null || request.Vod == null))
 			{
 				return BadRequest("You must provide a comment and a VoD link, as you're the submitter.");
 			}
@@ -51,7 +51,7 @@ namespace LeaderboardBackend.Controllers
 
 			if (runner == null)
 			{
-				if (request.IsRunner)
+				if (request.IsSubmitter)
 				{
 					return BadRequest("We can't add your participation because we can't.. find.. your ID? On our end???");
 				}

@@ -10,6 +10,6 @@ namespace LeaderboardBackend.Controllers.Requests
 
 		public long RunId { get; set; }
 
-		public bool IsRunner { get; set; } = true;
+		public bool IsSubmitter { get; set; } = true;
 	}
 }
