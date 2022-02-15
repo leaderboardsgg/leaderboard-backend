@@ -1,4 +1,5 @@
 using LeaderboardBackend.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace LeaderboardBackend.Services
 {
@@ -14,6 +15,11 @@ namespace LeaderboardBackend.Services
 		{
 			Participation? participation = await _applicationContext.Participations.FindAsync(id);
 			return participation;
+		}
+
+		public async Task<Participation?> GetParticipationForUser(User user)
+		{
+			return await _applicationContext.Participations.SingleOrDefaultAsync(p => p.RunnerId == user.Id);
 		}
 
 		public async Task CreateParticipation(Participation participation)
