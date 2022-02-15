@@ -27,5 +27,11 @@ namespace LeaderboardBackend.Services
 			_applicationContext.Participations.Add(participation);
 			await _applicationContext.SaveChangesAsync();
 		}
+
+		public async Task UpdateParticipation(Participation participation)
+		{
+			_applicationContext.Participations.Update(participation);
+			await _applicationContext.SaveChangesAsync();
+		}
 	}
 }
