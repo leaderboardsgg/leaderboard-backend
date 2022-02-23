@@ -33,7 +33,9 @@ public class UsersController : ControllerBase
 	public async Task<ActionResult<User>> Register([FromBody] RegisterRequest body)
 	{
 		if (body.Password != body.PasswordConfirm)
+		{
 			return BadRequest();
+		}
 
 		var newUser = new User
 		{
@@ -51,10 +53,14 @@ public class UsersController : ControllerBase
 	public async Task<ActionResult<User>> Login([FromBody] LoginRequest body)
 	{
 		if (await _userService.GetUserByEmail(body.Email) is not User user)
+		{
 			return NotFound();
+		}
 
 		if (!BCryptNet.EnhancedVerify(body.Password, user.Password))
+		{
 			return Unauthorized();
+		}
 
 		var token = _authService.GenerateJSONWebToken(user);
 		return Ok(new { token });

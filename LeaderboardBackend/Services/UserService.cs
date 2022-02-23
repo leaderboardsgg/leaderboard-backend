@@ -29,7 +29,9 @@ public class UserService : IUserService
 	public async Task<User?> GetUserFromClaims(ClaimsPrincipal claims)
 	{
 		if (!claims.HasClaim(c => c.Type == JwtRegisteredClaimNames.Email))
+		{
 			return null;
+		}
 
 		var email = claims.FindFirstValue("Email");
 		return await GetUserByEmail(email);
