@@ -30,7 +30,7 @@ public class LeaderboardTests
 			.Returns(Task.FromResult<Leaderboard?>(null));
 
 		ActionResult<Leaderboard> response = await _controller.GetLeaderboard(1);
-		NotFoundResult? actual = response.Result as NotFoundResult;
+		var actual = response.Result as NotFoundResult;
 
 		Assert.NotNull(actual);
 		Assert.AreEqual(404, actual!.StatusCode);
