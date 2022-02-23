@@ -23,8 +23,14 @@ There are a couple options available for you to choose, depending on your OS.
 If you are on Windows/are a beginner, this will likely be the easiest to use.
 
 * Download [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) (Community edition is free) or modify your existing install
-  * It's important that you choose this version, as we use the .NET 6 SDK, which older versions of VS do not have support for
+  * You must choose this version as we use the .NET 6 SDK which older versions do not support
 * In the section where you choose your Workloads, select at least "ASP.NET and Web Development"
+
+Once VS has set itself up, you'll have to explicitly tell it to _not_ override our .editorconfig settings*. Go to Tools -> Customise -> Commands, pick "File" in the "Menu bar" item, then in the Add Command window, choose File -> Advanced Save Options, and finally, set that to "Current Setting". Screenshot below for a little extra clarity:
+
+![Screenshot of VS settings GUI showing location to add a command to NOT make VS override our .editorconfig settings. Why do we have to do this..](./readme-images/vs2022-prevent-editorconfig-override.png)
+
+> \* VS saves files with `CRLF`, which isn't good for everyone else on Mac/Linux. We've already set explicit line endings in our .editorconfig, but VS overrides it by default.
 
 That should be it! Any other requirements to set up and run the application should be a directed process through the IDE.
 
@@ -132,4 +138,3 @@ To run the tests, run the following commands from the root of the project:
 cd LeaderboardBackend.Test
 dotnet test
 ```
-
