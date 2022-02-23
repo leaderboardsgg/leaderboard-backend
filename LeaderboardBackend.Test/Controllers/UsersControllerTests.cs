@@ -1,28 +1,27 @@
-using NUnit.Framework;
-using Moq;
-using System;
 using LeaderboardBackend.Controllers;
-using LeaderboardBackend.Services;
-using LeaderboardBackend.Models;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using BCryptNet = BCrypt.Net.BCrypt;
 using LeaderboardBackend.Controllers.Requests;
-using System.Security.Claims;
+using LeaderboardBackend.Models;
+using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
+using NUnit.Framework;
+using System;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace LeaderboardBackend.Test.Controllers;
 
 public class UsersControllerTests
 {
 	private UsersController _controller = null!;
-
 	private Mock<IUserService> _userServiceMock = null!;
 	private Mock<IAuthService> _authServiceMock = null!;
 
 	private static readonly string defaultPlaintextPassword = "beepboop";
 	private static readonly Guid defaultUserId = Guid.NewGuid();
-	private static readonly User defaultUser = new User
+	private static readonly User defaultUser = new()
 	{
 		Username = "RageCage",
 		Email = "x@y.com",
@@ -35,11 +34,12 @@ public class UsersControllerTests
 		_userServiceMock = new Mock<IUserService>();
 		_authServiceMock = new Mock<IAuthService>();
 
-		_controller = new UsersController(
+		_controller = new(
 			_userServiceMock.Object,
 			_authServiceMock.Object
 		);
-		_controller.ControllerContext = new ControllerContext();
+
+		_controller.ControllerContext = new();
 		_controller.ControllerContext.HttpContext = new DefaultHttpContext();
 	}
 
@@ -50,8 +50,7 @@ public class UsersControllerTests
 			.Setup(x => x.GetUser(It.IsAny<Guid>()))
 			.Returns(Task.FromResult<User?>(null));
 
-		ActionResult<User> response = await _controller.GetUser(defaultUserId);
-
+		var response = await _controller.GetUser(defaultUserId);
 		Helpers.AssertResponseNotFound(response);
 	}
 
@@ -62,9 +61,9 @@ public class UsersControllerTests
 			.Setup(x => x.GetUser(defaultUserId))
 			.Returns(Task.FromResult<User?>(defaultUser));
 
-		ActionResult<User> response = await _controller.GetUser(defaultUserId);
+		var response = await _controller.GetUser(defaultUserId);
+		var user = Helpers.GetValueFromObjectResult<OkObjectResult, User>(response);
 
-		User? user = Helpers.GetValueFromObjectResult<OkObjectResult, User>(response);
 		Assert.NotNull(user);
 		Assert.AreEqual(defaultUser, user);
 	}
@@ -79,8 +78,8 @@ public class UsersControllerTests
 			Password = "cool_password",
 			PasswordConfirm = "something_different"
 		};
-		ActionResult<User> response = await _controller.Register(body);
 
+		var response = await _controller.Register(body);
 		Helpers.AssertResponseBadRequest(response);
 	}
 
@@ -94,12 +93,14 @@ public class UsersControllerTests
 			Password = defaultPlaintextPassword,
 			PasswordConfirm = defaultPlaintextPassword
 		};
-		ActionResult<User> response = await _controller.Register(body);
 
-		User? user = Helpers.GetValueFromObjectResult<CreatedAtActionResult, User>(response);
+		var response = await _controller.Register(body);
+		var user = Helpers.GetValueFromObjectResult<CreatedAtActionResult, User>(response);
+
 		Assert.NotNull(user);
 		Assert.AreEqual(defaultUser.Username, user!.Username);
 		Assert.AreEqual(defaultUser.Email, user!.Email);
+
 		// This route creates a new user, and thus does a new password hash.
 		// Since hashing the password again won't produce the same hash as
 		// defaultUser, we do a cryptographic verify instead.
@@ -114,7 +115,7 @@ public class UsersControllerTests
 			.Setup(x => x.GetUserFromClaims(It.IsAny<ClaimsPrincipal>()))
 			.Returns(Task.FromResult<User?>(null));
 
-		ActionResult<User> response = await _controller.Me();
+		var response = await _controller.Me();
 
 		Helpers.AssertResponseForbid(response);
 	}
@@ -127,9 +128,9 @@ public class UsersControllerTests
 			.Setup(x => x.GetUserFromClaims(It.IsAny<ClaimsPrincipal>()))
 			.Returns(Task.FromResult<User?>(defaultUser));
 
-		ActionResult<User> response = await _controller.Me();
+		var response = await _controller.Me();
+		var user = Helpers.GetValueFromObjectResult<OkObjectResult, User>(response);
 
-		User? user = Helpers.GetValueFromObjectResult<OkObjectResult, User>(response);
 		Assert.NotNull(user);
 		Assert.AreEqual(defaultUser, user);
 	}

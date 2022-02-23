@@ -1,86 +1,69 @@
-using Microsoft.AspNetCore.Mvc;
-using LeaderboardBackend.Models;
 using LeaderboardBackend.Controllers.Requests;
-using BCryptNet = BCrypt.Net.BCrypt;
-using Microsoft.AspNetCore.Authorization;
+using LeaderboardBackend.Models;
 using LeaderboardBackend.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using BCryptNet = BCrypt.Net.BCrypt;
 
-namespace LeaderboardBackend.Controllers
+namespace LeaderboardBackend.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class UsersController : ControllerBase
 {
-	[Route("api/[controller]")]
-	[ApiController]
-	public class UsersController : ControllerBase
+	private readonly IUserService _userService;
+	private readonly IAuthService _authService;
+
+	public UsersController(IUserService userService, IAuthService authService)
 	{
-		private readonly IUserService _userService;
-		private readonly IAuthService _authService;
+		_userService = userService;
+		_authService = authService;
+	}
 
-		public UsersController(
-			IUserService userService,
-			IAuthService authService
-		)
+	[HttpGet("{id}")]
+	public async Task<ActionResult<User>> GetUser(Guid id)
+	{
+		return await _userService.GetUser(id) is User user
+			? Ok(user)
+			: NotFound();
+	}
+
+	[AllowAnonymous]
+	[HttpPost("register")]
+	public async Task<ActionResult<User>> Register([FromBody] RegisterRequest body)
+	{
+		if (body.Password != body.PasswordConfirm)
+			return BadRequest();
+
+		var newUser = new User
 		{
-			_userService = userService;
-			_authService = authService;
-		}
+			Username = body.Username,
+			Email = body.Email,
+			Password = BCryptNet.EnhancedHashPassword(body.Password)
+		};
 
-		[HttpGet("{id}")]
-		public async Task<ActionResult<User>> GetUser(Guid id)
-		{
-			User? user = await _userService.GetUser(id);
-			if (user == null)
-			{
-				return NotFound();
-			}
+		await _userService.CreateUser(newUser);
+		return CreatedAtAction(nameof(GetUser), new { id = newUser.Id }, newUser);
+	}
 
-			return Ok(user);
-		}
+	[AllowAnonymous]
+	[HttpPost("login")]
+	public async Task<ActionResult<User>> Login([FromBody] LoginRequest body)
+	{
+		if (await _userService.GetUserByEmail(body.Email) is not User user)
+			return NotFound();
 
-		[AllowAnonymous]
-		[HttpPost("register")]
-		public async Task<ActionResult<User>> Register([FromBody] RegisterRequest body)
-		{
-			if (body.Password != body.PasswordConfirm)
-			{
-				return BadRequest();
-			}
-			var newUser = new User
-			{
-				Username = body.Username,
-				Email = body.Email,
-				Password = BCryptNet.EnhancedHashPassword(body.Password)
-			};
-			await _userService.CreateUser(newUser);
-			return CreatedAtAction(nameof(GetUser), new { id = newUser.Id }, newUser);
-		}
+		if (!BCryptNet.EnhancedVerify(body.Password, user.Password))
+			return Unauthorized();
 
-		[AllowAnonymous]
-		[HttpPost("login")]
-		public async Task<ActionResult<User>> Login([FromBody] LoginRequest body)
-		{
-			User? user = await _userService.GetUserByEmail(body.Email);
-			if (user == null)
-			{
-				return NotFound();
-			}
+		var token = _authService.GenerateJSONWebToken(user);
+		return Ok(new { token });
+	}
 
-			if (!BCryptNet.EnhancedVerify(body.Password, user.Password))
-			{
-				return Unauthorized();
-			}
-			string token = _authService.GenerateJSONWebToken(user);
-			return Ok(new { token });
-		}
-
-		[Authorize]
-		[HttpGet("me")]
-		public async Task<ActionResult<User>> Me()
-		{
-			User? user = await _userService.GetUserFromClaims(HttpContext.User);
-			if (user == null)
-			{
-				return Forbid();
-			}
-			return Ok(user);
-		}
+	[Authorize]
+	[HttpGet("me")]
+	public async Task<ActionResult<User>> Me()
+	{
+		return await _userService.GetUserFromClaims(HttpContext.User) is User user ? Ok(user) : Forbid();
 	}
 }

@@ -1,10 +1,8 @@
-using System.Security.Claims;
 using LeaderboardBackend.Models;
 
-namespace LeaderboardBackend.Services
+namespace LeaderboardBackend.Services;
+
+public interface IAuthService
 {
-	public interface IAuthService
-	{
-		string GenerateJSONWebToken(User user);
-	}
+	string GenerateJSONWebToken(User user);
 }

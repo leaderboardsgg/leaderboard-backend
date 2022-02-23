@@ -1,46 +1,43 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using LeaderboardBackend.Models;
 using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
-namespace LeaderboardBackend.Services
+namespace LeaderboardBackend.Services;
+
+public class UserService : IUserService
 {
-	public class UserService : IUserService
+	private readonly ApplicationContext _applicationContext;
+	private readonly IConfiguration _config;
+
+	public UserService(ApplicationContext applicationContext, IConfiguration config)
 	{
-		private ApplicationContext _applicationContext;
-		private IConfiguration _config;
-		public UserService(ApplicationContext applicationContext, IConfiguration config)
-		{
-			_applicationContext = applicationContext;
-			_config = config;
-		}
+		_applicationContext = applicationContext;
+		_config = config;
+	}
 
-		public async Task<User?> GetUser(Guid id)
-		{
-			User? user = await _applicationContext.Users.FindAsync(id);
-			return user;
-		}
+	public async Task<User?> GetUser(Guid id)
+	{
+		return await _applicationContext.Users.FindAsync(id);
+	}
 
-		public async Task<User?> GetUserByEmail(string email)
-		{
-			User? user = await _applicationContext.Users.SingleAsync(u => u.Email == email);
-			return user;
-		}
+	public async Task<User?> GetUserByEmail(string email)
+	{
+		return await _applicationContext.Users.SingleAsync(u => u.Email == email);
+	}
 
-		public async Task<User?> GetUserFromClaims(ClaimsPrincipal claims)
-		{
-			if (!claims.HasClaim(c => c.Type == JwtRegisteredClaimNames.Email))
-			{
-				return null;
-			}
-			string email = claims.FindFirstValue("Email");
-			return await GetUserByEmail(email);
-		}
+	public async Task<User?> GetUserFromClaims(ClaimsPrincipal claims)
+	{
+		if (!claims.HasClaim(c => c.Type == JwtRegisteredClaimNames.Email))
+			return null;
 
-		public async Task CreateUser(User user)
-		{
-			_applicationContext.Users.Add(user);
-			await _applicationContext.SaveChangesAsync();
-		}
+		var email = claims.FindFirstValue("Email");
+		return await GetUserByEmail(email);
+	}
+
+	public async Task CreateUser(User user)
+	{
+		_applicationContext.Users.Add(user);
+		await _applicationContext.SaveChangesAsync();
 	}
 }
