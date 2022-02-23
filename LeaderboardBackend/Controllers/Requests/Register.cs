@@ -1,6 +1,6 @@
 namespace LeaderboardBackend.Controllers.Requests;
 
-public class RegisterRequest
+public record RegisterRequest
 {
 	public string Username { get; set; } = null!;
 	public string Email { get; set; } = null!;

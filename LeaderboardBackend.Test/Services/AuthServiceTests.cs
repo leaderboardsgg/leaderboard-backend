@@ -1,5 +1,6 @@
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using NUnit.Framework;
 using System;
@@ -13,10 +14,9 @@ public class AuthServiceTests
 	[Test]
 	public void GenerateJSONWebToken_CreatesTokenWithConfig()
 	{
-		var key = "testkeythatsatisfiesthecharacterminimum";
-		var issuer = "leaderboards.gg";
-
-		var configJson = string.Format(@"
+		string key = "testkeythatsatisfiesthecharacterminimum";
+		string issuer = "leaderboards.gg";
+		string configJson = string.Format(@"
 		{{
 			""Jwt"": {{
 				""Key"": ""{0}"",
@@ -25,19 +25,19 @@ public class AuthServiceTests
 		}}
 		", key, issuer);
 
-		var config = ConfigurationMockBuilder.BuildConfigurationFromJson(configJson);
-		var authService = new AuthService(config);
+		IConfiguration config = ConfigurationMockBuilder.BuildConfigurationFromJson(configJson);
+		AuthService authService = new(config);
 
-		var user = new User
+		User user = new()
 		{
 			Id = Guid.NewGuid(),
 			Username = "RageCage",
 			Email = "x@y.com"
 		};
 
-		var token = authService.GenerateJSONWebToken(user);
-		var jwtHandler = new JwtSecurityTokenHandler();
-		var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+		string token = authService.GenerateJSONWebToken(user);
+		JwtSecurityTokenHandler jwtHandler = new();
+		SymmetricSecurityKey signingKey = new(Encoding.UTF8.GetBytes(key));
 
 		Assert.DoesNotThrow(() =>
 		{

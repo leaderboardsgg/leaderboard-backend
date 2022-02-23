@@ -19,9 +19,7 @@ public class LeaderboardTests
 	{
 		_leaderboardServiceMock = new Mock<ILeaderboardService>();
 
-		_controller = new LeaderboardsController(
-			_leaderboardServiceMock.Object
-		);
+		_controller = new LeaderboardsController(_leaderboardServiceMock.Object);
 	}
 
 	[Test]
@@ -31,8 +29,8 @@ public class LeaderboardTests
 			.Setup(x => x.GetLeaderboard(It.IsAny<ulong>()))
 			.Returns(Task.FromResult<Leaderboard?>(null));
 
-		var response = await _controller.GetLeaderboard(1);
-		var actual = response.Result as NotFoundResult;
+		ActionResult<Leaderboard> response = await _controller.GetLeaderboard(1);
+		NotFoundResult? actual = response.Result as NotFoundResult;
 
 		Assert.NotNull(actual);
 		Assert.AreEqual(404, actual!.StatusCode);
@@ -45,7 +43,7 @@ public class LeaderboardTests
 			.Setup(x => x.GetLeaderboard(It.IsAny<ulong>()))
 			.Returns(Task.FromResult<Leaderboard?>(new Leaderboard { Id = 1 }));
 
-		var response = await _controller.GetLeaderboard((long)1);
+		ActionResult<Leaderboard> response = await _controller.GetLeaderboard(1);
 
 		Assert.NotNull(response.Value);
 		Assert.AreEqual(1, response.Value?.Id);
@@ -54,18 +52,18 @@ public class LeaderboardTests
 	[Test]
 	public async Task GetLeaderboards_Ok_ListExists()
 	{
-		var mockList = new List<Leaderboard>
+		List<Leaderboard> mockList = new()
 		{
 			new() { Id = 1 },
-			new() { Id = 2 },
+			new() { Id = 2 }
 		};
 
 		_leaderboardServiceMock
 			.Setup(x => x.GetLeaderboards(It.IsAny<ulong[]>()))
 			.Returns(Task.FromResult(mockList));
 
-		var response = await _controller.GetLeaderboards(new ulong[] { 1, 2 });
+		ActionResult<List<Leaderboard>> response = await _controller.GetLeaderboards(new ulong[] { 1, 2 });
 
-		Assert.AreEqual(new long[] { 1, 2 }, response.Value?.ConvertAll(l => l.Id));
+		Assert.AreEqual(new ulong[] { 1, 2 }, response.Value?.ConvertAll(l => l.Id));
 	}
 }

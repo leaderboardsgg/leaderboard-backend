@@ -14,19 +14,20 @@ public class AuthService : IAuthService
 	public AuthService(IConfiguration config)
 	{
 		var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
+
 		_credentials = new(securityKey, SecurityAlgorithms.HmacSha256);
 		_issuer = config["Jwt:Issuer"];
 	}
 
 	public string GenerateJSONWebToken(User user)
 	{
-		var claims = new Claim[]
+		Claim[] claims =
 		{
 			new(JwtRegisteredClaimNames.Email, user.Email),
 			new(JwtRegisteredClaimNames.Sub, user.Id.ToString())
 		};
 
-		var token = new JwtSecurityToken(
+		JwtSecurityToken token = new(
 			issuer: _issuer,
 			audience: _issuer,
 			claims: claims,

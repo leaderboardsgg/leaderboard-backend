@@ -37,13 +37,13 @@ internal static class Helpers
 		TObjectResult? objectResult = null;
 		try
 		{
-			objectResult = (TObjectResult?)result?.Result;
+			objectResult = (TObjectResult?)(result?.Result);
 		}
 		catch (InvalidCastException ex)
 		{
 			Assert.Fail(ex.Message);
 		}
 
-		return (TResult?)objectResult?.Value;
+		return (TResult?)(objectResult?.Value);
 	}
 }

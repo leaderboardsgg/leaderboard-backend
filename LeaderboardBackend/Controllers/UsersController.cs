@@ -23,9 +23,13 @@ public class UsersController : ControllerBase
 	[HttpGet("{id}")]
 	public async Task<ActionResult<User>> GetUser(Guid id)
 	{
-		return await _userService.GetUser(id) is User user
-			? Ok(user)
-			: NotFound();
+		User? user = await _userService.GetUser(id);
+		if (user == null)
+		{
+			return NotFound();
+		}
+
+		return Ok(user);
 	}
 
 	[AllowAnonymous]
@@ -37,7 +41,7 @@ public class UsersController : ControllerBase
 			return BadRequest();
 		}
 
-		var newUser = new User
+		User newUser = new()
 		{
 			Username = body.Username,
 			Email = body.Email,
@@ -52,7 +56,8 @@ public class UsersController : ControllerBase
 	[HttpPost("login")]
 	public async Task<ActionResult<User>> Login([FromBody] LoginRequest body)
 	{
-		if (await _userService.GetUserByEmail(body.Email) is not User user)
+		User? user = await _userService.GetUserByEmail(body.Email);
+		if (user == null)
 		{
 			return NotFound();
 		}
@@ -62,7 +67,7 @@ public class UsersController : ControllerBase
 			return Unauthorized();
 		}
 
-		var token = _authService.GenerateJSONWebToken(user);
+		string token = _authService.GenerateJSONWebToken(user);
 		return Ok(new { token });
 	}
 

@@ -9,7 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 DotEnv.Load(options: new DotEnvOptions(
 	ignoreExceptions: false, // Notifies of exceptions during loading of .env
@@ -17,8 +17,8 @@ DotEnv.Load(options: new DotEnvOptions(
 	trimValues: true // Trims whitespace from values
 ));
 
-var exists = EnvReader.TryGetBooleanValue("USE_IN_MEMORY_DB", out bool inMemoryDb);
-var useInMemoryDb = exists && inMemoryDb;
+bool exists = EnvReader.TryGetBooleanValue("USE_IN_MEMORY_DB", out bool inMemoryDb);
+bool useInMemoryDb = exists && inMemoryDb;
 
 ConfigureDbContext<ApplicationContext>(builder, useInMemoryDb);
 
@@ -58,7 +58,7 @@ builder.Services
 		};
 	});
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

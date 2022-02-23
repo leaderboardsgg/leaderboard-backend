@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LeaderboardBackend.Models;
 
-public record Leaderboard
+public class Leaderboard
 {
 	public ulong Id { get; set; }
 	[Required] public string Name { get; set; } = null!;

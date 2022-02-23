@@ -19,9 +19,13 @@ public class LeaderboardsController : ControllerBase
 	[HttpGet("{id}")]
 	public async Task<ActionResult<Leaderboard>> GetLeaderboard(ulong id)
 	{
-		return await _leaderboardService.GetLeaderboard(id) is Leaderboard leaderboard
-			? leaderboard
-			: NotFound();
+		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(id);
+		if (leaderboard == null)
+		{
+			return NotFound();
+		}
+
+		return leaderboard;
 	}
 
 	[HttpGet]
@@ -34,7 +38,7 @@ public class LeaderboardsController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<Leaderboard>> CreateLeaderboard([FromBody] CreateLeaderboardRequest body)
 	{
-		var leaderboard = new Leaderboard
+		Leaderboard leaderboard = new()
 		{
 			Name = body.Name,
 			Slug = body.Slug

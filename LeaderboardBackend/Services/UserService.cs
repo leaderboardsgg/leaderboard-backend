@@ -33,7 +33,7 @@ public class UserService : IUserService
 			return null;
 		}
 
-		var email = claims.FindFirstValue("Email");
+		string email = claims.FindFirstValue("Email");
 		return await GetUserByEmail(email);
 	}
 

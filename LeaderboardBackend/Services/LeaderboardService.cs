@@ -22,9 +22,14 @@ public class LeaderboardService : ILeaderboardService
 	// FIXME: Paginate this
 	public async Task<List<Leaderboard>> GetLeaderboards(ulong[]? ids = null)
 	{
-		return ids == null
-			? await _applicationContext.Leaderboards.ToListAsync()
-			: await _applicationContext.Leaderboards.Where(l => ids.Contains(l.Id)).ToListAsync();
+		if (ids == null)
+		{
+			return await _applicationContext.Leaderboards.ToListAsync();
+		}
+		else
+		{
+			return await _applicationContext.Leaderboards.Where(l => ids.Contains(l.Id)).ToListAsync();
+		}
 	}
 
 	public async Task CreateLeaderboard(Leaderboard leaderboard)

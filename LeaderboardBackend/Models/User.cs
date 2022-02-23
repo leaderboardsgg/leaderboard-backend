@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LeaderboardBackend.Models;
 
-public record User
+public class User
 {
 	public Guid Id { get; set; }
 	[Required] public string Username { get; set; } = null!;

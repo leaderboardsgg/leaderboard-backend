@@ -34,11 +34,7 @@ public class UsersControllerTests
 		_userServiceMock = new Mock<IUserService>();
 		_authServiceMock = new Mock<IAuthService>();
 
-		_controller = new(
-			_userServiceMock.Object,
-			_authServiceMock.Object
-		);
-
+		_controller = new(_userServiceMock.Object, _authServiceMock.Object);
 		_controller.ControllerContext = new();
 		_controller.ControllerContext.HttpContext = new DefaultHttpContext();
 	}
@@ -50,7 +46,7 @@ public class UsersControllerTests
 			.Setup(x => x.GetUser(It.IsAny<Guid>()))
 			.Returns(Task.FromResult<User?>(null));
 
-		var response = await _controller.GetUser(defaultUserId);
+		ActionResult<User> response = await _controller.GetUser(defaultUserId);
 		Helpers.AssertResponseNotFound(response);
 	}
 
@@ -61,8 +57,8 @@ public class UsersControllerTests
 			.Setup(x => x.GetUser(defaultUserId))
 			.Returns(Task.FromResult<User?>(defaultUser));
 
-		var response = await _controller.GetUser(defaultUserId);
-		var user = Helpers.GetValueFromObjectResult<OkObjectResult, User>(response);
+		ActionResult<User> response = await _controller.GetUser(defaultUserId);
+		User? user = Helpers.GetValueFromObjectResult<OkObjectResult, User>(response);
 
 		Assert.NotNull(user);
 		Assert.AreEqual(defaultUser, user);
@@ -71,7 +67,7 @@ public class UsersControllerTests
 	[Test]
 	public async Task Register_BadRequest_PasswordsMismatch()
 	{
-		var body = new RegisterRequest
+		RegisterRequest body = new()
 		{
 			Username = defaultUser.Username!,
 			Email = defaultUser.Email!,
@@ -79,14 +75,14 @@ public class UsersControllerTests
 			PasswordConfirm = "something_different"
 		};
 
-		var response = await _controller.Register(body);
+		ActionResult<User> response = await _controller.Register(body);
 		Helpers.AssertResponseBadRequest(response);
 	}
 
 	[Test]
 	public async Task Register_OK_PasswordsMatchCreateSuccess()
 	{
-		var body = new RegisterRequest
+		RegisterRequest body = new()
 		{
 			Username = defaultUser.Username!,
 			Email = defaultUser.Email!,
@@ -94,8 +90,8 @@ public class UsersControllerTests
 			PasswordConfirm = defaultPlaintextPassword
 		};
 
-		var response = await _controller.Register(body);
-		var user = Helpers.GetValueFromObjectResult<CreatedAtActionResult, User>(response);
+		ActionResult<User> response = await _controller.Register(body);
+		User? user = Helpers.GetValueFromObjectResult<CreatedAtActionResult, User>(response);
 
 		Assert.NotNull(user);
 		Assert.AreEqual(defaultUser.Username, user!.Username);
@@ -115,7 +111,7 @@ public class UsersControllerTests
 			.Setup(x => x.GetUserFromClaims(It.IsAny<ClaimsPrincipal>()))
 			.Returns(Task.FromResult<User?>(null));
 
-		var response = await _controller.Me();
+		ActionResult<User> response = await _controller.Me();
 
 		Helpers.AssertResponseForbid(response);
 	}
@@ -128,8 +124,8 @@ public class UsersControllerTests
 			.Setup(x => x.GetUserFromClaims(It.IsAny<ClaimsPrincipal>()))
 			.Returns(Task.FromResult<User?>(defaultUser));
 
-		var response = await _controller.Me();
-		var user = Helpers.GetValueFromObjectResult<OkObjectResult, User>(response);
+		ActionResult<User> response = await _controller.Me();
+		User? user = Helpers.GetValueFromObjectResult<OkObjectResult, User>(response);
 
 		Assert.NotNull(user);
 		Assert.AreEqual(defaultUser, user);
