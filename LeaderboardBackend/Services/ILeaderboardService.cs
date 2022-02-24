@@ -1,12 +1,10 @@
 using LeaderboardBackend.Models;
 
-namespace LeaderboardBackend.Services
-{
-	public interface ILeaderboardService
-	{
-		Task<Leaderboard?> GetLeaderboard(long id);
+namespace LeaderboardBackend.Services;
 
-		Task<List<Leaderboard>> GetLeaderboards(long[]? ids = null);
-		Task CreateLeaderboard(Leaderboard leaderboard);
-	}
+public interface ILeaderboardService
+{
+	Task<Leaderboard?> GetLeaderboard(ulong id);
+	Task<List<Leaderboard>> GetLeaderboards(ulong[]? ids = null);
+	Task CreateLeaderboard(Leaderboard leaderboard);
 }

@@ -1,17 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace LeaderboardBackend.Models
+namespace LeaderboardBackend.Models;
+
+public class Leaderboard
 {
-	public class Leaderboard
-	{
-		public long Id { get; set; }
-
-		[Required]
-		public string? Name { get; set; }
-
-		[Required]
-		public string? Slug { get; set; }
-
-		public string? Rules { get; set; }
-	}
+	public ulong Id { get; set; }
+	[Required] public string Name { get; set; } = null!;
+	[Required] public string Slug { get; set; } = null!;
+	public string Rules { get; set; } = null!;
 }

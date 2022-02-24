@@ -1,53 +1,21 @@
-using LeaderboardBackend.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using LeaderboardBackend.Services;
-using System.IdentityModel.Tokens.Jwt;
 using dotenv.net;
 using dotenv.net.Utilities;
+using LeaderboardBackend.Models;
+using LeaderboardBackend.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using System.Text.Json;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 DotEnv.Load(options: new DotEnvOptions(
 	ignoreExceptions: false, // Notifies of exceptions during loading of .env
 	envFilePaths: new[] { "../.env" },
 	trimValues: true // Trims whitespace from values
 ));
-
-// Add application's Database Context to the container.
-static string GetConnectionString()
-{
-	if (
-		!EnvReader.TryGetStringValue("POSTGRES_HOST", out string host) ||
-		!EnvReader.TryGetIntValue("POSTGRES_PORT", out int port) ||
-		!EnvReader.TryGetStringValue("POSTGRES_USER", out string user) ||
-		!EnvReader.TryGetStringValue("POSTGRES_PASSWORD", out string password) ||
-		!EnvReader.TryGetStringValue("POSTGRES_DB", out string db)
-	)
-	{
-		throw new Exception("Database env var(s) not set. Is there a .env?");
-	}
-	return $"Server={host};Port={port};User Id={user};Password={password};Database={db};Include Error Detail=true";
-}
-
-static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb) where T : DbContext {
-	if (inMemoryDb)
-	{
-		builder.Services.AddDbContext<T>(opt => opt.UseInMemoryDatabase("LeaderboardBackend"));
-	} else
-	{
-		builder.Services.AddDbContext<T>(
-			opt => {
-				opt.UseNpgsql(
-					GetConnectionString()
-				).UseSnakeCaseNamingConvention();
-			}
-		);
-	}
-}
 
 bool exists = EnvReader.TryGetBooleanValue("USE_IN_MEMORY_DB", out bool inMemoryDb);
 bool useInMemoryDb = exists && inMemoryDb;
@@ -74,7 +42,8 @@ builder.Services.AddSwaggerGen(c =>
 
 // Configure JWT Authentication.
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services
+	.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 	.AddJwtBearer(options =>
 	{
 		options.TokenValidationParameters = new TokenValidationParameters
@@ -89,7 +58,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 		};
 	});
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -106,3 +75,31 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+
+
+// Add application's Database Context to the container.
+static string GetConnectionString()
+{
+	if (
+		!EnvReader.TryGetStringValue("POSTGRES_HOST", out var host) ||
+		!EnvReader.TryGetIntValue("POSTGRES_PORT", out var port) ||
+		!EnvReader.TryGetStringValue("POSTGRES_USER", out var user) ||
+		!EnvReader.TryGetStringValue("POSTGRES_PASSWORD", out var password) ||
+		!EnvReader.TryGetStringValue("POSTGRES_DB", out var db)
+	)
+	{
+		throw new Exception("Database env var(s) not set. Is there a .env?");
+	}
+
+	return $"Server={host};Port={port};User Id={user};Password={password};Database={db};Include Error Detail=true";
+}
+
+static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb) where T : DbContext
+{
+	builder.Services.AddDbContext<T>(opt =>
+	{
+		if (inMemoryDb) opt.UseInMemoryDatabase("LeaderboardBackend");
+		else opt.UseNpgsql(GetConnectionString()).UseSnakeCaseNamingConvention();
+	});
+}

@@ -1,38 +1,40 @@
+using LeaderboardBackend.Models;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using LeaderboardBackend.Models;
-using Microsoft.IdentityModel.Tokens;
 
-namespace LeaderboardBackend.Services
+namespace LeaderboardBackend.Services;
+
+public class AuthService : IAuthService
 {
-	public class AuthService : IAuthService
+	private readonly SigningCredentials _credentials;
+	private readonly string _issuer;
+
+	public AuthService(IConfiguration config)
 	{
-		private SigningCredentials _credentials;
-		private string _issuer;
+		var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
 
-		public AuthService(IConfiguration config)
+		_credentials = new(securityKey, SecurityAlgorithms.HmacSha256);
+		_issuer = config["Jwt:Issuer"];
+	}
+
+	public string GenerateJSONWebToken(User user)
+	{
+		Claim[] claims =
 		{
-			var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
-			_credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-			_issuer = config["Jwt:Issuer"];
-		}
+			new(JwtRegisteredClaimNames.Email, user.Email),
+			new(JwtRegisteredClaimNames.Sub, user.Id.ToString())
+		};
 
-		public string GenerateJSONWebToken(User user)
-		{
-			Claim[] claims = new Claim[] {
-				new Claim(JwtRegisteredClaimNames.Email, user.Email!), // nullable reference warning false positive
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-			};
-			var token = new JwtSecurityToken(
-				_issuer,
-				_issuer,
-				claims,
-				expires: DateTime.Now.AddMinutes(30),
-				signingCredentials: _credentials
-			);
+		JwtSecurityToken token = new(
+			issuer: _issuer,
+			audience: _issuer,
+			claims: claims,
+			expires: DateTime.Now.AddMinutes(30),
+			signingCredentials: _credentials
+		);
 
-			return new JwtSecurityTokenHandler().WriteToken(token);
-		}
+		return new JwtSecurityTokenHandler().WriteToken(token);
 	}
 }
