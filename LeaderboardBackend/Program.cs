@@ -3,6 +3,7 @@ using dotenv.net.Utilities;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -72,6 +73,14 @@ builder.Services
 			IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
 		};
 	});
+
+// Configure authorisation.
+builder.Services.AddAuthorization(options =>
+{
+	options.FallbackPolicy = new AuthorizationPolicyBuilder()
+		.RequireAuthenticatedUser()
+		.Build();
+});
 
 #endregion
 

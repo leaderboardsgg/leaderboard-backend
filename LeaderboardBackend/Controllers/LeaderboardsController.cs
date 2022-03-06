@@ -2,6 +2,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests.Leaderboards;
 using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeaderboardBackend.Controllers;
@@ -23,6 +24,7 @@ public class LeaderboardsController : ControllerBase
 	/// <response code="404">If no Leaderboard can be found.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.Get))]
+	[AllowAnonymous]
 	[HttpGet("{id}")]
 	public async Task<ActionResult<Leaderboard>> GetLeaderboard(long id)
 	{
@@ -39,6 +41,7 @@ public class LeaderboardsController : ControllerBase
 	/// <param name="ids">The IDs.</param>
 	/// <response code="200">An array of Leaderboards. Can be empty.</response>
 	[ProducesResponseType(StatusCodes.Status200OK)]
+	[AllowAnonymous]
 	[HttpGet]
 	public async Task<ActionResult<List<Leaderboard>>> GetLeaderboards([FromQuery] long[] ids)
 	{

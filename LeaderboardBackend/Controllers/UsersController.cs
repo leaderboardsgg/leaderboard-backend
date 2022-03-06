@@ -121,7 +121,6 @@ public class UsersController : ControllerBase
 	/// <response code="403">If an invalid JWT was passed in.</response>
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status403Forbidden)]
-	[Authorize]
 	[HttpGet("me")]
 	public async Task<ActionResult<User>> Me()
 	{
