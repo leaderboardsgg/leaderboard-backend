@@ -1,3 +1,4 @@
+using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests.Leaderboards;
 using LeaderboardBackend.Controllers.Annotations;
@@ -56,6 +57,7 @@ public class LeaderboardsController : ControllerBase
 	/// <response code="404">If a non-admin calls this.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.Post))]
+	[Authorize(Policy = UserTypes.Admin)]
 	[HttpPost]
 	public async Task<ActionResult<Leaderboard>> CreateLeaderboard([FromBody] CreateLeaderboardRequest body)
 	{

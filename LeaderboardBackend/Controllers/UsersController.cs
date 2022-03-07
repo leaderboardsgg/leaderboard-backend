@@ -27,6 +27,7 @@ public class UsersController : ControllerBase
 	/// <response code="404">If no User is found with the provided ID.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.Get))]
+	[AllowAnonymous]
 	[HttpGet("{id:guid}")]
 	public async Task<ActionResult<User>> GetUserById(Guid id)
 	{
