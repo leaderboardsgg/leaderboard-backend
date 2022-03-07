@@ -1,6 +1,8 @@
 using dotenv.net;
 using dotenv.net.Utilities;
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Authorization;
+using LeaderboardBackend.Authorization.Requirements;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -77,10 +79,34 @@ builder.Services
 // Configure authorisation.
 builder.Services.AddAuthorization(options =>
 {
+	options.AddPolicy(UserTypes.Admin, policy =>
+	{
+		policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+		policy.RequireAuthenticatedUser();
+		policy.Requirements.Add(new UserTypeRequirement(UserTypes.Admin));
+	});
+	options.AddPolicy(UserTypes.Mod, policy =>
+	{
+		policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+		policy.RequireAuthenticatedUser();
+		policy.Requirements.Add(new UserTypeRequirement(UserTypes.Mod));
+	});
+
+	// Handles empty [Authorize] attributes
+	options.DefaultPolicy = new AuthorizationPolicyBuilder()
+		.AddAuthenticationSchemes(new[] { JwtBearerDefaults.AuthenticationScheme })
+		.RequireAuthenticatedUser()
+		.AddRequirements(new[] { new UserTypeRequirement(UserTypes.User) })
+		.Build();
+
 	options.FallbackPolicy = new AuthorizationPolicyBuilder()
+		.AddAuthenticationSchemes(new[] { JwtBearerDefaults.AuthenticationScheme })
 		.RequireAuthenticatedUser()
 		.Build();
 });
+
+// Can't use AddSingleton here since we call the DB in the Handler
+builder.Services.AddScoped<IAuthorizationHandler, UserTypeAuthorizationHandler>();
 
 #endregion
 
