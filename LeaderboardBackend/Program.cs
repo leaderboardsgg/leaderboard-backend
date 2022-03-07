@@ -107,6 +107,7 @@ builder.Services.AddAuthorization(options =>
 
 // Can't use AddSingleton here since we call the DB in the Handler
 builder.Services.AddScoped<IAuthorizationHandler, UserTypeAuthorizationHandler>();
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, MiddlewareResultHandler>();
 
 #endregion
 
