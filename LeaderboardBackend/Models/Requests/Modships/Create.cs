@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace LeaderboardBackend.Controllers.Requests;
+namespace LeaderboardBackend.Models.Requests.Modships;
 
 /// <summary>Request object sent when setting a User as mod for a Leaderboard.</summary>
 public record CreateModshipRequest

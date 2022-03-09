@@ -1,4 +1,4 @@
-using LeaderboardBackend.Models;
+using LeaderboardBackend.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeaderboardBackend.Services;
