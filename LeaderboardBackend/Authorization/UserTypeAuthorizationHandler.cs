@@ -22,15 +22,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 	{
 		_config = config;
 		_jwtHandler = JwtSecurityTokenHandlerSingleton.Instance;
-
-		// FIXME: Make _jwtValidationParams take from a singleton too
-		SymmetricSecurityKey key = new(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
-		_jwtValidationParams = new()
-		{
-			IssuerSigningKey = key,
-			ValidAudience = config["Jwt:Issuer"],
-			ValidIssuer = config["Jwt:Issuer"]
-		};
+		_jwtValidationParams = TokenValidationParametersSingleton.Instance(config);
 		_userService = userService;
 	}
 
