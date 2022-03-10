@@ -1,4 +1,3 @@
-using LeaderboardBackend.Authorization.Requirements;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;

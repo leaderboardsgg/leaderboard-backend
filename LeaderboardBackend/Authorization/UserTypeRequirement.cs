@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 
-namespace LeaderboardBackend.Authorization.Requirements;
+namespace LeaderboardBackend.Authorization;
 
 public record UserTypeRequirement : IAuthorizationRequirement
 {

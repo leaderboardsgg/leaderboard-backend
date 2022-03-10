@@ -2,7 +2,6 @@ using dotenv.net;
 using dotenv.net.Utilities;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Authorization;
-using LeaderboardBackend.Authorization.Requirements;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
