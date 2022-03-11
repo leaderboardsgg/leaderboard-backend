@@ -5,7 +5,6 @@ namespace LeaderboardBackend.Models.Entities;
 
 public class Category
 {
-<<<<<<< HEAD
 	public long Id { get; set; }
 
 	[Required] 
