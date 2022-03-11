@@ -1,3 +1,4 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31912.275
@@ -13,7 +14,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		docker-compose.yml = docker-compose.yml
 		example.env = example.env
+		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeaderboardBackend.Integration", "LeaderboardBackend.Integration\LeaderboardBackend.Integration.csproj", "{43B9D87E-792C-4936-BE11-0542183CAEF3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +33,10 @@ Global
 		{CBE28D24-9004-4CE2-93C7-9719B8E96017}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CBE28D24-9004-4CE2-93C7-9719B8E96017}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CBE28D24-9004-4CE2-93C7-9719B8E96017}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43B9D87E-792C-4936-BE11-0542183CAEF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43B9D87E-792C-4936-BE11-0542183CAEF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43B9D87E-792C-4936-BE11-0542183CAEF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43B9D87E-792C-4936-BE11-0542183CAEF3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
