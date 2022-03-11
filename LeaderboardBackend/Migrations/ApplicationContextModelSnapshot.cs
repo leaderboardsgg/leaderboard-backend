@@ -22,6 +22,48 @@ namespace LeaderboardBackend.Migrations
 
 			NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+			modelBuilder.Entity("LeaderboardBackend.Models.Category", b =>
+				{
+					b.Property<decimal>("Id")
+						.ValueGeneratedOnAdd()
+						.HasColumnType("numeric(20,0)")
+						.HasColumnName("id");
+
+					b.Property<decimal>("LeaderboardId")
+						.HasColumnType("numeric(20,0)")
+						.HasColumnName("leaderboard_id");
+
+					b.Property<string>("Name")
+						.IsRequired()
+						.HasColumnType("text")
+						.HasColumnName("name");
+
+					b.Property<int>("PlayersMax")
+						.HasColumnType("integer")
+						.HasColumnName("players_max");
+
+					b.Property<int>("PlayersMin")
+						.HasColumnType("integer")
+						.HasColumnName("players_min");
+
+					b.Property<string>("Rules")
+						.HasColumnType("text")
+						.HasColumnName("rules");
+
+					b.Property<string>("Slug")
+						.IsRequired()
+						.HasColumnType("text")
+						.HasColumnName("slug");
+
+					b.HasKey("Id")
+						.HasName("pk_categories");
+
+					b.HasIndex("LeaderboardId")
+						.HasDatabaseName("ix_categories_leaderboard_id");
+
+					b.ToTable("categories", (string)null);
+				});
+
 			modelBuilder.Entity("LeaderboardBackend.Models.Leaderboard", b =>
 				{
 					b.Property<decimal>("Id")
@@ -75,6 +117,23 @@ namespace LeaderboardBackend.Migrations
 						.HasName("pk_users");
 
 					b.ToTable("users", (string)null);
+				});
+
+			modelBuilder.Entity("LeaderboardBackend.Models.Category", b =>
+				{
+					b.HasOne("LeaderboardBackend.Models.Leaderboard", "Leaderboard")
+						.WithMany("Categories")
+						.HasForeignKey("LeaderboardId")
+						.OnDelete(DeleteBehavior.Cascade)
+						.IsRequired()
+						.HasConstraintName("fk_categories_leaderboards_leaderboard_id");
+
+					b.Navigation("Leaderboard");
+				});
+
+			modelBuilder.Entity("LeaderboardBackend.Models.Leaderboard", b =>
+				{
+					b.Navigation("Categories");
 				});
 #pragma warning restore 612, 618
 		}
