@@ -3,10 +3,19 @@ using System.Net;
 using System.Text.Json;
 using System.Net.Http;
 using System.Threading.Tasks;
+<<<<<<< HEAD
 using LeaderboardBackend.Models.Requests.Users;
 using LeaderboardBackend.Models.Entities;
 using System.Net.Http.Json;
 using System;
+=======
+using LeaderboardBackend.Controllers.Requests;
+using System.Net.Http.Json;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Mvc.Testing;
+using System;
+using LeaderboardBackend.Models;
+>>>>>>> c528997... Add Users integration tests
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
@@ -22,8 +31,11 @@ internal class Users
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 	};
 
+<<<<<<< HEAD
 	private static readonly string ValidPassword = "c00l_pAssword";
 
+=======
+>>>>>>> c528997... Add Users integration tests
 	[SetUp]
 	public static void SetUp()
 	{
@@ -45,8 +57,13 @@ internal class Users
 		RegisterRequest registerBody = new() 
 		{
 			Username = "Test",
+<<<<<<< HEAD
 			Password = ValidPassword,
 			PasswordConfirm = ValidPassword,
+=======
+			Password = "Boop",
+			PasswordConfirm = "Boop",
+>>>>>>> c528997... Add Users integration tests
 			Email = "test@email.com",
 		};
 		HttpResponseMessage registerResponse = await ApiClient.PostAsJsonAsync("/api/users/register", registerBody, JsonSerializerOptions);
@@ -63,12 +80,22 @@ internal class Users
 	[Test]
 	public static async Task FullAuthFlow()
 	{
+<<<<<<< HEAD
+=======
+		string passwordPlaintext = "boop";
+
+>>>>>>> c528997... Add Users integration tests
 		// Register User	
 		RegisterRequest registerBody = new() 
 		{
 			Username = "Test",
+<<<<<<< HEAD
 			Password = ValidPassword,
 			PasswordConfirm = ValidPassword,
+=======
+			Password = passwordPlaintext,
+			PasswordConfirm = passwordPlaintext,
+>>>>>>> c528997... Add Users integration tests
 			Email = "test@email.com",
 		};
 		HttpResponseMessage registerResponse = await ApiClient.PostAsJsonAsync("/api/users/register", registerBody, JsonSerializerOptions);
@@ -79,7 +106,11 @@ internal class Users
 		LoginRequest loginBody = new()
 		{
 			Email = createdUser!.Email,
+<<<<<<< HEAD
 			Password = ValidPassword,
+=======
+			Password = passwordPlaintext,
+>>>>>>> c528997... Add Users integration tests
 		};
 		HttpResponseMessage loginResponse = await ApiClient.PostAsJsonAsync("/api/users/login", loginBody, JsonSerializerOptions);
 		loginResponse.EnsureSuccessStatusCode();
