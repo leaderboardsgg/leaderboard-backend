@@ -73,8 +73,6 @@ if (app.Environment.IsDevelopment())
 	app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "LeaderboardBackend v1"));
 }
 
-app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -107,11 +105,13 @@ static string GetConnectionString(WebApplicationBuilder builder)
 static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb) where T : DbContext 
 {
 	builder.Services.AddDbContext<T>(
-		opt => {
+		opt =>
+		{
 			if (inMemoryDb)
 			{
 				opt.UseInMemoryDatabase("LeaderboardBackend");
-			} else
+			}
+			else
 			{
 				opt.UseNpgsql(
 					GetConnectionString(builder)
