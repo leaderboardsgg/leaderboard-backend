@@ -8,12 +8,10 @@ namespace LeaderboardBackend.Services;
 public class UserService : IUserService
 {
 	private readonly ApplicationContext _applicationContext;
-	private readonly IConfiguration _config;
 
 	public UserService(ApplicationContext applicationContext, IConfiguration config)
 	{
 		_applicationContext = applicationContext;
-		_config = config;
 	}
 
 	public async Task<User?> GetUser(Guid id)
