@@ -101,20 +101,22 @@ static string GetConnectionString(WebApplicationBuilder builder)
 	return $"Server={host};Port={port};User Id={user};Password={password};Database={db};Include Error Detail=true";
 }
 
-static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb) where T : DbContext {
-	if (inMemoryDb)
-	{
-		builder.Services.AddDbContext<T>(opt => opt.UseInMemoryDatabase("LeaderboardBackend"));
-	} else
-	{
-		builder.Services.AddDbContext<T>(
-			opt => {
+// Configure a Database context, configuring based on the USE_IN_MEMORY_DATABASE environment variable.
+static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb) where T : DbContext 
+{
+	builder.Services.AddDbContext<T>(
+		opt => {
+			if (inMemoryDb)
+			{
+				opt.UseInMemoryDatabase("LeaderboardBackend");
+			} else
+			{
 				opt.UseNpgsql(
 					GetConnectionString(builder)
 				).UseSnakeCaseNamingConvention();
 			}
-		);
-	}
+		}
+	);
 }
 
 #endregion
