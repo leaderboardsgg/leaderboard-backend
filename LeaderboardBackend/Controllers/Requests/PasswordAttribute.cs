@@ -11,10 +11,9 @@ namespace LeaderboardBackend.Controllers.Requests
 		public string GetErrorMessage(List<string> errors) =>
 			$"Your password has the following errors: {string.Join("; ", errors)}";
 
-		protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+		protected override ValidationResult? IsValid(object? value, ValidationContext _)
 		{
-			LoginRequest user = (LoginRequest)validationContext.ObjectInstance;
-			string password = user.Password;
+			string password = (string)value!;
 
 			List<string> errors = new();
 
@@ -22,27 +21,22 @@ namespace LeaderboardBackend.Controllers.Requests
 			{
 				errors.Add($"password shorter than {MIN}");
 			}
-
 			if (password.Length > MAX)
 			{
 				errors.Add($"password longer than {MAX}");
 			}
-
 			if (!new Regex(@"[a-z]").IsMatch(password))
 			{
 				errors.Add("no lowercase letters");
 			}
-
 			if (!new Regex(@"[A-Z]").IsMatch(password))
 			{
 				errors.Add("no uppercase letters");
 			}
-
 			if (!new Regex(@"[0-9]").IsMatch(password))
 			{
 				errors.Add("no numbers");
 			}
-
 			if (errors.Count > 0)
 			{
 				return new ValidationResult(GetErrorMessage(errors));
