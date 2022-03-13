@@ -23,7 +23,7 @@ public class UserService : IUserService
 
 	public async Task<User?> GetUserByEmail(string email)
 	{
-		return await _applicationContext.Users.SingleAsync(u => u.Email == email);
+		return await _applicationContext.Users.FirstOrDefaultAsync(u => u.Email == email);
 	}
 
 	public async Task<User?> GetUserFromClaims(ClaimsPrincipal claims)
