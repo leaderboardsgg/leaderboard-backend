@@ -1,15 +1,9 @@
-using System.ComponentModel.DataAnnotations;
+namespace LeaderboardBackend.Controllers.Requests;
 
-namespace LeaderboardBackend.Controllers.Requests
+public record RegisterRequest
 {
-	public class RegisterRequest
-	{
-		public string Username { get; set; } = null!;
-
-		public string Email { get; set; } = null!;
-
-		public string Password { get; set; } = null!;
-
-		public string PasswordConfirm { get; set; } = null!;
-	}
+	public string Username { get; set; } = null!;
+	public string Email { get; set; } = null!;
+	public string Password { get; set; } = null!;
+	public string PasswordConfirm { get; set; } = null!;
 }

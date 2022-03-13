@@ -1,11 +1,11 @@
-using NUnit.Framework;
-using LeaderboardBackend.Services;
 using LeaderboardBackend.Models;
+using LeaderboardBackend.Services;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Text;
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
+using NUnit.Framework;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 
 namespace LeaderboardBackend.Test.Services;
 
@@ -16,7 +16,6 @@ public class AuthServiceTests
 	{
 		string key = "testkeythatsatisfiesthecharacterminimum";
 		string issuer = "leaderboards.gg";
-
 		string configJson = string.Format(@"
 		{{
 			""Jwt"": {{
@@ -25,12 +24,11 @@ public class AuthServiceTests
 			}}
 		}}
 		", key, issuer);
-		IConfiguration config = ConfigurationMockBuilder.BuildConfigurationFromJson(
-			configJson
-		);
-		var authService = new AuthService(config);
 
-		User user = new User
+		IConfiguration config = ConfigurationMockBuilder.BuildConfigurationFromJson(configJson);
+		AuthService authService = new(config);
+
+		User user = new()
 		{
 			Id = Guid.NewGuid(),
 			Username = "RageCage",
@@ -38,14 +36,14 @@ public class AuthServiceTests
 		};
 
 		string token = authService.GenerateJSONWebToken(user);
+		JwtSecurityTokenHandler jwtHandler = new();
+		SymmetricSecurityKey signingKey = new(Encoding.UTF8.GetBytes(key));
 
-		var jwtHandler = new JwtSecurityTokenHandler();
-		var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
 		Assert.DoesNotThrow(() =>
 		{
 			jwtHandler.ValidateToken(
 				token,
-				new TokenValidationParameters
+				new()
 				{
 					IssuerSigningKey = signingKey,
 					ValidAudience = issuer,
