@@ -1,25 +1,92 @@
+using System;
 using NUnit.Framework;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Models;
 using Microsoft.Extensions.Configuration;
-using Microsoft.EntityFrameworkCore;
-using Moq;
 using System.Threading.Tasks;
+using LeaderboardBackend.Test.Helpers;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.EntityFrameworkCore;
 
 namespace LeaderboardBackend.Test.Services;
 
 public class UserServiceTests
 {
-	private static IConfiguration _mockConfig = null!;
-	private static Mock<UserContext> _mockContext = null!;
-	private static Mock<DbSet<User>> _mockDbSet = null!;
+	private static IConfiguration _config = null!;
+	private static ApplicationContext _context = null!;
+	private static UserService _userService = null!;
 	private static User _user = new User {
-		Id = 1,
+		Id = new Guid(),
 		Username = "RageCage",
-		Email = "x@y.com"
+		Email = "x@y.com",
+		Password = "beepboop!"
 	};
 
-	private static IConfiguration GetMockConfig()
+	[SetUp]
+	public void Setup()
+	{
+		_config = BuildMockConfig();
+		_context = ApplicationContextFactory.CreateNewContext();
+		_userService = new UserService(_context, _config);
+	}
+
+	[Test]
+	public async Task CreateUser()
+	{
+		await _userService.CreateUser(_user);
+
+		User? foundUser = _context.Users.Find(_user.Id);
+		Assert.NotNull(foundUser);
+		Assert.AreEqual(foundUser, _user);
+	}
+
+	[Test]
+	public async Task GetUser_GetsAnExistingUser()
+	{
+		await _userService.CreateUser(_user);
+
+		User? getUser = await _userService.GetUser(_user.Id);
+		Assert.NotNull(getUser);
+		Assert.AreEqual(getUser, _user);
+	}
+
+	[Test]
+	public async Task GetUser_ReturnsNullForNonExistingID()
+	{
+		User? result = await _userService.GetUser(new Guid());
+		Assert.Null(result);
+	}
+
+	[Test]
+	public async Task GetUserByEmail_ReturnsUserIfEmailExists()
+	{
+		await _userService.CreateUser(_user);
+		
+		User? getUser = await _userService.GetUserByEmail(_user.Email!);
+		Assert.NotNull(getUser);
+		Assert.AreEqual(_user, getUser);
+	}
+
+	[Test]
+	public async Task GetUserByEmail_ReturnsNullForNonExistingEmail()
+	{
+		User? result = await _userService.GetUserByEmail(Generators.RandomEmailAddress());
+		Assert.Null(result);
+	}
+
+	[Test]
+	public async Task GetUserFromClaims_ShouldGetUser()
+	{
+		await _userService.CreateUser(_user);
+		ClaimsPrincipal principal = DefaultClaimsPrincipal();
+		
+		User? userFromClaims = await _userService.GetUserFromClaims(principal);
+		Assert.NotNull(userFromClaims);
+		Assert.AreEqual(_user, userFromClaims);
+	}
+
+	private static IConfiguration BuildMockConfig()
 	{
 		string key = "testkeythatsatisfiesthecharacterminimum";
 		string issuer = "leaderboards.gg";
@@ -38,56 +105,12 @@ public class UserServiceTests
 		);
 	}
 
-	[SetUp]
-	public void Setup()
+	private static ClaimsPrincipal DefaultClaimsPrincipal()
 	{
-		_mockConfig = GetMockConfig();
-		_mockDbSet = new Mock<DbSet<User>>();
-		var options = new DbContextOptions<UserContext>();
-		_mockContext = new Mock<UserContext>(options);
-		_mockContext.Setup(m => m.Users).Returns(_mockDbSet.Object);
+		Claim[] claims = new Claim[] {
+			new Claim(JwtRegisteredClaimNames.Email, _user.Email!), 
+			new Claim(JwtRegisteredClaimNames.Sub, _user.Id.ToString()),
+		};
+		return new ClaimsPrincipal(new ClaimsIdentity(claims));
 	}
-
-	[Test]
-	public async Task CreateUser()
-	{
-		var service = new UserService(_mockContext.Object, _mockConfig);
-
-		await service.CreateUser(_user);
-
-		_mockDbSet.Verify(m => m.Add(It.IsAny<User>()), Times.Once());
-		_mockContext.Verify(m => m.SaveChangesAsync(default), Times.Once());
-	}
-
-	[Test]
-	public async Task GetUser_GetsAnExistingUser()
-	{
-		_mockDbSet.Setup(m => m.FindAsync(It.IsAny<long>()).Result).Returns(_user);
-
-		var service = new UserService(_mockContext.Object, _mockConfig);
-		var result = await service.GetUser(1);
-
-		Assert.NotNull(result);
-		Assert.AreEqual(1, result?.Id);
-		Assert.AreEqual("RageCage", result?.Username);
-		_mockDbSet.Verify(m => m.FindAsync(It.IsAny<long>()), Times.Once());
-	}
-
-	[Test]
-	public async Task GetUser_ReturnsNullForNonExistingID()
-	{
-		_mockDbSet.Setup(m => m.FindAsync(1).Result).Returns(_user);
-
-		var service = new UserService(_mockContext.Object, _mockConfig);
-		var result = await service.GetUser(2);
-
-		Assert.Null(result);
-		_mockDbSet.Verify(m => m.FindAsync((long)2), Times.Once());
-	}
-
-	// GetUserByEmail and GetUserFromClaims can't be unit tested with the current
-	// strategy, as Moq is unable to mock extension methods (SingleAsync,
-	// FindFirstValue).
-	// Tests will need to be run against an actual database, by which we should remove
-	// mocking in this file.
 }

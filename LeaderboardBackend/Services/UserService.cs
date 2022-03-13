@@ -23,7 +23,7 @@ namespace LeaderboardBackend.Services
 
 		public async Task<User?> GetUserByEmail(string email)
 		{
-			User? user = await _applicationContext.Users.SingleAsync(u => u.Email == email);
+			User? user = await _applicationContext.Users.FirstOrDefaultAsync(u => u.Email == email);
 			return user;
 		}
 
