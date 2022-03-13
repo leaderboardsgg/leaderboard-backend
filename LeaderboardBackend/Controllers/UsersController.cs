@@ -21,6 +21,8 @@ public class UsersController : ControllerBase
 	}
 
 	[HttpGet("{id}")]
+	[ApiConventionMethod(typeof(Conventions),
+						 nameof(Conventions.Get))]
 	public async Task<ActionResult<User>> GetUser(Guid id)
 	{
 		User? user = await _userService.GetUser(id);

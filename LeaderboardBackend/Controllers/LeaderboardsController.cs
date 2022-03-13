@@ -17,6 +17,8 @@ public class LeaderboardsController : ControllerBase
 	}
 
 	[HttpGet("{id}")]
+	[ApiConventionMethod(typeof(Conventions),
+						 nameof(Conventions.Get))]
 	public async Task<ActionResult<Leaderboard>> GetLeaderboard(ulong id)
 	{
 		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(id);
@@ -36,6 +38,8 @@ public class LeaderboardsController : ControllerBase
 
 	// FIXME: Only allow admins to call this route
 	[HttpPost]
+	[ApiConventionMethod(typeof(Conventions),
+						 nameof(Conventions.Create))]
 	public async Task<ActionResult<Leaderboard>> CreateLeaderboard([FromBody] CreateLeaderboardRequest body)
 	{
 		Leaderboard leaderboard = new()
