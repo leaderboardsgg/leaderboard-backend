@@ -44,11 +44,13 @@ public class UsersController : ControllerBase
 
 		if (await _userService.GetUserByEmail(body.Email) != null)
 		{
+			// FIXME: Return 404 here. Don't return a 409.
 			return Conflict("A user already exists with this email.");
 		}
 
 		if (await _userService.GetUserByName(body.Username) != null)
 		{
+			// FIXME: Return 404 here. Don't return a 409.
 			return Conflict("A user already exists with this name.");
 		}
 

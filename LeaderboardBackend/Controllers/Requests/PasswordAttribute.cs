@@ -13,10 +13,10 @@ namespace LeaderboardBackend.Controllers.Requests
 
 		protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
 		{
-			var user = (LoginRequest)validationContext.ObjectInstance;
-			var password = user.Password!;
+			LoginRequest user = (LoginRequest)validationContext.ObjectInstance;
+			string password = user.Password;
 
-			var errors = new List<string>();
+			List<string> errors = new();
 
 			if (password.Length < MIN)
 			{
