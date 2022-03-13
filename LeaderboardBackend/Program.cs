@@ -43,7 +43,7 @@ builder.Services.AddSwaggerGen(c =>
 	c.SwaggerDoc("v1", new() { Title = "LeaderboardBackend", Version = "v1" });
 
 	// Enable adding XML comments to controllers to populate Swagger UI
-	var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+	string xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
 	c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
