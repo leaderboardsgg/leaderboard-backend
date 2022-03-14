@@ -30,6 +30,42 @@ internal class RegisterTests
 		Assert.AreEqual(1, results.Count);
 	}
 
+	[Test]
+	public static void Invalid_PasswordTooLong()
+	{
+		RegisterRequest model = GetValidModel();
+		model.Password = "L000000000000000000000000000000000000000000000000000000000000000000000000000000ng";
+		model.PasswordConfirm = "L000000000000000000000000000000000000000000000000000000000000000000000000000000ng";
+		List<ValidationResult> results = new();
+		bool valid = Validator.TryValidateObject(model, new ValidationContext(model), results, true);
+		Assert.False(valid);
+		Assert.AreEqual(1, results.Count);
+	}
+
+	[Test]
+	public static void Invalid_PasswordMismatch()
+	{
+		RegisterRequest model = GetValidModel();
+		model.Password = "P4ssword";
+		model.PasswordConfirm = "M1smatch";
+		List<ValidationResult> results = new();
+		bool valid = Validator.TryValidateObject(model, new ValidationContext(model), results, true);
+		Assert.False(valid);
+		Assert.AreEqual(1, results.Count);
+	}
+
+	[Test]
+	public static void Invalid_PasswordMissingContent()
+	{
+		RegisterRequest model = GetValidModel();
+		model.Password = "password";
+		model.PasswordConfirm = "password";
+		List<ValidationResult> results = new();
+		bool valid = Validator.TryValidateObject(model, new ValidationContext(model), results, true);
+		Assert.False(valid);
+		Assert.AreEqual(1, results.Count);
+	}
+
 	private static RegisterRequest GetValidModel()
 	{
 		return new RegisterRequest()
