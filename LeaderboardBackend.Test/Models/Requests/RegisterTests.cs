@@ -12,10 +12,7 @@ internal class RegisterTests
 	public static void Valid()
 	{
 		RegisterRequest model = GetValidModel();
-		List<ValidationResult> results = new();
-		bool valid = Validator.TryValidateObject(model, new ValidationContext(model), results, true);
-		Assert.True(valid);
-		Assert.AreEqual(0, results.Count);
+		ValidationTest(model);
 	}
 
 	[Test]
@@ -24,10 +21,7 @@ internal class RegisterTests
 		RegisterRequest model = GetValidModel();
 		model.Password = "sH0rt";
 		model.PasswordConfirm = "sH0rt";
-		List<ValidationResult> results = new();
-		bool valid = Validator.TryValidateObject(model, new ValidationContext(model), results, true);
-		Assert.False(valid);
-		Assert.AreEqual(1, results.Count);
+		ValidationTest(model, expectedErrors: 1);
 	}
 
 	[Test]
@@ -36,10 +30,7 @@ internal class RegisterTests
 		RegisterRequest model = GetValidModel();
 		model.Password = "L000000000000000000000000000000000000000000000000000000000000000000000000000000ng";
 		model.PasswordConfirm = "L000000000000000000000000000000000000000000000000000000000000000000000000000000ng";
-		List<ValidationResult> results = new();
-		bool valid = Validator.TryValidateObject(model, new ValidationContext(model), results, true);
-		Assert.False(valid);
-		Assert.AreEqual(1, results.Count);
+		ValidationTest(model, expectedErrors: 1);
 	}
 
 	[Test]
@@ -48,10 +39,7 @@ internal class RegisterTests
 		RegisterRequest model = GetValidModel();
 		model.Password = "P4ssword";
 		model.PasswordConfirm = "M1smatch";
-		List<ValidationResult> results = new();
-		bool valid = Validator.TryValidateObject(model, new ValidationContext(model), results, true);
-		Assert.False(valid);
-		Assert.AreEqual(1, results.Count);
+		ValidationTest(model, expectedErrors: 1);
 	}
 
 	[Test]
@@ -60,10 +48,20 @@ internal class RegisterTests
 		RegisterRequest model = GetValidModel();
 		model.Password = "password";
 		model.PasswordConfirm = "password";
-		List<ValidationResult> results = new();
-		bool valid = Validator.TryValidateObject(model, new ValidationContext(model), results, true);
-		Assert.False(valid);
-		Assert.AreEqual(1, results.Count);
+		ValidationTest(model, expectedErrors: 1);
+	}
+
+	[Test]
+	public static void Invalid_EveryPropertyWrong()
+	{
+		RegisterRequest terribleModel = new()
+		{
+			Username = "_)(*",
+			Email = "notanemail",
+			Password = "password",
+			PasswordConfirm = "differentpassword",
+		};
+		ValidationTest(terribleModel, expectedErrors: 4);
 	}
 
 	private static RegisterRequest GetValidModel()
@@ -75,5 +73,13 @@ internal class RegisterTests
 			Password = "valid_passW0rd",
 			PasswordConfirm = "valid_passW0rd"
 		};
+	}
+
+	private static void ValidationTest(RegisterRequest model, int expectedErrors = 0)
+	{
+		List<ValidationResult> results = new();
+		bool valid = Validator.TryValidateObject(model, new ValidationContext(model), results, true);
+		Assert.AreEqual(valid, expectedErrors == 0);
+		Assert.AreEqual(expectedErrors, results.Count);
 	}
 }
