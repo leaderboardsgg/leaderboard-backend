@@ -301,7 +301,7 @@ node_modules/
 *.dsw
 *.dsp
 
-# Visual Studio 6 technical files 
+# Visual Studio 6 technical files
 *.ncb
 *.aps
 
@@ -378,9 +378,7 @@ FodyWeavers.xsd
 
 # VS Code files for those working on multiple tools
 .vscode/*
-.vscode/settings.json
-.vscode/tasks.json
-.vscode/launch.json
+!.vscode/tasks.json
 !.vscode/extensions.json
 *.code-workspace
 

@@ -36,9 +36,22 @@ public class UsersController : ControllerBase
 	[HttpPost("register")]
 	public async Task<ActionResult<User>> Register([FromBody] RegisterRequest body)
 	{
+		// This shouldn't hit normally, since we have the CompareAttribute in Register.cs
 		if (body.Password != body.PasswordConfirm)
 		{
 			return BadRequest();
+		}
+
+		if (await _userService.GetUserByEmail(body.Email) != null)
+		{
+			// FIXME: Return 404 here. Don't return a 409.
+			return Conflict("A user already exists with this email.");
+		}
+
+		if (await _userService.GetUserByName(body.Username) != null)
+		{
+			// FIXME: Return 404 here. Don't return a 409.
+			return Conflict("A user already exists with this name.");
 		}
 
 		User newUser = new()

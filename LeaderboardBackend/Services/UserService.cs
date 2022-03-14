@@ -26,6 +26,13 @@ public class UserService : IUserService
 		return await _applicationContext.Users.FirstOrDefaultAsync(u => u.Email == email);
 	}
 
+	public async Task<User?> GetUserByName(string name)
+	{
+		// We save a username with casing, but match without.
+		// Effectively you can't have two separate users named e.g. "cool" and "cOoL".
+		return await _applicationContext.Users.SingleOrDefaultAsync(u => u.Username != null && u.Username.ToLower() == name.ToLower());
+	}
+
 	public async Task<User?> GetUserFromClaims(ClaimsPrincipal claims)
 	{
 		if (!claims.HasClaim(c => c.Type == JwtRegisteredClaimNames.Email))
