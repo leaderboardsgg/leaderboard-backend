@@ -20,8 +20,8 @@ public class UsersController : ControllerBase
 		_authService = authService;
 	}
 
-	/// <summary>Gets a user.</summary>
-	/// <param name="id">The user's ID. It must be a GUID.</param>
+	/// <summary>Gets a User.</summary>
+	/// <param name="id">The User's ID. It must be a GUID.</param>
 	/// <response code="200">The User with the provided ID.</response>
 	/// <response code="404">If no User is found with the provided ID.</response>
 	[HttpGet("{id}")]
@@ -42,8 +42,12 @@ public class UsersController : ControllerBase
 	/// <param name="body">A RegisterRequest instance.</param>
 	/// <response code="201">The created User object.</response>
 	/// <response code="400">If the passwords don't match.</response>
+	/// <response code="409">If login details can't be found.</response>
 	[AllowAnonymous]
 	[HttpPost("register")]
+	[ProducesResponseType(StatusCodes.Status201Created)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status409Conflict)]
 	public async Task<ActionResult<User>> Register([FromBody] RegisterRequest body)
 	{
 		// This shouldn't hit normally, since we have the CompareAttribute in Register.cs
@@ -82,6 +86,9 @@ public class UsersController : ControllerBase
 	/// <response code="404">If a User can't be found.</response>
 	[AllowAnonymous]
 	[HttpPost("login")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public async Task<ActionResult<User>> Login([FromBody] LoginRequest body)
 	{
 		User? user = await _userService.GetUserByEmail(body.Email);
@@ -105,9 +112,11 @@ public class UsersController : ControllerBase
 	/// <p>I.e. <code>{ 'Authorization': 'Bearer JWT' }</code></p>
 	/// </remarks>
 	/// <response code="200">Returns with the User's details.</response>
-	/// <response code="404">If a User can't be found.</response>
+	/// <response code="403">If an invalid JWT was passed in.</response>
 	[Authorize]
 	[HttpGet("me")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
 	public async Task<ActionResult<User>> Me()
 	{
 		return await _userService.GetUserFromClaims(HttpContext.User) is User user ? Ok(user) : Forbid();
