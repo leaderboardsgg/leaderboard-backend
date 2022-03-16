@@ -27,19 +27,19 @@ public class LeaderboardsController : ControllerBase
 			return NotFound();
 		}
 
-		return leaderboard;
+		return Ok(leaderboard);
 	}
 
 	[HttpGet]
 	public async Task<ActionResult<List<Leaderboard>>> GetLeaderboards([FromQuery] ulong[] ids)
 	{
-		return await _leaderboardService.GetLeaderboards(ids);
+		return Ok(await _leaderboardService.GetLeaderboards(ids));
 	}
 
 	// FIXME: Only allow admins to call this route
 	[HttpPost]
 	[ApiConventionMethod(typeof(Conventions),
-						 nameof(Conventions.Create))]
+						 nameof(Conventions.Post))]
 	public async Task<ActionResult<Leaderboard>> CreateLeaderboard([FromBody] CreateLeaderboardRequest body)
 	{
 		Leaderboard leaderboard = new()
