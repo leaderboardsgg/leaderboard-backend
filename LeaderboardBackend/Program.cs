@@ -3,6 +3,7 @@ using dotenv.net.Utilities;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -15,7 +16,7 @@ using System.Reflection;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 DotEnv.Load(options: new DotEnvOptions(
-	ignoreExceptions: false, 
+	ignoreExceptions: false,
 	envFilePaths: new[] { builder.Configuration["EnvPath"] },
 	trimValues: true // Trims whitespace from values
 ));
@@ -31,7 +32,12 @@ builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Add controllers to the container.
-builder.Services.AddControllers().AddJsonOptions(opt =>
+builder.Services.AddControllers(opt =>
+{
+	// Enforces JSON output. Also fixes Open API docs.
+	opt.OutputFormatters.RemoveType<StringOutputFormatter>();
+}
+).AddJsonOptions(opt =>
 {
 	opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
@@ -100,7 +106,7 @@ static string GetConnectionString(WebApplicationBuilder builder)
 		!EnvReader.TryGetStringValue("POSTGRES_USER", out string user) ||
 		!EnvReader.TryGetStringValue("POSTGRES_PASSWORD", out string password) ||
 		!EnvReader.TryGetStringValue("POSTGRES_DB", out string db) ||
-		!EnvReader.TryGetIntValue(portVar, out int port) 
+		!EnvReader.TryGetIntValue(portVar, out int port)
 	)
 	{
 		throw new Exception("Database env var(s) not set. Is there a .env?");
@@ -109,7 +115,7 @@ static string GetConnectionString(WebApplicationBuilder builder)
 }
 
 // Configure a Database context, configuring based on the USE_IN_MEMORY_DATABASE environment variable.
-static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb) where T : DbContext 
+static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb) where T : DbContext
 {
 	builder.Services.AddDbContext<T>(
 		opt => {
