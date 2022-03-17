@@ -36,6 +36,7 @@ public class UsersController : ControllerBase
 			return NotFound();
 		}
 
+		// FIXME: Return DTO that excludes email
 		return Ok(user);
 	}
 
@@ -59,13 +60,15 @@ public class UsersController : ControllerBase
 
 		if (await _userService.GetUserByEmail(body.Email) != null)
 		{
-			// FIXME: Return 404 here. Don't return a 409.
+			// FIXME: Do a redirect to the login page.
+			// ref: https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/actions?view=aspnetcore-6.0#1-methods-resulting-in-an-empty-response-body
 			return Conflict("A user already exists with this email.");
 		}
 
 		if (await _userService.GetUserByName(body.Username) != null)
 		{
-			// FIXME: Return 404 here. Don't return a 409.
+			// FIXME: Do a redirect to the login page.
+			// ref: https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/actions?view=aspnetcore-6.0#1-methods-resulting-in-an-empty-response-body
 			return Conflict("A user already exists with this name.");
 		}
 
