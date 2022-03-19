@@ -1,4 +1,4 @@
-using LeaderboardBackend.Models;
+using LeaderboardBackend.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;

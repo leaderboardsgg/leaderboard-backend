@@ -1,5 +1,7 @@
+using LeaderboardBackend.Models.Annotations;
 using System.ComponentModel.DataAnnotations;
-namespace LeaderboardBackend.Controllers.Requests;
+
+namespace LeaderboardBackend.Models.Requests.Users;
 
 public record RegisterRequest 
 {

@@ -1,5 +1,5 @@
-using LeaderboardBackend.Controllers.Requests;
-using LeaderboardBackend.Models;
+using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Requests.Leaderboards;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Mvc;
 

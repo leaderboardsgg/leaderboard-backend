@@ -1,5 +1,5 @@
 using LeaderboardBackend.Controllers;
-using LeaderboardBackend.Models;
+using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
