@@ -9,17 +9,19 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json;
 
+#region WebApplicationBuilder
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 DotEnv.Load(options: new DotEnvOptions(
-	ignoreExceptions: false, // Notifies of exceptions during loading of .env
-	envFilePaths: new[] { "../.env" },
+	ignoreExceptions: false, 
+	envFilePaths: new[] { builder.Configuration["EnvPath"] },
 	trimValues: true // Trims whitespace from values
 ));
 
+// Configure database context
 bool exists = EnvReader.TryGetBooleanValue("USE_IN_MEMORY_DB", out bool inMemoryDb);
 bool useInMemoryDb = exists && inMemoryDb;
-
 ConfigureDbContext<ApplicationContext>(builder, useInMemoryDb);
 
 // Add services to the container.
@@ -58,6 +60,10 @@ builder.Services
 		};
 	});
 
+#endregion
+
+#region WebApplication
+
 WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -76,30 +82,49 @@ app.MapControllers();
 
 app.Run();
 
+#endregion
 
+#region Helpers
 
 // Add application's Database Context to the container.
-static string GetConnectionString()
+static string GetConnectionString(WebApplicationBuilder builder)
 {
+	string portVar = builder.Configuration["Db:PortVar"];
 	if (
-		!EnvReader.TryGetStringValue("POSTGRES_HOST", out var host) ||
-		!EnvReader.TryGetIntValue("POSTGRES_PORT", out var port) ||
-		!EnvReader.TryGetStringValue("POSTGRES_USER", out var user) ||
-		!EnvReader.TryGetStringValue("POSTGRES_PASSWORD", out var password) ||
-		!EnvReader.TryGetStringValue("POSTGRES_DB", out var db)
+		!EnvReader.TryGetStringValue("POSTGRES_HOST", out string host) ||
+		!EnvReader.TryGetStringValue("POSTGRES_USER", out string user) ||
+		!EnvReader.TryGetStringValue("POSTGRES_PASSWORD", out string password) ||
+		!EnvReader.TryGetStringValue("POSTGRES_DB", out string db) ||
+		!EnvReader.TryGetIntValue(portVar, out int port) 
 	)
 	{
 		throw new Exception("Database env var(s) not set. Is there a .env?");
 	}
-
 	return $"Server={host};Port={port};User Id={user};Password={password};Database={db};Include Error Detail=true";
 }
 
-static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb) where T : DbContext
+// Configure a Database context, configuring based on the USE_IN_MEMORY_DATABASE environment variable.
+static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb) where T : DbContext 
 {
-	builder.Services.AddDbContext<T>(opt =>
-	{
-		if (inMemoryDb) opt.UseInMemoryDatabase("LeaderboardBackend");
-		else opt.UseNpgsql(GetConnectionString()).UseSnakeCaseNamingConvention();
-	});
+	builder.Services.AddDbContext<T>(
+		opt => {
+			if (inMemoryDb)
+			{
+				opt.UseInMemoryDatabase("LeaderboardBackend");
+			} else
+			{
+				opt.UseNpgsql(
+					GetConnectionString(builder)
+				).UseSnakeCaseNamingConvention();
+			}
+		}
+	);
 }
+
+#endregion
+
+#region Accessible Program class
+
+public partial class Program { }
+
+#endregion
