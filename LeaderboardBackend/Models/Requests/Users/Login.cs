@@ -13,3 +13,9 @@ public record LoginRequest
 	[Password]
 	public string Password { get; set; } = null!;
 }
+
+public record LoginResponse
+{
+	[Required]
+	public string Token { get; set; } = null!;
+}

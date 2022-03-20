@@ -30,4 +30,17 @@ public class User
 
 	[JsonIgnore] 
 	public List<Modship>? Modships { get; set; }
+
+	public override bool Equals(object? obj)
+	{
+		return obj is User user &&
+			   Id.Equals(user.Id) &&
+			   Username == user.Username &&
+			   Email == user.Email;
+	}
+
+	public override int GetHashCode()
+	{
+		return HashCode.Combine(Id, Username, Email);
+	}
 }

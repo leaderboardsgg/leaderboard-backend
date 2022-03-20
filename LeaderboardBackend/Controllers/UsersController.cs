@@ -81,13 +81,14 @@ public class UsersController : ControllerBase
 		}
 
 		string token = _authService.GenerateJSONWebToken(user);
-		return Ok(new { token });
+		return Ok(new LoginResponse{ Token = token });
 	}
 
 	[Authorize]
 	[HttpGet("me")]
 	public async Task<ActionResult<User>> Me()
 	{
-		return await _userService.GetUserFromClaims(HttpContext.User) is User user ? Ok(user) : Forbid();
+		User? user = await _userService.GetUserFromClaims(HttpContext.User);
+		return user != null ? Ok(user) : Forbid();
 	}
 }
