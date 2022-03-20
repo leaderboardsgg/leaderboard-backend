@@ -20,14 +20,14 @@ public class Ban
 	public Guid? BanningUserId { get; set; }
 
 	[JsonIgnore] 
-	public User BanningUser { get; set; } = null!;
+	public User? BanningUser { get; set; }
 
 	/// <summary>ID of User who received the Ban.</summary>
 	[Required] 
 	public Guid BannedUserId { get; set; }
 
 	[JsonIgnore] 
-	public User BannedUser { get; set; } = null!;
+	public User? BannedUser { get; set; }
 
 	/// <summary>
 	/// ID of Leaderboard this Ban belongs to. If <code>null</code>, then this Ban is site-wide.

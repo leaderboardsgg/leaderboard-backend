@@ -13,12 +13,12 @@ public class Modship
 	public Guid UserId { get; set; }
 
 	[JsonIgnore] 
-	public User User { get; set; } = null!;
+	public User? User { get; set; } = null!;
 
 	/// <summary>ID of the Leaderboard the User is a mod for.</summary>
 	[Required] 
 	public long LeaderboardId { get; set; }
 
 	[JsonIgnore] 
-	public Leaderboard Leaderboard { get; set; } = null!;
+	public Leaderboard? Leaderboard { get; set; } = null!;
 }
