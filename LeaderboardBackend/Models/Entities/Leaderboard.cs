@@ -23,4 +23,17 @@ public class Leaderboard
 
 	[JsonIgnore] 
 	public List<Modship>? Modships { get; set; }
+
+	public override bool Equals(object? obj)
+	{
+		return obj is Leaderboard leaderboard &&
+			   Id == leaderboard.Id &&
+			   Name == leaderboard.Name &&
+			   Slug == leaderboard.Slug;
+	}
+
+	public override int GetHashCode()
+	{
+		return HashCode.Combine(Id, Name, Slug);
+	}
 }

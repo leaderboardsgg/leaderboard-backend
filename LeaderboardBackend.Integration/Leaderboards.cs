@@ -71,7 +71,7 @@ internal class Leaderboards
 			createdLeaderboards.Add(await HttpHelpers.ReadFromResponseBody<Leaderboard>(createResponse, JsonSerializerOptions));
 		}
 
-		IEnumerable<ulong> leaderboardIds = createdLeaderboards.Select(l => l.Id).ToList();
+		IEnumerable<long> leaderboardIds = createdLeaderboards.Select(l => l.Id).ToList();
 		string leaderboardIdQuery = HttpHelpers.ListToQueryString(leaderboardIds, "ids");
 		HttpResponseMessage getResponse = await ApiClient.GetAsync($"api/leaderboards?{leaderboardIdQuery}");
 		List<Leaderboard> leaderboards = await HttpHelpers.ReadFromResponseBody<List<Leaderboard>>(getResponse, JsonSerializerOptions);

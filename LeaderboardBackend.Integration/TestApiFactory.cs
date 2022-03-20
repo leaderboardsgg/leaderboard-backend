@@ -22,7 +22,13 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 			using ServiceProvider scope = services.BuildServiceProvider();
 			ApplicationContext dbContext = scope.GetRequiredService<ApplicationContext>();
 			dbContext.Database.EnsureDeleted();
-			dbContext.Database.Migrate();
+			if (dbContext.Database.IsInMemory())
+			{
+				dbContext.Database.EnsureCreated();
+			} else
+			{
+				dbContext.Database.Migrate();
+			}
 		});
 	}
 }
