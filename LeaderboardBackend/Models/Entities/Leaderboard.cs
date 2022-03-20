@@ -5,7 +5,7 @@ namespace LeaderboardBackend.Models.Entities;
 
 public class Leaderboard
 {
-	public ulong Id { get; set; }
+	public long Id { get; set; }
 
 	[Required] 
 	public string Name { get; set; } = null!;

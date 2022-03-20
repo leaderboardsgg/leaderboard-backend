@@ -17,7 +17,7 @@ public class LeaderboardsController : ControllerBase
 	}
 
 	[HttpGet("{id}")]
-	public async Task<ActionResult<Leaderboard>> GetLeaderboard(ulong id)
+	public async Task<ActionResult<Leaderboard>> GetLeaderboard(long id)
 	{
 		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(id);
 		if (leaderboard == null)
@@ -29,7 +29,7 @@ public class LeaderboardsController : ControllerBase
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<List<Leaderboard>>> GetLeaderboards([FromQuery] ulong[] ids)
+	public async Task<ActionResult<List<Leaderboard>>> GetLeaderboards([FromQuery] long[] ids)
 	{
 		return await _leaderboardService.GetLeaderboards(ids);
 	}

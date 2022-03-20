@@ -14,7 +14,8 @@ namespace LeaderboardBackend.Migrations
                 name: "leaderboards",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     name = table.Column<string>(type: "text", nullable: false),
                     slug = table.Column<string>(type: "text", nullable: false),
                     rules = table.Column<string>(type: "text", nullable: true)
@@ -56,13 +57,14 @@ namespace LeaderboardBackend.Migrations
                 name: "categories",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     name = table.Column<string>(type: "text", nullable: false),
                     slug = table.Column<string>(type: "text", nullable: false),
                     rules = table.Column<string>(type: "text", nullable: true),
                     players_min = table.Column<int>(type: "integer", nullable: false),
                     players_max = table.Column<int>(type: "integer", nullable: false),
-                    leaderboard_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
+                    leaderboard_id = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -79,12 +81,13 @@ namespace LeaderboardBackend.Migrations
                 name: "bans",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     reason = table.Column<string>(type: "text", nullable: false),
                     time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    banning_user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    banning_user_id = table.Column<Guid>(type: "uuid", nullable: true),
                     banned_user_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    leaderboard_id = table.Column<decimal>(type: "numeric(20,0)", nullable: true)
+                    leaderboard_id = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -104,8 +107,7 @@ namespace LeaderboardBackend.Migrations
                         name: "fk_bans_users_banning_user_id",
                         column: x => x.banning_user_id,
                         principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "id");
                 });
 
             migrationBuilder.CreateTable(
@@ -141,9 +143,10 @@ namespace LeaderboardBackend.Migrations
                 name: "modships",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     user_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    leaderboard_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
+                    leaderboard_id = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {

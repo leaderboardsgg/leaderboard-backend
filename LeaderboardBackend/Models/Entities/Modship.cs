@@ -6,7 +6,7 @@ namespace LeaderboardBackend.Models.Entities;
 public class Modship
 {
 	/// <summary>Generated on creation.</summary>
-	public ulong Id { get; set; }
+	public long Id { get; set; }
 
 	/// <summary>The mod's ID.</summary>
 	[Required] 
@@ -17,7 +17,7 @@ public class Modship
 
 	/// <summary>ID of the Leaderboard the User is a mod for.</summary>
 	[Required] 
-	public ulong LeaderboardId { get; set; }
+	public long LeaderboardId { get; set; }
 
 	[JsonIgnore] 
 	public Leaderboard Leaderboard { get; set; } = null!;

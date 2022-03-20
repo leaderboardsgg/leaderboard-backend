@@ -14,13 +14,13 @@ public class LeaderboardService : ILeaderboardService
 		_config = config;
 	}
 
-	public async Task<Leaderboard?> GetLeaderboard(ulong id)
+	public async Task<Leaderboard?> GetLeaderboard(long id)
 	{
 		return await _applicationContext.Leaderboards.FindAsync(id);
 	}
 
 	// FIXME: Paginate this
-	public async Task<List<Leaderboard>> GetLeaderboards(ulong[]? ids = null)
+	public async Task<List<Leaderboard>> GetLeaderboards(long[]? ids = null)
 	{
 		if (ids == null)
 		{

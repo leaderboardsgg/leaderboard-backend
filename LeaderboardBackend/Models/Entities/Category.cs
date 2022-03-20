@@ -5,7 +5,7 @@ namespace LeaderboardBackend.Models.Entities;
 
 public class Category
 {
-	public ulong Id { get; set; }
+	public long Id { get; set; }
 
 	[Required] 
 	public string Name { get; set; } = null!;
@@ -22,7 +22,7 @@ public class Category
 	public int PlayersMax { get; set; }
 
 	[Required] 
-	public ulong LeaderboardId { get; set; }
+	public long LeaderboardId { get; set; }
 
 	[JsonIgnore] 
 	public Leaderboard? Leaderboard { get; set; }

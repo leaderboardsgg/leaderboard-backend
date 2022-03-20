@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LeaderboardBackend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20220319183921_InitMigration")]
+    [Migration("20220320141329_InitMigration")]
     partial class InitMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,21 +26,23 @@ namespace LeaderboardBackend.Migrations
 
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.Ban", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)")
+                        .HasColumnType("bigint")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<Guid>("BannedUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("banned_user_id");
 
-                    b.Property<Guid>("BanningUserId")
+                    b.Property<Guid?>("BanningUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("banning_user_id");
 
-                    b.Property<decimal?>("LeaderboardId")
-                        .HasColumnType("numeric(20,0)")
+                    b.Property<long?>("LeaderboardId")
+                        .HasColumnType("bigint")
                         .HasColumnName("leaderboard_id");
 
                     b.Property<string>("Reason")
@@ -69,13 +71,15 @@ namespace LeaderboardBackend.Migrations
 
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.Category", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)")
+                        .HasColumnType("bigint")
                         .HasColumnName("id");
 
-                    b.Property<decimal>("LeaderboardId")
-                        .HasColumnType("numeric(20,0)")
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("LeaderboardId")
+                        .HasColumnType("bigint")
                         .HasColumnName("leaderboard_id");
 
                     b.Property<string>("Name")
@@ -153,10 +157,12 @@ namespace LeaderboardBackend.Migrations
 
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.Leaderboard", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)")
+                        .HasColumnType("bigint")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -180,13 +186,15 @@ namespace LeaderboardBackend.Migrations
 
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.Modship", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)")
+                        .HasColumnType("bigint")
                         .HasColumnName("id");
 
-                    b.Property<decimal>("LeaderboardId")
-                        .HasColumnType("numeric(20,0)")
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("LeaderboardId")
+                        .HasColumnType("bigint")
                         .HasColumnName("leaderboard_id");
 
                     b.Property<Guid>("UserId")
@@ -270,8 +278,6 @@ namespace LeaderboardBackend.Migrations
                     b.HasOne("LeaderboardBackend.Models.Entities.User", "BanningUser")
                         .WithMany("BansGiven")
                         .HasForeignKey("BanningUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("fk_bans_users_banning_user_id");
 
                     b.HasOne("LeaderboardBackend.Models.Entities.Leaderboard", "Leaderboard")
