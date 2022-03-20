@@ -1,4 +1,4 @@
-using LeaderboardBackend.Controllers.Requests;
+using LeaderboardBackend.Models.Requests.Users;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

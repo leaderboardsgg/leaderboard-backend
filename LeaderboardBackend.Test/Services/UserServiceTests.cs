@@ -1,7 +1,7 @@
 using System;
 using NUnit.Framework;
 using LeaderboardBackend.Services;
-using LeaderboardBackend.Models;
+using LeaderboardBackend.Models.Entities;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using LeaderboardBackend.Test.Helpers;
