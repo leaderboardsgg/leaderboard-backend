@@ -1,3 +1,4 @@
+using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests.Users;
 using LeaderboardBackend.Services;
@@ -20,6 +21,12 @@ public class UsersController : ControllerBase
 		_authService = authService;
 	}
 
+	/// <summary>Gets a User.</summary>
+	/// <param name="id">The User's ID. It must be a GUID.</param>
+	/// <response code="200">The User with the provided ID.</response>
+	/// <response code="404">If no User is found with the provided ID.</response>
+	[ApiConventionMethod(typeof(Conventions),
+						 nameof(Conventions.Get))]
 	[HttpGet("{id}")]
 	public async Task<ActionResult<User>> GetUser(Guid id)
 	{
@@ -32,6 +39,14 @@ public class UsersController : ControllerBase
 		return Ok(user);
 	}
 
+	/// <summary>Registers a new user.</summary>
+	/// <param name="body">A RegisterRequest instance.</param>
+	/// <response code="201">The created User object.</response>
+	/// <response code="400">If the passwords don't match.</response>
+	/// <response code="409">If login details can't be found.</response>
+	[ProducesResponseType(StatusCodes.Status201Created)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status409Conflict)]
 	[AllowAnonymous]
 	[HttpPost("register")]
 	public async Task<ActionResult<User>> Register([FromBody] RegisterRequest body)
@@ -65,6 +80,14 @@ public class UsersController : ControllerBase
 		return CreatedAtAction(nameof(GetUser), new { id = newUser.Id }, newUser);
 	}
 
+	/// <summary>Logs a new user in.</summary>
+	/// <param name="body">A LoginRequest instance.</param>
+	/// <response code="200">An object <code>{ token: JWT }</code></response>
+	/// <response code="401">If the wrong details were passed.</response>
+	/// <response code="404">If a User can't be found.</response>
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[AllowAnonymous]
 	[HttpPost("login")]
 	public async Task<ActionResult<User>> Login([FromBody] LoginRequest body)
@@ -84,6 +107,15 @@ public class UsersController : ControllerBase
 		return Ok(new LoginResponse{ Token = token });
 	}
 
+	/// <summary>Gets the currently logged-in user.</summary>
+	/// <remarks>
+	/// <p>You <em>must</em> call this with the 'Authorization' header, passing a valid JWT bearer token. </p>
+	/// <p>I.e. <code>{ 'Authorization': 'Bearer JWT' }</code></p>
+	/// </remarks>
+	/// <response code="200">Returns with the User's details.</response>
+	/// <response code="403">If an invalid JWT was passed in.</response>
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
 	[Authorize]
 	[HttpGet("me")]
 	public async Task<ActionResult<User>> Me()

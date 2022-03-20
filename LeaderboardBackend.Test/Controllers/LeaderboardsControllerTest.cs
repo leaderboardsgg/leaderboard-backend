@@ -13,6 +13,11 @@ public class LeaderboardTests
 {
 	private Mock<ILeaderboardService> _leaderboardServiceMock = null!;
 	private LeaderboardsController _controller = null!;
+	private static readonly Leaderboard _defaultLeaderboard = new()
+	{
+		Id = 1,
+		Name = "Tomb 'Tomb Raider (2013)' Raider (2013) (2013)",
+	};
 
 	[SetUp]
 	public void Setup()
@@ -41,12 +46,13 @@ public class LeaderboardTests
 	{
 		_leaderboardServiceMock
 			.Setup(x => x.GetLeaderboard(It.IsAny<long>()))
-			.Returns(Task.FromResult<Leaderboard?>(new Leaderboard { Id = 1 }));
+			.Returns(Task.FromResult<Leaderboard?>(_defaultLeaderboard));
 
 		ActionResult<Leaderboard> response = await _controller.GetLeaderboard(1);
+		Leaderboard? leaderboard = Helpers.GetValueFromObjectResult<OkObjectResult, Leaderboard>(response);
 
-		Assert.NotNull(response.Value);
-		Assert.AreEqual(1, response.Value?.Id);
+		Assert.NotNull(leaderboard);
+		Assert.AreEqual(1, leaderboard!.Id);
 	}
 
 	[Test]
