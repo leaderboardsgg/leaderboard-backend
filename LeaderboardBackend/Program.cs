@@ -3,9 +3,11 @@ using dotenv.net.Utilities;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 
@@ -14,7 +16,7 @@ using System.Text.Json;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 DotEnv.Load(options: new DotEnvOptions(
-	ignoreExceptions: false, 
+	ignoreExceptions: false,
 	envFilePaths: new[] { builder.Configuration["EnvPath"] },
 	trimValues: true // Trims whitespace from values
 ));
@@ -30,7 +32,11 @@ builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Add controllers to the container.
-builder.Services.AddControllers().AddJsonOptions(opt =>
+builder.Services.AddControllers(opt =>
+{
+	// Enforces JSON output and causes OpenAPI UI to correctly show that we return JSON.
+	opt.OutputFormatters.RemoveType<StringOutputFormatter>();
+}).AddJsonOptions(opt =>
 {
 	opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
@@ -40,6 +46,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
 	c.SwaggerDoc("v1", new() { Title = "LeaderboardBackend", Version = "v1" });
+
+	// Enable adding XML comments to controllers to populate Swagger UI
+	string xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+	c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
 // Configure JWT Authentication.
@@ -93,7 +103,7 @@ static string GetConnectionString(WebApplicationBuilder builder)
 		!EnvReader.TryGetStringValue("POSTGRES_USER", out string user) ||
 		!EnvReader.TryGetStringValue("POSTGRES_PASSWORD", out string password) ||
 		!EnvReader.TryGetStringValue("POSTGRES_DB", out string db) ||
-		!EnvReader.TryGetIntValue(portVar, out int port) 
+		!EnvReader.TryGetIntValue(portVar, out int port)
 	)
 	{
 		throw new Exception("Database env var(s) not set. Is there a .env?");
@@ -102,7 +112,7 @@ static string GetConnectionString(WebApplicationBuilder builder)
 }
 
 // Configure a Database context, configuring based on the USE_IN_MEMORY_DATABASE environment variable.
-static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb) where T : DbContext 
+static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb) where T : DbContext
 {
 	builder.Services.AddDbContext<T>(
 		opt =>
