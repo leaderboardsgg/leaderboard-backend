@@ -1,4 +1,3 @@
-using LeaderboardBackend.Models.Annotations;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
@@ -25,34 +24,34 @@ public class User
 	/// Saving a name is case-sensitive, but matching against existing Users won't be.
 	/// </summary>
 	/// <example>Ayylmao Gaming</example>
-	[Required] 
+	[Required]
 	public string Username { get; set; } = null!;
 
 	/// <summary>The User's email. Must be, well, an email.</summary>
 	/// <example>ayylmao.gaming@alg.gg</example>
-	[Required] 
+	[Required]
 	public string Email { get; set; } = null!;
 
-	[Required] 
-	[JsonIgnore] 
+	[Required]
+	[JsonIgnore]
 	public string Password { get; set; } = null!;
 
-	[JsonIgnore] 
-	[InverseProperty("BanningUser")] 
+	[JsonIgnore]
+	[InverseProperty("BanningUser")]
 	public List<Ban>? BansGiven { get; set; }
 
-	[JsonIgnore] 
-	[InverseProperty("BannedUser")] 
+	[JsonIgnore]
+	[InverseProperty("BannedUser")]
 	public List<Ban>? BansReceived { get; set; }
 
-	[JsonIgnore] 
+	[JsonIgnore]
 	public List<Modship>? Modships { get; set; }
 
 	public override bool Equals(object? obj)
 	{
 		return obj is User user &&
 			   Id.Equals(user.Id) &&
-			   Username == user.Username &&
+			   Username.ToLower() == user.Username.ToLower() &&
 			   Email == user.Email;
 	}
 
