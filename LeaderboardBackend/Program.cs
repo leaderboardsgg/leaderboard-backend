@@ -34,7 +34,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 // Add controllers to the container.
 builder.Services.AddControllers(opt =>
 {
-	// Enforces JSON output. Also fixes Open API docs.
+	// Enforces JSON output and causes OpenAPI UI to correctly show that we return JSON.
 	opt.OutputFormatters.RemoveType<StringOutputFormatter>();
 }).AddJsonOptions(opt =>
 {
