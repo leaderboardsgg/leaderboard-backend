@@ -42,7 +42,7 @@ public class LeaderboardsController : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<List<Leaderboard>>> GetLeaderboards([FromQuery] long[] ids)
 	{
-		return await _leaderboardService.GetLeaderboards(ids);
+		return Ok(await _leaderboardService.GetLeaderboards(ids));
 	}
 
 	// FIXME: Only allow admins to call this route
