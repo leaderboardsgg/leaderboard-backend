@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LeaderboardBackend.Models.Requests.Users;
 
+/// <summary>Request object sent when logging a User in.</summary>
 public record LoginRequest
 {
 	/// <summary>User's email.</summary>
@@ -30,8 +31,10 @@ public record LoginRequest
 	public string Password { get; set; } = null!;
 }
 
+/// <summary>Response object received on a successful login.</summary>
 public record LoginResponse
 {
+	/// <summary>A JWT to authenticate and authorize future queries with.</summary>
 	[Required]
 	public string Token { get; set; } = null!;
 }

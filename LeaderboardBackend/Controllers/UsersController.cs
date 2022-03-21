@@ -85,7 +85,7 @@ public class UsersController : ControllerBase
 
 	/// <summary>Logs a new user in.</summary>
 	/// <param name="body">A LoginRequest instance.</param>
-	/// <response code="200">An object <code>{ token: JWT }</code></response>
+	/// <response code="200">A <code>LoginResponse</code> object.</response>
 	/// <response code="401">If the wrong details were passed.</response>
 	/// <response code="404">If a User can't be found.</response>
 	[ProducesResponseType(StatusCodes.Status200OK)]
@@ -93,7 +93,7 @@ public class UsersController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[AllowAnonymous]
 	[HttpPost("login")]
-	public async Task<ActionResult<User>> Login([FromBody] LoginRequest body)
+	public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest body)
 	{
 		User? user = await _userService.GetUserByEmail(body.Email);
 		if (user == null)
