@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Moq;
 using LeaderboardBackend.Controllers;
 using LeaderboardBackend.Services;
-using LeaderboardBackend.Models;
+using LeaderboardBackend.Models.Entities;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,10 +29,10 @@ public class CategoryTests
 	public async Task GetCategory_NotFound_CategoryDoesNotExist()
 	{
 		_categoryServiceMock
-			.Setup(x => x.GetCategory(It.IsAny<ulong>()))
+			.Setup(x => x.GetCategory(It.IsAny<long>()))
 			.Returns(Task.FromResult<Category?>(null));
 
-		ActionResult<Category> response = await _controller.GetCategory((ulong)1);
+		ActionResult<Category> response = await _controller.GetCategory((long)1);
 
 		NotFoundResult? actual = response.Result as NotFoundResult;
 		Assert.NotNull(actual);
@@ -43,10 +43,10 @@ public class CategoryTests
 	public async Task GetCategory_Ok_CategoryExists()
 	{
 		_categoryServiceMock
-			.Setup(x => x.GetCategory(It.IsAny<ulong>()))
+			.Setup(x => x.GetCategory(It.IsAny<long>()))
 			.Returns(Task.FromResult<Category?>(new Category { Id = 1 }));
 
-		ActionResult<Category> response = await _controller.GetCategory((ulong)1);
+		ActionResult<Category> response = await _controller.GetCategory((long)1);
 
 		Assert.NotNull(response.Value);
 		Assert.AreEqual(1, response.Value?.Id);
