@@ -1,9 +1,10 @@
-using LeaderboardBackend.Models;
+using LeaderboardBackend.Models.Entities;
 
 namespace LeaderboardBackend.Services
 {
 	public interface ICategoryService
 	{
-		Task<Category?> GetCategory(ulong id);
+		Task<Category?> GetCategory(long id);
+		Task CreateCategory(Category category);
 	}
 }

@@ -1,4 +1,4 @@
-using LeaderboardBackend.Models;
+using LeaderboardBackend.Models.Entities;
 
 namespace LeaderboardBackend.Services
 {
@@ -10,9 +10,15 @@ namespace LeaderboardBackend.Services
 			_applicationContext = applicationContext;
 		}
 
-		public async Task<Category?> GetCategory(ulong id)
+		public async Task<Category?> GetCategory(long id)
 		{
 			return await _applicationContext.Categories.FindAsync(id);
+		}
+
+		public async Task CreateCategory(Category category)
+		{
+			_applicationContext.Categories.Add(category);
+			await _applicationContext.SaveChangesAsync();
 		}
 	}
 }
