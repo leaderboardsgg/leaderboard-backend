@@ -1,3 +1,4 @@
+using LeaderboardBackend.Models.Annotations;
 using System.ComponentModel.DataAnnotations;
 
 namespace LeaderboardBackend.Models.Requests.Categories;
@@ -24,11 +25,14 @@ public record CreateCategoryRequest
 	public string? Rules { get; set; }
 
 	/// <summary>Minimum player count for this Category. Defaults to 1.</summary>
+	[Range(1, int.MaxValue)]
 	public int? PlayersMin { get; set; }
 
 	/// <summary>
 	/// Maximum player count for this Category. Defaults to PlayersMin.
 	/// </summary>
+	[Range(1, int.MaxValue)]
+	[PlayersMax]
 	public int? PlayersMax { get; set; }
 
 	/// <summary>ID of the Leaderboard this Category belongs to.</summary>
