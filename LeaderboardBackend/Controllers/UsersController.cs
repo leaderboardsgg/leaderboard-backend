@@ -43,7 +43,7 @@ public class UsersController : ControllerBase
 	/// <summary>Registers a new user.</summary>
 	/// <param name="body">A RegisterRequest instance.</param>
 	/// <response code="201">The created User object.</response>
-	/// <response code="400">If the passwords don't match.</response>
+	/// <response code="400">If the passwords don't match, or if the request is otherwise malformed.</response>
 	/// <response code="409">If login details can't be found.</response>
 	[ProducesResponseType(StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -86,9 +86,11 @@ public class UsersController : ControllerBase
 	/// <summary>Logs a new user in.</summary>
 	/// <param name="body">A LoginRequest instance.</param>
 	/// <response code="200">A <code>LoginResponse</code> object.</response>
+	/// <response code="400">If the request is malformed.</response>
 	/// <response code="401">If the wrong details were passed.</response>
 	/// <response code="404">If a User can't be found.</response>
 	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[AllowAnonymous]

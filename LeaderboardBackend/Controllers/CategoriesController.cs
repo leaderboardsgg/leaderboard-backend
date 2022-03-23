@@ -41,6 +41,7 @@ public class CategoriesController : ControllerBase
 	/// <summary>Creates a new Category. Mod-only.</summary>
 	/// <param name="body">A CreateCategoryRequest instance.</param>
 	/// <response code="201">The created Category.</response>
+	/// <response code="400">If the request is malformed.</response>
 	/// <response code="404">If a non-mod calls this.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.Post))]
