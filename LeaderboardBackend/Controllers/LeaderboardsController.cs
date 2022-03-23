@@ -49,6 +49,7 @@ public class LeaderboardsController : ControllerBase
 	/// <summary>Creates a new Leaderboard. Admin-only.</summary>
 	/// <param name="body">A CreateLeaderboardRequest instance.</param>
 	/// <response code="201">The created Leaderboard.</response>
+	/// <response code="400">If the request is malformed.</response>
 	/// <response code="404">If a non-admin calls this.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.Post))]
