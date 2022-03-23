@@ -5,9 +5,6 @@ namespace LeaderboardBackend.Models.Annotations;
 
 public class PlayersMaxAttribute : ValidationAttribute
 {
-	public string GetErrorMessage(List<string> errors) =>
-		$"Your password has the following errors: {string.Join("; ", errors)}";
-
 	protected override ValidationResult? IsValid(object? _, ValidationContext context)
 	{
 		CreateCategoryRequest request = (CreateCategoryRequest)context.ObjectInstance;

@@ -34,7 +34,7 @@ public class CategoriesController : ControllerBase
 			return NotFound();
 		}
 
-		return category;
+		return Ok(category);
 	}
 
 	// FIXME: Allow only mods to call this
