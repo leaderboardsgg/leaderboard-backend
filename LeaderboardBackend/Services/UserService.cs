@@ -14,7 +14,7 @@ public class UserService : IUserService
 		_applicationContext = applicationContext;
 	}
 
-	public async Task<User?> GetUser(Guid id)
+	public async Task<User?> GetUserById(Guid id)
 	{
 		return await _applicationContext.Users.FindAsync(id);
 	}
@@ -28,7 +28,7 @@ public class UserService : IUserService
 	{
 		// We save a username with casing, but match without.
 		// Effectively you can't have two separate users named e.g. "cool" and "cOoL".
-		return await _applicationContext.Users.SingleOrDefaultAsync(u => u.Username != null && u.Username.ToLower() == name.ToLower());
+		return await _applicationContext.Users.FirstOrDefaultAsync(u => u.Username != null && u.Username.ToLower() == name.ToLower());
 	}
 
 	public async Task<User?> GetUserFromClaims(ClaimsPrincipal claims)

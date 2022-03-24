@@ -40,24 +40,26 @@ public class UsersControllerTests
 	}
 
 	[Test]
-	public async Task GetUser_NotFound_UserDoesNotExist()
+	public async Task GetUserById_NotFound_UserDoesNotExist()
 	{
 		_userServiceMock
-			.Setup(x => x.GetUser(It.IsAny<Guid>()))
+			.Setup(x => x.GetUserById(It.IsAny<Guid>()))
 			.Returns(Task.FromResult<User?>(null));
 
-		ActionResult<User> response = await _controller.GetUser(defaultUserId);
+		ActionResult<User> response = await _controller.GetUserById(defaultUserId);
+
 		Helpers.AssertResponseNotFound(response);
 	}
 
 	[Test]
-	public async Task GetUser_Ok_UserExists()
+	public async Task GetUserById_Ok_UserExists()
 	{
 		_userServiceMock
-			.Setup(x => x.GetUser(defaultUserId))
+			.Setup(x => x.GetUserById(defaultUserId))
 			.Returns(Task.FromResult<User?>(defaultUser));
 
-		ActionResult<User> response = await _controller.GetUser(defaultUserId);
+		ActionResult<User> response = await _controller.GetUserById(defaultUserId);
+
 		User? user = Helpers.GetValueFromObjectResult<OkObjectResult, User>(response);
 
 		Assert.NotNull(user);

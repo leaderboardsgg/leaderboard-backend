@@ -21,16 +21,16 @@ public class UsersController : ControllerBase
 		_authService = authService;
 	}
 
-	/// <summary>Gets a User.</summary>
+	/// <summary>Gets a User by ID.</summary>
 	/// <param name="id">The User's ID. It must be a GUID.</param>
 	/// <response code="200">The User with the provided ID.</response>
 	/// <response code="404">If no User is found with the provided ID.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.Get))]
-	[HttpGet("{id}")]
-	public async Task<ActionResult<User>> GetUser(Guid id)
+	[HttpGet("{id:guid}")]
+	public async Task<ActionResult<User>> GetUserById(Guid id)
 	{
-		User? user = await _userService.GetUser(id);
+		User? user = await _userService.GetUserById(id);
 		if (user == null)
 		{
 			return NotFound();
@@ -80,7 +80,7 @@ public class UsersController : ControllerBase
 		};
 
 		await _userService.CreateUser(newUser);
-		return CreatedAtAction(nameof(GetUser), new { id = newUser.Id }, newUser);
+		return CreatedAtAction(nameof(GetUserById), new { id = newUser.Id }, newUser);
 	}
 
 	/// <summary>Logs a new user in.</summary>
