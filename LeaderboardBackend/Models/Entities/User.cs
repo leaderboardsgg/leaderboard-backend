@@ -36,6 +36,13 @@ public class User
 	[JsonIgnore]
 	public string Password { get; set; } = null!;
 
+	/// <summary>User's about text. I.e. a personal description.</summary>
+	public string? About { get; set; }
+
+	/// <summary>User's admin status.</summary>
+	[Required]
+	public bool Admin { get; set; } = false;
+
 	[JsonIgnore]
 	[InverseProperty("BanningUser")]
 	public List<Ban>? BansGiven { get; set; }
