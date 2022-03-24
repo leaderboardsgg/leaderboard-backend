@@ -46,7 +46,7 @@ public class UserServiceTests
 	{
 		await _userService.CreateUser(_user);
 
-		User? getUser = await _userService.GetUser(_user.Id);
+		User? getUser = await _userService.GetUserById(_user.Id);
 		Assert.NotNull(getUser);
 		Assert.AreEqual(getUser, _user);
 	}
@@ -54,7 +54,7 @@ public class UserServiceTests
 	[Test]
 	public async Task GetUser_ReturnsNullForNonExistingID()
 	{
-		User? result = await _userService.GetUser(new Guid());
+		User? result = await _userService.GetUserById(new Guid());
 		Assert.Null(result);
 	}
 

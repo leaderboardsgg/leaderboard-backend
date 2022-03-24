@@ -46,9 +46,10 @@ public class CategoryTests
 			.Setup(x => x.GetCategory(It.IsAny<long>()))
 			.Returns(Task.FromResult<Category?>(new Category { Id = 1 }));
 
-		ActionResult<Category> response = await _controller.GetCategory((long)1);
+		ActionResult<Category> response = await _controller.GetCategory(1);
+		Category? category = Helpers.GetValueFromObjectResult<OkObjectResult, Category>(response.Result);
 
-		Assert.NotNull(response.Value);
-		Assert.AreEqual(1, response.Value?.Id);
+		Assert.NotNull(category);
+		Assert.AreEqual(1, category!.Id);
 	}
 }

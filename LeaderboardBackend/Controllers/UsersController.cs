@@ -40,24 +40,6 @@ public class UsersController : ControllerBase
 		return Ok(user);
 	}
 
-	/// <summary>Gets a User by email.</summary>
-	/// <param name="email">The User's email.</param>
-	/// <response code="200">The User with the provided email.</response>
-	/// <response code="404">If no User is found with the provided email.</response>
-	[ApiConventionMethod(typeof(Conventions),
-						 nameof(Conventions.Get))]
-	[HttpGet("{email}")]
-	public async Task<ActionResult<User>> GetUserByEmail(string email)
-	{
-		User? user = await _userService.GetUserByEmail(email);
-		if (user == null)
-		{
-			return NotFound();
-		}
-
-		return Ok(user);
-	}
-
 	/// <summary>Registers a new user.</summary>
 	/// <param name="body">A RegisterRequest instance.</param>
 	/// <response code="201">The created User object.</response>

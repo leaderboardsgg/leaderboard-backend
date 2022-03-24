@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace LeaderboardBackend.Test.Controllers;
@@ -69,7 +70,9 @@ public class LeaderboardTests
 			.Returns(Task.FromResult(mockList));
 
 		ActionResult<List<Leaderboard>> response = await _controller.GetLeaderboards(new long[] { 1, 2 });
+		List<Leaderboard>? leaderboards = Helpers.GetValueFromObjectResult<OkObjectResult, List<Leaderboard>>(response);
 
-		Assert.AreEqual(new ulong[] { 1, 2 }, response.Value?.ConvertAll(l => l.Id));
+		Assert.NotNull(leaderboards);
+		Assert.AreEqual(new ulong[] { 1, 2 }, leaderboards!.Select(l => l.Id));
 	}
 }
