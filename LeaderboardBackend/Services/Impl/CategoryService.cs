@@ -4,7 +4,8 @@ namespace LeaderboardBackend.Services
 {
 	public class CategoryService : ICategoryService
 	{
-		private ApplicationContext _applicationContext;
+		private readonly ApplicationContext _applicationContext;
+
 		public CategoryService(ApplicationContext applicationContext)
 		{
 			_applicationContext = applicationContext;

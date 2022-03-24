@@ -4,11 +4,11 @@ namespace LeaderboardBackend.Models.Entities;
 
 public enum RunStatus
 {
-	Created,
-	Submitted,
-	Pending,
-	Approved,
-	Rejected
+	CREATED,
+	SUBMITTED,
+	PENDING,
+	APPROVED,
+	REJECTED
 }
 
 public class Run

@@ -6,6 +6,7 @@ using LeaderboardBackend.Services;
 using LeaderboardBackend.Models.Entities;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using LeaderboardBackend.Test.Helpers;
 
 namespace LeaderboardBackend.Test.Controllers;
 
@@ -32,11 +33,9 @@ public class CategoryTests
 			.Setup(x => x.GetCategory(It.IsAny<long>()))
 			.Returns(Task.FromResult<Category?>(null));
 
-		ActionResult<Category> response = await _controller.GetCategory((long)1);
+		ActionResult<Category> response = await _controller.GetCategory(1);
 
-		NotFoundResult? actual = response.Result as NotFoundResult;
-		Assert.NotNull(actual);
-		Assert.AreEqual(404, actual!.StatusCode);
+		ObjectResultHelpers.AssertResponseNotFound(response);
 	}
 
 	[Test]
@@ -47,8 +46,8 @@ public class CategoryTests
 			.Returns(Task.FromResult<Category?>(new Category { Id = 1 }));
 
 		ActionResult<Category> response = await _controller.GetCategory(1);
-		Category? category = Helpers.GetValueFromObjectResult<OkObjectResult, Category>(response.Result);
 
+		Category? category = ObjectResultHelpers.GetValueFromObjectResult<Category, OkObjectResult>(response);
 		Assert.NotNull(category);
 		Assert.AreEqual(1, category!.Id);
 	}
