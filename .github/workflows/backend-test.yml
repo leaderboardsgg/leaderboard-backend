@@ -1,21 +1,21 @@
 name: backend-test
 on:
-  push:
-    branches: [ main ]
-  pull_request:
+	push:
+		branches: [ main ]
+	pull_request:
 jobs:
-  backend-test:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v2
+	backend-test:
+		runs-on: ubuntu-latest
+		steps:
+		- name: Checkout repo
+			uses: actions/checkout@v2
 		- name: Setup dotnet 6
 			uses: actions/setup-dotnet@v1
 			with:
 				dotnet-version: '6.0.x'
-    - name: Spin up containers
-      run: docker compose --env-file example.env up -d
-    - name: Run Tests on In Memory Database
-      run: USE_IN_MEMORY_DB=true dotnet test LeaderboardBackend.Test
-    - name: Run Tests on Test Postgres Database
-      run: USE_IN_MEMORY_DB=false dotnet test LeaderboardBackend.Test
+		- name: Spin up containers
+			run: docker compose --env-file example.env up -d
+		- name: Run Tests on In Memory Database
+			run: USE_IN_MEMORY_DB=true dotnet test LeaderboardBackend.Test
+		- name: Run Tests on Test Postgres Database
+			run: USE_IN_MEMORY_DB=false dotnet test LeaderboardBackend.Test
