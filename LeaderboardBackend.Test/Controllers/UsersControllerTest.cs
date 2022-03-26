@@ -10,10 +10,11 @@ using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using BCryptNet = BCrypt.Net.BCrypt;
+using LeaderboardBackend.Test.Helpers;
 
 namespace LeaderboardBackend.Test.Controllers;
 
-public class UsersControllerTests
+public class UsersControllerTest
 {
 	private UsersController _controller = null!;
 	private Mock<IUserService> _userServiceMock = null!;
@@ -47,8 +48,8 @@ public class UsersControllerTests
 			.Returns(Task.FromResult<User?>(null));
 
 		ActionResult<User> response = await _controller.GetUserById(defaultUserId);
-
-		Helpers.AssertResponseNotFound(response);
+	
+		ObjectResultHelpers.AssertResponseNotFound(response);
 	}
 
 	[Test]
@@ -60,8 +61,7 @@ public class UsersControllerTests
 
 		ActionResult<User> response = await _controller.GetUserById(defaultUserId);
 
-		User? user = Helpers.GetValueFromObjectResult<OkObjectResult, User>(response);
-
+		User? user = ObjectResultHelpers.GetValueFromObjectResult<User, OkObjectResult>(response);
 		Assert.NotNull(user);
 		Assert.AreEqual(defaultUser, user);
 	}
@@ -78,7 +78,8 @@ public class UsersControllerTests
 		};
 
 		ActionResult<User> response = await _controller.Register(body);
-		Helpers.AssertResponseBadRequest(response);
+
+		ObjectResultHelpers.AssertResponseBadRequest(response);
 	}
 
 	[Test]
@@ -93,12 +94,11 @@ public class UsersControllerTests
 		};
 
 		ActionResult<User> response = await _controller.Register(body);
-		User? user = Helpers.GetValueFromObjectResult<CreatedAtActionResult, User>(response);
 
+		User? user = ObjectResultHelpers.GetValueFromObjectResult<User, CreatedAtActionResult>(response);
 		Assert.NotNull(user);
 		Assert.AreEqual(defaultUser.Username, user!.Username);
 		Assert.AreEqual(defaultUser.Email, user!.Email);
-
 		// This route creates a new user, and thus does a new password hash.
 		// Since hashing the password again won't produce the same hash as
 		// defaultUser, we do a cryptographic verify instead.
@@ -115,7 +115,7 @@ public class UsersControllerTests
 
 		ActionResult<User> response = await _controller.Me();
 
-		Helpers.AssertResponseForbid(response);
+		ObjectResultHelpers.AssertResponseForbid(response);
 	}
 
 	[Test]
@@ -127,8 +127,8 @@ public class UsersControllerTests
 			.Returns(Task.FromResult<User?>(defaultUser));
 
 		ActionResult<User> response = await _controller.Me();
-		User? user = Helpers.GetValueFromObjectResult<OkObjectResult, User>(response);
 
+		User? user = ObjectResultHelpers.GetValueFromObjectResult<User, OkObjectResult>(response);
 		Assert.NotNull(user);
 		Assert.AreEqual(defaultUser, user);
 	}

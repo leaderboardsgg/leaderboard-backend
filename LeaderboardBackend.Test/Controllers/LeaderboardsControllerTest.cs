@@ -1,6 +1,7 @@
 using LeaderboardBackend.Controllers;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
+using LeaderboardBackend.Test.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
@@ -36,10 +37,7 @@ public class LeaderboardTests
 			.Returns(Task.FromResult<Leaderboard?>(null));
 
 		ActionResult<Leaderboard> response = await _controller.GetLeaderboard(1);
-		var actual = response.Result as NotFoundResult;
-
-		Assert.NotNull(actual);
-		Assert.AreEqual(404, actual!.StatusCode);
+		ObjectResultHelpers.AssertResponseNotFound(response);
 	}
 
 	[Test]
@@ -50,10 +48,10 @@ public class LeaderboardTests
 			.Returns(Task.FromResult<Leaderboard?>(_defaultLeaderboard));
 
 		ActionResult<Leaderboard> response = await _controller.GetLeaderboard(1);
-		Leaderboard? leaderboard = Helpers.GetValueFromObjectResult<OkObjectResult, Leaderboard>(response);
 
+		Leaderboard? leaderboard = ObjectResultHelpers.GetValueFromObjectResult<Leaderboard, OkObjectResult>(response);
 		Assert.NotNull(leaderboard);
-		Assert.AreEqual(1, leaderboard!.Id);
+		Assert.AreEqual(_defaultLeaderboard, leaderboard);
 	}
 
 	[Test]
@@ -70,8 +68,8 @@ public class LeaderboardTests
 			.Returns(Task.FromResult(mockList));
 
 		ActionResult<List<Leaderboard>> response = await _controller.GetLeaderboards(new long[] { 1, 2 });
-		List<Leaderboard>? leaderboards = Helpers.GetValueFromObjectResult<OkObjectResult, List<Leaderboard>>(response);
 
+		List<Leaderboard>? leaderboards = ObjectResultHelpers.GetValueFromObjectResult<List<Leaderboard>, OkObjectResult>(response);
 		Assert.NotNull(leaderboards);
 		Assert.AreEqual(new ulong[] { 1, 2 }, leaderboards!.Select(l => l.Id));
 	}

@@ -1,10 +1,10 @@
+using System;
 using Microsoft.AspNetCore.Mvc;
 using NUnit.Framework;
-using System;
 
-namespace LeaderboardBackend.Test.Controllers;
+namespace LeaderboardBackend.Test.Helpers;
 
-internal static class Helpers
+internal static class ObjectResultHelpers
 {
 	public static void AssertResponseNotFound<T>(ActionResult<T> response)
 	{
@@ -32,7 +32,7 @@ internal static class Helpers
 		// a Forbidden 403 result.
 	}
 
-	public static TResult? GetValueFromObjectResult<TObjectResult, TResult>(ActionResult<TResult> result) where TObjectResult : ObjectResult
+	public static TValue? GetValueFromObjectResult<TValue, TObjectResult>(ActionResult<TValue> result) where TObjectResult : ObjectResult
 	{
 		TObjectResult? objectResult = null;
 		try
@@ -44,6 +44,7 @@ internal static class Helpers
 			Assert.Fail(ex.Message);
 		}
 
-		return (TResult?)(objectResult?.Value);
+		return (TValue?)(objectResult?.Value);
 	}
+
 }
