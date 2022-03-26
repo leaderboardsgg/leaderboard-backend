@@ -1,7 +1,7 @@
 using System;
 using System.Security.Cryptography;
 
-namespace LeaderboardBackend.Integration;
+namespace LeaderboardBackend.Test.Lib;
 
 internal class Generators
 {

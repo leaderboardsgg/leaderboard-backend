@@ -9,11 +9,12 @@ using System.Net.Http.Json;
 using System;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using LeaderboardBackend.Test.Lib;
 
-namespace LeaderboardBackend.Integration;
+namespace LeaderboardBackend.Test;
 
 [TestFixture]
-internal class Users
+internal class TestUsers
 {
 	private static TestApiFactory Factory = null!;
 	private static HttpClient ApiClient = null!;
@@ -22,7 +23,9 @@ internal class Users
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 	};
 
+	private static readonly string ValidUsername = "Test";
 	private static readonly string ValidPassword = "c00l_pAssword";
+	private static readonly string ValidEmail = "test@email.com";
 
 	[SetUp]
 	public static void SetUp()
@@ -44,10 +47,10 @@ internal class Users
 	{
 		RegisterRequest registerBody = new() 
 		{
-			Username = "Test",
+			Username = ValidUsername,
 			Password = ValidPassword,
 			PasswordConfirm = ValidPassword,
-			Email = "test@email.com",
+			Email = ValidEmail,
 		};
 		HttpResponseMessage registerResponse = await ApiClient.PostAsJsonAsync("/api/users/register", registerBody, JsonSerializerOptions);
 		registerResponse.EnsureSuccessStatusCode();
@@ -61,15 +64,62 @@ internal class Users
 	}
 
 	[Test]
+	public static async Task Register_BadRequest()
+	{
+		RegisterRequest[] requests = {
+			new() {},
+			new()
+			{
+				Username = ValidUsername,
+				Password = ValidPassword,
+				PasswordConfirm = "someotherpassword",
+				Email = ValidEmail,
+			},
+			new()
+			{
+				Username = ValidUsername,
+				Password = ValidPassword,
+				PasswordConfirm = ValidPassword,
+				Email = "whatisthis",
+			},
+			new()
+			{
+				Username = "B",
+				Password = ValidPassword,
+				PasswordConfirm = ValidPassword,
+				Email = ValidEmail,
+			},
+		};
+
+		foreach(RegisterRequest request in requests)
+		{
+			HttpResponseMessage registerResponse = await ApiClient.PostAsJsonAsync("/api/users/register", request, JsonSerializerOptions);
+			Assert.AreEqual(
+				HttpStatusCode.BadRequest, 
+				registerResponse.StatusCode, 
+				$"{request} did not produce BadRequest, produced {registerResponse.StatusCode}"
+			);
+		}
+	}
+
+	[Test]
+	public static async Task Me_Unauthorized()
+	{
+		HttpRequestMessage meRequest = new(HttpMethod.Get, "/api/users/me");
+		HttpResponseMessage meResponse = await ApiClient.SendAsync(meRequest);
+		Assert.AreEqual(HttpStatusCode.Forbidden, meResponse.StatusCode);
+	}
+
+	[Test]
 	public static async Task FullAuthFlow()
 	{
-		// Register User	
+		// Register User
 		RegisterRequest registerBody = new() 
 		{
-			Username = "Test",
+			Username = ValidUsername,
 			Password = ValidPassword,
 			PasswordConfirm = ValidPassword,
-			Email = "test@email.com",
+			Email = ValidEmail,
 		};
 		HttpResponseMessage registerResponse = await ApiClient.PostAsJsonAsync("/api/users/register", registerBody, JsonSerializerOptions);
 		registerResponse.EnsureSuccessStatusCode();
@@ -101,5 +151,4 @@ internal class Users
 		User meUser = await HttpHelpers.ReadFromResponseBody<User>(registerResponse, JsonSerializerOptions);
 		Assert.AreEqual(createdUser, meUser);
 	}
-
 }
