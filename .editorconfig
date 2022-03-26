@@ -8,7 +8,6 @@ insert_final_newline = true
 indent_style = tab
 charset = utf-8
 
-# docker-compose.yml doesn't like tabs lmao
-[.yml]
+[*.{yml,yaml}]
 indent_style = space
 indent_size = 4
