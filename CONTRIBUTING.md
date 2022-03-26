@@ -1,6 +1,6 @@
 # Contributing to leaderboard-backend
 
-We appreciate your help!
+We appreciate your future contributions!
 
 ## Before filing an issue
 
