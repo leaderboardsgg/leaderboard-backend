@@ -6,7 +6,9 @@ namespace LeaderboardBackend.Models.Requests.Modships;
 public record CreateModshipRequest
 {
 	/// <summary>The Leaderboard ID.</summary>
-	[Required] public long LeaderboardId { get; set; }
+	[Required]
+	public long LeaderboardId { get; set; }
 	/// <summary>The User ID.</summary>
-	[Required] public Guid UserId { get; set; }
+	[Required]
+	public Guid UserId { get; set; }
 }
