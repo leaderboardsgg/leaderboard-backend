@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace LeaderboardBackend.Integration;
+namespace LeaderboardBackend.Test.Lib;
 
 internal class TestApiFactory : WebApplicationFactory<Program>
 {

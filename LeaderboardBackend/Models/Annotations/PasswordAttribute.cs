@@ -13,9 +13,16 @@ public class PasswordAttribute : ValidationAttribute
 
 	protected override ValidationResult? IsValid(object? value, ValidationContext _)
 	{
-		string password = (string)value!;
-
 		List<string> errors = new();
+
+		if (value is null)
+		{
+			errors.Add($"password must be supplied");
+			return new ValidationResult(GetErrorMessage(errors));
+		}
+
+		string password = (string)value;
+
 
 		if (password.Length < MIN)
 		{

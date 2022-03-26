@@ -1,5 +1,6 @@
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests.Leaderboards;
+using LeaderboardBackend.Test.Lib;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace LeaderboardBackend.Integration;
+namespace LeaderboardBackend.Test;
 
 [TestFixture]
 internal class Leaderboards

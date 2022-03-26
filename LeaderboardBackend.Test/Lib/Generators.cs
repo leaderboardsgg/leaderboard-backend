@@ -1,9 +1,9 @@
 using System;
 using System.Security.Cryptography;
 
-namespace LeaderboardBackend.Integration;
+namespace LeaderboardBackend.Test.Lib;
 
-internal class Generators
+internal static class Generators
 {
 	public static string GenerateRandomString()
 	{
