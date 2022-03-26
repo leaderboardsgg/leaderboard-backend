@@ -14,7 +14,7 @@ using LeaderboardBackend.Test.Lib;
 namespace LeaderboardBackend.Test;
 
 [TestFixture]
-internal class TestUsers
+internal class Users
 {
 	private static TestApiFactory Factory = null!;
 	private static HttpClient ApiClient = null!;

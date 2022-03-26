@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace LeaderboardBackend.Test;
 
 [TestFixture]
-internal class TestCategories
+internal class Categories
 {
 	private static TestApiFactory Factory = null!;
 	private static HttpClient ApiClient = null!;

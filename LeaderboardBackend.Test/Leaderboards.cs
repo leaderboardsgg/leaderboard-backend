@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace LeaderboardBackend.Test;
 
 [TestFixture]
-internal class TestLeaderboards
+internal class Leaderboards
 {
 	private static TestApiFactory Factory = null!;
 	private static HttpClient ApiClient = null!;
