@@ -36,7 +36,7 @@ public class ModshipsController : ControllerBase
 	{
 		Modship? modship = await _modshipService.GetModship(id);
 
-		if (modship == null)
+		if (modship is null)
 		{
 			return NotFound();
 		}
