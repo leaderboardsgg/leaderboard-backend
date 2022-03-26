@@ -1,5 +1,6 @@
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests.Categories;
+using LeaderboardBackend.Models.Requests.Leaderboards;
 using LeaderboardBackend.Test.Lib;
 using NUnit.Framework;
 using System.Net;
@@ -38,11 +39,20 @@ internal class Categories
 	[Test]
 	public static async Task CreateCategory_GetCategory()
 	{
+		CreateLeaderboardRequest createLeaderboardBody = new() 
+		{
+			Name = Generators.GenerateRandomString(),
+			Slug = Generators.GenerateRandomString(),
+		};
+		HttpResponseMessage createLeaderboardResponse = await ApiClient.PostAsJsonAsync("/api/leaderboards", createLeaderboardBody, JsonSerializerOptions);
+		createLeaderboardResponse.EnsureSuccessStatusCode();
+		Leaderboard createdLeaderboard = await HttpHelpers.ReadFromResponseBody<Leaderboard>(createLeaderboardResponse, JsonSerializerOptions);
+		
 		CreateCategoryRequest createBody = new()
 		{
 			Name = Generators.GenerateRandomString(),
 			Slug = Generators.GenerateRandomString(),
-			LeaderboardId = 1
+			LeaderboardId = createdLeaderboard.Id,
 		};
 		HttpResponseMessage createResponse = await ApiClient.PostAsJsonAsync("/api/categories", createBody, JsonSerializerOptions);
 		createResponse.EnsureSuccessStatusCode();

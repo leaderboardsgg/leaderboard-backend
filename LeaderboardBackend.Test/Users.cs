@@ -107,7 +107,7 @@ internal class Users
 	{
 		HttpRequestMessage meRequest = new(HttpMethod.Get, "/api/users/me");
 		HttpResponseMessage meResponse = await ApiClient.SendAsync(meRequest);
-		Assert.AreEqual(HttpStatusCode.Forbidden, meResponse.StatusCode);
+		Assert.AreEqual(HttpStatusCode.Unauthorized, meResponse.StatusCode);
 	}
 
 	[Test]
