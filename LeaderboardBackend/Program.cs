@@ -17,8 +17,9 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 DotEnv.Load(options: new DotEnvOptions(
 	ignoreExceptions: false,
+	overwriteExistingVars: false,
 	envFilePaths: new[] { builder.Configuration["EnvPath"] },
-	trimValues: true // Trims whitespace from values
+	trimValues: true
 ));
 
 // Configure database context
