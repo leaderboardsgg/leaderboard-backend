@@ -9,25 +9,25 @@ namespace LeaderboardBackend.Test.Lib;
 
 internal static class UserHelpers
 {
-	public static async Task<User> Register(HttpClient apiClient, UserTypes userType, JsonSerializerOptions jsonSerializerOptions)
+	public static async Task<User> Register(HttpClient apiClient, string username, string email, string password, JsonSerializerOptions jsonSerializerOptions)
 	{
 		RegisterRequest registerBody = new()
 		{
-			Username = "AyylmaoGaming",
-			Password = "c00l_pAssword",
-			PasswordConfirm = "c00l_pAssword",
-			Email = "test@email.com",
+			Username = username,
+			Password = password,
+			PasswordConfirm = password,
+			Email = email,
 		};
 
 		return await HttpHelpers.Post<RegisterRequest, User>("/api/users/register", registerBody, apiClient, jsonSerializerOptions);
 	}
 
-	public static async Task<LoginResponse> Login(HttpClient apiClient, User user, JsonSerializerOptions jsonSerializerOptions)
+	public static async Task<LoginResponse> Login(HttpClient apiClient, string email, string password, JsonSerializerOptions jsonSerializerOptions)
 	{
 		LoginRequest loginBody = new()
 		{
-			Email = user.Email,
-			Password = "c00l_pAssword",
+			Email = email,
+			Password = password,
 		};
 
 		return await HttpHelpers.Post<LoginRequest, LoginResponse>("/api/users/login", loginBody, apiClient, jsonSerializerOptions);

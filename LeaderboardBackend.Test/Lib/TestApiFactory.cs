@@ -1,14 +1,31 @@
+using BCryptNet = BCrypt.Net.BCrypt;
 using LeaderboardBackend.Models.Entities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Collections.Generic;
 
 namespace LeaderboardBackend.Test.Lib;
 
 internal class TestApiFactory : WebApplicationFactory<Program>
 {
+	// Value needs to be set in `Seed()`, as the constructor doesn't actually get called
+	// in ConfigureWebhost.
+	// Seems like a smell, I know.
+	private static User Admin = null!;
+	private static readonly string AdminPassword = "P4ssword";
+
+	public User GetAdmin() => new()
+	{
+		Id = Admin.Id,
+		Username = "AyyLmaoGaming",
+		Email = "ayylmaogaming@alg.gg",
+		Password = AdminPassword,
+		Admin = true,
+	};
+
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
 		// Set the environment for the run to Staging
@@ -25,10 +42,44 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 			if (dbContext.Database.IsInMemory())
 			{
 				dbContext.Database.EnsureCreated();
-			} else
+			}
+			else
 			{
 				dbContext.Database.Migrate();
 			}
+			Seed(dbContext);
 		});
+	}
+
+	private void Seed(ApplicationContext dbContext)
+	{
+
+		Leaderboard leaderboard = new()
+		{
+			Name = "Mario Goes to Jail",
+			Slug = "mario-goes-to-jail"
+		};
+
+		Admin = new()
+		{
+			Username = "AyyLmaoGaming",
+			Email = "ayylmaogaming@alg.gg",
+			Password = BCryptNet.EnhancedHashPassword(AdminPassword),
+			Admin = true,
+		};
+
+		Modship modship = new()
+		{
+			Leaderboard = leaderboard,
+			LeaderboardId = leaderboard.Id,
+			User = Admin,
+			UserId = Admin.Id,
+		};
+
+		dbContext.Add<User>(Admin);
+		dbContext.Add<Leaderboard>(leaderboard);
+		dbContext.Add<Modship>(modship);
+
+		dbContext.SaveChanges();
 	}
 }
