@@ -49,7 +49,6 @@ public class LeaderboardsController : ControllerBase
 		return Ok(await _leaderboardService.GetLeaderboards(ids));
 	}
 
-	// FIXME: Only allow admins to call this route
 	/// <summary>Creates a new Leaderboard. Admin-only.</summary>
 	/// <param name="body">A CreateLeaderboardRequest instance.</param>
 	/// <response code="201">The created Leaderboard.</response>

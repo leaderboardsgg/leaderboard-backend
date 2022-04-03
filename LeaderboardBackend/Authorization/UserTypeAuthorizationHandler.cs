@@ -1,9 +1,8 @@
-using LeaderboardBackend.Models;
+using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Text;
 
 namespace LeaderboardBackend.Authorization;
 
@@ -62,8 +61,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 		_ => false,
 	};
 
-	// FIXME: Rebase PR which adds Admin prop to Users
-	private bool IsAdmin(User user) => false;
+	private bool IsAdmin(User user) => user.Admin;
 
 	// FIXME: Users don't get automagically populated with Modships when on creation of the latter.
 	private bool IsMod(User user) => user.Modships?.Count() > 0;
@@ -75,9 +73,17 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 			token = "";
 			return false;
 		}
-		// We need to strip "Bearer " out lol
-		token = httpContext.Request.Headers.Authorization.First().Substring(7);
-		return _jwtHandler.CanReadToken(token);
+		try
+		{
+			// We need to strip "Bearer " out lol
+			token = httpContext.Request.Headers.Authorization.First().Substring(7);
+			return _jwtHandler.CanReadToken(token);
+		} catch (System.InvalidOperationException)
+		{
+			// No token exists in the request
+			token = "";
+			return false;
+		}
 	}
 
 	private bool CanValidateJwt(string token)
