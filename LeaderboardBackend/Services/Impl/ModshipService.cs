@@ -14,7 +14,7 @@ public class ModshipService : IModshipService
 
 	public async Task<Modship?> GetModship(Guid userId)
 	{
-		return await _applicationContext.Modships.SingleOrDefaultAsync(m => m.UserId == userId);
+		return await _applicationContext.Modships.FirstOrDefaultAsync(m => m.UserId == userId);
 	}
 
 	public async Task CreateModship(Modship modship)

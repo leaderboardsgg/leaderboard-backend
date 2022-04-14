@@ -17,6 +17,8 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 	private static User Admin = null!;
 	private static readonly string AdminPassword = "P4ssword";
 
+	// TODO: Make this a singleton instead of creating a new object all the time
+	// TODO: Also maybe only save the generated ID
 	public User GetAdmin() => new()
 	{
 		Id = Admin.Id,
@@ -68,17 +70,8 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 			Admin = true,
 		};
 
-		Modship modship = new()
-		{
-			Leaderboard = leaderboard,
-			LeaderboardId = leaderboard.Id,
-			User = Admin,
-			UserId = Admin.Id,
-		};
-
 		dbContext.Add<User>(Admin);
 		dbContext.Add<Leaderboard>(leaderboard);
-		dbContext.Add<Modship>(modship);
 
 		dbContext.SaveChanges();
 	}

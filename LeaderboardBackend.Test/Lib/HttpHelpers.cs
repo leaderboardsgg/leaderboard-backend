@@ -11,8 +11,7 @@ namespace LeaderboardBackend.Test.Lib;
 
 internal static class HttpHelpers
 {
-	/// <typeparam name="Body">Object class that defines the POST's request body.</typeparam>
-	/// <typeparam name="Res">Response object class from the POST.</typeparam>
+	/// <typeparam name="Res">Response object class from the GET.</typeparam>
 	public static async Task<Res> Get<Res>(
 		string endpoint,
 		HttpClient client,
@@ -58,6 +57,7 @@ internal static class HttpHelpers
 		return string.Join("&", queryList);
 	}
 
+	// Shep: I don't really like how I've laid the arguments out like this, honestly. Might rework this.
 	private static HttpRequestMessage CreateRequestMessage(
 		string endpoint,
 		HttpMethod method,
@@ -83,6 +83,7 @@ internal static class HttpHelpers
 		return requestMessage; // To be then called with HttpClient.SendAsync(requestMessage);
 	}
 
+	// TODO: Try to have HttpClient be called within this class. Annoying for callers to keep passing it in.
 	private static async Task<Res> Send<Res>(HttpRequestMessage message, HttpClient client, JsonSerializerOptions options)
 	{
 		HttpResponseMessage response = await client.SendAsync(message);
