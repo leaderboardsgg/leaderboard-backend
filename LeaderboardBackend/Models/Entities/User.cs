@@ -30,6 +30,7 @@ public class User
 	/// <summary>The User's email. Must be, well, an email.</summary>
 	/// <example>ayylmao.gaming@alg.gg</example>
 	[Required]
+	[JsonIgnore]
 	public string Email { get; set; } = null!;
 
 	[Required]
@@ -43,15 +44,12 @@ public class User
 	[Required]
 	public bool Admin { get; set; } = false;
 
-	[JsonIgnore]
 	[InverseProperty("BanningUser")]
 	public List<Ban>? BansGiven { get; set; }
 
-	[JsonIgnore]
 	[InverseProperty("BannedUser")]
 	public List<Ban>? BansReceived { get; set; }
 
-	[JsonIgnore]
 	public List<Modship>? Modships { get; set; }
 
 	public override bool Equals(object? obj)

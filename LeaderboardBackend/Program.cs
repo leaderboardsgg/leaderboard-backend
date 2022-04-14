@@ -12,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 #region WebApplicationBuilder
 
@@ -43,6 +44,7 @@ builder.Services.AddControllers(opt =>
 	opt.OutputFormatters.RemoveType<StringOutputFormatter>();
 }).AddJsonOptions(opt =>
 {
+	opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 	opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 
