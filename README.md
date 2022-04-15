@@ -134,7 +134,9 @@ The value provided to `--urls` has to match what's listed under `applicationUrl`
 
 To run the tests, run the following commands from the root of the project:
 
-```
+```bash
 cd LeaderboardBackend.Test
 dotnet test
 ```
+
+To debug with breakpoints, first call `export VSTEST_DEBUG=1` before running a test. Doing this allows you to attach a debug process to hit breakpoints with.
