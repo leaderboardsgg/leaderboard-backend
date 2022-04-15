@@ -1,5 +1,6 @@
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests.Leaderboards;
+using LeaderboardBackend.Models.Requests.Users;
 using LeaderboardBackend.Test.Lib;
 using NUnit.Framework;
 using System.Collections.Generic;
@@ -17,6 +18,7 @@ internal class Leaderboards
 {
 	private static TestApiFactory Factory = null!;
 	private static HttpClient ApiClient = null!;
+	private static string Token = null!;
 	private static JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
 	{
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -26,7 +28,8 @@ internal class Leaderboards
 	public static void SetUp()
 	{
 		Factory = new TestApiFactory();
-		ApiClient = Factory.CreateClient();	
+		ApiClient = Factory.CreateClient();
+		Token = LogInAdmin().Result.Token;
 	}
 
 	[Test]
@@ -40,18 +43,25 @@ internal class Leaderboards
 	[Test]
 	public static async Task CreateLeaderboard_GetLeaderboard()
 	{
-		CreateLeaderboardRequest createBody = new() 
+		CreateLeaderboardRequest body = new()
 		{
 			Name = Generators.GenerateRandomString(),
 			Slug = Generators.GenerateRandomString(),
 		};
-		HttpResponseMessage createResponse = await ApiClient.PostAsJsonAsync("/api/leaderboards", createBody, JsonSerializerOptions);
-		createResponse.EnsureSuccessStatusCode();
-		Leaderboard createdLeaderboard = await HttpHelpers.ReadFromResponseBody<Leaderboard>(createResponse, JsonSerializerOptions);
 
-		HttpResponseMessage getResponse = await ApiClient.GetAsync($"/api/leaderboards/{createdLeaderboard?.Id}");
-		getResponse.EnsureSuccessStatusCode();
-		Leaderboard retrievedLeaderboard = await HttpHelpers.ReadFromResponseBody<Leaderboard>(getResponse, JsonSerializerOptions);
+		Leaderboard createdLeaderboard = await HttpHelpers.Post<CreateLeaderboardRequest, Leaderboard>(
+			"/api/leaderboards",
+			body,
+			ApiClient,
+			JsonSerializerOptions,
+			Token
+		);
+
+		Leaderboard retrievedLeaderboard = await HttpHelpers.Get<Leaderboard>(
+			$"/api/leaderboards/{createdLeaderboard?.Id}",
+			ApiClient,
+			JsonSerializerOptions
+		);
 
 		Assert.AreEqual(createdLeaderboard, retrievedLeaderboard);
 	}
@@ -62,25 +72,32 @@ internal class Leaderboards
 		HashSet<Leaderboard> createdLeaderboards = new();
 		for (int i = 0; i < 5; i++)
 		{
-			CreateLeaderboardRequest createBody = new() 
+			CreateLeaderboardRequest createBody = new()
 			{
 				Name = Generators.GenerateRandomString(),
 				Slug = Generators.GenerateRandomString(),
 			};
-			HttpResponseMessage createResponse = await ApiClient.PostAsJsonAsync("/api/leaderboards", createBody, JsonSerializerOptions);
-			createResponse.EnsureSuccessStatusCode();
-			createdLeaderboards.Add(await HttpHelpers.ReadFromResponseBody<Leaderboard>(createResponse, JsonSerializerOptions));
+			createdLeaderboards.Add(await HttpHelpers.Post<CreateLeaderboardRequest, Leaderboard>(
+				"/api/leaderboards",
+				createBody,
+				ApiClient,
+				JsonSerializerOptions,
+				Token
+			));
 		}
 
 		IEnumerable<long> leaderboardIds = createdLeaderboards.Select(l => l.Id).ToList();
 		string leaderboardIdQuery = HttpHelpers.ListToQueryString(leaderboardIds, "ids");
 		HttpResponseMessage getResponse = await ApiClient.GetAsync($"api/leaderboards?{leaderboardIdQuery}");
 		List<Leaderboard> leaderboards = await HttpHelpers.ReadFromResponseBody<List<Leaderboard>>(getResponse, JsonSerializerOptions);
-		foreach(var leaderboard in leaderboards)
+		foreach (var leaderboard in leaderboards)
 		{
 			Assert.IsTrue(createdLeaderboards.Contains(leaderboard));
 			createdLeaderboards.Remove(leaderboard);
 		}
 		Assert.AreEqual(0, createdLeaderboards.Count);
 	}
+
+	private static async Task<LoginResponse> LogInAdmin() =>
+		await UserHelpers.Login(ApiClient, Factory.GetAdmin().Email, Factory.GetAdmin().Password, JsonSerializerOptions);
 }
