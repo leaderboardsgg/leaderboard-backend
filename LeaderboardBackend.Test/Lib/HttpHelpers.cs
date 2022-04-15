@@ -57,7 +57,7 @@ internal static class HttpHelpers
 		return string.Join("&", queryList);
 	}
 
-	// Shep: I don't really like how I've laid the arguments out like this, honestly. Might rework this.
+	// Shep: I don't really like how I've laid the arguments out like this, honestly. Might rework this entire methodology.
 	private static HttpRequestMessage CreateRequestMessage(
 		string endpoint,
 		HttpMethod method,

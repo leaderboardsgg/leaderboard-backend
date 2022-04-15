@@ -1,4 +1,3 @@
-using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests.Users;
 using System.Net.Http;

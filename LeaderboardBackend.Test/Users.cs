@@ -31,7 +31,7 @@ internal class Users
 	public static void SetUp()
 	{
 		Factory = new TestApiFactory();
-		ApiClient = Factory.CreateClient();	
+		ApiClient = Factory.CreateClient();
 	}
 
 	[Test]
@@ -45,7 +45,7 @@ internal class Users
 	[Test]
 	public static async Task GetUser_Found()
 	{
-		RegisterRequest registerBody = new() 
+		RegisterRequest registerBody = new()
 		{
 			Username = ValidUsername,
 			Password = ValidPassword,
@@ -95,8 +95,8 @@ internal class Users
 		{
 			HttpResponseMessage registerResponse = await ApiClient.PostAsJsonAsync("/api/users/register", request, JsonSerializerOptions);
 			Assert.AreEqual(
-				HttpStatusCode.BadRequest, 
-				registerResponse.StatusCode, 
+				HttpStatusCode.BadRequest,
+				registerResponse.StatusCode,
 				$"{request} did not produce BadRequest, produced {registerResponse.StatusCode}"
 			);
 		}
@@ -114,7 +114,7 @@ internal class Users
 	public static async Task FullAuthFlow()
 	{
 		// Register User
-		RegisterRequest registerBody = new() 
+		RegisterRequest registerBody = new()
 		{
 			Username = ValidUsername,
 			Password = ValidPassword,
@@ -125,7 +125,7 @@ internal class Users
 		registerResponse.EnsureSuccessStatusCode();
 		User createdUser = await HttpHelpers.ReadFromResponseBody<User>(registerResponse, JsonSerializerOptions);
 
-		// Login		
+		// Login
 		LoginRequest loginBody = new()
 		{
 			Email = createdUser!.Email,
@@ -147,7 +147,7 @@ internal class Users
 			}
 		};
 		HttpResponseMessage meResponse = await ApiClient.SendAsync(meRequest);
-		meResponse.EnsureSuccessStatusCode();	
+		meResponse.EnsureSuccessStatusCode();
 		User meUser = await HttpHelpers.ReadFromResponseBody<User>(registerResponse, JsonSerializerOptions);
 		Assert.AreEqual(createdUser, meUser);
 	}
