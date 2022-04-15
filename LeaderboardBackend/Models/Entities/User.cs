@@ -30,7 +30,6 @@ public class User
 	/// <summary>The User's email. Must be, well, an email.</summary>
 	/// <example>ayylmao.gaming@alg.gg</example>
 	[Required]
-	[JsonIgnore]
 	public string Email { get; set; } = null!;
 
 	[Required]

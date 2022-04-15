@@ -38,6 +38,7 @@ public class UsersController : ControllerBase
 		}
 
 		// FIXME: Return DTO that excludes email
+		user.Email = "";
 		return Ok(user);
 	}
 

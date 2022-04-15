@@ -128,7 +128,7 @@ internal class Users
 		// Login
 		LoginRequest loginBody = new()
 		{
-			Email = createdUser!.Email,
+			Email = createdUser.Email,
 			Password = ValidPassword,
 		};
 		HttpResponseMessage loginResponse = await ApiClient.PostAsJsonAsync("/api/users/login", loginBody, JsonSerializerOptions);
