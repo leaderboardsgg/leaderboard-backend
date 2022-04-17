@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -32,10 +31,16 @@ internal class Leaderboards
 		Token = LogInAdmin().Result.Token;
 	}
 
+	public static void TearDown()
+	{
+		ApiClient.Dispose();
+		Factory.Dispose();
+	}
+
 	[Test]
 	public static async Task GetLeaderboard_NoLeaderboards()
 	{
-		ulong id = 1;
+		ulong id = 10;
 		HttpResponseMessage response = await ApiClient.GetAsync($"/api/leaderboards/{id}");
 		Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
 	}
@@ -49,17 +54,21 @@ internal class Leaderboards
 			Slug = Generators.GenerateRandomString(),
 		};
 
-		Leaderboard createdLeaderboard = await HttpHelpers.Post<CreateLeaderboardRequest, Leaderboard>(
-			"/api/leaderboards",
-			body,
+		Leaderboard createdLeaderboard = await HttpHelpers.Post<Leaderboard>(
 			ApiClient,
-			JsonSerializerOptions,
-			Token
+			"/api/leaderboards",
+			new()
+			{
+				Body = body,
+				Jwt = Token,
+			},
+			JsonSerializerOptions
 		);
 
 		Leaderboard retrievedLeaderboard = await HttpHelpers.Get<Leaderboard>(
-			$"/api/leaderboards/{createdLeaderboard?.Id}",
 			ApiClient,
+			$"/api/leaderboards/{createdLeaderboard?.Id}",
+			new(),
 			JsonSerializerOptions
 		);
 
@@ -78,14 +87,13 @@ internal class Leaderboards
 				Slug = Generators.GenerateRandomString(),
 			};
 			createdLeaderboards.Add(
-				await HttpHelpers.Send<Leaderboard>(
+				await HttpHelpers.Post<Leaderboard>(
 					ApiClient,
 					"/api/leaderboards",
 					new()
 					{
 						Body = createBody,
 						Jwt = Token,
-						Method = HttpMethod.Post,
 					},
 					JsonSerializerOptions
 				)

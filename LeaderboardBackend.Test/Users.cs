@@ -45,20 +45,20 @@ internal class Users
 	[Test]
 	public static async Task GetUser_Found()
 	{
-		RegisterRequest registerBody = new()
-		{
-			Username = ValidUsername,
-			Password = ValidPassword,
-			PasswordConfirm = ValidPassword,
-			Email = ValidEmail,
-		};
-		HttpResponseMessage registerResponse = await ApiClient.PostAsJsonAsync("/api/users/register", registerBody, JsonSerializerOptions);
-		registerResponse.EnsureSuccessStatusCode();
-		User createdUser = await HttpHelpers.ReadFromResponseBody<User>(registerResponse, JsonSerializerOptions);
+		User createdUser = await UserHelpers.Register(
+			ApiClient,
+			ValidUsername,
+			ValidEmail,
+			ValidPassword,
+			JsonSerializerOptions
+		);
 
-		HttpResponseMessage userResponse = await ApiClient.GetAsync($"/api/users/{createdUser?.Id}");
-		userResponse.EnsureSuccessStatusCode();
-		User retrievedUser = await HttpHelpers.ReadFromResponseBody<User>(userResponse, JsonSerializerOptions);
+		User retrievedUser = await HttpHelpers.Get<User>(
+			ApiClient,
+			$"/api/users/{createdUser?.Id}",
+			new(),
+			JsonSerializerOptions
+		);
 
 		Assert.AreEqual(createdUser, retrievedUser);
 	}
@@ -91,7 +91,7 @@ internal class Users
 			},
 		};
 
-		foreach(RegisterRequest request in requests)
+		foreach (RegisterRequest request in requests)
 		{
 			HttpResponseMessage registerResponse = await ApiClient.PostAsJsonAsync("/api/users/register", request, JsonSerializerOptions);
 			Assert.AreEqual(

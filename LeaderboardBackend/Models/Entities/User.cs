@@ -54,9 +54,7 @@ public class User
 	public override bool Equals(object? obj)
 	{
 		return obj is User user &&
-			   Id.Equals(user.Id) &&
-			   Username.ToLower() == user.Username.ToLower() &&
-			   Email == user.Email;
+			   Id.Equals(user.Id);
 	}
 
 	public override int GetHashCode()

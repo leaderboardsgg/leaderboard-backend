@@ -11,37 +11,19 @@ namespace LeaderboardBackend.Test.Lib;
 
 internal static class HttpHelpers
 {
-	/// <typeparam name="Res">Response object class from the GET.</typeparam>
 	public static async Task<Res> Get<Res>(
-		string endpoint,
 		HttpClient client,
-		JsonSerializerOptions options,
-		string? jwt = null
-	)
-	{
-		return await Send<Res>(
-			CreateRequestMessage(endpoint, HttpMethod.Get, options, jwt),
-			client,
-			options
-		);
-	}
+		string endpoint,
+		HttpRequestInit init,
+		JsonSerializerOptions options
+	) => await Send<Res>(client, endpoint, init with { Method = HttpMethod.Get }, options);
 
-	/// <typeparam name="Body">Object class that defines the POST's request body.</typeparam>
-	/// <typeparam name="Res">Response object class from the POST.</typeparam>
-	public static async Task<Res> Post<Body, Res>(
-		string endpoint,
-		Body body,
+	public static async Task<Res> Post<Res>(
 		HttpClient client,
-		JsonSerializerOptions options,
-		string? jwt = null
-	)
-	{
-		return await Send<Res>(
-			CreateRequestMessage(endpoint, HttpMethod.Post, options, jwt, body),
-			client,
-			options
-		);
-	}
+		string endpoint,
+		HttpRequestInit init,
+		JsonSerializerOptions options
+	) => await Send<Res>(client, endpoint, init with { Method = HttpMethod.Post }, options);
 
 	public static async Task<T> ReadFromResponseBody<T>(HttpResponseMessage response, JsonSerializerOptions jsonOptions)
 	{
@@ -51,43 +33,45 @@ internal static class HttpHelpers
 		return obj!;
 	}
 
-	public static string ListToQueryString<T>(IEnumerable<T> list, string key)
-	{
-		IEnumerable<string> queryList = list.Select(l => $"{key}={l}");
-		return string.Join("&", queryList);
-	}
-
-	// Shep: I don't really like how I've laid the arguments out like this, honestly. Might rework this entire methodology.
-	private static HttpRequestMessage CreateRequestMessage(
+	private static async Task<Res> Send<Res>(
+		HttpClient client,
 		string endpoint,
-		HttpMethod method,
-		JsonSerializerOptions options,
-		string? jwt,
-		object? body = null
+		HttpRequestInit init,
+		JsonSerializerOptions options
 	)
 	{
-		HttpRequestMessage requestMessage = new(method, endpoint);
-
-		if (body is not null)
-		{
-			StringContent content = new(JsonSerializer.Serialize(body, options));
-			content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-			requestMessage.Content = content;
-		}
-
-		if (jwt is not null)
-		{
-			requestMessage.Headers.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, jwt);
-		}
-
-		return requestMessage; // To be then called with HttpClient.SendAsync(requestMessage);
-	}
-
-	// TODO: Try to have HttpClient be called within this class. Annoying for callers to keep passing it in.
-	private static async Task<Res> Send<Res>(HttpRequestMessage message, HttpClient client, JsonSerializerOptions options)
-	{
-		HttpResponseMessage response = await client.SendAsync(message);
+		HttpResponseMessage response = await client.SendAsync(
+			CreateRequestMessage(
+				endpoint,
+				init,
+				options
+			)
+		);
 		response.EnsureSuccessStatusCode();
 		return await HttpHelpers.ReadFromResponseBody<Res>(response, options);
 	}
+
+	private static HttpRequestMessage CreateRequestMessage(
+		string endpoint,
+		HttpRequestInit init,
+		JsonSerializerOptions options
+	) =>
+		new(init.Method, endpoint)
+		{
+			Headers =
+			{
+				Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, init.Jwt)
+			},
+			Content = init.Body switch
+			{
+				not null => new StringContent(JsonSerializer.Serialize(init.Body, options))
+				{
+					Headers =
+					{
+						ContentType = new("application/json"),
+					},
+				},
+				_ => default
+			}
+		};
 }

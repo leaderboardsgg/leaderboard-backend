@@ -4,9 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models.Requests.Leaderboards;
 using LeaderboardBackend.Models.Requests.Modships;
-using LeaderboardBackend.Models.Requests.Users;
 using LeaderboardBackend.Models.Entities;
-using System.Net.Http.Json;
 using LeaderboardBackend.Test.Lib;
 
 namespace LeaderboardBackend.Test;
@@ -35,8 +33,6 @@ internal class Modships
 	[Test]
 	public static async Task MakeMod_Success()
 	{
-		// Note: Retrieved Modship doesn't retrieve relations. I.e. it's User (but not User ID) field is null
-		// Also GET modship endpoint doesn't return arrays, although it should.
 		User admin = Factory.GetAdmin();
 		string jwt = await Login(admin);
 		Leaderboard createdLeaderboard = await CreateLeaderboard(jwt);
@@ -48,19 +44,25 @@ internal class Modships
 			UserId = admin.Id,
 		};
 
-		Modship created = await HttpHelpers.Post<CreateModshipRequest, Modship>(
-			"/api/modships",
-			makeModBody,
+		Modship created = await HttpHelpers.Post<Modship>(
 			ApiClient,
-			JsonSerializerOptions,
-			jwt
+			"/api/modships",
+			new()
+			{
+				Body = makeModBody,
+				Jwt = jwt
+			},
+			JsonSerializerOptions
 		);
 
 		Modship retrieved = await HttpHelpers.Get<Modship>(
-			$"/api/modships/{admin.Id}",
 			ApiClient,
-			JsonSerializerOptions,
-			jwt
+			$"/api/modships/{admin.Id}",
+			new()
+			{
+				Jwt = jwt
+			},
+			JsonSerializerOptions
 		);
 
 		Assert.NotNull(created.User);
@@ -69,18 +71,19 @@ internal class Modships
 
 	private static async Task<Leaderboard> CreateLeaderboard(string jwt)
 	{
-		CreateLeaderboardRequest createLeaderboardBody = new()
-		{
-			Name = "Mario Goes to Jail II",
-			Slug = "mario-goes-to-jail-ii"
-		};
-
-		return await HttpHelpers.Post<CreateLeaderboardRequest, Leaderboard>(
-			"/api/leaderboards",
-			createLeaderboardBody,
+		return await HttpHelpers.Post<Leaderboard>(
 			ApiClient,
-			JsonSerializerOptions,
-			jwt
+			"/api/leaderboards",
+			new()
+			{
+				Body = new CreateLeaderboardRequest()
+				{
+					Name = "Mario Goes to Jail II",
+					Slug = "mario-goes-to-jail-ii"
+				},
+				Jwt = jwt
+			},
+			JsonSerializerOptions
 		);
 	}
 

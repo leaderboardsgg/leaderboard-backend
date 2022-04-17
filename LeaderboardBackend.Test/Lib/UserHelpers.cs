@@ -15,45 +15,40 @@ internal static class UserHelpers
 		string email,
 		string password,
 		JsonSerializerOptions options
-	)
-	{
-		RegisterRequest registerBody = new()
-		{
-			Username = username,
-			Password = password,
-			PasswordConfirm = password,
-			Email = email,
-		};
-
-		return await HttpHelpers.Send<User>(
+	) =>
+		await HttpHelpers.Post<User>(
 			apiClient,
 			"/api/users/register",
 			new()
 			{
-				Method = HttpMethod.Post,
-				Body = registerBody
+				Body = new RegisterRequest()
+				{
+					Username = username,
+					Password = password,
+					PasswordConfirm = password,
+					Email = email,
+				}
 			},
 			options
 		);
-	}
 
-	public static async Task<LoginResponse> Login(HttpClient apiClient, string email, string password, JsonSerializerOptions options)
-	{
-		LoginRequest loginBody = new()
-		{
-			Email = email,
-			Password = password,
-		};
-
-		return await HttpHelpers.Send<LoginResponse>(
+	public static async Task<LoginResponse> Login(
+		HttpClient apiClient,
+		string email,
+		string password,
+		JsonSerializerOptions options
+	) =>
+		await HttpHelpers.Post<LoginResponse>(
 			apiClient,
 			"/api/users/login",
 			new()
 			{
-				Method = HttpMethod.Post,
-				Body = loginBody
+				Body = new LoginRequest()
+				{
+					Email = email,
+					Password = password,
+				}
 			},
 			options
 		);
-	}
 }
