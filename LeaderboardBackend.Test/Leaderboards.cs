@@ -77,17 +77,23 @@ internal class Leaderboards
 				Name = Generators.GenerateRandomString(),
 				Slug = Generators.GenerateRandomString(),
 			};
-			createdLeaderboards.Add(await HttpHelpers.Post<CreateLeaderboardRequest, Leaderboard>(
-				"/api/leaderboards",
-				createBody,
-				ApiClient,
-				JsonSerializerOptions,
-				Token
-			));
+			createdLeaderboards.Add(
+				await HttpHelpers.Send<Leaderboard>(
+					ApiClient,
+					"/api/leaderboards",
+					new()
+					{
+						Body = createBody,
+						Jwt = Token,
+						Method = HttpMethod.Post,
+					},
+					JsonSerializerOptions
+				)
+			);
 		}
 
 		IEnumerable<long> leaderboardIds = createdLeaderboards.Select(l => l.Id).ToList();
-		string leaderboardIdQuery = HttpHelpers.ListToQueryString(leaderboardIds, "ids");
+		string leaderboardIdQuery = ListToQueryString(leaderboardIds, "ids");
 		HttpResponseMessage getResponse = await ApiClient.GetAsync($"api/leaderboards?{leaderboardIdQuery}");
 		List<Leaderboard> leaderboards = await HttpHelpers.ReadFromResponseBody<List<Leaderboard>>(getResponse, JsonSerializerOptions);
 		foreach (var leaderboard in leaderboards)
@@ -100,4 +106,10 @@ internal class Leaderboards
 
 	private static async Task<LoginResponse> LogInAdmin() =>
 		await UserHelpers.Login(ApiClient, Factory.GetAdmin().Email, Factory.GetAdmin().Password, JsonSerializerOptions);
+
+	private static string ListToQueryString<T>(IEnumerable<T> list, string key)
+	{
+		IEnumerable<string> queryList = list.Select(l => $"{key}={l}");
+		return string.Join("&", queryList);
+	}
 }
