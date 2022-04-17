@@ -10,22 +10,15 @@ namespace LeaderboardBackend.Test.Lib;
 
 internal class TestApiFactory : WebApplicationFactory<Program>
 {
-	// Value needs to be set in `Seed()`, as the constructor doesn't actually get called
-	// in ConfigureWebhost.
-	// Seems like a smell, I know.
-	private static User Admin = null!;
-	private static readonly string AdminPassword = "P4ssword";
-
-	// TODO: Make this a singleton instead of creating a new object all the time
-	// TODO: Also maybe only save the generated ID
-	public User GetAdmin() => new()
+	private static User s_admin = new()
 	{
-		Id = Admin.Id,
 		Username = "AyyLmaoGaming",
 		Email = "ayylmaogaming@alg.gg",
-		Password = AdminPassword,
+		Password = "P4ssword",
 		Admin = true,
 	};
+
+	public User GetAdmin() => s_admin;
 
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
@@ -61,15 +54,16 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 			Slug = "mario-goes-to-jail"
 		};
 
-		Admin = new()
+		User admin = new()
 		{
-			Username = "AyyLmaoGaming",
-			Email = "ayylmaogaming@alg.gg",
-			Password = BCryptNet.EnhancedHashPassword(AdminPassword),
+			Id = s_admin.Id,
+			Username = s_admin.Username,
+			Email = s_admin.Email,
+			Password = BCryptNet.EnhancedHashPassword(s_admin.Password),
 			Admin = true,
 		};
 
-		dbContext.Add<User>(Admin);
+		dbContext.Add<User>(admin);
 		dbContext.Add<Leaderboard>(leaderboard);
 
 		dbContext.SaveChanges();
