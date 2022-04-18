@@ -2,10 +2,10 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests.Categories;
 using LeaderboardBackend.Models.Requests.Leaderboards;
 using LeaderboardBackend.Test.Lib;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NUnit.Framework;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -20,49 +20,80 @@ internal class Categories
 	{
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 	};
+	private static string? Jwt;
 
 	[SetUp]
 	public static void SetUp()
 	{
 		Factory = new TestApiFactory();
 		ApiClient = Factory.CreateClient();
+		Jwt = UserHelpers.Login(ApiClient, Factory.GetAdmin().Email, Factory.GetAdmin().Password, JsonSerializerOptions).Result.Token;
 	}
 
 	[Test]
 	public static async Task GetCategory_NoCategories()
 	{
 		long id = 1;
-		HttpResponseMessage response = await ApiClient.GetAsync($"/api/categories/{id}");
+		HttpRequestMessage request = new(HttpMethod.Get, $"/api/categories/{id}")
+		{
+			Headers =
+			{
+				Authorization = new(JwtBearerDefaults.AuthenticationScheme, Jwt)
+			}
+		};
+		HttpResponseMessage response = await ApiClient.SendAsync(request);
 		Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
 	}
 
 	[Test]
 	public static async Task CreateCategory_GetCategory()
 	{
-		CreateLeaderboardRequest createLeaderboardBody = new() 
+		CreateLeaderboardRequest createLeaderboardBody = new()
 		{
 			Name = Generators.GenerateRandomString(),
 			Slug = Generators.GenerateRandomString(),
 		};
-		HttpResponseMessage createLeaderboardResponse = await ApiClient.PostAsJsonAsync("/api/leaderboards", createLeaderboardBody, JsonSerializerOptions);
-		createLeaderboardResponse.EnsureSuccessStatusCode();
-		Leaderboard createdLeaderboard = await HttpHelpers.ReadFromResponseBody<Leaderboard>(createLeaderboardResponse, JsonSerializerOptions);
-		
-		CreateCategoryRequest createBody = new()
+
+		Leaderboard createdLeaderboard = await HttpHelpers.Post<Leaderboard>(
+			ApiClient,
+			"/api/leaderboards",
+			new()
+			{
+				Body = createLeaderboardBody,
+				Jwt = Jwt,
+			},
+			JsonSerializerOptions
+		);
+
+		CreateCategoryRequest createCategoryBody = new()
 		{
 			Name = Generators.GenerateRandomString(),
 			Slug = Generators.GenerateRandomString(),
 			LeaderboardId = createdLeaderboard.Id,
 		};
-		HttpResponseMessage createResponse = await ApiClient.PostAsJsonAsync("/api/categories", createBody, JsonSerializerOptions);
-		createResponse.EnsureSuccessStatusCode();
-		Category createdCategory = await HttpHelpers.ReadFromResponseBody<Category>(createResponse, JsonSerializerOptions);
+
+		Category createdCategory = await HttpHelpers.Post<Category>(
+			ApiClient,
+			"/api/categories",
+			new()
+			{
+				Body = createCategoryBody,
+				Jwt = Jwt,
+			},
+			JsonSerializerOptions
+		);
 
 		Assert.AreEqual(1, createdCategory.PlayersMax);
 
-		HttpResponseMessage getResponse = await ApiClient.GetAsync($"/api/categories/{createdCategory?.Id}");
-		getResponse.EnsureSuccessStatusCode();
-		Category retrievedCategory = await HttpHelpers.ReadFromResponseBody<Category>(getResponse, JsonSerializerOptions);
+		Category retrievedCategory = await HttpHelpers.Get<Category>(
+			ApiClient,
+			$"/api/categories/{createdCategory?.Id}",
+			new()
+			{
+				Jwt = Jwt,
+			},
+			JsonSerializerOptions
+		);
 
 		Assert.AreEqual(createdCategory, retrievedCategory);
 	}

@@ -19,10 +19,6 @@ internal class Modships
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 	};
 
-	private static readonly string ValidUsername = "Test";
-	private static readonly string ValidPassword = "c00l_pAssword";
-	private static readonly string ValidEmail = "test@email.com";
-
 	[SetUp]
 	public static void SetUp()
 	{
