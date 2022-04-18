@@ -12,6 +12,7 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 {
 	private static User s_admin = new()
 	{
+		Id = System.Guid.NewGuid(),
 		Username = "AyyLmaoGaming",
 		Email = "ayylmaogaming@alg.gg",
 		Password = "P4ssword",
