@@ -30,7 +30,7 @@ internal class Modships
 	public static async Task MakeMod_Success()
 	{
 		User admin = Factory.GetAdmin();
-		string jwt = await Login(admin);
+		string jwt = (await UserHelpers.Login(ApiClient, admin.Email, admin.Password)).Token;
 		Leaderboard createdLeaderboard = await CreateLeaderboard(jwt);
 
 		// Make user a mod
@@ -47,8 +47,7 @@ internal class Modships
 			{
 				Body = makeModBody,
 				Jwt = jwt
-			},
-			JsonSerializerOptions
+			}
 		);
 
 		Modship retrieved = await HttpHelpers.Get<Modship>(
@@ -57,8 +56,7 @@ internal class Modships
 			new()
 			{
 				Jwt = jwt
-			},
-			JsonSerializerOptions
+			}
 		);
 
 		Assert.NotNull(created.User);
@@ -78,11 +76,7 @@ internal class Modships
 					Slug = "mario-goes-to-jail-ii"
 				},
 				Jwt = jwt
-			},
-			JsonSerializerOptions
+			}
 		);
 	}
-
-	private static async Task<string> Login(User user) =>
-		(await UserHelpers.Login(ApiClient, user.Email, user.Password, JsonSerializerOptions)).Token;
 }

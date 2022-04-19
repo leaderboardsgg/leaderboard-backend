@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NUnit.Framework;
 using System.Net;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LeaderboardBackend.Test;
@@ -16,10 +15,6 @@ internal class Categories
 {
 	private static TestApiFactory Factory = null!;
 	private static HttpClient ApiClient = null!;
-	private static JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
-	{
-		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-	};
 	private static string? Jwt;
 
 	[SetUp]
@@ -27,7 +22,7 @@ internal class Categories
 	{
 		Factory = new TestApiFactory();
 		ApiClient = Factory.CreateClient();
-		Jwt = UserHelpers.Login(ApiClient, Factory.GetAdmin().Email, Factory.GetAdmin().Password, JsonSerializerOptions).Result.Token;
+		Jwt = UserHelpers.LoginAdmin(ApiClient).Result.Token;
 	}
 
 	[Test]
@@ -61,8 +56,7 @@ internal class Categories
 			{
 				Body = createLeaderboardBody,
 				Jwt = Jwt,
-			},
-			JsonSerializerOptions
+			}
 		);
 
 		CreateCategoryRequest createCategoryBody = new()
@@ -79,8 +73,7 @@ internal class Categories
 			{
 				Body = createCategoryBody,
 				Jwt = Jwt,
-			},
-			JsonSerializerOptions
+			}
 		);
 
 		Assert.AreEqual(1, createdCategory.PlayersMax);
@@ -91,8 +84,7 @@ internal class Categories
 			new()
 			{
 				Jwt = Jwt,
-			},
-			JsonSerializerOptions
+			}
 		);
 
 		Assert.AreEqual(createdCategory, retrievedCategory);

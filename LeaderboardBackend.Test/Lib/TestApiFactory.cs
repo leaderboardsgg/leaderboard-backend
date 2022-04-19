@@ -10,16 +10,7 @@ namespace LeaderboardBackend.Test.Lib;
 
 internal class TestApiFactory : WebApplicationFactory<Program>
 {
-	private static User s_admin = new()
-	{
-		Id = System.Guid.NewGuid(),
-		Username = "AyyLmaoGaming",
-		Email = "ayylmaogaming@alg.gg",
-		Password = "P4ssword",
-		Admin = true,
-	};
-
-	public User GetAdmin() => s_admin;
+	public User GetAdmin() => TestInitCommonFields.Admin;
 
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
@@ -57,10 +48,10 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 
 		User admin = new()
 		{
-			Id = s_admin.Id,
-			Username = s_admin.Username,
-			Email = s_admin.Email,
-			Password = BCryptNet.EnhancedHashPassword(s_admin.Password),
+			Id = TestInitCommonFields.Admin.Id,
+			Username = TestInitCommonFields.Admin.Username,
+			Email = TestInitCommonFields.Admin.Email,
+			Password = BCryptNet.EnhancedHashPassword(TestInitCommonFields.Admin.Password),
 			Admin = true,
 		};
 

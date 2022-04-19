@@ -1,7 +1,6 @@
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests.Users;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -13,8 +12,7 @@ internal static class UserHelpers
 		HttpClient apiClient,
 		string username,
 		string email,
-		string password,
-		JsonSerializerOptions options
+		string password
 	) =>
 		await HttpHelpers.Post<User>(
 			apiClient,
@@ -28,15 +26,13 @@ internal static class UserHelpers
 					PasswordConfirm = password,
 					Email = email,
 				}
-			},
-			options
+			}
 		);
 
 	public static async Task<LoginResponse> Login(
 		HttpClient apiClient,
 		string email,
-		string password,
-		JsonSerializerOptions options
+		string password
 	) =>
 		await HttpHelpers.Post<LoginResponse>(
 			apiClient,
@@ -48,7 +44,22 @@ internal static class UserHelpers
 					Email = email,
 					Password = password,
 				}
-			},
-			options
+			}
+		);
+
+	public static async Task<LoginResponse> LoginAdmin(
+		HttpClient apiClient
+	) =>
+		await HttpHelpers.Post<LoginResponse>(
+			apiClient,
+			"/api/users/login",
+			new()
+			{
+				Body = new LoginRequest()
+				{
+					Email = TestInitCommonFields.Admin.Email,
+					Password = TestInitCommonFields.Admin.Password,
+				}
+			}
 		);
 }

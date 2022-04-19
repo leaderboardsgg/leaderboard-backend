@@ -14,21 +14,19 @@ internal static class HttpHelpers
 	public static async Task<Res> Get<Res>(
 		HttpClient client,
 		string endpoint,
-		HttpRequestInit init,
-		JsonSerializerOptions options
-	) => await Send<Res>(client, endpoint, init with { Method = HttpMethod.Get }, options);
+		HttpRequestInit init
+	) => await Send<Res>(client, endpoint, init with { Method = HttpMethod.Get });
 
 	public static async Task<Res> Post<Res>(
 		HttpClient client,
 		string endpoint,
-		HttpRequestInit init,
-		JsonSerializerOptions options
-	) => await Send<Res>(client, endpoint, init with { Method = HttpMethod.Post }, options);
+		HttpRequestInit init
+	) => await Send<Res>(client, endpoint, init with { Method = HttpMethod.Post });
 
-	public static async Task<T> ReadFromResponseBody<T>(HttpResponseMessage response, JsonSerializerOptions jsonOptions)
+	public static async Task<T> ReadFromResponseBody<T>(HttpResponseMessage response)
 	{
 		string rawJson = await response.Content.ReadAsStringAsync();
-		T? obj = JsonSerializer.Deserialize<T>(rawJson, jsonOptions);
+		T? obj = JsonSerializer.Deserialize<T>(rawJson, TestInitCommonFields.JsonSerializerOptions);
 		Assert.NotNull(obj);
 		return obj!;
 	}
@@ -36,19 +34,18 @@ internal static class HttpHelpers
 	private static async Task<Res> Send<Res>(
 		HttpClient client,
 		string endpoint,
-		HttpRequestInit init,
-		JsonSerializerOptions options
+		HttpRequestInit init
 	)
 	{
 		HttpResponseMessage response = await client.SendAsync(
 			CreateRequestMessage(
 				endpoint,
 				init,
-				options
+				TestInitCommonFields.JsonSerializerOptions
 			)
 		);
 		response.EnsureSuccessStatusCode();
-		return await HttpHelpers.ReadFromResponseBody<Res>(response, options);
+		return await HttpHelpers.ReadFromResponseBody<Res>(response);
 	}
 
 	private static HttpRequestMessage CreateRequestMessage(

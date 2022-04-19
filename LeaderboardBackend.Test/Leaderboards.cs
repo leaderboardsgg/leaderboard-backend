@@ -1,13 +1,11 @@
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests.Leaderboards;
-using LeaderboardBackend.Models.Requests.Users;
 using LeaderboardBackend.Test.Lib;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LeaderboardBackend.Test;
@@ -17,18 +15,14 @@ internal class Leaderboards
 {
 	private static TestApiFactory Factory = null!;
 	private static HttpClient ApiClient = null!;
-	private static string Token = null!;
-	private static JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
-	{
-		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-	};
+	private static string? Jwt;
 
 	[SetUp]
 	public static void SetUp()
 	{
 		Factory = new TestApiFactory();
 		ApiClient = Factory.CreateClient();
-		Token = LogInAdmin().Result.Token;
+		Jwt = UserHelpers.LoginAdmin(ApiClient).Result.Token;
 	}
 
 	public static void TearDown()
@@ -60,16 +54,14 @@ internal class Leaderboards
 			new()
 			{
 				Body = body,
-				Jwt = Token,
-			},
-			JsonSerializerOptions
+				Jwt = Jwt,
+			}
 		);
 
 		Leaderboard retrievedLeaderboard = await HttpHelpers.Get<Leaderboard>(
 			ApiClient,
 			$"/api/leaderboards/{createdLeaderboard?.Id}",
-			new(),
-			JsonSerializerOptions
+			new()
 		);
 
 		Assert.AreEqual(createdLeaderboard, retrievedLeaderboard);
@@ -93,9 +85,8 @@ internal class Leaderboards
 					new()
 					{
 						Body = createBody,
-						Jwt = Token,
-					},
-					JsonSerializerOptions
+						Jwt = Jwt,
+					}
 				)
 			);
 		}
@@ -103,7 +94,7 @@ internal class Leaderboards
 		IEnumerable<long> leaderboardIds = createdLeaderboards.Select(l => l.Id).ToList();
 		string leaderboardIdQuery = ListToQueryString(leaderboardIds, "ids");
 		HttpResponseMessage getResponse = await ApiClient.GetAsync($"api/leaderboards?{leaderboardIdQuery}");
-		List<Leaderboard> leaderboards = await HttpHelpers.ReadFromResponseBody<List<Leaderboard>>(getResponse, JsonSerializerOptions);
+		List<Leaderboard> leaderboards = await HttpHelpers.ReadFromResponseBody<List<Leaderboard>>(getResponse);
 		foreach (var leaderboard in leaderboards)
 		{
 			Assert.IsTrue(createdLeaderboards.Contains(leaderboard));
@@ -111,9 +102,6 @@ internal class Leaderboards
 		}
 		Assert.AreEqual(0, createdLeaderboards.Count);
 	}
-
-	private static async Task<LoginResponse> LogInAdmin() =>
-		await UserHelpers.Login(ApiClient, Factory.GetAdmin().Email, Factory.GetAdmin().Password, JsonSerializerOptions);
 
 	private static string ListToQueryString<T>(IEnumerable<T> list, string key)
 	{
