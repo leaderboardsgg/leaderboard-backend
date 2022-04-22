@@ -13,5 +13,6 @@ public class ApplicationContext : DbContext
 	public DbSet<Leaderboard> Leaderboards { get; set; } = null!;
 	public DbSet<Modship> Modships { get; set; } = null!; 
 	public DbSet<Run> Runs { get; set; } = null!; 
+	public DbSet<Participation> Participations { get; set; } = null!; 
 	public DbSet<User> Users { get; set; } = null!;
 }

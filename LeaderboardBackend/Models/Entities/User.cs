@@ -54,6 +54,9 @@ public class User
 	[JsonIgnore]
 	public List<Modship>? Modships { get; set; }
 
+	[JsonIgnore]
+	public List<Participation>?	Participations { get; set; }
+
 	public override bool Equals(object? obj)
 	{
 		return obj is User user &&

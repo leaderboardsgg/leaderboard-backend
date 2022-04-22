@@ -24,5 +24,8 @@ public class Run
 	[Required]
 	public RunStatus Status { get; set; }
 
-	public List<Judgement>? Judgements { get; set; }	
+	public List<Judgement>? Judgements { get; set; }
+
+	[Required]
+	public List<Participation>? Participations { get; set; }
 }
