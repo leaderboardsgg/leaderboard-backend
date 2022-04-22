@@ -1,6 +1,6 @@
 using LeaderboardBackend.Models.Entities;
 
-namespace LeaderboardBackend.Services.Impl;
+namespace LeaderboardBackend.Services;
 
 public class RunService : IRunService
 {
