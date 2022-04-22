@@ -1,3 +1,4 @@
+using BCryptNet = BCrypt.Net.BCrypt;
 using LeaderboardBackend.Models.Entities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -9,6 +10,8 @@ namespace LeaderboardBackend.Test.Lib;
 
 internal class TestApiFactory : WebApplicationFactory<Program>
 {
+	public User GetAdmin() => TestInitCommonFields.Admin;
+
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
 		// Set the environment for the run to Staging
@@ -25,10 +28,36 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 			if (dbContext.Database.IsInMemory())
 			{
 				dbContext.Database.EnsureCreated();
-			} else
+			}
+			else
 			{
 				dbContext.Database.Migrate();
 			}
+			Seed(dbContext);
 		});
+	}
+
+	private void Seed(ApplicationContext dbContext)
+	{
+
+		Leaderboard leaderboard = new()
+		{
+			Name = "Mario Goes to Jail",
+			Slug = "mario-goes-to-jail"
+		};
+
+		User admin = new()
+		{
+			Id = TestInitCommonFields.Admin.Id,
+			Username = TestInitCommonFields.Admin.Username,
+			Email = TestInitCommonFields.Admin.Email,
+			Password = BCryptNet.EnhancedHashPassword(TestInitCommonFields.Admin.Password),
+			Admin = true,
+		};
+
+		dbContext.Add<User>(admin);
+		dbContext.Add<Leaderboard>(leaderboard);
+
+		dbContext.SaveChanges();
 	}
 }

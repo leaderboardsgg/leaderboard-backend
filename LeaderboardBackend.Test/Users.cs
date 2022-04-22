@@ -18,10 +18,6 @@ internal class Users
 {
 	private static TestApiFactory Factory = null!;
 	private static HttpClient ApiClient = null!;
-	private static JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
-	{
-		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-	};
 
 	private static readonly string ValidUsername = "Test";
 	private static readonly string ValidPassword = "c00l_pAssword";
@@ -31,7 +27,7 @@ internal class Users
 	public static void SetUp()
 	{
 		Factory = new TestApiFactory();
-		ApiClient = Factory.CreateClient();	
+		ApiClient = Factory.CreateClient();
 	}
 
 	[Test]
@@ -45,20 +41,18 @@ internal class Users
 	[Test]
 	public static async Task GetUser_Found()
 	{
-		RegisterRequest registerBody = new() 
-		{
-			Username = ValidUsername,
-			Password = ValidPassword,
-			PasswordConfirm = ValidPassword,
-			Email = ValidEmail,
-		};
-		HttpResponseMessage registerResponse = await ApiClient.PostAsJsonAsync("/api/users/register", registerBody, JsonSerializerOptions);
-		registerResponse.EnsureSuccessStatusCode();
-		User createdUser = await HttpHelpers.ReadFromResponseBody<User>(registerResponse, JsonSerializerOptions);
+		User createdUser = await UserHelpers.Register(
+			ApiClient,
+			ValidUsername,
+			ValidEmail,
+			ValidPassword
+		);
 
-		HttpResponseMessage userResponse = await ApiClient.GetAsync($"/api/users/{createdUser?.Id}");
-		userResponse.EnsureSuccessStatusCode();
-		User retrievedUser = await HttpHelpers.ReadFromResponseBody<User>(userResponse, JsonSerializerOptions);
+		User retrievedUser = await HttpHelpers.Get<User>(
+			ApiClient,
+			$"/api/users/{createdUser?.Id}",
+			new()
+		);
 
 		Assert.AreEqual(createdUser, retrievedUser);
 	}
@@ -91,12 +85,12 @@ internal class Users
 			},
 		};
 
-		foreach(RegisterRequest request in requests)
+		foreach (RegisterRequest request in requests)
 		{
-			HttpResponseMessage registerResponse = await ApiClient.PostAsJsonAsync("/api/users/register", request, JsonSerializerOptions);
+			HttpResponseMessage registerResponse = await ApiClient.PostAsJsonAsync("/api/users/register", request);
 			Assert.AreEqual(
-				HttpStatusCode.BadRequest, 
-				registerResponse.StatusCode, 
+				HttpStatusCode.BadRequest,
+				registerResponse.StatusCode,
 				$"{request} did not produce BadRequest, produced {registerResponse.StatusCode}"
 			);
 		}
@@ -114,27 +108,27 @@ internal class Users
 	public static async Task FullAuthFlow()
 	{
 		// Register User
-		RegisterRequest registerBody = new() 
+		RegisterRequest registerBody = new()
 		{
 			Username = ValidUsername,
 			Password = ValidPassword,
 			PasswordConfirm = ValidPassword,
 			Email = ValidEmail,
 		};
-		HttpResponseMessage registerResponse = await ApiClient.PostAsJsonAsync("/api/users/register", registerBody, JsonSerializerOptions);
+		HttpResponseMessage registerResponse = await ApiClient.PostAsJsonAsync("/api/users/register", registerBody);
 		registerResponse.EnsureSuccessStatusCode();
-		User createdUser = await HttpHelpers.ReadFromResponseBody<User>(registerResponse, JsonSerializerOptions);
+		User createdUser = await HttpHelpers.ReadFromResponseBody<User>(registerResponse);
 
-		// Login		
+		// Login
 		LoginRequest loginBody = new()
 		{
-			Email = createdUser!.Email,
+			Email = createdUser.Email,
 			Password = ValidPassword,
 		};
-		HttpResponseMessage loginResponse = await ApiClient.PostAsJsonAsync("/api/users/login", loginBody, JsonSerializerOptions);
+		HttpResponseMessage loginResponse = await ApiClient.PostAsJsonAsync("/api/users/login", loginBody);
 		loginResponse.EnsureSuccessStatusCode();
 
-		string token = (await HttpHelpers.ReadFromResponseBody<LoginResponse>(loginResponse, JsonSerializerOptions)).Token;
+		string token = (await HttpHelpers.ReadFromResponseBody<LoginResponse>(loginResponse)).Token;
 
 		// Me
 		HttpRequestMessage meRequest = new(
@@ -147,8 +141,8 @@ internal class Users
 			}
 		};
 		HttpResponseMessage meResponse = await ApiClient.SendAsync(meRequest);
-		meResponse.EnsureSuccessStatusCode();	
-		User meUser = await HttpHelpers.ReadFromResponseBody<User>(registerResponse, JsonSerializerOptions);
+		meResponse.EnsureSuccessStatusCode();
+		User meUser = await HttpHelpers.ReadFromResponseBody<User>(registerResponse);
 		Assert.AreEqual(createdUser, meUser);
 	}
 }

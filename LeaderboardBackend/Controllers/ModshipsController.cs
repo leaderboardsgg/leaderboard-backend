@@ -1,7 +1,9 @@
+using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests.Modships;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Controllers.Annotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeaderboardBackend.Controllers;
@@ -44,7 +46,6 @@ public class ModshipsController : ControllerBase
 		return Ok(modship);
 	}
 
-	// FIXME: Add authz for admins only
 	/// <summary>Makes a User a Mod for a Leaderboard. Admin-only.</summary>
 	/// <param name="body">A CreateModshipRequest instance.</param>
 	/// <response code="201">An object containing the Modship ID.</response>
@@ -52,6 +53,7 @@ public class ModshipsController : ControllerBase
 	/// <response code="404">If a non-admin calls this.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.Post))]
+	[Authorize(Policy = UserTypes.Admin)]
 	[HttpPost]
 	public async Task<ActionResult> MakeMod([FromBody] CreateModshipRequest body)
 	{

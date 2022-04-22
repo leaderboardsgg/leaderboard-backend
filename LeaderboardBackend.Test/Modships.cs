@@ -4,9 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models.Requests.Leaderboards;
 using LeaderboardBackend.Models.Requests.Modships;
-using LeaderboardBackend.Models.Requests.Users;
 using LeaderboardBackend.Models.Entities;
-using System.Net.Http.Json;
 using LeaderboardBackend.Test.Lib;
 
 namespace LeaderboardBackend.Test;
@@ -21,10 +19,6 @@ internal class Modships
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 	};
 
-	private static readonly string ValidUsername = "Test";
-	private static readonly string ValidPassword = "c00l_pAssword";
-	private static readonly string ValidEmail = "test@email.com";
-
 	[SetUp]
 	public static void SetUp()
 	{
@@ -35,51 +29,54 @@ internal class Modships
 	[Test]
 	public static async Task MakeMod_Success()
 	{
-		User createdUser = await CreateUser();
-		Leaderboard createdLeaderboard = await CreateLeaderboard();
+		User admin = Factory.GetAdmin();
+		string jwt = (await UserHelpers.Login(ApiClient, admin.Email, admin.Password)).Token;
+		Leaderboard createdLeaderboard = await CreateLeaderboard(jwt);
 
 		// Make user a mod
 		CreateModshipRequest makeModBody = new()
 		{
 			LeaderboardId = createdLeaderboard.Id,
-			UserId = createdUser.Id,
+			UserId = admin.Id,
 		};
 
-		HttpResponseMessage makeModResponse = await ApiClient.PostAsJsonAsync("/api/modships", makeModBody, JsonSerializerOptions);
-		makeModResponse.EnsureSuccessStatusCode();
-		Modship createdModship = await HttpHelpers.ReadFromResponseBody<Modship>(makeModResponse, JsonSerializerOptions);
+		Modship created = await HttpHelpers.Post<Modship>(
+			ApiClient,
+			"/api/modships",
+			new()
+			{
+				Body = makeModBody,
+				Jwt = jwt
+			}
+		);
 
-		HttpResponseMessage getModshipResponse = await ApiClient.GetAsync($"/api/modships/{createdUser?.Id}");
-		getModshipResponse.EnsureSuccessStatusCode();
-		Modship retrievedModship = await HttpHelpers.ReadFromResponseBody<Modship>(getModshipResponse, JsonSerializerOptions);
+		Modship retrieved = await HttpHelpers.Get<Modship>(
+			ApiClient,
+			$"/api/modships/{admin.Id}",
+			new()
+			{
+				Jwt = jwt
+			}
+		);
 
-		Assert.AreEqual(createdModship, retrievedModship);
+		Assert.NotNull(created.User);
+		Assert.AreEqual(created, retrieved);
 	}
 
-	private static async Task<User> CreateUser()
+	private static async Task<Leaderboard> CreateLeaderboard(string jwt)
 	{
-		RegisterRequest registerBody = new()
-		{
-			Username = ValidUsername,
-			Password = ValidPassword,
-			PasswordConfirm = ValidPassword,
-			Email = ValidEmail,
-		};
-		HttpResponseMessage registerResponse = await ApiClient.PostAsJsonAsync("/api/users/register", registerBody, JsonSerializerOptions);
-		registerResponse.EnsureSuccessStatusCode();
-		return await HttpHelpers.ReadFromResponseBody<User>(registerResponse, JsonSerializerOptions);
-	}
-
-	private static async Task<Leaderboard> CreateLeaderboard()
-	{
-		CreateLeaderboardRequest createLeaderboardBody = new()
-		{
-			Name = "Mario Goes to Jail II",
-			Slug = "mario-goes-to-jail-ii"
-		};
-
-		HttpResponseMessage createLeaderboardResponse = await ApiClient.PostAsJsonAsync("/api/leaderboards", createLeaderboardBody, JsonSerializerOptions);
-		createLeaderboardResponse.EnsureSuccessStatusCode();
-		return await HttpHelpers.ReadFromResponseBody<Leaderboard>(createLeaderboardResponse, JsonSerializerOptions);
+		return await HttpHelpers.Post<Leaderboard>(
+			ApiClient,
+			"/api/leaderboards",
+			new()
+			{
+				Body = new CreateLeaderboardRequest()
+				{
+					Name = "Mario Goes to Jail II",
+					Slug = "mario-goes-to-jail-ii"
+				},
+				Jwt = jwt
+			}
+		);
 	}
 }

@@ -1,8 +1,10 @@
 using dotenv.net;
 using dotenv.net.Utilities;
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -10,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 #region WebApplicationBuilder
 
@@ -42,6 +45,7 @@ builder.Services.AddControllers(opt =>
 	opt.OutputFormatters.RemoveType<StringOutputFormatter>();
 }).AddJsonOptions(opt =>
 {
+	opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 	opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 
@@ -73,6 +77,39 @@ builder.Services
 			IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
 		};
 	});
+
+// Configure authorisation.
+builder.Services.AddAuthorization(options =>
+{
+	options.AddPolicy(UserTypes.Admin, policy =>
+	{
+		policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+		policy.RequireAuthenticatedUser();
+		policy.Requirements.Add(new UserTypeRequirement(UserTypes.Admin));
+	});
+	options.AddPolicy(UserTypes.Mod, policy =>
+	{
+		policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+		policy.RequireAuthenticatedUser();
+		policy.Requirements.Add(new UserTypeRequirement(UserTypes.Mod));
+	});
+
+	// Handles empty [Authorize] attributes
+	options.DefaultPolicy = new AuthorizationPolicyBuilder()
+		.AddAuthenticationSchemes(new[] { JwtBearerDefaults.AuthenticationScheme })
+		.RequireAuthenticatedUser()
+		.AddRequirements(new[] { new UserTypeRequirement(UserTypes.User) })
+		.Build();
+
+	options.FallbackPolicy = new AuthorizationPolicyBuilder()
+		.AddAuthenticationSchemes(new[] { JwtBearerDefaults.AuthenticationScheme })
+		.RequireAuthenticatedUser()
+		.Build();
+});
+
+// Can't use AddSingleton here since we call the DB in the Handler
+builder.Services.AddScoped<IAuthorizationHandler, UserTypeAuthorizationHandler>();
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, MiddlewareResultHandler>();
 
 #endregion
 

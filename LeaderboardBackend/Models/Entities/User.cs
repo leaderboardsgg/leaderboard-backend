@@ -43,15 +43,12 @@ public class User
 	[Required]
 	public bool Admin { get; set; } = false;
 
-	[JsonIgnore]
 	[InverseProperty("BanningUser")]
 	public List<Ban>? BansGiven { get; set; }
 
-	[JsonIgnore]
 	[InverseProperty("BannedUser")]
 	public List<Ban>? BansReceived { get; set; }
 
-	[JsonIgnore]
 	public List<Modship>? Modships { get; set; }
 
 	[JsonIgnore]
@@ -60,9 +57,7 @@ public class User
 	public override bool Equals(object? obj)
 	{
 		return obj is User user &&
-			   Id.Equals(user.Id) &&
-			   Username.ToLower() == user.Username.ToLower() &&
-			   Email == user.Email;
+			   Id.Equals(user.Id);
 	}
 
 	public override int GetHashCode()

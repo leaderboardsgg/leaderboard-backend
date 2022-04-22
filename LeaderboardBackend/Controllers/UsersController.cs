@@ -27,6 +27,7 @@ public class UsersController : ControllerBase
 	/// <response code="404">If no User is found with the provided ID.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.Get))]
+	[AllowAnonymous]
 	[HttpGet("{id:guid}")]
 	public async Task<ActionResult<User>> GetUserById(Guid id)
 	{
@@ -37,6 +38,7 @@ public class UsersController : ControllerBase
 		}
 
 		// FIXME: Return DTO that excludes email
+		user.Email = "";
 		return Ok(user);
 	}
 
@@ -121,7 +123,6 @@ public class UsersController : ControllerBase
 	/// <response code="403">If an invalid JWT was passed in.</response>
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status403Forbidden)]
-	[Authorize]
 	[HttpGet("me")]
 	public async Task<ActionResult<User>> Me()
 	{
