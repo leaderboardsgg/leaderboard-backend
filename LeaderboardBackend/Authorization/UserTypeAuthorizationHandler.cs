@@ -30,7 +30,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 		UserTypeRequirement requirement
 	)
 	{
-		if (!CanGetJwt(context, out string token) || !CanValidateJwt(token))
+		if (!TryGetJwtFromHttpContext(context, out string token) || !ValidateJwt(token))
 		{
 			return Task.CompletedTask;
 		}
@@ -51,22 +51,22 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 
 	private bool Handle(
 		User user,
-		AuthorizationHandlerContext context,
+		AuthorizationHandlerContext _,
 		UserTypeRequirement requirement
 	) => requirement.Type switch
 	{
-		UserTypes.Admin => IsAdmin(user),
+		UserTypes.Admin => user.Admin,
 		UserTypes.Mod => IsMod(user),
 		UserTypes.User => true,
 		_ => false,
 	};
 
-	private bool IsAdmin(User user) => user.Admin;
+	//private bool IsAdmin(User user) => user.Admin;
 
 	// FIXME: Users don't get automagically populated with Modships when on creation of the latter.
 	private bool IsMod(User user) => user.Modships?.Count() > 0;
 
-	private bool CanGetJwt(AuthorizationHandlerContext context, out string token)
+	private bool TryGetJwtFromHttpContext(AuthorizationHandlerContext context, out string token)
 	{
 		if (context.Resource is not HttpContext httpContext)
 		{
@@ -78,7 +78,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 			// We need to strip "Bearer " out lol
 			token = httpContext.Request.Headers.Authorization.First().Substring(7);
 			return _jwtHandler.CanReadToken(token);
-		} catch (System.InvalidOperationException)
+		} catch (InvalidOperationException)
 		{
 			// No token exists in the request
 			token = "";
@@ -86,7 +86,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 		}
 	}
 
-	private bool CanValidateJwt(string token)
+	private bool ValidateJwt(string token)
 	{
 		try
 		{
@@ -98,7 +98,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 			return true;
 		}
 		// FIXME: Trigger a redirect to login, possibly on SecurityTokenExpiredException
-		catch (System.Exception)
+		catch (Exception)
 		{
 			return false;
 		}

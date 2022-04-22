@@ -15,7 +15,7 @@ public class MiddlewareResultHandler : IAuthorizationMiddlewareResultHandler
         AuthorizationPolicy authorizationPolicy,
         PolicyAuthorizationResult policyAuthorizationResult)
     {
-        if (Show404ForForbiddenResult(policyAuthorizationResult))
+        if (policyAuthorizationResult.Forbidden)
         {
             httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
             return;
@@ -25,10 +25,5 @@ public class MiddlewareResultHandler : IAuthorizationMiddlewareResultHandler
 		// This can mean calling the controller action itself.
         await DefaultHandler.HandleAsync(requestDelegate, httpContext, authorizationPolicy,
                                policyAuthorizationResult);
-    }
-
-    bool Show404ForForbiddenResult(PolicyAuthorizationResult policyAuthorizationResult)
-    {
-        return policyAuthorizationResult.Forbidden;
     }
 }

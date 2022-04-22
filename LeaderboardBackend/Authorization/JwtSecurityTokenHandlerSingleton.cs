@@ -8,8 +8,7 @@ namespace LeaderboardBackend.Authorization;
 /// <remarks>
 /// Singleton definition style taken from https://csharpindepth.com/Articles/Singleton.
 /// </remarks>
-public sealed class JwtSecurityTokenHandlerSingleton
+public static class JwtSecurityTokenHandlerSingleton
 {
 	public static readonly JwtSecurityTokenHandler Instance = new();
-	private JwtSecurityTokenHandlerSingleton() {}
 }

@@ -16,22 +16,7 @@ public class UserService : IUserService
 
 	public async Task<User?> GetUserById(Guid id)
 	{
-		User? user = await _applicationContext.Users.FindAsync(id);
-		if (user is null)
-		{
-			return null;
-		}
-
-		try
-		{
-			user.Modships = await _applicationContext.Modships
-			.Where(m => m.UserId == user.Id)
-			.ToListAsync();
-			return user;
-		} catch (ArgumentNullException)
-		{
-			return user;
-		}
+		return await _applicationContext.Users.FindAsync(id);
 	}
 
 	public async Task<User?> GetUserByEmail(string email)

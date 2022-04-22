@@ -95,7 +95,7 @@ internal class Leaderboards
 		string leaderboardIdQuery = ListToQueryString(leaderboardIds, "ids");
 		HttpResponseMessage getResponse = await ApiClient.GetAsync($"api/leaderboards?{leaderboardIdQuery}");
 		List<Leaderboard> leaderboards = await HttpHelpers.ReadFromResponseBody<List<Leaderboard>>(getResponse);
-		foreach (var leaderboard in leaderboards)
+		foreach (Leaderboard leaderboard in leaderboards)
 		{
 			Assert.IsTrue(createdLeaderboards.Contains(leaderboard));
 			createdLeaderboards.Remove(leaderboard);

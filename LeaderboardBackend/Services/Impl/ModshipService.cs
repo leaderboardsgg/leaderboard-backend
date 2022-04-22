@@ -23,6 +23,13 @@ public class ModshipService : IModshipService
 		await _applicationContext.SaveChangesAsync();
 	}
 
+	public async Task<List<Modship>> LoadUserModships(Guid userId)
+	{
+		return await _applicationContext.Modships
+					.Where(m => m.UserId == userId)
+					.ToListAsync();
+	}
+
 	// TODO: Implement this
 	// public async Task DeleteModship(Modship modship)
 	// {
