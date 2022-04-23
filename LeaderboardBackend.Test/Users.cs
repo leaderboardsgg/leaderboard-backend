@@ -1,9 +1,8 @@
 using NUnit.Framework;
 using System.Net;
-using System.Text.Json;
 using System.Net.Http;
 using System.Threading.Tasks;
-using LeaderboardBackend.Models.Requests.Users;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.Entities;
 using System.Net.Http.Json;
 using System;
@@ -17,7 +16,7 @@ namespace LeaderboardBackend.Test;
 internal class Users
 {
 	private static TestApiFactory Factory = null!;
-	private static HttpClient ApiClient = null!;
+	private static TestApiClient ApiClient = null!;
 
 	private static readonly string ValidUsername = "Test";
 	private static readonly string ValidPassword = "c00l_pAssword";
@@ -27,29 +26,32 @@ internal class Users
 	public static void SetUp()
 	{
 		Factory = new TestApiFactory();
-		ApiClient = Factory.CreateClient();
+		ApiClient = Factory.CreateTestApiClient();
 	}
 
 	[Test]
-	public static async Task GetUser_NotFound()
+	public static void GetUser_NotFound()
 	{
 		Guid randomGuid = new();
-		HttpResponseMessage response = await ApiClient.GetAsync($"/api/users/{randomGuid}");
-		Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
+			await ApiClient.Get<User>(
+				$"/api/users/{randomGuid}",
+				new()
+			)
+		)!;
+		Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);
 	}
 
 	[Test]
 	public static async Task GetUser_Found()
 	{
-		User createdUser = await UserHelpers.Register(
-			ApiClient,
+		User createdUser = await ApiClient.RegisterUser(
 			ValidUsername,
 			ValidEmail,
 			ValidPassword
 		);
 
-		User retrievedUser = await HttpHelpers.Get<User>(
-			ApiClient,
+		User retrievedUser = await ApiClient.Get<User>(
 			$"/api/users/{createdUser?.Id}",
 			new()
 		);
@@ -58,7 +60,7 @@ internal class Users
 	}
 
 	[Test]
-	public static async Task Register_BadRequest()
+	public static void Register_BadRequest()
 	{
 		RegisterRequest[] requests = {
 			new() {},
@@ -87,62 +89,52 @@ internal class Users
 
 		foreach (RegisterRequest request in requests)
 		{
-			HttpResponseMessage registerResponse = await ApiClient.PostAsJsonAsync("/api/users/register", request);
+			// Not using the helper here because it's easier for this test implementation
+			// to have a table of requests and send them directly.
+			RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () => 
+				await ApiClient.Post<User>("/api/users/register", new() { Body = request })
+			)!;
 			Assert.AreEqual(
 				HttpStatusCode.BadRequest,
-				registerResponse.StatusCode,
-				$"{request} did not produce BadRequest, produced {registerResponse.StatusCode}"
+				e.Response.StatusCode,
+				$"{request} did not produce BadRequest, produced {e.Response.StatusCode}"
 			);
 		}
 	}
 
 	[Test]
-	public static async Task Me_Unauthorized()
+	public static void Me_Unauthorized()
 	{
-		HttpRequestMessage meRequest = new(HttpMethod.Get, "/api/users/me");
-		HttpResponseMessage meResponse = await ApiClient.SendAsync(meRequest);
-		Assert.AreEqual(HttpStatusCode.Unauthorized, meResponse.StatusCode);
+		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
+			await ApiClient.Get<User>(
+				$"/api/users/me",
+				new()
+			)
+		)!;
+		Assert.AreEqual(HttpStatusCode.Unauthorized, e.Response.StatusCode);
 	}
 
 	[Test]
 	public static async Task FullAuthFlow()
 	{
 		// Register User
-		RegisterRequest registerBody = new()
-		{
-			Username = ValidUsername,
-			Password = ValidPassword,
-			PasswordConfirm = ValidPassword,
-			Email = ValidEmail,
-		};
-		HttpResponseMessage registerResponse = await ApiClient.PostAsJsonAsync("/api/users/register", registerBody);
-		registerResponse.EnsureSuccessStatusCode();
-		User createdUser = await HttpHelpers.ReadFromResponseBody<User>(registerResponse);
+		User createdUser = await ApiClient.RegisterUser(
+			ValidUsername,
+			ValidEmail,
+			ValidPassword
+		);
 
 		// Login
-		LoginRequest loginBody = new()
-		{
-			Email = createdUser.Email,
-			Password = ValidPassword,
-		};
-		HttpResponseMessage loginResponse = await ApiClient.PostAsJsonAsync("/api/users/login", loginBody);
-		loginResponse.EnsureSuccessStatusCode();
-
-		string token = (await HttpHelpers.ReadFromResponseBody<LoginResponse>(loginResponse)).Token;
+		LoginResponse login = await ApiClient.LoginUser(createdUser.Email, ValidPassword);
 
 		// Me
-		HttpRequestMessage meRequest = new(
-			HttpMethod.Get,
-			"/api/users/me")
-		{
-			Headers =
+		User me = await ApiClient.Get<User>(
+			"api/users/me",
+			new()
 			{
-				Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, token)
+				Jwt = login.Token
 			}
-		};
-		HttpResponseMessage meResponse = await ApiClient.SendAsync(meRequest);
-		meResponse.EnsureSuccessStatusCode();
-		User meUser = await HttpHelpers.ReadFromResponseBody<User>(registerResponse);
-		Assert.AreEqual(createdUser, meUser);
+		);
+		Assert.AreEqual(createdUser, me);
 	}
 }

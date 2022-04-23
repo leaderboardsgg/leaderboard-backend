@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace LeaderboardBackend.Models.Requests.Participations;
+namespace LeaderboardBackend.Models.Requests;
 
 public class CreateParticipationRequest
 {
@@ -18,3 +18,10 @@ public class CreateParticipationRequest
 	public bool IsSubmitter { get; set; } = true;
 }
 
+public class UpdateParticipationRequest
+{
+	public string Comment { get; set; } = "";
+
+	[Required(ErrorMessage = "Please add a VoD link. Your participation can't be confirmed otherwise.")]
+	public string Vod { get; set; } = null!;
+}

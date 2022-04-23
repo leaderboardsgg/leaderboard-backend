@@ -2,8 +2,7 @@ using NUnit.Framework;
 using System.Text.Json;
 using System.Net.Http;
 using System.Threading.Tasks;
-using LeaderboardBackend.Models.Requests.Leaderboards;
-using LeaderboardBackend.Models.Requests.Modships;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Test.Lib;
 
@@ -13,7 +12,7 @@ namespace LeaderboardBackend.Test;
 internal class Modships
 {
 	private static TestApiFactory Factory = null!;
-	private static HttpClient ApiClient = null!;
+	private static TestApiClient ApiClient = null!;
 	private static JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
 	{
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -23,36 +22,32 @@ internal class Modships
 	public static void SetUp()
 	{
 		Factory = new TestApiFactory();
-		ApiClient = Factory.CreateClient();
+		ApiClient = Factory.CreateTestApiClient();
 	}
 
 	[Test]
 	public static async Task MakeMod_Success()
 	{
-		User admin = Factory.GetAdmin();
-		string jwt = (await UserHelpers.Login(ApiClient, admin.Email, admin.Password)).Token;
+		string jwt = (await ApiClient.LoginAdminUser()).Token;
+
 		Leaderboard createdLeaderboard = await CreateLeaderboard(jwt);
 
 		// Make user a mod
-		CreateModshipRequest makeModBody = new()
-		{
-			LeaderboardId = createdLeaderboard.Id,
-			UserId = admin.Id,
-		};
-
-		Modship created = await HttpHelpers.Post<Modship>(
-			ApiClient,
+		Modship created = await ApiClient.Post<Modship>(
 			"/api/modships",
 			new()
 			{
-				Body = makeModBody,
+				Body = new CreateModshipRequest
+				{
+					LeaderboardId = createdLeaderboard.Id,
+					UserId = TestInitCommonFields.Admin.Id,
+				},
 				Jwt = jwt
 			}
 		);
 
-		Modship retrieved = await HttpHelpers.Get<Modship>(
-			ApiClient,
-			$"/api/modships/{admin.Id}",
+		Modship retrieved = await ApiClient.Get<Modship>(
+			$"/api/modships/{TestInitCommonFields.Admin.Id}",
 			new()
 			{
 				Jwt = jwt
@@ -65,8 +60,7 @@ internal class Modships
 
 	private static async Task<Leaderboard> CreateLeaderboard(string jwt)
 	{
-		return await HttpHelpers.Post<Leaderboard>(
-			ApiClient,
+		return await ApiClient.Post<Leaderboard>(
 			"/api/leaderboards",
 			new()
 			{

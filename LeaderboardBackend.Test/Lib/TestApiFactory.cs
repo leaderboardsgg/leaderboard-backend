@@ -5,13 +5,12 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Net.Http;
 
 namespace LeaderboardBackend.Test.Lib;
 
 internal class TestApiFactory : WebApplicationFactory<Program>
 {
-	public User GetAdmin() => TestInitCommonFields.Admin;
-
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
 		// Set the environment for the run to Staging
@@ -35,6 +34,12 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 			}
 			Seed(dbContext);
 		});
+	}
+
+	public TestApiClient CreateTestApiClient()
+	{
+		HttpClient client = this.CreateClient();
+		return new TestApiClient(client);
 	}
 
 	private void Seed(ApplicationContext dbContext)

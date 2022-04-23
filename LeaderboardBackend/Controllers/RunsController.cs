@@ -3,7 +3,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Http;
 using LeaderboardBackend.Controllers.Annotations;
-using LeaderboardBackend.Models.Requests.Run;
+using LeaderboardBackend.Models.Requests;
 
 namespace LeaderboardBackend.Controllers
 {

@@ -1,7 +1,7 @@
 using LeaderboardBackend.Models.Annotations;
 using System.ComponentModel.DataAnnotations;
 
-namespace LeaderboardBackend.Models.Requests.Categories;
+namespace LeaderboardBackend.Models.Requests;
 
 /// <summary>Request object sent when creating a Category.</summary>
 public record CreateCategoryRequest

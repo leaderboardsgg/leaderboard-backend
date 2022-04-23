@@ -1,21 +1,19 @@
 using LeaderboardBackend.Models.Entities;
-using LeaderboardBackend.Models.Requests.Users;
+using LeaderboardBackend.Models.Requests;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LeaderboardBackend.Test.Lib;
 
-internal static class UserHelpers
+internal static class UserApiExtensions
 {
-	public static async Task<User> Register(
-		HttpClient apiClient,
+	public static async Task<User> RegisterUser(
+		this TestApiClient client,
 		string username,
 		string email,
 		string password
 	) =>
-		await HttpHelpers.Post<User>(
-			apiClient,
+		await client.Post<User>(
 			"/api/users/register",
 			new()
 			{
@@ -29,13 +27,12 @@ internal static class UserHelpers
 			}
 		);
 
-	public static async Task<LoginResponse> Login(
-		HttpClient apiClient,
+	public static async Task<LoginResponse> LoginUser(
+		this TestApiClient apiClient,
 		string email,
 		string password
 	) =>
-		await HttpHelpers.Post<LoginResponse>(
-			apiClient,
+		await apiClient.Post<LoginResponse>(
 			"/api/users/login",
 			new()
 			{
@@ -47,11 +44,10 @@ internal static class UserHelpers
 			}
 		);
 
-	public static async Task<LoginResponse> LoginAdmin(
-		HttpClient apiClient
+	public static async Task<LoginResponse> LoginAdminUser(
+		this TestApiClient apiClient
 	) =>
-		await HttpHelpers.Post<LoginResponse>(
-			apiClient,
+		await apiClient.Post<LoginResponse>(
 			"/api/users/login",
 			new()
 			{

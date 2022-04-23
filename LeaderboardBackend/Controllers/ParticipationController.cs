@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using LeaderboardBackend.Models.Entities;
-using LeaderboardBackend.Models.Requests.Participations;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Services;
 
 namespace LeaderboardBackend.Controllers;

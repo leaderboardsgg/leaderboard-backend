@@ -1,4 +1,4 @@
-namespace LeaderboardBackend.Models.Requests.Leaderboards;
+namespace LeaderboardBackend.Models.Requests;
 
 public record CreateLeaderboardRequest
 {
