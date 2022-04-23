@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Net.Http;
+using LeaderboardBackend.Test.Lib;
 
 namespace LeaderboardBackend.Test.TestApi;
 

@@ -52,7 +52,7 @@ internal class Categories
 			)
 		)!;
 
-		Assert.AreEqual(HttpStatusCode.Unauthorized, e.Response.StatusCode);
+		Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);
 	}
 
 	[Test]
