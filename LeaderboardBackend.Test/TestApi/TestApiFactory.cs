@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Net.Http;
 
-namespace LeaderboardBackend.Test.Lib;
+namespace LeaderboardBackend.Test.TestApi;
 
 internal class TestApiFactory : WebApplicationFactory<Program>
 {

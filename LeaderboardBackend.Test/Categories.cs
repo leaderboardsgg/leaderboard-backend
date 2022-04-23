@@ -1,6 +1,8 @@
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Lib;
+using LeaderboardBackend.Test.TestApi;
+using LeaderboardBackend.Test.TestApi.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NUnit.Framework;
 using System.Net;
@@ -50,7 +52,7 @@ internal class Categories
 			)
 		)!;
 
-		Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);
+		Assert.AreEqual(HttpStatusCode.Unauthorized, e.Response.StatusCode);
 	}
 
 	[Test]

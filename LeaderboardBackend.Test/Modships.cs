@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Test.Lib;
+using LeaderboardBackend.Test.TestApi;
+using LeaderboardBackend.Test.TestApi.Extensions;
 
 namespace LeaderboardBackend.Test;
 

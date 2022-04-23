@@ -1,9 +1,9 @@
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
-using System.Net.Http;
+using LeaderboardBackend.Test.Lib;
 using System.Threading.Tasks;
 
-namespace LeaderboardBackend.Test.Lib;
+namespace LeaderboardBackend.Test.TestApi.Extensions;
 
 internal static class UserApiExtensions
 {

@@ -1,6 +1,8 @@
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Lib;
+using LeaderboardBackend.Test.TestApi;
+using LeaderboardBackend.Test.TestApi.Extensions;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;

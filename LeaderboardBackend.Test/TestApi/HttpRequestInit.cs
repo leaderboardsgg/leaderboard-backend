@@ -1,6 +1,6 @@
 using System.Net.Http;
 
-namespace LeaderboardBackend.Test.Lib;
+namespace LeaderboardBackend.Test.TestApi;
 
 internal record HttpRequestInit
 {
