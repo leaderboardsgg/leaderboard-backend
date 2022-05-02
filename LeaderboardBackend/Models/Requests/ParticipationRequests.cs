@@ -22,6 +22,9 @@ public class UpdateParticipationRequest
 {
 	public string Comment { get; set; } = "";
 
+	// FIXME: Maybe we should make a custom rule for this such that it's both required
+	// and that it has to be a link to a valid video, or a link from a set list of
+	// domains.
 	[Required(ErrorMessage = "Please add a VoD link. Your participation can't be confirmed otherwise.")]
 	public string Vod { get; set; } = null!;
 }

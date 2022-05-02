@@ -9,13 +9,20 @@ using LeaderboardBackend.Test.Lib;
 
 namespace LeaderboardBackend.Test.TestApi;
 
+internal record HttpRequestInit
+{
+	public object? Body { get; init; }
+	public string? Jwt { get; init; }
+	public HttpMethod Method { get; init; } = HttpMethod.Get;
+}
+
 internal sealed class RequestFailureException : Exception
 {
 	public HttpResponseMessage Response { get; private set; }
 
 	public RequestFailureException(HttpResponseMessage response) : base("The attempted request failed")
-	{ 
-		Response = response; 
+	{
+		Response = response;
 	}
 }
 
