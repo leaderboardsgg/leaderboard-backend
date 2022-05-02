@@ -1,4 +1,4 @@
-using LeaderboardBackend.Models.Requests.Categories;
+using LeaderboardBackend.Models.Requests;
 using System.ComponentModel.DataAnnotations;
 
 namespace LeaderboardBackend.Models.Annotations;

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
-using LeaderboardBackend.Models.Requests.Categories;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Services;
 
 namespace LeaderboardBackend.Controllers;

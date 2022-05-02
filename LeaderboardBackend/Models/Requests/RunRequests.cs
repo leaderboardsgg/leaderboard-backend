@@ -1,9 +1,9 @@
 using LeaderboardBackend.Models.Entities;
 using System.ComponentModel.DataAnnotations;
 
-namespace LeaderboardBackend.Models.Requests.Run;
+namespace LeaderboardBackend.Models.Requests;
 
-public class CreateRunRequest
+public record CreateRunRequest
 {
 	[Required]
 	public DateTime Played { get; set; }

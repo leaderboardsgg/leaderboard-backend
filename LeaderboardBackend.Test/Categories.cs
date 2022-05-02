@@ -1,7 +1,8 @@
 using LeaderboardBackend.Models.Entities;
-using LeaderboardBackend.Models.Requests.Categories;
-using LeaderboardBackend.Models.Requests.Leaderboards;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Lib;
+using LeaderboardBackend.Test.TestApi;
+using LeaderboardBackend.Test.TestApi.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NUnit.Framework;
 using System.Net;
@@ -14,79 +15,84 @@ namespace LeaderboardBackend.Test;
 internal class Categories
 {
 	private static TestApiFactory Factory = null!;
-	private static HttpClient ApiClient = null!;
+	private static TestApiClient ApiClient = null!;
 	private static string? Jwt;
 
 	[SetUp]
-	public static void SetUp()
+	public static async Task SetUp()
 	{
 		Factory = new TestApiFactory();
-		ApiClient = Factory.CreateClient();
-		Jwt = UserHelpers.LoginAdmin(ApiClient).Result.Token;
+		ApiClient = Factory.CreateTestApiClient();
+		Jwt = (await ApiClient.LoginAdminUser()).Token;
 	}
 
 	[Test]
-	public static async Task GetCategory_NoCategories()
+	public static void GetCategory_Unauthorized()
 	{
-		long id = 1;
-		HttpRequestMessage request = new(HttpMethod.Get, $"/api/categories/{id}")
-		{
-			Headers =
-			{
-				Authorization = new(JwtBearerDefaults.AuthenticationScheme, Jwt)
-			}
-		};
-		HttpResponseMessage response = await ApiClient.SendAsync(request);
-		Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
+			await ApiClient.Get<Category>(
+				$"/api/categories/1",
+				new()
+			)
+		)!;
+
+		Assert.AreEqual(HttpStatusCode.Unauthorized, e.Response.StatusCode);
+	}
+
+	[Test]
+	public static void GetCategory_NotFound()
+	{
+		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
+			await ApiClient.Get<Category>(
+				$"/api/categories/1",
+				new()
+				{
+					Jwt = Jwt,
+				}
+			)
+		)!;
+
+		Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);
 	}
 
 	[Test]
 	public static async Task CreateCategory_GetCategory()
 	{
-		CreateLeaderboardRequest createLeaderboardBody = new()
-		{
-			Name = Generators.GenerateRandomString(),
-			Slug = Generators.GenerateRandomString(),
-		};
-
-		Leaderboard createdLeaderboard = await HttpHelpers.Post<Leaderboard>(
-			ApiClient,
+		Leaderboard createdLeaderboard = await ApiClient.Post<Leaderboard>(
 			"/api/leaderboards",
 			new()
 			{
-				Body = createLeaderboardBody,
+				Body = new CreateLeaderboardRequest()
+				{
+					Name = Generators.GenerateRandomString(),
+					Slug = Generators.GenerateRandomString(),
+				},
 				Jwt = Jwt,
 			}
 		);
 
-		CreateCategoryRequest createCategoryBody = new()
-		{
-			Name = Generators.GenerateRandomString(),
-			Slug = Generators.GenerateRandomString(),
-			LeaderboardId = createdLeaderboard.Id,
-		};
-
-		Category createdCategory = await HttpHelpers.Post<Category>(
-			ApiClient,
+		Category createdCategory = await ApiClient.Post<Category>(
 			"/api/categories",
 			new()
 			{
-				Body = createCategoryBody,
+				Body = new CreateCategoryRequest()
+				{
+					Name = Generators.GenerateRandomString(),
+					Slug = Generators.GenerateRandomString(),
+					LeaderboardId = createdLeaderboard.Id,
+				},
 				Jwt = Jwt,
 			}
 		);
-
 		Assert.AreEqual(1, createdCategory.PlayersMax);
 
-		Category retrievedCategory = await HttpHelpers.Get<Category>(
-			ApiClient,
+		Category retrievedCategory = await ApiClient.Get<Category>(
 			$"/api/categories/{createdCategory?.Id}",
 			new()
 			{
 				Jwt = Jwt,
 			}
 		);
-
 		Assert.AreEqual(createdCategory, retrievedCategory);
 	}
 }

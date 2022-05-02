@@ -1,6 +1,6 @@
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
-using LeaderboardBackend.Models.Requests.Modships;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Controllers.Annotations;
 using Microsoft.AspNetCore.Authorization;
