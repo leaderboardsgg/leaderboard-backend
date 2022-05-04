@@ -37,6 +37,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IModshipService, ModshipService>();
 builder.Services.AddScoped<IParticipationService, ParticipationService>();
+builder.Services.AddScoped<IJudgementService, JudgementService>();
 
 // Add controllers to the container.
 builder.Services.AddControllers(opt =>
