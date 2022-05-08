@@ -21,6 +21,6 @@ public class ApplicationContext : DbContext
 	{
 		modelBuilder.Entity<Judgement>()
 			.Property(j => j.CreatedAt)
-			.HasDefaultValueSql("getdate()");
+			.HasDefaultValueSql("now()");
 	}
 }

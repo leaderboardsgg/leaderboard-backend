@@ -18,7 +18,7 @@ namespace LeaderboardBackend.Migrations
                 table: "judgements",
                 type: "timestamp with time zone",
                 nullable: false,
-                defaultValueSql: "getdate()");
+                defaultValueSql: "now()");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

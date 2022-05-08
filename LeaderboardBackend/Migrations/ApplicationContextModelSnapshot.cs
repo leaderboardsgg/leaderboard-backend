@@ -128,7 +128,7 @@ namespace LeaderboardBackend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
-                        .HasDefaultValueSql("getdate()");
+                        .HasDefaultValueSql("now()");
 
                     b.Property<Guid>("ModId")
                         .HasColumnType("uuid")
