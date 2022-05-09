@@ -5,7 +5,6 @@ using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 
 namespace LeaderboardBackend.Controllers;
 
@@ -64,8 +63,7 @@ public class JudgementsController : ControllerBase
 		{
 			// This shouldn't happen, as authZ should block already.
 			_logger.LogError($"CreateJudgement: retrieved mod is null. Run ID = {body.RunId}");
-			// FIXME: Return a 500 here instead. Dunno what the right function's called rn.
-			return NotFound();
+			return new StatusCodeResult(StatusCodes.Status500InternalServerError);
 		}
 
 		if (run is null)
@@ -86,6 +84,7 @@ public class JudgementsController : ControllerBase
 
 		await _judgementService.CreateJudgement(judgement);
 
+		// TODO: We need to return a DTO here that omits returning Mod and Run.
 		return CreatedAtAction(nameof(GetJudgement), new { id = judgement.Id }, judgement);
 	}
 }
