@@ -16,7 +16,6 @@ public class ApplicationContext : DbContext
 	public DbSet<Participation> Participations { get; set; } = null!;
 	public DbSet<User> Users { get; set; } = null!;
 
-	// TODO: Verify timestamp's generated to UTC
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		modelBuilder.Entity<Judgement>()

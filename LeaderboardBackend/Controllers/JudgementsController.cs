@@ -72,6 +72,12 @@ public class JudgementsController : ControllerBase
 			return NotFound($"Run not found for ID = {body.RunId}");
 		}
 
+		if (run.Status == RunStatus.CREATED)
+		{
+			_logger.LogError($"CreateJudgement: run has status CREATED. ID = {body.RunId}");
+			return NotFound($"Run has pending Participations. ID = {body.RunId}");
+		}
+
 		Judgement judgement = new()
 		{
 			Approved = body.Approved,
