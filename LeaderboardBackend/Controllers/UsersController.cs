@@ -54,7 +54,7 @@ public class UsersController : ControllerBase
 	[HttpPost("register")]
 	public async Task<ActionResult<User>> Register([FromBody] RegisterRequest body)
 	{
-		// This shouldn't hit normally, since we have the CompareAttribute in Register.cs
+		// This shouldn't hit normally, since we have the CompareAttribute in UserRequests.cs -> RegisterRequest
 		if (body.Password != body.PasswordConfirm)
 		{
 			return BadRequest();
@@ -111,7 +111,7 @@ public class UsersController : ControllerBase
 		}
 
 		string token = _authService.GenerateJSONWebToken(user);
-		return Ok(new LoginResponse{ Token = token });
+		return Ok(new LoginResponse { Token = token });
 	}
 
 	/// <summary>Gets the currently logged-in user.</summary>

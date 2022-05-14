@@ -117,6 +117,7 @@ Then run the following commands to run the DB migrations:
 # Install project tools
 dotnet tool restore
 # Run migrations
+# You'll need to cd into the project you want to run the datbase migration for - either LeaderboardBackend or LeaderboardBackend.Test
 dotnet ef database update
 ```
 
