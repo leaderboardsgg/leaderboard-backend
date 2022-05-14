@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using LeaderboardBackend.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
 using LeaderboardBackend.Services;
+using LeaderboardBackend.Controllers.Annotations;
 
 namespace LeaderboardBackend.Controllers;
 
@@ -65,10 +66,9 @@ public class BansController : ControllerBase
 	/// If both <code>leaderboardId</code> and <code>bannedUserId</code> are given.
 	/// </response>
 	[AllowAnonymous]
+	[ApiConventionMethod(typeof(Conventions),
+							 nameof(Conventions.Get))]
 	[HttpGet]
-	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-	[ProducesDefaultResponseType]
 	public async Task<ActionResult<List<Ban>>> GetBans([FromQuery] long? leaderboardId, [FromQuery] Guid? bannedUserId)
 	{
 		if (leaderboardId != null && bannedUserId != null)
@@ -91,10 +91,10 @@ public class BansController : ControllerBase
 	/// <response code="200">The found Ban.</response>
 	/// <response code="404">If no Ban can be found.</response>
 	[AllowAnonymous]
+
+	[ApiConventionMethod(typeof(Conventions),
+							 nameof(Conventions.Get))]
 	[HttpGet("{id:long}")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	[ProducesDefaultResponseType]
 	public async Task<ActionResult<Ban>> GetBan(ulong id)
 	{
 		var ban = await _banService.GetBanById(id);
