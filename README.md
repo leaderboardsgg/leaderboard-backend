@@ -11,7 +11,7 @@ This repo is a proof-of-concept for switching to a C# with ASP.NET Core stack. T
 ## Tech-Stack Information
 
 * JSON REST API intended for the leaderboards.gg site
-* C# with ASP.NET Core
+* C# with ASP.NET Core, .NET 6
 * Docker containers for PostgreSQL hosting and management run via [Docker Compose](https://docs.docker.com/compose/install/)
 
 ## Editor/IDE
@@ -44,6 +44,7 @@ A few cross-platform editor choices would be:
 
 After installing a code editor:
 
+* Install support for [`editorconfig` in your editor](https://editorconfig.org/#download)
 * Download the [.NET 6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) for your platform
 * After cloning this repo, run the command `dotnet restore` to install all required dependencies
 * You will likely want to set up [Omnisharp](http://www.omnisharp.net/) for easier development with your editor
