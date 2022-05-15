@@ -118,6 +118,7 @@ Then run the following commands to run the DB migrations:
 # Install project tools
 dotnet tool restore
 # Run migrations
+cd LeaderboardBackend
 dotnet ef database update
 ```
 
