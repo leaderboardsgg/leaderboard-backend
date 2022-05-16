@@ -61,7 +61,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 		_ => false,
 	};
 
-	//private bool IsAdmin(User user) => user.Admin;
+	private bool IsAdmin(User user) => user.Admin;
 
 	// FIXME: Users don't get automagically populated with Modships when on creation of the latter.
 	private bool IsMod(User user) => user.Modships?.Count() > 0;
