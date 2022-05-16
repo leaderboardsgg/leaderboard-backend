@@ -3,11 +3,14 @@ using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Services;
+using LeaderboardBackend.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeaderboardBackend.Controllers;
 
+[Route("api/[controller]")]
+[ApiController]
 public class JudgementsController : ControllerBase
 {
 	private readonly ILogger _logger;
@@ -34,7 +37,7 @@ public class JudgementsController : ControllerBase
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.Get))]
 	[HttpGet("{id}")]
-	public async Task<ActionResult<Judgement>> GetJudgement(long id)
+	public async Task<ActionResult<JudgementViewModel>> GetJudgement(long id)
 	{
 		Judgement? judgement = await _judgementService.GetJudgement(id);
 		if (judgement is null)
@@ -42,7 +45,14 @@ public class JudgementsController : ControllerBase
 			return NotFound();
 		}
 
-		return Ok(judgement);
+		return Ok(new JudgementViewModel(
+			judgement.Id,
+			judgement.Approved,
+			judgement.CreatedAt,
+			judgement.Note,
+			judgement.ModId,
+			judgement.RunId
+		));
 	}
 
 	/// <summary>Creates a judgement for a run.</summary>
@@ -52,8 +62,9 @@ public class JudgementsController : ControllerBase
 	[ApiConventionMethod(typeof(Conventions),
 						nameof(Conventions.Post))]
 	[Authorize(Policy = UserTypes.Mod)]
-	[HttpPost("{id}")]
-	public async Task<ActionResult<Judgement>> CreateJudgement([FromBody] CreateJudgementRequest body) {
+	[HttpPost]
+	public async Task<ActionResult<JudgementViewModel>> CreateJudgement([FromBody] CreateJudgementRequest body)
+	{
 		User? mod = await _userService.GetUserFromClaims(HttpContext.User);
 		Run? run = await _runService.GetRun(body.RunId);
 
@@ -82,7 +93,13 @@ public class JudgementsController : ControllerBase
 
 		await _judgementService.CreateJudgement(judgement);
 
-		// TODO: We need to return a DTO here that omits returning Mod and Run.
-		return CreatedAtAction(nameof(GetJudgement), new { id = judgement.Id }, judgement);
+		return CreatedAtAction(nameof(GetJudgement), new JudgementViewModel(
+			judgement.Id,
+			judgement.Approved,
+			judgement.CreatedAt,
+			judgement.Note,
+			judgement.ModId,
+			judgement.RunId
+		));
 	}
 }
