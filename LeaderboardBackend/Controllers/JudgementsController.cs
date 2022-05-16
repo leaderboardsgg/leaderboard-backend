@@ -49,22 +49,13 @@ public class JudgementsController : ControllerBase
 	/// <response code="201">The created judgement.</response>
 	/// <response code="400">The request body is malformed.</response>
 	/// <response code="404">For an invalid judgement.</response>
-	/// <response code="500">If the client's User model cannot be retrieved for some reason.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						nameof(Conventions.Post))]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	[Authorize(Policy = UserTypes.Mod)]
 	[HttpPost("{id}")]
 	public async Task<ActionResult<Judgement>> CreateJudgement([FromBody] CreateJudgementRequest body) {
 		User? mod = await _userService.GetUserFromClaims(HttpContext.User);
 		Run? run = await _runService.GetRun(body.RunId);
-
-		if (mod is null)
-		{
-			// This shouldn't happen, as authZ should block already.
-			_logger.LogError($"CreateJudgement: retrieved mod is null. Run ID = {body.RunId}");
-			return new StatusCodeResult(StatusCodes.Status500InternalServerError);
-		}
 
 		if (run is null)
 		{
@@ -78,11 +69,12 @@ public class JudgementsController : ControllerBase
 			return NotFound($"Run has pending Participations. ID = {body.RunId}");
 		}
 
+		// TODO: Update run status on body.Approved's value
 		Judgement judgement = new()
 		{
 			Approved = body.Approved,
-			Mod = mod,
-			ModId = mod.Id,
+			Mod = mod!,
+			ModId = mod!.Id,
 			Note = body.Note,
 			Run = run,
 			RunId = run.Id,
