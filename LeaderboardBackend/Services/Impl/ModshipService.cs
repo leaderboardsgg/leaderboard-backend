@@ -30,8 +30,14 @@ public class ModshipService : IModshipService
 					.ToListAsync();
 	}
 
-	// TODO: Implement this
-	// public async Task DeleteModship(Modship modship)
-	// {
-	// }
+	public async Task DeleteModship(Modship modship)
+	{
+		var deleteModship = _applicationContext.Modships.Where(m =>
+			m.LeaderboardId == modship.LeaderboardId &&
+			m.UserId == modship.UserId)
+			.FirstOrDefault() ?? throw new NullReferenceException();
+
+		_applicationContext.Entry(deleteModship).State = EntityState.Deleted;
+		await _applicationContext.SaveChangesAsync();
+	}
 }

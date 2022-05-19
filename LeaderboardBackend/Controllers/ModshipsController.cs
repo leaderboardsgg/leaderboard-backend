@@ -76,4 +76,38 @@ public class ModshipsController : ControllerBase
 		await _modshipService.CreateModship(modship);
 		return CreatedAtAction(nameof(MakeMod), new { id = modship.Id }, modship);
 	}
+
+	[ApiConventionMethod(typeof(Conventions),
+						 nameof(Conventions.Delete))]
+	[Authorize(Policy = UserTypes.Admin)]
+	[HttpDelete]
+	public async Task<ActionResult> RemoveMod([FromBody] RemoveModshipRequest body)
+	{
+		User? user = await _userService.GetUserById(body.UserId);
+		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(body.LeaderboardId);
+
+		if (user is null || leaderboard is null)
+		{
+			return NotFound();
+		}
+
+		Modship modship = new()
+		{
+			LeaderboardId = body.LeaderboardId,
+			UserId = body.UserId,
+			User = user,
+			Leaderboard = leaderboard
+		};
+
+		try
+		{
+			await _modshipService.DeleteModship(modship);
+		}
+		catch (NullReferenceException)
+		{
+			return NotFound();
+		}
+
+		return Ok(StatusCodes.Status204NoContent);
+	}
 }
