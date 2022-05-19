@@ -1,5 +1,6 @@
 {
     "recommendations": [
-        "muhammad-sammy.csharp"
+        "muhammad-sammy.csharp",
+		"EditorConfig.EditorConfig"
     ]
 }

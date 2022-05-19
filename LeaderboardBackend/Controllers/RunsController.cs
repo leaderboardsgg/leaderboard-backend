@@ -24,8 +24,6 @@ namespace LeaderboardBackend.Controllers
 		/// <response code="404">If no Run is found with the provided ID.</response>
 		[ApiConventionMethod(typeof(Conventions),
 							 nameof(Conventions.Get))]
-		[ProducesResponseType(StatusCodes.Status200OK)]
-		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		[HttpGet("{id}")]
 		public async Task<ActionResult<Run>> GetRun(Guid id)
 		{
@@ -41,9 +39,6 @@ namespace LeaderboardBackend.Controllers
 		/// <summary>Creates a Run.</summary>
 		[ApiConventionMethod(typeof(Conventions),
 							 nameof(Conventions.Post))]
-		[ProducesResponseType(StatusCodes.Status201Created)]
-		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		[ProducesDefaultResponseType]
 		[HttpPost]
 		public async Task<ActionResult> CreateRun([FromBody] CreateRunRequest request)
 		{
