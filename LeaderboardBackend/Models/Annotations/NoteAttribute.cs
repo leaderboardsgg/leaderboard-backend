@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LeaderboardBackend.Models.Annotations;
 
+/// <summary>Asserts that Note is non-empty for non-approval judgements (Approved is false or null).</summary>
 public class NoteAttribute : ValidationAttribute {
 	protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
 	{
-		// Note defaults to "" in the model itself
 		string note = (string)value!;
 
 		CreateJudgementRequest request = (CreateJudgementRequest)validationContext.ObjectInstance;
