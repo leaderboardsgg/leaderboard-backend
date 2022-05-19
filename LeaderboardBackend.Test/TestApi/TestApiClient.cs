@@ -45,6 +45,11 @@ internal class TestApiClient
 		HttpRequestInit init
 	) => await Send<Res>(endpoint, init with { Method = HttpMethod.Post });
 
+	public async Task<Res> Delete<Res>(
+		string endpoint,
+		HttpRequestInit init
+	) => await Send<Res>(endpoint, init with { Method = HttpMethod.Delete });
+
 	private async Task<Res> Send<Res>(
 		string endpoint,
 		HttpRequestInit init
