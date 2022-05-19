@@ -11,8 +11,19 @@ This repo is a proof-of-concept for switching to a C# with ASP.NET Core stack. T
 ## Tech-Stack Information
 
 * JSON REST API intended for the leaderboards.gg site
-* C# with ASP.NET Core
+* C# with ASP.NET Core, .NET 6
 * Docker containers for PostgreSQL hosting and management run via [Docker Compose](https://docs.docker.com/compose/install/)
+
+# Project Setup
+
+## Setting up Environment
+
+### Windows
+
+On Windows, you will need to ensure that the `core.autocrlf` setting in your git config is set to true. Most default installations for Git on Windows set this automatically, but it may be worth making sure you have it set. You can set this field locally for this project by running the following command:  
+`git config core.autocrlf true`  
+Or, since this is a great setting for Windows in general, you can set this in your global config:  
+`git config --global core.autocrlf true`  
 
 ## Editor/IDE
 
@@ -44,6 +55,7 @@ A few cross-platform editor choices would be:
 
 After installing a code editor:
 
+* Install support for [`editorconfig` in your editor](https://editorconfig.org/#download)
 * Download the [.NET 6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) for your platform
 * After cloning this repo, run the command `dotnet restore` to install all required dependencies
 * You will likely want to set up [Omnisharp](http://www.omnisharp.net/) for easier development with your editor
@@ -117,6 +129,7 @@ Then run the following commands to run the DB migrations:
 # Install project tools
 dotnet tool restore
 # Run migrations
+cd LeaderboardBackend
 dotnet ef database update
 ```
 
