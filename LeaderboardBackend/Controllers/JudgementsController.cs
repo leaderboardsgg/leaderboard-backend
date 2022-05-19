@@ -36,6 +36,7 @@ public class JudgementsController : ControllerBase
 	/// <response code="404">If no Judgement can be found.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.Get))]
+	[AllowAnonymous]
 	[HttpGet("{id}")]
 	public async Task<ActionResult<JudgementViewModel>> GetJudgement(long id)
 	{
@@ -45,22 +46,17 @@ public class JudgementsController : ControllerBase
 			return NotFound();
 		}
 
-		return Ok(new JudgementViewModel(
-			judgement.Id,
-			judgement.Approved,
-			judgement.CreatedAt,
-			judgement.Note,
-			judgement.ModId,
-			judgement.RunId
-		));
+		return Ok(new JudgementViewModel(judgement));
 	}
 
 	/// <summary>Creates a judgement for a run.</summary>
 	/// <response code="201">The created judgement.</response>
 	/// <response code="400">The request body is malformed.</response>
+	/// <response code="403">The run has pending participations.</response>
 	/// <response code="404">For an invalid judgement.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						nameof(Conventions.Post))]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
 	[Authorize(Policy = UserTypes.Mod)]
 	[HttpPost]
 	public async Task<ActionResult<JudgementViewModel>> CreateJudgement([FromBody] CreateJudgementRequest body)
@@ -76,8 +72,8 @@ public class JudgementsController : ControllerBase
 
 		if (run.Status == RunStatus.CREATED)
 		{
-			_logger.LogError($"CreateJudgement: run has status CREATED. ID = {body.RunId}");
-			return NotFound($"Run has pending Participations. ID = {body.RunId}");
+			_logger.LogError($"CreateJudgement: run has pending participations (i.e. run status == CREATED). ID = {body.RunId}");
+			return Forbid($"Run has pending Participations. ID = {body.RunId}");
 		}
 
 		// TODO: Update run status on body.Approved's value
@@ -93,13 +89,6 @@ public class JudgementsController : ControllerBase
 
 		await _judgementService.CreateJudgement(judgement);
 
-		return CreatedAtAction(nameof(GetJudgement), new JudgementViewModel(
-			judgement.Id,
-			judgement.Approved,
-			judgement.CreatedAt,
-			judgement.Note,
-			judgement.ModId,
-			judgement.RunId
-		));
+		return CreatedAtAction(nameof(GetJudgement), new JudgementViewModel(judgement));
 	}
 }
