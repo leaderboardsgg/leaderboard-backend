@@ -77,6 +77,11 @@ public class ModshipsController : ControllerBase
 		return CreatedAtAction(nameof(MakeMod), new { id = modship.Id }, modship);
 	}
 
+	/// <summary>Removes a User as a Mod from a Leaderboard. Admin-only.</summary>
+	/// <param name="body">A RemoveModshipRequest</param>
+	/// <response code="204">Request was successfull.</response>
+	/// <response code="400">If the request is malformed.</response>
+	/// <response code="404">The User, Leaderboard or Modship was not found.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.Delete))]
 	[Authorize(Policy = UserTypes.Admin)]
