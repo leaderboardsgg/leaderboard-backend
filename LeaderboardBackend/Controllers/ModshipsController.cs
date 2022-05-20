@@ -96,22 +96,14 @@ public class ModshipsController : ControllerBase
 			return NotFound();
 		}
 
-		Modship modship = new()
-		{
-			LeaderboardId = body.LeaderboardId,
-			UserId = body.UserId,
-			User = user,
-			Leaderboard = leaderboard
-		};
+		Modship? toBeDeleted = await _modshipService.GetModshipForLeaderboard(leaderboard.Id, user.Id);
 
-		try
-		{
-			await _modshipService.DeleteModship(modship);
-		}
-		catch (NullReferenceException)
+		if (toBeDeleted is null)
 		{
 			return NotFound();
 		}
+
+		await _modshipService.DeleteModship(toBeDeleted);
 
 		return Ok(StatusCodes.Status204NoContent);
 	}

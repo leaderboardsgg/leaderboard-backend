@@ -17,6 +17,13 @@ public class ModshipService : IModshipService
 		return await _applicationContext.Modships.FirstOrDefaultAsync(m => m.UserId == userId);
 	}
 
+	public async Task<Modship?> GetModshipForLeaderboard(long leaderboardId, Guid userId)
+	{
+		return await _applicationContext.Modships.SingleOrDefaultAsync(m =>
+			m.LeaderboardId == leaderboardId &&
+			m.UserId == userId);
+	}
+
 	public async Task CreateModship(Modship modship)
 	{
 		_applicationContext.Modships.Add(modship);
@@ -32,12 +39,7 @@ public class ModshipService : IModshipService
 
 	public async Task DeleteModship(Modship modship)
 	{
-		var deleteModship = _applicationContext.Modships.Where(m =>
-			m.LeaderboardId == modship.LeaderboardId &&
-			m.UserId == modship.UserId)
-			.FirstOrDefault() ?? throw new NullReferenceException();
-
-		_applicationContext.Entry(deleteModship).State = EntityState.Deleted;
+		_applicationContext.Entry(modship).State = EntityState.Deleted;
 		await _applicationContext.SaveChangesAsync();
 	}
 }
