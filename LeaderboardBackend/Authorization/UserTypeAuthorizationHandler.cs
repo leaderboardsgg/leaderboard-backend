@@ -58,7 +58,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 	) => requirement.Type switch
 	{
 		UserTypes.Admin => user.Admin,
-		UserTypes.Mod => IsMod(user),
+		UserTypes.Mod => user.Admin || IsMod(user),
 		UserTypes.User => true,
 		_ => false,
 	};
