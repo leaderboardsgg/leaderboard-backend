@@ -93,8 +93,8 @@ internal class Judgements
 			{
 				Body = new CreateRunRequest
 				{
-					Played = DateTime.Now,
-					Submitted = DateTime.Now,
+					Played = DateTime.UtcNow,
+					Submitted = DateTime.UtcNow,
 					Status = RunStatus.SUBMITTED,
 				},
 				Jwt = Jwt,
