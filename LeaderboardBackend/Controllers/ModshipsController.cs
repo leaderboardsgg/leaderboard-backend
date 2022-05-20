@@ -76,4 +76,35 @@ public class ModshipsController : ControllerBase
 		await _modshipService.CreateModship(modship);
 		return CreatedAtAction(nameof(MakeMod), new { id = modship.Id }, modship);
 	}
+
+	/// <summary>Removes a User as a Mod from a Leaderboard. Admin-only.</summary>
+	/// <param name="body">A RemoveModshipRequest</param>
+	/// <response code="204">Request was successfull.</response>
+	/// <response code="400">If the request is malformed.</response>
+	/// <response code="404">The User, Leaderboard or Modship was not found.</response>
+	[ApiConventionMethod(typeof(Conventions),
+						 nameof(Conventions.Delete))]
+	[Authorize(Policy = UserTypes.Admin)]
+	[HttpDelete]
+	public async Task<ActionResult> RemoveMod([FromBody] RemoveModshipRequest body)
+	{
+		User? user = await _userService.GetUserById(body.UserId);
+		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(body.LeaderboardId);
+
+		if (user is null || leaderboard is null)
+		{
+			return NotFound();
+		}
+
+		Modship? toBeDeleted = await _modshipService.GetModshipForLeaderboard(leaderboard.Id, user.Id);
+
+		if (toBeDeleted is null)
+		{
+			return NotFound();
+		}
+
+		await _modshipService.DeleteModship(toBeDeleted);
+
+		return Ok(StatusCodes.Status204NoContent);
+	}
 }

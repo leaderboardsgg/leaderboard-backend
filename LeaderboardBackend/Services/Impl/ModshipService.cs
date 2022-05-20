@@ -17,6 +17,13 @@ public class ModshipService : IModshipService
 		return await _applicationContext.Modships.FirstOrDefaultAsync(m => m.UserId == userId);
 	}
 
+	public async Task<Modship?> GetModshipForLeaderboard(long leaderboardId, Guid userId)
+	{
+		return await _applicationContext.Modships.SingleOrDefaultAsync(m =>
+			m.LeaderboardId == leaderboardId &&
+			m.UserId == userId);
+	}
+
 	public async Task CreateModship(Modship modship)
 	{
 		_applicationContext.Modships.Add(modship);
@@ -30,8 +37,9 @@ public class ModshipService : IModshipService
 					.ToListAsync();
 	}
 
-	// TODO: Implement this
-	// public async Task DeleteModship(Modship modship)
-	// {
-	// }
+	public async Task DeleteModship(Modship modship)
+	{
+		_applicationContext.Entry(modship).State = EntityState.Deleted;
+		await _applicationContext.SaveChangesAsync();
+	}
 }
