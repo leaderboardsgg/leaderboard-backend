@@ -12,6 +12,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 	private readonly JwtSecurityTokenHandler _jwtHandler;
 	private readonly TokenValidationParameters _jwtValidationParams;
 	private readonly IUserService _userService;
+	private readonly IModshipService _modshipService;
 
 	public UserTypeAuthorizationHandler(
 		IConfiguration config,
@@ -23,6 +24,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 		_jwtHandler = JwtSecurityTokenHandlerSingleton.Instance;
 		_jwtValidationParams = TokenValidationParametersSingleton.Instance(config);
 		_userService = userService;
+		_modshipService = modshipService;
 	}
 
 	protected override Task HandleRequirementAsync(
@@ -61,10 +63,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 		_ => false,
 	};
 
-	private bool IsAdmin(User user) => user.Admin;
-
-	// FIXME: Users don't get automagically populated with Modships when on creation of the latter.
-	private bool IsMod(User user) => user.Modships?.Count() > 0;
+	private bool IsMod(User user) => _modshipService.LoadUserModships(user.Id).Result.Count() > 0;
 
 	private bool TryGetJwtFromHttpContext(AuthorizationHandlerContext context, out string token)
 	{

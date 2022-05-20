@@ -89,6 +89,8 @@ public class JudgementsController : ControllerBase
 
 		await _judgementService.CreateJudgement(judgement);
 
-		return CreatedAtAction(nameof(GetJudgement), new JudgementViewModel(judgement));
+		JudgementViewModel judgementView = new(judgement);
+
+		return CreatedAtAction(nameof(GetJudgement), new { id = judgementView.Id }, judgementView);
 	}
 }
