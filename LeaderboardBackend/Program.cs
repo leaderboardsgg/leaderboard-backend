@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using BCryptNet = BCrypt.Net.BCrypt;
 
 #region WebApplicationBuilder
 
@@ -124,6 +125,24 @@ if (app.Environment.IsDevelopment())
 {
 	app.UseSwagger();
 	app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "LeaderboardBackend v1"));
+}
+
+// If in memory DB, the only way to have an admin user is to seed it at startup.
+if (inMemoryDb)
+{
+	using IServiceScope scope = app.Services.CreateScope();
+	ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+	User admin = new()
+	{
+		Username = "Galactus",
+		Email = "omega@star.com",
+		Password = BCryptNet.EnhancedHashPassword("3ntr0pyChaos"),
+		Admin = true,
+	};
+
+	context.Users.Add(admin);
+	await context.SaveChangesAsync();
 }
 
 app.UseAuthentication();
