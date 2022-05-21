@@ -7,7 +7,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
-using System;
+using System.Net.Http;
 
 namespace LeaderboardBackend.Test;
 
@@ -16,55 +16,50 @@ internal class Modships
 {
 	private static TestApiFactory Factory = null!;
 	private static TestApiClient ApiClient = null!;
-	private static JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
-	{
-		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-	};
+	private static string Jwt = null!;
 
 	[SetUp]
-	public static void SetUp()
+	public static async Task SetUp()
 	{
 		Factory = new TestApiFactory();
 		ApiClient = Factory.CreateTestApiClient();
+		Jwt = (await ApiClient.LoginAdminUser()).Token;
 	}
 
 	[Test]
-	public static async Task MakeMod_Success()
+	public static async Task CreateModship_OK()
 	{
-		string jwt = (await ApiClient.LoginAdminUser()).Token;
-
-		Leaderboard createdLeaderboard = await CreateLeaderboard(jwt);
+		Leaderboard createdLeaderboard = await CreateLeaderboard(Jwt);
 
 		// Make user a mod
-		Modship created = await CreateModship(createdLeaderboard.Id, jwt);
+		Modship created = await CreateModship(createdLeaderboard.Id, Jwt);
 
 		// Confirm that user is a mod
-		Modship retrieved = await GetModship(jwt);
+		Modship retrieved = await GetModship(Jwt);
 
 		Assert.NotNull(created.User);
 		Assert.AreEqual(created, retrieved);
 	}
 
 	[Test]
-	public static async Task RemoveMod_Success()
+	public static async Task DeleteModship_OK()
 	{
-		string jwt = (await ApiClient.LoginAdminUser()).Token;
-
-		Leaderboard createdLeaderboard = await CreateLeaderboard(jwt);
+		Leaderboard createdLeaderboard = await CreateLeaderboard(Jwt);
 
 		// Make user a mod
-		Modship created = await CreateModship(createdLeaderboard.Id, jwt);
+		Modship created = await CreateModship(createdLeaderboard.Id, Jwt);
 
 		// Confirm that user is a mod
-		Modship retrieved = await GetModship(jwt);
+		Modship retrieved = await GetModship(Jwt);
 
 		// Remove the modship
-		await RemoveModship(createdLeaderboard.Id, jwt);
+		HttpResponseMessage response = await DeleteModship(createdLeaderboard.Id, Jwt);
+		Assert.IsTrue(response.IsSuccessStatusCode);
 
 		try
 		{
 			// Confirm that modship is deleted -> 404 NotFound -> Api Client throws RequestFailureException
-			await GetModship(jwt);
+			await GetModship(Jwt);
 			Assert.Fail("GetModship should have failed, because the Modship should not exist anymore");
 		}
 		catch (RequestFailureException e)
@@ -75,13 +70,14 @@ internal class Modships
 	}
 
 	[Test]
-	public static async Task RemoveMod_Fail()
+	public static async Task DeleteModship_NotFound()
 	{
-		string jwt = (await ApiClient.LoginAdminUser()).Token;
+		Leaderboard createdLeaderboard = await CreateLeaderboard(Jwt);
 
-		Leaderboard createdLeaderboard = await CreateLeaderboard(jwt);
+		RequestFailureException? e = Assert.ThrowsAsync<RequestFailureException>(async () => await DeleteModship(createdLeaderboard.Id, Jwt));
 
-		Assert.ThrowsAsync<RequestFailureException>(async () => await RemoveModship(createdLeaderboard.Id, jwt));
+		Assert.NotNull(e);
+		Assert.AreEqual(HttpStatusCode.NotFound, e!.Response.StatusCode);
 	}
 
 	private static async Task<Leaderboard> CreateLeaderboard(string jwt)
@@ -127,10 +123,10 @@ internal class Modships
 		);
 	}
 
-	private static async Task RemoveModship(long leaderboardId, string jwt)
+	private static async Task<HttpResponseMessage> DeleteModship(long leaderboardId, string jwt)
 	{
-		await ApiClient.Delete<object>(
-			"api/modships",
+		return await ApiClient.Delete(
+			"/api/modships",
 			new()
 			{
 				Body = new RemoveModshipRequest

@@ -14,10 +14,10 @@ namespace LeaderboardBackend.Controllers;
 [Produces("application/json")]
 public class JudgementsController : ControllerBase
 {
-	private readonly ILogger _logger;
-	private readonly IJudgementService _judgementService;
-	private readonly IRunService _runService;
-	private readonly IUserService _userService;
+	private readonly ILogger Logger;
+	private readonly IJudgementService JudgementService;
+	private readonly IRunService RunService;
+	private readonly IUserService UserService;
 
 	public JudgementsController(
 		ILogger<JudgementsController> logger,
@@ -26,10 +26,10 @@ public class JudgementsController : ControllerBase
 		IUserService userService
 	)
 	{
-		_logger = logger;
-		_judgementService = judgementService;
-		_runService = runService;
-		_userService = userService;
+		Logger = logger;
+		JudgementService = judgementService;
+		RunService = runService;
+		UserService = userService;
 	}
 
 	/// <summary>Gets a Judgement from its ID.</summary>
@@ -41,7 +41,7 @@ public class JudgementsController : ControllerBase
 	[HttpGet("{id}")]
 	public async Task<ActionResult<JudgementViewModel>> GetJudgement(long id)
 	{
-		Judgement? judgement = await _judgementService.GetJudgement(id);
+		Judgement? judgement = await JudgementService.GetJudgement(id);
 		if (judgement is null)
 		{
 			return NotFound();
@@ -60,18 +60,18 @@ public class JudgementsController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<JudgementViewModel>> CreateJudgement([FromBody] CreateJudgementRequest body)
 	{
-		User? mod = await _userService.GetUserFromClaims(HttpContext.User);
-		Run? run = await _runService.GetRun(body.RunId);
+		User? mod = await UserService.GetUserFromClaims(HttpContext.User);
+		Run? run = await RunService.GetRun(body.RunId);
 
 		if (run is null)
 		{
-			_logger.LogError($"CreateJudgement: run is null. ID = {body.RunId}");
+			Logger.LogError($"CreateJudgement: run is null. ID = {body.RunId}");
 			return NotFound($"Run not found for ID = {body.RunId}");
 		}
 
 		if (run.Status == RunStatus.CREATED)
 		{
-			_logger.LogError($"CreateJudgement: run has pending participations (i.e. run status == CREATED). ID = {body.RunId}");
+			Logger.LogError($"CreateJudgement: run has pending participations (i.e. run status == CREATED). ID = {body.RunId}");
 			return BadRequest($"Run has pending Participations. ID = {body.RunId}");
 		}
 
@@ -86,7 +86,7 @@ public class JudgementsController : ControllerBase
 			RunId = run.Id,
 		};
 
-		await _judgementService.CreateJudgement(judgement);
+		await JudgementService.CreateJudgement(judgement);
 
 		JudgementViewModel judgementView = new(judgement);
 

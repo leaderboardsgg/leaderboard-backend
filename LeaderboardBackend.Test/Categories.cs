@@ -3,10 +3,8 @@ using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NUnit.Framework;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace LeaderboardBackend.Test;
@@ -18,7 +16,7 @@ internal class Categories
 	private static TestApiClient ApiClient = null!;
 	private static string? Jwt;
 
-	[SetUp]
+	[OneTimeSetUp]
 	public static async Task SetUp()
 	{
 		Factory = new TestApiFactory();
@@ -44,7 +42,7 @@ internal class Categories
 	{
 		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
 			await ApiClient.Get<Category>(
-				$"/api/categories/1",
+				$"/api/categories/69",
 				new()
 				{
 					Jwt = Jwt,
@@ -56,7 +54,7 @@ internal class Categories
 	}
 
 	[Test]
-	public static async Task CreateCategory_GetCategory()
+	public static async Task CreateCategory_GetCategory_OK()
 	{
 		Leaderboard createdLeaderboard = await ApiClient.Post<Leaderboard>(
 			"/api/leaderboards",

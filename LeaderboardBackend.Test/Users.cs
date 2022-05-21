@@ -44,7 +44,7 @@ internal class Users
 	}
 
 	[Test]
-	public static async Task GetUser_Found()
+	public static async Task GetUser_OK()
 	{
 		User createdUser = await ApiClient.RegisterUser(
 			ValidUsername,

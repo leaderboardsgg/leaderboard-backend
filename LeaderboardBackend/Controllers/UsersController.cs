@@ -12,13 +12,13 @@ namespace LeaderboardBackend.Controllers;
 [ApiController]
 public class UsersController : ControllerBase
 {
-	private readonly IUserService _userService;
-	private readonly IAuthService _authService;
+	private readonly IUserService UserService;
+	private readonly IAuthService AuthService;
 
 	public UsersController(IUserService userService, IAuthService authService)
 	{
-		_userService = userService;
-		_authService = authService;
+		UserService = userService;
+		AuthService = authService;
 	}
 
 	/// <summary>Gets a User by ID.</summary>
@@ -31,13 +31,13 @@ public class UsersController : ControllerBase
 	[HttpGet("{id:guid}")]
 	public async Task<ActionResult<User>> GetUserById(Guid id)
 	{
-		User? user = await _userService.GetUserById(id);
-		if (user == null)
+		User? user = await UserService.GetUserById(id);
+		if (user is null)
 		{
 			return NotFound();
 		}
 
-		// FIXME: Return DTO that excludes email
+		// FIXME: Make user view model		
 		user.Email = "";
 		return Ok(user);
 	}
@@ -60,14 +60,14 @@ public class UsersController : ControllerBase
 			return BadRequest();
 		}
 
-		if (await _userService.GetUserByEmail(body.Email) != null)
+		if (await UserService.GetUserByEmail(body.Email) is not null)
 		{
 			// FIXME: Do a redirect to the login page.
 			// ref: https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/actions?view=aspnetcore-6.0#1-methods-resulting-in-an-empty-response-body
 			return Conflict("A user already exists with this email.");
 		}
 
-		if (await _userService.GetUserByName(body.Username) != null)
+		if (await UserService.GetUserByName(body.Username) is not null)
 		{
 			// FIXME: Do a redirect to the login page.
 			// ref: https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/actions?view=aspnetcore-6.0#1-methods-resulting-in-an-empty-response-body
@@ -81,7 +81,7 @@ public class UsersController : ControllerBase
 			Password = BCryptNet.EnhancedHashPassword(body.Password)
 		};
 
-		await _userService.CreateUser(newUser);
+		await UserService.CreateUser(newUser);
 		return CreatedAtAction(nameof(GetUserById), new { id = newUser.Id }, newUser);
 	}
 
@@ -99,8 +99,8 @@ public class UsersController : ControllerBase
 	[HttpPost("login")]
 	public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest body)
 	{
-		User? user = await _userService.GetUserByEmail(body.Email);
-		if (user == null)
+		User? user = await UserService.GetUserByEmail(body.Email);
+		if (user is null)
 		{
 			return NotFound();
 		}
@@ -110,7 +110,7 @@ public class UsersController : ControllerBase
 			return Unauthorized();
 		}
 
-		string token = _authService.GenerateJSONWebToken(user);
+		string token = AuthService.GenerateJSONWebToken(user);
 		return Ok(new LoginResponse { Token = token });
 	}
 
@@ -126,7 +126,7 @@ public class UsersController : ControllerBase
 	[HttpGet("me")]
 	public async Task<ActionResult<User>> Me()
 	{
-		User? user = await _userService.GetUserFromClaims(HttpContext.User);
-		return user != null ? Ok(user) : Forbid();
+		User? user = await UserService.GetUserFromClaims(HttpContext.User);
+		return user is not null ? Ok(user) : Forbid();
 	}
 }

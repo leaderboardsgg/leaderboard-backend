@@ -28,7 +28,7 @@ internal class Leaderboards
 	}
 
 	[Test]
-	public static void GetLeaderboard_NoLeaderboards()
+	public static void GetLeaderboard_NotFound()
 	{
 		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
 			await ApiClient.Get<Leaderboard>(
@@ -41,7 +41,7 @@ internal class Leaderboards
 	}
 
 	[Test]
-	public static async Task CreateLeaderboard_GetLeaderboard()
+	public static async Task CreateLeaderboard_GetLeaderboard_OK()
 	{
 		Leaderboard createdLeaderboard = await ApiClient.Post<Leaderboard>(
 			"/api/leaderboards",

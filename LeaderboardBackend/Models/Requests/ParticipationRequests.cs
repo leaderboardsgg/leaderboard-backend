@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LeaderboardBackend.Models.Requests;
 
-public class CreateParticipationRequest
+public record CreateParticipationRequest
 {
 	public string? Comment { get; set; }
 
@@ -18,7 +18,7 @@ public class CreateParticipationRequest
 	public bool IsSubmitter { get; set; } = true;
 }
 
-public class UpdateParticipationRequest
+public record UpdateParticipationRequest
 {
 	public string Comment { get; set; } = "";
 
