@@ -11,6 +11,7 @@ namespace LeaderboardBackend.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Produces("application/json")]
 public class JudgementsController : ControllerBase
 {
 	private readonly ILogger _logger;
@@ -52,9 +53,7 @@ public class JudgementsController : ControllerBase
 	/// <summary>Creates a judgement for a run.</summary>
 	/// <response code="201">The created judgement.</response>
 	/// <response code="400">The request body is malformed.</response>
-	/// <response code="403">The run has pending participations.</response>
 	/// <response code="404">For an invalid judgement.</response>
-	[ProducesResponseType(StatusCodes.Status403Forbidden)]
 	[ApiConventionMethod(typeof(Conventions),
 						nameof(Conventions.Post))]
 	[Authorize(Policy = UserTypes.Mod)]
@@ -73,7 +72,7 @@ public class JudgementsController : ControllerBase
 		if (run.Status == RunStatus.CREATED)
 		{
 			_logger.LogError($"CreateJudgement: run has pending participations (i.e. run status == CREATED). ID = {body.RunId}");
-			return Forbid($"Run has pending Participations. ID = {body.RunId}");
+			return BadRequest($"Run has pending Participations. ID = {body.RunId}");
 		}
 
 		// TODO: Update run status on body.Approved's value
