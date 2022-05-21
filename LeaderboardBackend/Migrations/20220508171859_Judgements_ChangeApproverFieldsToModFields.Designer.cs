@@ -3,6 +3,7 @@ using System;
 using LeaderboardBackend.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LeaderboardBackend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220508171859_Judgements_ChangeApproverFieldsToModFields")]
+    partial class Judgements_ChangeApproverFieldsToModFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -124,12 +126,6 @@ namespace LeaderboardBackend.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("approved");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
                     b.Property<Guid>("ModId")
                         .HasColumnType("uuid")
                         .HasColumnName("mod_id");
@@ -142,6 +138,10 @@ namespace LeaderboardBackend.Migrations
                     b.Property<Guid>("RunId")
                         .HasColumnType("uuid")
                         .HasColumnName("run_id");
+
+                    b.Property<DateTime>("timestamp")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("timestamp");
 
                     b.HasKey("Id")
                         .HasName("pk_judgements");

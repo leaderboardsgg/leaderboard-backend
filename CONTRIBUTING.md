@@ -68,8 +68,7 @@ Bug: {short description}
 
 ### C#
 
-- Add tests for any new feature or bug fix, to ensure things continue to work.
-- Early returns are great, they help reduce nesting!
+- Please refer to the [style guide](https://github.com/leaderboardsgg/leaderboard-backend/wiki/Style-Guide).
 
 ### Git
 

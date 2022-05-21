@@ -20,7 +20,7 @@ internal sealed class RequestFailureException : Exception
 {
 	public HttpResponseMessage Response { get; private set; }
 
-	public RequestFailureException(HttpResponseMessage response) : base("The attempted request failed")
+	public RequestFailureException(HttpResponseMessage response) : base($"The attempted request failed with status code {response.StatusCode}")
 	{
 		Response = response;
 	}
