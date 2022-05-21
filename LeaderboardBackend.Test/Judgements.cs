@@ -3,7 +3,7 @@ using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
-using LeaderboardBackend.ViewModels;
+using LeaderboardBackend.Models.ViewModels;
 using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
