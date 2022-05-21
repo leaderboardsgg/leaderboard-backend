@@ -54,9 +54,9 @@ public class JudgementsController : ControllerBase
 	/// <response code="400">The request body is malformed.</response>
 	/// <response code="403">The run has pending participations.</response>
 	/// <response code="404">For an invalid judgement.</response>
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
 	[ApiConventionMethod(typeof(Conventions),
 						nameof(Conventions.Post))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden)]
 	[Authorize(Policy = UserTypes.Mod)]
 	[HttpPost]
 	public async Task<ActionResult<JudgementViewModel>> CreateJudgement([FromBody] CreateJudgementRequest body)
