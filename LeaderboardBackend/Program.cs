@@ -1,18 +1,18 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Reflection;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using dotenv.net;
 using dotenv.net.Utilities;
-using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Authorization;
+using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 #region WebApplicationBuilder
 

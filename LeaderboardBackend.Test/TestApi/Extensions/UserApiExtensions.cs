@@ -1,7 +1,7 @@
+using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Lib;
-using System.Threading.Tasks;
 
 namespace LeaderboardBackend.Test.TestApi.Extensions;
 

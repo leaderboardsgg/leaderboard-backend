@@ -1,9 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
+using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Http;
-using LeaderboardBackend.Controllers.Annotations;
-using LeaderboardBackend.Models.Requests;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LeaderboardBackend.Controllers;
 

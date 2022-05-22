@@ -1,6 +1,6 @@
+using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
-using System.Net;
 
 namespace LeaderboardBackend.Authorization;
 

@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
-using LeaderboardBackend.Models.Entities;
-using Microsoft.AspNetCore.Authorization;
-using LeaderboardBackend.Services;
 using LeaderboardBackend.Controllers.Annotations;
+using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LeaderboardBackend.Controllers;
 
@@ -73,7 +73,7 @@ public class BansController : ControllerBase
 	[HttpGet("{id:long}")]
 	public async Task<ActionResult<Ban>> GetBan(ulong id)
 	{
-		var ban = await BanService.GetBanById(id);
+		Ban? ban = await BanService.GetBanById(id);
 		if (ban == null)
 		{
 			return NotFound();

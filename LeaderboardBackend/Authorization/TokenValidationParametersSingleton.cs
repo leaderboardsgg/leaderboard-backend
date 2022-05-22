@@ -1,5 +1,5 @@
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 namespace LeaderboardBackend.Authorization;
 

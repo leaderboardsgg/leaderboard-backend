@@ -1,8 +1,8 @@
+using System.IdentityModel.Tokens.Jwt;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace LeaderboardBackend.Authorization;
 

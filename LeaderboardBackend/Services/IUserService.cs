@@ -1,5 +1,5 @@
-using LeaderboardBackend.Models.Entities;
 using System.Security.Claims;
+using LeaderboardBackend.Models.Entities;
 
 namespace LeaderboardBackend.Services;
 

@@ -1,8 +1,8 @@
-using LeaderboardBackend.Models.Entities;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using LeaderboardBackend.Models.Entities;
+using Microsoft.IdentityModel.Tokens;
 
 namespace LeaderboardBackend.Services;
 
@@ -13,7 +13,7 @@ public class AuthService : IAuthService
 
 	public AuthService(IConfiguration config)
 	{
-		var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
+		SymmetricSecurityKey? securityKey = new(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
 
 		Credentials = new(securityKey, SecurityAlgorithms.HmacSha256);
 		Issuer = config["Jwt:Issuer"];

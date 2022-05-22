@@ -1,12 +1,12 @@
+using System;
+using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
-using LeaderboardBackend.Models.ViewModels;
 using NUnit.Framework;
-using System;
-using System.Threading.Tasks;
 
 namespace LeaderboardBackend.Test;
 

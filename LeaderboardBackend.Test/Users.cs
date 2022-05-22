@@ -1,15 +1,15 @@
-using NUnit.Framework;
+using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
-using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
-using System.Net.Http.Json;
-using System;
-using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using NUnit.Framework;
 
 namespace LeaderboardBackend.Test;
 

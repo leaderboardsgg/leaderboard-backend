@@ -1,7 +1,7 @@
-using LeaderboardBackend.Models.Entities;
-using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using LeaderboardBackend.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace LeaderboardBackend.Services;
 

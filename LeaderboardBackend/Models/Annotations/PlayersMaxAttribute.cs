@@ -1,5 +1,5 @@
-using LeaderboardBackend.Models.Requests;
 using System.ComponentModel.DataAnnotations;
+using LeaderboardBackend.Models.Requests;
 
 namespace LeaderboardBackend.Models.Annotations;
 

@@ -1,13 +1,13 @@
-using NUnit.Framework;
-using System.Text.Json;
 using System.Net;
+using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
-using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
-using System.Net.Http;
+using NUnit.Framework;
 
 namespace LeaderboardBackend.Test;
 
