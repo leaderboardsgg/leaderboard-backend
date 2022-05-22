@@ -23,8 +23,7 @@ public class LeaderboardService : ILeaderboardService
 		if (ids is null)
 		{
 			return await ApplicationContext.Leaderboards.ToListAsync();
-		}
-		else
+		} else
 		{
 			return await ApplicationContext.Leaderboards.Where(l => ids.Contains(l.Id)).ToListAsync();
 		}

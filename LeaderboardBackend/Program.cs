@@ -163,8 +163,7 @@ static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb
 			if (inMemoryDb)
 			{
 				opt.UseInMemoryDatabase("LeaderboardBackend");
-			}
-			else
+			} else
 			{
 				opt.UseNpgsql(
 					GetConnectionString(builder)

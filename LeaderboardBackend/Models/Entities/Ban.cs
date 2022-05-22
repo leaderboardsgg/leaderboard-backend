@@ -9,24 +9,24 @@ public class Ban
 	public long Id { get; set; }
 
 	/// <summary>Can't be <code>null</code>.</summary>
-	[Required] 
+	[Required]
 	public string Reason { get; set; } = null!;
 
 	/// <summary>Generated on creation.</summary>
-	[Required] 
+	[Required]
 	public DateTime Time { get; set; } = default!;
 
 	/// <summary>ID of User who set the Ban. Must be either an admin or a mod.</summary>
 	public Guid? BanningUserId { get; set; }
 
-	[JsonIgnore] 
+	[JsonIgnore]
 	public User? BanningUser { get; set; }
 
 	/// <summary>ID of User who received the Ban.</summary>
-	[Required] 
+	[Required]
 	public Guid BannedUserId { get; set; }
 
-	[JsonIgnore] 
+	[JsonIgnore]
 	public User? BannedUser { get; set; }
 
 	/// <summary>
@@ -34,6 +34,6 @@ public class Ban
 	/// </summary>
 	public long? LeaderboardId { get; set; }
 
-	[JsonIgnore] 
+	[JsonIgnore]
 	public Leaderboard? Leaderboard { get; set; }
 }

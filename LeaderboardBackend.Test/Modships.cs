@@ -61,8 +61,7 @@ internal class Modships
 			// Confirm that modship is deleted -> 404 NotFound -> Api Client throws RequestFailureException
 			await GetModship(Jwt);
 			Assert.Fail("GetModship should have failed, because the Modship should not exist anymore");
-		}
-		catch (RequestFailureException e)
+		} catch (RequestFailureException e)
 		{
 			Assert.AreEqual(created, retrieved);
 			Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);

@@ -28,8 +28,7 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 			if (dbContext.Database.IsInMemory())
 			{
 				dbContext.Database.EnsureCreated();
-			}
-			else
+			} else
 			{
 				dbContext.Database.Migrate();
 			}

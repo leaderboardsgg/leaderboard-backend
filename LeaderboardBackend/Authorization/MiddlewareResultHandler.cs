@@ -6,24 +6,24 @@ namespace LeaderboardBackend.Authorization;
 
 public class MiddlewareResultHandler : IAuthorizationMiddlewareResultHandler
 {
-   private readonly AuthorizationMiddlewareResultHandler DefaultHandler = 
-		new AuthorizationMiddlewareResultHandler();
+	private readonly AuthorizationMiddlewareResultHandler DefaultHandler =
+		 new();
 
-    public async Task HandleAsync(
-        RequestDelegate requestDelegate,
-        HttpContext httpContext,
-        AuthorizationPolicy authorizationPolicy,
-        PolicyAuthorizationResult policyAuthorizationResult)
-    {
-        if (policyAuthorizationResult.Forbidden)
-        {
-            httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-            return;
-        }
+	public async Task HandleAsync(
+		RequestDelegate requestDelegate,
+		HttpContext httpContext,
+		AuthorizationPolicy authorizationPolicy,
+		PolicyAuthorizationResult policyAuthorizationResult)
+	{
+		if (policyAuthorizationResult.Forbidden)
+		{
+			httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+			return;
+		}
 
-        // Fallback to the default implementation.
+		// Fallback to the default implementation.
 		// This can mean calling the controller action itself.
-        await DefaultHandler.HandleAsync(requestDelegate, httpContext, authorizationPolicy,
-                               policyAuthorizationResult);
-    }
+		await DefaultHandler.HandleAsync(requestDelegate, httpContext, authorizationPolicy,
+							   policyAuthorizationResult);
+	}
 }
