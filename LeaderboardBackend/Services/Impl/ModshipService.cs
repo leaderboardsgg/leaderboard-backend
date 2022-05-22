@@ -5,41 +5,41 @@ namespace LeaderboardBackend.Services;
 
 public class ModshipService : IModshipService
 {
-	private readonly ApplicationContext _applicationContext;
+	private readonly ApplicationContext ApplicationContext;
 
 	public ModshipService(ApplicationContext applicationContext)
 	{
-		_applicationContext = applicationContext;
+		ApplicationContext = applicationContext;
 	}
 
 	public async Task<Modship?> GetModship(Guid userId)
 	{
-		return await _applicationContext.Modships.FirstOrDefaultAsync(m => m.UserId == userId);
+		return await ApplicationContext.Modships.FirstOrDefaultAsync(m => m.UserId == userId);
 	}
 
 	public async Task<Modship?> GetModshipForLeaderboard(long leaderboardId, Guid userId)
 	{
-		return await _applicationContext.Modships.SingleOrDefaultAsync(m =>
+		return await ApplicationContext.Modships.SingleOrDefaultAsync(m =>
 			m.LeaderboardId == leaderboardId &&
 			m.UserId == userId);
 	}
 
 	public async Task CreateModship(Modship modship)
 	{
-		_applicationContext.Modships.Add(modship);
-		await _applicationContext.SaveChangesAsync();
+		ApplicationContext.Modships.Add(modship);
+		await ApplicationContext.SaveChangesAsync();
 	}
 
 	public async Task<List<Modship>> LoadUserModships(Guid userId)
 	{
-		return await _applicationContext.Modships
+		return await ApplicationContext.Modships
 					.Where(m => m.UserId == userId)
 					.ToListAsync();
 	}
 
 	public async Task DeleteModship(Modship modship)
 	{
-		_applicationContext.Entry(modship).State = EntityState.Deleted;
-		await _applicationContext.SaveChangesAsync();
+		ApplicationContext.Entry(modship).State = EntityState.Deleted;
+		await ApplicationContext.SaveChangesAsync();
 	}
 }

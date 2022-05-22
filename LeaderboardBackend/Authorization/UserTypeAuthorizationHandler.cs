@@ -1,18 +1,17 @@
+using System.IdentityModel.Tokens.Jwt;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace LeaderboardBackend.Authorization;
 
 public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequirement>
 {
-	private readonly IConfiguration _config;
-	private readonly JwtSecurityTokenHandler _jwtHandler;
-	private readonly TokenValidationParameters _jwtValidationParams;
-	private readonly IUserService _userService;
-	private readonly IModshipService _modshipService;
+	private readonly JwtSecurityTokenHandler JwtHandler;
+	private readonly TokenValidationParameters JwtValidationParams;
+	private readonly IUserService UserService;
+	private readonly IModshipService ModshipService;
 
 	public UserTypeAuthorizationHandler(
 		IConfiguration config,
@@ -20,11 +19,10 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 		IUserService userService
 	)
 	{
-		_config = config;
-		_jwtHandler = JwtSecurityTokenHandlerSingleton.Instance;
-		_jwtValidationParams = TokenValidationParametersSingleton.Instance(config);
-		_userService = userService;
-		_modshipService = modshipService;
+		JwtHandler = JwtSecurityTokenHandlerSingleton.Instance;
+		JwtValidationParams = TokenValidationParametersSingleton.Instance(config);
+		UserService = userService;
+		ModshipService = modshipService;
 	}
 
 	protected override Task HandleRequirementAsync(
@@ -37,7 +35,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 			return Task.CompletedTask;
 		}
 
-		User? user = _userService.GetUserFromClaims(context.User).Result;
+		User? user = UserService.GetUserFromClaims(context.User).Result;
 
 		if (user is null || !Handle(user, context, requirement))
 		{
@@ -63,7 +61,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 		_ => false,
 	};
 
-	private bool IsMod(User user) => _modshipService.LoadUserModships(user.Id).Result.Count() > 0;
+	private bool IsMod(User user) => ModshipService.LoadUserModships(user.Id).Result.Count() > 0;
 
 	private bool TryGetJwtFromHttpContext(AuthorizationHandlerContext context, out string token)
 	{
@@ -76,7 +74,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 		{
 			// We need to strip "Bearer " out lol
 			token = httpContext.Request.Headers.Authorization.First().Substring(7);
-			return _jwtHandler.CanReadToken(token);
+			return JwtHandler.CanReadToken(token);
 		} catch (InvalidOperationException)
 		{
 			// No token exists in the request
@@ -89,9 +87,9 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 	{
 		try
 		{
-			_jwtHandler.ValidateToken(
+			JwtHandler.ValidateToken(
 				token,
-				_jwtValidationParams,
+				JwtValidationParams,
 				out _
 			);
 			return true;

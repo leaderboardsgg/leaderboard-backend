@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
-using LeaderboardBackend.Models.Entities;
-using Microsoft.AspNetCore.Authorization;
-using LeaderboardBackend.Services;
 using LeaderboardBackend.Controllers.Annotations;
+using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LeaderboardBackend.Controllers;
 
@@ -11,9 +11,9 @@ namespace LeaderboardBackend.Controllers;
 [Produces("application/json")]
 public class BansController : ControllerBase
 {
-	private readonly IUserService _userService;
-	private readonly IAuthService _authService;
-	private readonly IBanService _banService;
+	private readonly IUserService UserService;
+	private readonly IAuthService AuthService;
+	private readonly IBanService BanService;
 
 	public BansController(
 		IUserService userService,
@@ -21,34 +21,10 @@ public class BansController : ControllerBase
 		IBanService banService
 	)
 	{
-		_userService = userService;
-		_authService = authService;
-		_banService = banService;
+		UserService = userService;
+		AuthService = authService;
+		BanService = banService;
 	}
-
-	// [Authorize]
-	// public async Task<ActionResult<Ban>>CreateBanSite()
-	// {
-	// 	// TODO: Implement
-	// }
-
-	// [Authorize]
-	// public async Task<ActionResult<Ban>>RemoveBanSite()
-	// {
-	// 	// TODO: Implement
-	// }
-
-	// [Authorize]
-	// public async Task<ActionResult<Ban>>CreateBanMod()
-	// {
-	// 	// TODO: Implement
-	// }
-
-	// [Authorize]
-	// public async Task<ActionResult<Ban>>RemoveBanMod()
-	// {
-	// 	// TODO: Implement
-	// }
 
 	/// <summary>Get all bans, optionally filtered by a Leaderboard or User.</summary>
 	/// <remarks>
@@ -77,13 +53,13 @@ public class BansController : ControllerBase
 		}
 		if (leaderboardId != null)
 		{
-			return Ok(await _banService.GetBans(leaderboardId));
+			return Ok(await BanService.GetBans(leaderboardId));
 		}
 		if (bannedUserId != null)
 		{
-			return Ok(await _banService.GetBans(bannedUserId));
+			return Ok(await BanService.GetBans(bannedUserId));
 		}
-		return Ok(await _banService.GetBans());
+		return Ok(await BanService.GetBans());
 	}
 
 	/// <summary>Get a Ban from its ID.</summary>
@@ -97,7 +73,7 @@ public class BansController : ControllerBase
 	[HttpGet("{id:long}")]
 	public async Task<ActionResult<Ban>> GetBan(ulong id)
 	{
-		var ban = await _banService.GetBanById(id);
+		Ban? ban = await BanService.GetBanById(id);
 		if (ban == null)
 		{
 			return NotFound();

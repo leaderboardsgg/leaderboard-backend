@@ -1,7 +1,7 @@
 using LeaderboardBackend.Authorization;
+using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
-using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,11 +12,11 @@ namespace LeaderboardBackend.Controllers;
 [ApiController]
 public class LeaderboardsController : ControllerBase
 {
-	private readonly ILeaderboardService _leaderboardService;
+	private readonly ILeaderboardService LeaderboardService;
 
 	public LeaderboardsController(ILeaderboardService leaderboardService)
 	{
-		_leaderboardService = leaderboardService;
+		LeaderboardService = leaderboardService;
 	}
 
 	/// <summary>Gets a leaderboard.</summary>
@@ -29,7 +29,7 @@ public class LeaderboardsController : ControllerBase
 	[HttpGet("{id}")]
 	public async Task<ActionResult<Leaderboard>> GetLeaderboard(long id)
 	{
-		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(id);
+		Leaderboard? leaderboard = await LeaderboardService.GetLeaderboard(id);
 		if (leaderboard == null)
 		{
 			return NotFound();
@@ -46,7 +46,7 @@ public class LeaderboardsController : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<List<Leaderboard>>> GetLeaderboards([FromQuery] long[] ids)
 	{
-		return Ok(await _leaderboardService.GetLeaderboards(ids));
+		return Ok(await LeaderboardService.GetLeaderboards(ids));
 	}
 
 	/// <summary>Creates a new Leaderboard. Admin-only.</summary>
@@ -66,7 +66,7 @@ public class LeaderboardsController : ControllerBase
 			Slug = body.Slug
 		};
 
-		await _leaderboardService.CreateLeaderboard(leaderboard);
+		await LeaderboardService.CreateLeaderboard(leaderboard);
 		return CreatedAtAction(nameof(GetLeaderboard), new { id = leaderboard.Id }, leaderboard);
 	}
 }

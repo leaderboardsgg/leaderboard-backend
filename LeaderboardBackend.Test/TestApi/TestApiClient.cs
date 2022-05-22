@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using NUnit.Framework;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
 using LeaderboardBackend.Test.Lib;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using NUnit.Framework;
 
 namespace LeaderboardBackend.Test.TestApi;
 
@@ -38,19 +38,28 @@ internal class TestApiClient
 	public async Task<Res> Get<Res>(
 		string endpoint,
 		HttpRequestInit init
-	) => await Send<Res>(endpoint, init with { Method = HttpMethod.Get });
+	) => await SendAndRead<Res>(endpoint, init with { Method = HttpMethod.Get });
 
 	public async Task<Res> Post<Res>(
 		string endpoint,
 		HttpRequestInit init
-	) => await Send<Res>(endpoint, init with { Method = HttpMethod.Post });
+	) => await SendAndRead<Res>(endpoint, init with { Method = HttpMethod.Post });
 
-	public async Task<Res> Delete<Res>(
+	public async Task<HttpResponseMessage> Delete(
 		string endpoint,
 		HttpRequestInit init
-	) => await Send<Res>(endpoint, init with { Method = HttpMethod.Delete });
+	) => await Send(endpoint, init with { Method = HttpMethod.Delete });
 
-	private async Task<Res> Send<Res>(
+	private async Task<Res> SendAndRead<Res>(
+		string endpoint,
+		HttpRequestInit init
+	)
+	{
+		HttpResponseMessage response = await Send(endpoint, init);
+		return await ReadFromResponseBody<Res>(response);
+	}
+
+	private async Task<HttpResponseMessage> Send(
 		string endpoint,
 		HttpRequestInit init
 	)
@@ -66,7 +75,7 @@ internal class TestApiClient
 		{
 			throw new RequestFailureException(response);
 		}
-		return await ReadFromResponseBody<Res>(response);
+		return response;
 	}
 
 	private async Task<T> ReadFromResponseBody<T>(HttpResponseMessage response)

@@ -5,8 +5,8 @@ namespace LeaderboardBackend.Models.Annotations;
 
 public class PasswordAttribute : ValidationAttribute
 {
-	private static readonly int MIN = 8;
-	private static readonly int MAX = 80;
+	private const int MIN = 8;
+	private const int MAX = 80;
 
 	public string GetErrorMessage(List<string> errors) =>
 		$"Your password has the following errors: {string.Join("; ", errors)}";
@@ -17,7 +17,7 @@ public class PasswordAttribute : ValidationAttribute
 
 		if (value is null)
 		{
-			errors.Add($"password must be supplied");
+			errors.Add("password must be supplied");
 			return new ValidationResult(GetErrorMessage(errors));
 		}
 

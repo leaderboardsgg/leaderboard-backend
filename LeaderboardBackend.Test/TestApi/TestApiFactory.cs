@@ -1,12 +1,12 @@
-using BCryptNet = BCrypt.Net.BCrypt;
+using System.Net.Http;
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Test.Lib;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Net.Http;
-using LeaderboardBackend.Test.Lib;
+using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace LeaderboardBackend.Test.TestApi;
 
@@ -39,7 +39,7 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 
 	public TestApiClient CreateTestApiClient()
 	{
-		HttpClient client = this.CreateClient();
+		HttpClient client = CreateClient();
 		return new TestApiClient(client);
 	}
 

@@ -1,14 +1,14 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace LeaderboardBackend.Test;
 
@@ -28,7 +28,7 @@ internal class Leaderboards
 	}
 
 	[Test]
-	public static void GetLeaderboard_NoLeaderboards()
+	public static void GetLeaderboard_NotFound()
 	{
 		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
 			await ApiClient.Get<Leaderboard>(
@@ -41,7 +41,7 @@ internal class Leaderboards
 	}
 
 	[Test]
-	public static async Task CreateLeaderboard_GetLeaderboard()
+	public static async Task CreateLeaderboard_GetLeaderboard_OK()
 	{
 		Leaderboard createdLeaderboard = await ApiClient.Post<Leaderboard>(
 			"/api/leaderboards",

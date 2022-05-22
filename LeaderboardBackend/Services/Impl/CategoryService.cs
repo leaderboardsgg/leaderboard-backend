@@ -1,25 +1,24 @@
 using LeaderboardBackend.Models.Entities;
 
-namespace LeaderboardBackend.Services
+namespace LeaderboardBackend.Services;
+
+public class CategoryService : ICategoryService
 {
-	public class CategoryService : ICategoryService
+	private readonly ApplicationContext ApplicationContext;
+
+	public CategoryService(ApplicationContext applicationContext)
 	{
-		private readonly ApplicationContext _applicationContext;
+		ApplicationContext = applicationContext;
+	}
 
-		public CategoryService(ApplicationContext applicationContext)
-		{
-			_applicationContext = applicationContext;
-		}
+	public async Task<Category?> GetCategory(long id)
+	{
+		return await ApplicationContext.Categories.FindAsync(id);
+	}
 
-		public async Task<Category?> GetCategory(long id)
-		{
-			return await _applicationContext.Categories.FindAsync(id);
-		}
-
-		public async Task CreateCategory(Category category)
-		{
-			_applicationContext.Categories.Add(category);
-			await _applicationContext.SaveChangesAsync();
-		}
+	public async Task CreateCategory(Category category)
+	{
+		ApplicationContext.Categories.Add(category);
+		await ApplicationContext.SaveChangesAsync();
 	}
 }

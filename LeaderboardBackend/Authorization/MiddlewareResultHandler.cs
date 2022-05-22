@@ -1,13 +1,13 @@
+using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
-using System.Net;
 
 namespace LeaderboardBackend.Authorization;
 
 public class MiddlewareResultHandler : IAuthorizationMiddlewareResultHandler
 {
-   private readonly AuthorizationMiddlewareResultHandler
-        DefaultHandler = new AuthorizationMiddlewareResultHandler();
+   private readonly AuthorizationMiddlewareResultHandler DefaultHandler = 
+		new AuthorizationMiddlewareResultHandler();
 
     public async Task HandleAsync(
         RequestDelegate requestDelegate,

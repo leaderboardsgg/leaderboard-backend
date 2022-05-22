@@ -1,22 +1,22 @@
-using LeaderboardBackend.Models.Entities;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using LeaderboardBackend.Models.Entities;
+using Microsoft.IdentityModel.Tokens;
 
 namespace LeaderboardBackend.Services;
 
 public class AuthService : IAuthService
 {
-	private readonly SigningCredentials _credentials;
-	private readonly string _issuer;
+	private readonly SigningCredentials Credentials;
+	private readonly string Issuer;
 
 	public AuthService(IConfiguration config)
 	{
-		var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
+		SymmetricSecurityKey? securityKey = new(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
 
-		_credentials = new(securityKey, SecurityAlgorithms.HmacSha256);
-		_issuer = config["Jwt:Issuer"];
+		Credentials = new(securityKey, SecurityAlgorithms.HmacSha256);
+		Issuer = config["Jwt:Issuer"];
 	}
 
 	public string GenerateJSONWebToken(User user)
@@ -28,11 +28,11 @@ public class AuthService : IAuthService
 		};
 
 		JwtSecurityToken token = new(
-			issuer: _issuer,
-			audience: _issuer,
+			issuer: Issuer,
+			audience: Issuer,
 			claims: claims,
 			expires: DateTime.Now.AddMinutes(30),
-			signingCredentials: _credentials
+			signingCredentials: Credentials
 		);
 
 		return new JwtSecurityTokenHandler().WriteToken(token);

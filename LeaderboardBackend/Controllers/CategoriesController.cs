@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
 using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LeaderboardBackend.Controllers;
 
@@ -11,13 +11,13 @@ namespace LeaderboardBackend.Controllers;
 [Produces("application/json")]
 public class CategoriesController : ControllerBase
 {
-	private readonly ICategoryService _categoryService;
+	private readonly ICategoryService CategoryService;
 
 	public CategoriesController(
 		ICategoryService categoryService
 	)
 	{
-		_categoryService = categoryService;
+		CategoryService = categoryService;
 	}
 
 	/// <summary>Gets a Category from its ID.</summary>
@@ -28,7 +28,7 @@ public class CategoriesController : ControllerBase
 	[HttpGet("{id}")]
 	public async Task<ActionResult<Category>> GetCategory(long id)
 	{
-		Category? category = await _categoryService.GetCategory(id);
+		Category? category = await CategoryService.GetCategory(id);
 		if (category == null)
 		{
 			return NotFound();
@@ -58,7 +58,7 @@ public class CategoriesController : ControllerBase
 			LeaderboardId = body.LeaderboardId,
 		};
 
-		await _categoryService.CreateCategory(category);
+		await CategoryService.CreateCategory(category);
 		return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
 	}
 }

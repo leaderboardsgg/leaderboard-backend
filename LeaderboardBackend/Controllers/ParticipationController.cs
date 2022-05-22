@@ -1,8 +1,9 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LeaderboardBackend.Controllers;
 
@@ -10,9 +11,9 @@ namespace LeaderboardBackend.Controllers;
 [ApiController]
 public class ParticipationsController : ControllerBase
 {
-	private readonly IParticipationService _participationService;
-	private readonly IRunService _runService;
-	private readonly IUserService _userService;
+	private readonly IParticipationService ParticipationService;
+	private readonly IRunService RunService;
+	private readonly IUserService UserService;
 
 	public ParticipationsController(
 		IParticipationService participationService,
@@ -20,18 +21,18 @@ public class ParticipationsController : ControllerBase
 		IUserService userService
 	)
 	{
-		_participationService = participationService;
-		_runService = runService;
-		_userService = userService;
+		ParticipationService = participationService;
+		RunService = runService;
+		UserService = userService;
 	}
 
+	[ApiConventionMethod(typeof(Conventions),
+						 nameof(Conventions.Get))]
+	[AllowAnonymous]
 	[HttpGet("{id}")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	[ProducesDefaultResponseType]
 	public async Task<ActionResult<Participation>> GetParticipation(long id)
 	{
-		Participation? participation = await _participationService.GetParticipation(id);
+		Participation? participation = await ParticipationService.GetParticipation(id);
 		if (participation == null)
 		{
 			return NotFound();
@@ -40,34 +41,24 @@ public class ParticipationsController : ControllerBase
 		return Ok(participation);
 	}
 
+	[ApiConventionMethod(typeof(Conventions),
+						 nameof(Conventions.Post))]
+	[Authorize]
 	[HttpPost]
-	[ProducesResponseType(StatusCodes.Status201Created)]
-	[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-	[ProducesDefaultResponseType]
 	public async Task<ActionResult> CreateParticipation([FromBody] CreateParticipationRequest request)
 	{
 		// TODO: Maybe create validation middleware
-		if (request.IsSubmitter && (request.Comment == null || request.Vod == null))
+		if (request.IsSubmitter && (request.Comment is null || request.Vod is null))
 		{
 			return BadRequest();
 		}
 
-		User? runner = await _userService.GetUserById(request.RunnerId);
-		Run? run = await _runService.GetRun(request.RunId);
+		User? runner = await UserService.GetUserById(request.RunnerId);
+		Run? run = await RunService.GetRun(request.RunId);
 
-		if (runner == null)
+		if (runner is null || run is null)
 		{
-			if (request.IsSubmitter)
-			{
-				return StatusCode(StatusCodes.Status500InternalServerError, "We can't add your participation because we can't.. find.. your ID? On our end???");
-			}
-			return StatusCode(StatusCodes.Status500InternalServerError, "We can't find the user with the provided ID on our end.");
-		}
-
-		if (run == null)
-		{
-			return StatusCode(StatusCodes.Status500InternalServerError, "We can't find the associated run on our end.");
+			return NotFound();
 		}
 
 		Participation participation = new Participation
@@ -80,24 +71,23 @@ public class ParticipationsController : ControllerBase
 			Vod = request.Vod
 		};
 
-		await _participationService.CreateParticipation(participation);
-		return CreatedAtAction(nameof(CreateParticipation), new { id = participation.Id });
+		await ParticipationService.CreateParticipation(participation);
+		return CreatedAtAction(nameof(GetParticipation), new { id = participation.Id }, participation);
 	}
 
+	[ApiConventionMethod(typeof(Conventions),
+						 nameof(Conventions.Update))]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	[ProducesResponseType(StatusCodes.Status403Forbidden)]
-	[ProducesResponseType(StatusCodes.Status200OK)]
 	[HttpPut]
 	public async Task<ActionResult> UpdateParticipation([FromBody] UpdateParticipationRequest request)
 	{
-		User? user = await _userService.GetUserFromClaims(HttpContext.User);
-		if (user == null)
+		User? user = await UserService.GetUserFromClaims(HttpContext.User);
+		if (user is null)
 		{
 			return Forbid();
 		}
-		Participation? participation = await _participationService.GetParticipationForUser(user);
-		if (participation == null)
+		Participation? participation = await ParticipationService.GetParticipationForUser(user);
+		if (participation is null)
 		{
 			return NotFound();
 		}
@@ -105,7 +95,7 @@ public class ParticipationsController : ControllerBase
 		participation.Comment = request.Comment;
 		participation.Vod = request.Vod;
 
-		await _participationService.UpdateParticipation(participation);
+		await ParticipationService.UpdateParticipation(participation);
 
 		return Ok();
 	}

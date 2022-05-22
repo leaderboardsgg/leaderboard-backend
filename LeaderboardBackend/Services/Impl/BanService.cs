@@ -5,34 +5,34 @@ namespace LeaderboardBackend.Services;
 
 public class BanService : IBanService
 {
-	private ApplicationContext _applicationContext;
-	private IConfiguration _config;
+	private ApplicationContext ApplicationContext;
+	private IConfiguration Config;
 	public BanService(ApplicationContext applicationContext, IConfiguration config)
 	{
-		_applicationContext = applicationContext;
-		_config = config;
+		ApplicationContext = applicationContext;
+		Config = config;
 	}
 
 	public async Task<Ban?> GetBanById(ulong id)
 	{
-		return await _applicationContext.Bans.FindAsync(id);
+		return await ApplicationContext.Bans.FindAsync(id);
 	}
 
 	public async Task<List<Ban>> GetBans(object? filter = null)
 	{
-		if (filter == null)
+		if (filter is null)
 		{
-			return await _applicationContext.Bans.ToListAsync();
+			return await ApplicationContext.Bans.ToListAsync();
 		}
 		if (filter.GetType() == typeof(ulong))
 		{
-			return await _applicationContext.Bans.Where(
+			return await ApplicationContext.Bans.Where(
 				b => b.LeaderboardId != null && b.LeaderboardId == (long)filter
 			).ToListAsync();
 		}
 		if (filter is Guid)
 		{
-			return await _applicationContext.Bans.Where(
+			return await ApplicationContext.Bans.Where(
 				b => b.BannedUserId == (Guid)filter
 			).ToListAsync();
 		}
@@ -41,7 +41,7 @@ public class BanService : IBanService
 
 	public async Task CreateBan(Ban ban)
 	{
-		_applicationContext.Bans.Add(ban);
-		await _applicationContext.SaveChangesAsync();
+		ApplicationContext.Bans.Add(ban);
+		await ApplicationContext.SaveChangesAsync();
 	}
 }

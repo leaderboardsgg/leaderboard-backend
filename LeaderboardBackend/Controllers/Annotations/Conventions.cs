@@ -6,6 +6,7 @@ namespace LeaderboardBackend.Controllers.Annotations;
 public static class Conventions
 {
 	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public static void Get(
 		[ApiConventionNameMatch(ApiConventionNameMatchBehavior.Suffix)]
@@ -18,6 +19,13 @@ public static class Conventions
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public static void Post(params object[] parameters)
+	{ }
+
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
+	public static void Update(params object[] parameters)
 	{ }
 
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
