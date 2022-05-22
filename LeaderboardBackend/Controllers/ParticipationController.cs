@@ -61,7 +61,7 @@ public class ParticipationsController : ControllerBase
 			return NotFound();
 		}
 
-		Participation participation = new Participation
+		Participation participation = new()
 		{
 			Comment = request.Comment,
 			RunId = request.RunId,

@@ -52,7 +52,7 @@ public class User
 	public List<Modship>? Modships { get; set; }
 
 	[JsonIgnore]
-	public List<Participation>?	Participations { get; set; }
+	public List<Participation>? Participations { get; set; }
 
 	public override bool Equals(object? obj)
 	{

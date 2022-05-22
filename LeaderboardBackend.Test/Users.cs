@@ -92,7 +92,7 @@ internal class Users
 		{
 			// Not using the helper here because it's easier for this test implementation
 			// to have a table of requests and send them directly.
-			RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () => 
+			RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
 				await ApiClient.Post<User>("/api/users/register", new() { Body = request })
 			)!;
 			Assert.AreEqual(

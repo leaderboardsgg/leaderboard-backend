@@ -10,7 +10,7 @@ public class Leaderboard
 
 	/// <summary>The Leaderboard's aka game's name. Pretty straightforward.</summary>
 	/// <example>Mario Goes to Jail II</example>
-	[Required] 
+	[Required]
 	public string Name { get; set; } = null!;
 
 	/// <summary>
@@ -22,7 +22,7 @@ public class Leaderboard
 	/// </ul>
 	/// </summary>
 	/// <example>mario-goes-to-jail-ii</example>
-	[Required] 
+	[Required]
 	public string Slug { get; set; } = null!;
 
 	/// <summary>
@@ -32,13 +32,13 @@ public class Leaderboard
 	/// <example>Timer starts on selecting New Game and ends when the first tear drops.</example>
 	public string? Rules { get; set; }
 
-	[JsonIgnore] 
+	[JsonIgnore]
 	public List<Ban>? Bans { get; set; }
 
-	[JsonIgnore] 
+	[JsonIgnore]
 	public List<Category>? Categories { get; set; }
 
-	[JsonIgnore] 
+	[JsonIgnore]
 	public List<Modship>? Modships { get; set; }
 
 	public override bool Equals(object? obj)

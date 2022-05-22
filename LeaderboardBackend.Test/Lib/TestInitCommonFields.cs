@@ -4,8 +4,9 @@ using LeaderboardBackend.Models.Entities;
 
 namespace LeaderboardBackend.Test.Lib;
 
-internal record TestInitCommonFields {
-	public static JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
+internal record TestInitCommonFields
+{
+	public static JsonSerializerOptions JsonSerializerOptions = new()
 	{
 		ReferenceHandler = ReferenceHandler.IgnoreCycles,
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

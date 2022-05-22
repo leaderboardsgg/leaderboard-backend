@@ -17,7 +17,7 @@ public record JudgementViewModel
 	///   When the judgement was made. Follows <a href="https://www.ietf.org/rfc/rfc3339.txt">RFC 3339</a>.
 	/// </summary>
 	/// <example>2022-01-01T12:34:56Z / 2022-01-01T12:34:56+01:00</example>
-	public string CreatedAt { get; set; }
+	public string? CreatedAt { get; set; }
 
 	/// <summary>
 	///   Judgement comments. Acts as mod feedback for the runner. Will be non-empty for
