@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace LeaderboardBackend.Models.Entities;
 
 /// <summary>A Category tied to a Leaderboard.</summary>
-public record Category
+public class Category
 {
 	/// <summary>The Category's ID. Generated on creation.</summary>
 	public long Id { get; set; }

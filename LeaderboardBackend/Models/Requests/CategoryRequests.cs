@@ -4,7 +4,7 @@ using LeaderboardBackend.Models.Annotations;
 namespace LeaderboardBackend.Models.Requests;
 
 /// <summary>Request object sent when creating a Category.</summary>
-public class CreateCategoryRequest
+public record CreateCategoryRequest
 {
 	/// <summary>Name for the new Category.</summary>
 	/// <example>Mongolian Throat Singing%</example>
