@@ -17,7 +17,7 @@ internal class ScaffoldLeaderboardAndMod : IJob
 	public string Description => "Create a new leaderboard and a new user to mod it.";
 	public override string ToString() => $"{CommandName}: {Description}";
 
-	async Task IJob.Run()
+	public async Task Run()
 	{
 		Console.WriteLine("Please provide new leaderboard info.");
 		string name = Options.StringLine("Leaderboard Name");

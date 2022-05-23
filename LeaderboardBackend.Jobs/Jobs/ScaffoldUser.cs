@@ -18,7 +18,7 @@ internal class ScaffoldUser : IJob
 	public string Description => "Create a new user.";
 	public override string ToString() => $"{CommandName}: {Description}";
 
-	async Task IJob.Run()
+	public async Task Run()
 	{
 		User newUser = Options.User();
 		newUser.Admin = Options.YesOrNo("Will this user be an admin?");
