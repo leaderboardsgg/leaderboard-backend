@@ -58,7 +58,7 @@ public record RegisterRequest
 	/// </summary>
 	/// <example>Ayy-l'maoGaming</example>
 	[Required]
-	[RegularExpression("(?:[a-zA-Z][-_']?){1,12}[a-zA-Z]",
+	[RegularExpression("(?:[a-zA-Z0-9][-_']?){1,12}[a-zA-Z0-9]",
 		ErrorMessage = "Your name must be between 2 and 25 characters, made up of letters sandwiching zero or one hyphen, underscore, or apostrophe.")]
 	public string Username { get; set; } = null!;
 

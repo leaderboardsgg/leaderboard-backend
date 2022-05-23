@@ -1,14 +1,10 @@
 using System;
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NUnit.Framework;
 
 namespace LeaderboardBackend.Test;
@@ -19,7 +15,7 @@ internal class Users
 	private static TestApiFactory Factory = null!;
 	private static TestApiClient ApiClient = null!;
 
-	private static readonly string ValidUsername = "Test";
+	private static readonly string ValidUsername = "Test64";
 	private static readonly string ValidPassword = "c00l_pAssword";
 	private static readonly string ValidEmail = "test@email.com";
 
