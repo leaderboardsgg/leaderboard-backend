@@ -30,7 +30,7 @@ internal static class Options
 
 	public static bool YesOrNo(string question)
 	{
-		Console.Write($"{question} (y to say yes): ");
+		Console.Write($"{question} (y/[N]): ");
 		string? input = Console.ReadLine();
 		return input is not null && input.Trim() == "y";
 	}
