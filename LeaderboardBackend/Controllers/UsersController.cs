@@ -54,12 +54,6 @@ public class UsersController : ControllerBase
 	[HttpPost("register")]
 	public async Task<ActionResult<User>> Register([FromBody] RegisterRequest body)
 	{
-		// This shouldn't hit normally, since we have the CompareAttribute in UserRequests.cs -> RegisterRequest
-		if (body.Password != body.PasswordConfirm)
-		{
-			return BadRequest();
-		}
-
 		if (await UserService.GetUserByEmail(body.Email) is not null)
 		{
 			// FIXME: Do a redirect to the login page.
