@@ -14,7 +14,7 @@ public class User
 	/// The User's name. Must be:
 	/// <ul>
 	///   <li>between 2 - 25 characters inclusive; and</li>
-	///   <li>a sequence of letters, each separated by zero or one of:</li>
+	///   <li>an alphanumeric sequence, each separated by zero or one of:</li>
 	///   <ul>
 	///     <li>an underscore;</li>
 	///     <li>a hyphen; or</li>
@@ -51,7 +51,6 @@ public class User
 
 	public List<Modship>? Modships { get; set; }
 
-	[JsonIgnore]
 	public List<Participation>? Participations { get; set; }
 
 	public override bool Equals(object? obj)
