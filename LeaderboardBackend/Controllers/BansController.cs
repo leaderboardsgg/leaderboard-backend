@@ -34,7 +34,7 @@ public class BansController : ControllerBase
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions),
 							nameof(Conventions.Get))]
-	[HttpGet("leaderboard/{id:long}")]
+	[HttpGet("leaderboard/{leaderboardId:long}")]
 	public async Task<ActionResult<List<Ban>>> GetBansByLeaderboard(long leaderboardId)
 	{
 		List<Ban> bans = await BanService.GetBansByLeaderboard(leaderboardId);
@@ -55,7 +55,7 @@ public class BansController : ControllerBase
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions),
 							nameof(Conventions.Get))]
-	[HttpGet("leaderboard/{id:Guid}")]
+	[HttpGet("leaderboard/{bannedUserId:Guid}")]
 	public async Task<ActionResult<List<Ban>>> GetBansByUser(Guid bannedUserId)
 	{
 		List<Ban> bans = await BanService.GetBansByUser(bannedUserId);
