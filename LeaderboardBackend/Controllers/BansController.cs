@@ -62,7 +62,7 @@ public class BansController : ControllerBase
 
 		if (bans.Count == 0)
 		{
-			return NotFound("No bans found for this User");
+			return NotFound("No bans found for this user");
 		}
 
 		return Ok(bans);
