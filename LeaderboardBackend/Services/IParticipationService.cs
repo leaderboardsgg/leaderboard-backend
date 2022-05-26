@@ -8,4 +8,5 @@ public interface IParticipationService
 	Task<Participation?> GetParticipationForUser(User user);
 	Task CreateParticipation(Participation participation);
 	Task UpdateParticipation(Participation participation);
+	Task<List<Participation>> GetParticipationForRun(Run run);
 }

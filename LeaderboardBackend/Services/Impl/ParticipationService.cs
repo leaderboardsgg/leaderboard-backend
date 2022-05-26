@@ -33,4 +33,9 @@ public class ParticipationService : IParticipationService
 		ApplicationContext.Participations.Update(participation);
 		await ApplicationContext.SaveChangesAsync();
 	}
+
+	public async Task<List<Participation>> GetParticipationForRun(Run run)
+	{
+		return await ApplicationContext.Participations.Where(p => p.RunId == run.Id).ToListAsync();
+	}
 }
