@@ -27,7 +27,7 @@ public class BansController : ControllerBase
 	}
 
 	/// <summary>Get bans by leaderboard ID</summary>
-	/// <param name="leaderboardId">Gets Bans a Leaderboard has.</param>
+	/// <param name="leaderboardId">The leaderboard ID.</param>
 	/// <response code="200">A list of bans. Can be an empty array.</response>
 	/// <response code="404">No bans found for the Leaderboard.
 	/// </response>
