@@ -56,8 +56,8 @@ public class RunsController : ControllerBase
 
 	/// <summary>Gets the Participations for a Run.</summary>
 	/// <param name="id">The Run ID.</param>
-	/// <response code="200">An array with all participations.</response>
-	/// <response code="404">If the run is not found or the run has no participations.</response>
+	/// <response code="200">An array with all participations. Can be empty</response>
+	/// <response code="404">If the run is not found.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.Get))]
 	[HttpGet("participations/{id}")]
@@ -70,11 +70,6 @@ public class RunsController : ControllerBase
 		}
 
 		List<Participation> participations = await ParticipationService.GetParticipationForRun(run);
-
-		if (participations.Count == 0)
-		{
-			return NotFound();
-		}
 
 		return Ok(participations);
 	}
