@@ -47,8 +47,8 @@ public class BansController : ControllerBase
 		return Ok(bans);
 	}
 
-	/// <summary>Get all ban by User ID.</summary>
-	/// <param name="bannedUserId"> Gets Bans a User has.</param>
+	/// <summary>Get bans by user ID.</summary>
+	/// <param name="bannedUserId">The user ID.</param>
 	/// <response code="200">A list of bans. Can be an empty array.</response>
 	/// <response code="404">No bans found for the User.
 	/// </response>
