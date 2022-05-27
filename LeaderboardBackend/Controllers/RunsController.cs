@@ -69,7 +69,8 @@ public class RunsController : ControllerBase
 			return NotFound();
 		}
 
-		List<Participation> participations = await ParticipationService.GetParticipationForRun(run);
+		List<Participation> participations = await ParticipationService.GetParticipationsForRun(run);
+
 
 		return Ok(participations);
 	}
