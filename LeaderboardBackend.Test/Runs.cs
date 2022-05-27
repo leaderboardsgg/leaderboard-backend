@@ -57,7 +57,7 @@ namespace LeaderboardBackend.Test
 			);
 
 			List<Participation> retrieved = await ApiClient.Get<List<Participation>>(
-				$"api/runs/participations/{createdRun.Id}",
+				$"api/runs/{createdRun.Id}/participations",
 				new()
 				{
 					Jwt = Jwt

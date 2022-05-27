@@ -54,13 +54,13 @@ public class RunsController : ControllerBase
 		return CreatedAtAction(nameof(GetRun), new { id = run.Id }, run);
 	}
 
-	/// <summary>Gets the Participations for a Run.</summary>
-	/// <param name="id">The Run ID.</param>
-	/// <response code="200">An array with all participations. Can be empty</response>
-	/// <response code="404">If the run is not found.</response>
+	/// <summary>Gets the participations for a run.</summary>
+	/// <param name="id">The run ID.</param>
+	/// <response code="200">An array with all participations.</response>
+	/// <response code="404">If the run or no participations are found.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.Get))]
-	[HttpGet("participations/{id}")]
+	[HttpGet("{id}/participations")]
 	public async Task<ActionResult<List<Participation>>> GetParticipations(Guid id)
 	{
 		Run? run = await RunService.GetRun(id);
