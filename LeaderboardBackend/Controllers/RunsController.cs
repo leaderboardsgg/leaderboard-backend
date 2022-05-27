@@ -71,6 +71,10 @@ public class RunsController : ControllerBase
 
 		List<Participation> participations = await ParticipationService.GetParticipationsForRun(run);
 
+		if (!participations.Any())
+		{
+			return NotFound();
+		}
 
 		return Ok(participations);
 	}
