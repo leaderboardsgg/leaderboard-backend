@@ -18,25 +18,23 @@ public class BanService : IBanService
 		return await ApplicationContext.Bans.FindAsync(id);
 	}
 
-	public async Task<List<Ban>> GetBans(object? filter = null)
+	public async Task<List<Ban>> GetBans()
 	{
-		if (filter is null)
-		{
-			return await ApplicationContext.Bans.ToListAsync();
-		}
-		if (filter.GetType() == typeof(ulong))
-		{
-			return await ApplicationContext.Bans.Where(
-				b => b.LeaderboardId != null && b.LeaderboardId == (long)filter
-			).ToListAsync();
-		}
-		if (filter is Guid)
-		{
-			return await ApplicationContext.Bans.Where(
-				b => b.BannedUserId == (Guid)filter
-			).ToListAsync();
-		}
-		return new List<Ban>();
+		return await ApplicationContext.Bans.ToListAsync();
+	}
+
+	public async Task<List<Ban>> GetBansByLeaderboard(long leaderboardId)
+	{
+		return await ApplicationContext.Bans.Where(
+			b => b.LeaderboardId == leaderboardId
+		).ToListAsync();
+	}
+
+	public async Task<List<Ban>> GetBansByUser(Guid userId)
+	{
+		return await ApplicationContext.Bans.Where(
+			b => b.BannedUserId == userId
+		).ToListAsync();
 	}
 
 	public async Task CreateBan(Ban ban)

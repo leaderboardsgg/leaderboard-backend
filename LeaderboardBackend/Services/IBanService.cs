@@ -6,7 +6,11 @@ public interface IBanService
 {
 	Task<Ban?> GetBanById(ulong id);
 
-	Task<List<Ban>> GetBans(object? filter = null);
+	Task<List<Ban>> GetBans();
+
+	Task<List<Ban>> GetBansByLeaderboard(long leaderboardId);
+
+	Task<List<Ban>> GetBansByUser(Guid userId);
 
 	Task CreateBan(Ban user);
 }

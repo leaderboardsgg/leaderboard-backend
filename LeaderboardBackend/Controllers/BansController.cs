@@ -26,40 +26,46 @@ public class BansController : ControllerBase
 		BanService = banService;
 	}
 
-	/// <summary>Get all bans, optionally filtered by a Leaderboard or User.</summary>
-	/// <remarks>
-	/// Simply calling this without any query parameters will get all present bans. Else:
-	/// <ul>
-	///   <li>passing <code>leaderboardId</code> will return all bans a Leaderboard has</li>
-	///   <li>passing <code>bannedUserId</code> will return all bans a User has</li>
-	/// </ul>
-	/// Don't specify both a Leaderboard ID and a User ID. Only specify one.
-	/// </remarks>
-	/// <param name="leaderboardId">Optional. Gets Bans a Leaderboard has.</param>
-	/// <param name="bannedUserId">Optional. Gets Bans a User has.</param>
+	/// <summary>Get bans by leaderboard ID</summary>
+	/// <param name="leaderboardId">The leaderboard ID.</param>
 	/// <response code="200">A list of bans. Can be an empty array.</response>
-	/// <response code="400">
-	/// If both <code>leaderboardId</code> and <code>bannedUserId</code> are given.
+	/// <response code="404">No bans found for the Leaderboard.
 	/// </response>
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions),
-							 nameof(Conventions.Get))]
-	[HttpGet]
-	public async Task<ActionResult<List<Ban>>> GetBans([FromQuery] long? leaderboardId, [FromQuery] Guid? bannedUserId)
+							nameof(Conventions.Get))]
+	[HttpGet("leaderboard/{leaderboardId:long}")]
+	public async Task<ActionResult<List<Ban>>> GetBansByLeaderboard(long leaderboardId)
 	{
-		if (leaderboardId != null && bannedUserId != null)
+		List<Ban> bans = await BanService.GetBansByLeaderboard(leaderboardId);
+
+		if (bans.Count == 0)
 		{
-			return BadRequest("Specify only either a leaderboard ID, or a user ID. Don't specify both.");
+			return NotFound("No bans found for this leaderboard");
 		}
-		if (leaderboardId != null)
+
+		return Ok(bans);
+	}
+
+	/// <summary>Get bans by user ID.</summary>
+	/// <param name="bannedUserId">The user ID.</param>
+	/// <response code="200">A list of bans. Can be an empty array.</response>
+	/// <response code="404">No bans found for the User.
+	/// </response>
+	[AllowAnonymous]
+	[ApiConventionMethod(typeof(Conventions),
+							nameof(Conventions.Get))]
+	[HttpGet("leaderboard/{bannedUserId:Guid}")]
+	public async Task<ActionResult<List<Ban>>> GetBansByUser(Guid bannedUserId)
+	{
+		List<Ban> bans = await BanService.GetBansByUser(bannedUserId);
+
+		if (bans.Count == 0)
 		{
-			return Ok(await BanService.GetBans(leaderboardId));
+			return NotFound("No bans found for this user");
 		}
-		if (bannedUserId != null)
-		{
-			return Ok(await BanService.GetBans(bannedUserId));
-		}
-		return Ok(await BanService.GetBans());
+
+		return Ok(bans);
 	}
 
 	/// <summary>Get a Ban from its ID.</summary>
