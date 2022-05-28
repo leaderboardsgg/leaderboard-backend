@@ -11,10 +11,12 @@ namespace LeaderboardBackend.Controllers;
 public class RunsController : ControllerBase
 {
 	private readonly IRunService RunService;
+	private readonly IParticipationService ParticipationService;
 
-	public RunsController(IRunService runService)
+	public RunsController(IRunService runService, IParticipationService participationService)
 	{
 		RunService = runService;
+		ParticipationService = participationService;
 	}
 
 	/// <summary>Gets a Run.</summary>
@@ -50,5 +52,30 @@ public class RunsController : ControllerBase
 
 		await RunService.CreateRun(run);
 		return CreatedAtAction(nameof(GetRun), new { id = run.Id }, run);
+	}
+
+	/// <summary>Gets the participations for a run.</summary>
+	/// <param name="id">The run ID.</param>
+	/// <response code="200">An array with all participations.</response>
+	/// <response code="404">If the run or no participations are found.</response>
+	[ApiConventionMethod(typeof(Conventions),
+						 nameof(Conventions.Get))]
+	[HttpGet("{id}/participations")]
+	public async Task<ActionResult<List<Participation>>> GetParticipations(Guid id)
+	{
+		Run? run = await RunService.GetRun(id);
+		if (run is null)
+		{
+			return NotFound();
+		}
+
+		List<Participation> participations = await ParticipationService.GetParticipationsForRun(run);
+
+		if (!participations.Any())
+		{
+			return NotFound();
+		}
+
+		return Ok(participations);
 	}
 }
