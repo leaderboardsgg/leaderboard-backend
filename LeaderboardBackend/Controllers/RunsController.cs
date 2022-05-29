@@ -66,14 +66,14 @@ public class RunsController : ControllerBase
 		Run? run = await RunService.GetRun(id);
 		if (run is null)
 		{
-			return NotFound();
+			return NotFound("Run not found");
 		}
 
 		List<Participation> participations = await ParticipationService.GetParticipationsForRun(run);
 
 		if (!participations.Any())
 		{
-			return NotFound();
+			return NotFound("No participations for this run were found");
 		}
 
 		return Ok(participations);
