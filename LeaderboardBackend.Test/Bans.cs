@@ -1,10 +1,10 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Lib;
-using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
 using NUnit.Framework;
