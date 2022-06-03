@@ -40,6 +40,7 @@ builder.Services.AddScoped<IModshipService, ModshipService>();
 builder.Services.AddScoped<IParticipationService, ParticipationService>();
 builder.Services.AddScoped<IJudgementService, JudgementService>();
 builder.Services.AddScoped<IRunService, RunService>();
+builder.Services.AddScoped<IBanService, BanService>();
 
 // Add controllers to the container.
 builder.Services.AddControllers(opt =>
