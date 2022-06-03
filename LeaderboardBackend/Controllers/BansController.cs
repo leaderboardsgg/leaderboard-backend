@@ -77,7 +77,7 @@ public class BansController : ControllerBase
 	[ApiConventionMethod(typeof(Conventions),
 							 nameof(Conventions.Get))]
 	[HttpGet("{id:long}")]
-	public async Task<ActionResult<Ban>> GetBan(ulong id)
+	public async Task<ActionResult<Ban>> GetBan(long id)
 	{
 		Ban? ban = await BanService.GetBanById(id);
 		if (ban == null)
