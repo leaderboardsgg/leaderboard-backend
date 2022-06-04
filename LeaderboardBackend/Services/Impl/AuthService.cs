@@ -37,4 +37,26 @@ public class AuthService : IAuthService
 
 		return new JwtSecurityTokenHandler().WriteToken(token);
 	}
+
+	public string? GetEmailFromClaims(ClaimsPrincipal claims)
+	{
+		return claims.FindFirstValue(JwtRegisteredClaimNames.Email);
+	}
+
+	public Guid? GetUserIdFromClaims(ClaimsPrincipal claims)
+	{
+		string? userIdStr = claims.FindFirstValue(JwtRegisteredClaimNames.Sub);
+		if (userIdStr is null)
+		{
+			return null;
+		}
+
+		Guid? userId = null;
+		try
+		{
+			userId = Guid.Parse(userIdStr);
+		} catch (FormatException) { }
+
+		return userId;
+	}
 }

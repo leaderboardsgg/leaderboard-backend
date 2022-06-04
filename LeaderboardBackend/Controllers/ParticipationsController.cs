@@ -14,16 +14,19 @@ public class ParticipationsController : ControllerBase
 	private readonly IParticipationService ParticipationService;
 	private readonly IRunService RunService;
 	private readonly IUserService UserService;
+	private readonly IAuthService AuthService;
 
 	public ParticipationsController(
 		IParticipationService participationService,
 		IRunService runService,
-		IUserService userService
+		IUserService userService,
+		IAuthService authService
 	)
 	{
 		ParticipationService = participationService;
 		RunService = runService;
 		UserService = userService;
+		AuthService = authService;
 	}
 
 	[ApiConventionMethod(typeof(Conventions),
@@ -81,12 +84,12 @@ public class ParticipationsController : ControllerBase
 	[HttpPut]
 	public async Task<ActionResult> UpdateParticipation([FromBody] UpdateParticipationRequest request)
 	{
-		User? user = await UserService.GetUserFromClaims(HttpContext.User);
-		if (user is null)
+		Guid? userId = AuthService.GetUserIdFromClaims(HttpContext.User);
+		if (userId is null)
 		{
 			return Forbid();
 		}
-		Participation? participation = await ParticipationService.GetParticipationForUser(user);
+		Participation? participation = await ParticipationService.GetParticipationForUser(userId.Value);
 		if (participation is null)
 		{
 			return NotFound();
