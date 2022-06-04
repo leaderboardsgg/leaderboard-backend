@@ -6,13 +6,13 @@ namespace LeaderboardBackend.Models.Requests;
 public record CreateSiteBanRequest
 {
 	/// <summary>
-	/// The Id of the User, who should be banned.
+	/// The ID of the user, who should be banned.
 	/// </summary>
 	[Required]
 	public Guid UserId { get; set; }
 
 	/// <summary>
-	/// The Reason why the User is banned.
+	/// The reason why the user is banned.
 	/// </summary>
 	[Required]
 	public string Reason { get; set; } = null!;
@@ -21,19 +21,19 @@ public record CreateSiteBanRequest
 public record CreateLeaderboardBanRequest
 {
 	/// <summary>
-	/// The Id of the User, who should be banned.
+	/// The ID of the user, who should be banned.
 	/// </summary>
 	[Required]
 	public Guid UserId { get; set; }
 
 	/// <summary>
-	/// The Reason why the User is banned.
+	/// The reason why the user is banned.
 	/// </summary>
 	[Required]
 	public string Reason { get; set; } = null!;
 
 	/// <summary>
-	/// The Id of the Leaderboard on which the user should be banned.
+	/// The ID of the leaderboard on which the user should be banned.
 	/// </summary>
 	public long LeaderboardId { get; set; }
 }

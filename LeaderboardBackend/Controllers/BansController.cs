@@ -96,12 +96,15 @@ public class BansController : ControllerBase
 	/// <param name="body">A CreateSiteBanRequest instance.</param>
 	/// <response code="201">The created Ban.</response>
 	/// <response code="400">If the request is malformed.</response>
-	/// <response code="401">If the banned User is also a admin</response>
-	/// <response code="404">If a non-admin calls this.</response>
+	/// <response code="401">If a non-admin calls this.</response>
+	/// <response code="403">If the banned user is also an admin.</response>
+	/// <response code="404">If the banned user is not found.</response>
 	[ProducesResponseType(StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[Authorize(Policy = UserTypes.Admin)]
 	[HttpPost]
 	public async Task<ActionResult<Ban>> CreateSiteBan([FromBody] CreateSiteBanRequest body)
 	{
@@ -115,7 +118,7 @@ public class BansController : ControllerBase
 
 		if (bannedUser.Admin)
 		{
-			return Unauthorized("Admin users cannot be banned");
+			return Forbid();
 		}
 
 		Ban ban = new()
@@ -135,12 +138,15 @@ public class BansController : ControllerBase
 	/// <param name="body">A CreateLeaderboardBanRequest instance.</param>
 	/// <response code="201">The created Ban.</response>
 	/// <response code="400">If the request is malformed.</response>
-	/// <response code="401">If the banned User is an admin or a mod.</response>
-	/// <response code="404">If a non-admin calls this.</response>
+	/// <response code="401">If a non-admin or mod calls this.</response>
+	/// <response code="403">If the banned user is an admin or a mod.</response>
+	/// <response code="404">If the banned user is not found.</response>
 	[ProducesResponseType(StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[Authorize(Policy = UserTypes.Mod)]
 	[HttpPost("leaderboard")]
 	public async Task<ActionResult<Ban>> CreateLeaderboardBan([FromBody] CreateLeaderboardBanRequest body)
 	{
@@ -160,7 +166,7 @@ public class BansController : ControllerBase
 
 		if (bannedUser.Admin || bannedUser.Modships is not null)
 		{
-			return Unauthorized("Cannot ban users with same or higher rights");
+			return Forbid();
 		}
 
 		Ban ban = new()

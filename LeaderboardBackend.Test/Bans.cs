@@ -94,7 +94,7 @@ internal class Bans
 			Assert.Fail("You should not be able to ban an admin (yourself).");
 		} catch (RequestFailureException e)
 		{
-			Assert.AreEqual(HttpStatusCode.Unauthorized, e.Response.StatusCode);
+			Assert.AreEqual(HttpStatusCode.Forbidden, e.Response.StatusCode);
 		}
 	}
 
@@ -111,6 +111,7 @@ internal class Bans
 		Assert.AreEqual(retrieved.LeaderboardId, created.LeaderboardId);
 	}
 
+	[Test]
 	public static async Task CreateLeaderboardBan_TryMod_Unauthorized()
 	{
 		try
@@ -119,7 +120,7 @@ internal class Bans
 			Assert.Fail("You should not be able to ban a mod (yourself).");
 		} catch (RequestFailureException e)
 		{
-			Assert.AreEqual(HttpStatusCode.Unauthorized, e.Response.StatusCode);
+			Assert.AreEqual(HttpStatusCode.Forbidden, e.Response.StatusCode);
 		}
 	}
 
