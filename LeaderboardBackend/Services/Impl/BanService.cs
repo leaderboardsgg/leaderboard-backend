@@ -13,7 +13,7 @@ public class BanService : IBanService
 		Config = config;
 	}
 
-	public async Task<Ban?> GetBanById(ulong id)
+	public async Task<Ban?> GetBanById(long id)
 	{
 		return await ApplicationContext.Bans.FindAsync(id);
 	}

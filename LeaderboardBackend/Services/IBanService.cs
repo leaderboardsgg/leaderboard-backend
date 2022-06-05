@@ -4,7 +4,7 @@ namespace LeaderboardBackend.Services;
 
 public interface IBanService
 {
-	Task<Ban?> GetBanById(ulong id);
+	Task<Ban?> GetBanById(long id);
 
 	Task<List<Ban>> GetBans();
 
