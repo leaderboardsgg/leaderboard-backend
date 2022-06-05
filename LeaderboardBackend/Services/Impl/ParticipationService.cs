@@ -17,9 +17,9 @@ public class ParticipationService : IParticipationService
 		return participation;
 	}
 
-	public async Task<Participation?> GetParticipationForUser(User user)
+	public async Task<Participation?> GetParticipationForUser(Guid userId)
 	{
-		return await ApplicationContext.Participations.SingleOrDefaultAsync(p => p.RunnerId == user.Id);
+		return await ApplicationContext.Participations.SingleOrDefaultAsync(p => p.RunnerId == userId);
 	}
 
 	public async Task CreateParticipation(Participation participation)

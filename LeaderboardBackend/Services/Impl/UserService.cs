@@ -31,17 +31,6 @@ public class UserService : IUserService
 		return await ApplicationContext.Users.FirstOrDefaultAsync(u => u.Username != null && u.Username.ToLower() == name.ToLower());
 	}
 
-	public async Task<User?> GetUserFromClaims(ClaimsPrincipal claims)
-	{
-		if (!claims.HasClaim(c => c.Type == JwtRegisteredClaimNames.Email))
-		{
-			return null;
-		}
-
-		string email = claims.FindFirstValue("Email");
-		return await GetUserByEmail(email);
-	}
-
 	public async Task CreateUser(User user)
 	{
 		ApplicationContext.Users.Add(user);

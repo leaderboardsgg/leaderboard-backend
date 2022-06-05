@@ -120,7 +120,16 @@ public class UsersController : ControllerBase
 	[HttpGet("me")]
 	public async Task<ActionResult<User>> Me()
 	{
-		User? user = await UserService.GetUserFromClaims(HttpContext.User);
-		return user is not null ? Ok(user) : Forbid();
+		string? email = AuthService.GetEmailFromClaims(HttpContext.User);
+		if (email is null)
+		{
+			return Forbid();
+		}
+		User? user = await UserService.GetUserByEmail(email);
+		if (user is null)
+		{
+			return Forbid();
+		}
+		return Ok(user);
 	}
 }
