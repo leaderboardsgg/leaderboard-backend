@@ -118,7 +118,7 @@ public class BansController : ControllerBase
 
 		if (bannedUser.Admin)
 		{
-			return Forbid();
+			return StatusCode(StatusCodes.Status403Forbidden, "Admin users cannot be banned.");
 		}
 
 		Ban ban = new()
@@ -166,7 +166,7 @@ public class BansController : ControllerBase
 
 		if (bannedUser.Admin || bannedUser.Modships is not null)
 		{
-			return Forbid();
+			return StatusCode(StatusCodes.Status403Forbidden, "Cannot ban users with same or higher rights.");
 		}
 
 		Ban ban = new()
