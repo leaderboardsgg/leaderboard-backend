@@ -12,17 +12,20 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 	private readonly TokenValidationParameters JwtValidationParams;
 	private readonly IUserService UserService;
 	private readonly IModshipService ModshipService;
+	private readonly IAuthService AuthService;
 
 	public UserTypeAuthorizationHandler(
 		IConfiguration config,
 		IModshipService modshipService,
-		IUserService userService
+		IUserService userService,
+		IAuthService authService
 	)
 	{
 		JwtHandler = JwtSecurityTokenHandlerSingleton.Instance;
 		JwtValidationParams = TokenValidationParametersSingleton.Instance(config);
 		UserService = userService;
 		ModshipService = modshipService;
+		AuthService = authService;
 	}
 
 	protected override Task HandleRequirementAsync(
@@ -35,7 +38,13 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 			return Task.CompletedTask;
 		}
 
-		User? user = UserService.GetUserFromClaims(context.User).Result;
+		Guid? userId = AuthService.GetUserIdFromClaims(context.User);
+		if (userId is null)
+		{
+			context.Fail();
+			return Task.CompletedTask;
+		}
+		User? user = UserService.GetUserById(userId.Value).Result;
 
 		if (user is null || !Handle(user, context, requirement))
 		{

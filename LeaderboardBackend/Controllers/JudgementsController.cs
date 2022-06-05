@@ -18,18 +18,21 @@ public class JudgementsController : ControllerBase
 	private readonly IJudgementService JudgementService;
 	private readonly IRunService RunService;
 	private readonly IUserService UserService;
+	private readonly IAuthService AuthService;
 
 	public JudgementsController(
 		ILogger<JudgementsController> logger,
 		IJudgementService judgementService,
 		IRunService runService,
-		IUserService userService
+		IUserService userService,
+		IAuthService authService
 	)
 	{
 		Logger = logger;
 		JudgementService = judgementService;
 		RunService = runService;
 		UserService = userService;
+		AuthService = authService;
 	}
 
 	/// <summary>Gets a Judgement from its ID.</summary>
@@ -60,7 +63,11 @@ public class JudgementsController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<JudgementViewModel>> CreateJudgement([FromBody] CreateJudgementRequest body)
 	{
-		User? mod = await UserService.GetUserFromClaims(HttpContext.User);
+		Guid? modId = AuthService.GetUserIdFromClaims(HttpContext.User);
+		if (modId is null)
+		{
+			return Forbid();
+		}
 		Run? run = await RunService.GetRun(body.RunId);
 
 		if (run is null)
@@ -79,8 +86,7 @@ public class JudgementsController : ControllerBase
 		Judgement judgement = new()
 		{
 			Approved = body.Approved,
-			Mod = mod!,
-			ModId = mod!.Id,
+			ModId = modId.Value,
 			Note = body.Note,
 			Run = run,
 			RunId = run.Id,
