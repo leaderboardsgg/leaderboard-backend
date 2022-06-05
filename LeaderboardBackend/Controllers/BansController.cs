@@ -108,7 +108,13 @@ public class BansController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<Ban>> CreateSiteBan([FromBody] CreateSiteBanRequest body)
 	{
-		User? admin = await UserService.GetUserFromClaims(HttpContext.User);
+		Guid? adminId = AuthService.GetUserIdFromClaims(HttpContext.User);
+
+		if (adminId is null)
+		{
+			return Forbid();
+		}
+
 		User? bannedUser = await UserService.GetUserById(body.UserId);
 
 		if (bannedUser is null)
@@ -124,10 +130,8 @@ public class BansController : ControllerBase
 		Ban ban = new()
 		{
 			Reason = body.Reason,
-			BanningUserId = admin!.Id,
-			BanningUser = admin!,
+			BanningUserId = adminId,
 			BannedUserId = bannedUser.Id,
-			BannedUser = bannedUser
 		};
 
 		await BanService.CreateBan(ban);
@@ -150,7 +154,13 @@ public class BansController : ControllerBase
 	[HttpPost("leaderboard")]
 	public async Task<ActionResult<Ban>> CreateLeaderboardBan([FromBody] CreateLeaderboardBanRequest body)
 	{
-		User? mod = await UserService.GetUserFromClaims(HttpContext.User);
+		Guid? modId = AuthService.GetUserIdFromClaims(HttpContext.User);
+
+		if (modId is null)
+		{
+			return Forbid();
+		}
+
 		User? bannedUser = await UserService.GetUserById(body.UserId);
 		Leaderboard? leaderboard = await LeaderboardService.GetLeaderboard(body.LeaderboardId);
 
@@ -172,12 +182,9 @@ public class BansController : ControllerBase
 		Ban ban = new()
 		{
 			Reason = body.Reason,
-			BanningUserId = mod!.Id,
-			BanningUser = mod!,
+			BanningUserId = modId,
 			BannedUserId = bannedUser.Id,
-			BannedUser = bannedUser,
-			LeaderboardId = leaderboard.Id,
-			Leaderboard = leaderboard
+			LeaderboardId = leaderboard.Id
 		};
 
 		await BanService.CreateBan(ban);
