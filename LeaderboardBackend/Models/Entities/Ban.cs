@@ -14,7 +14,10 @@ public class Ban
 
 	/// <summary>Generated on creation.</summary>
 	[Required]
-	public DateTime Time { get; set; } = default!;
+	public DateTime CreatedAt { get; set; } = default!;
+
+	/// <summary>Timestamp of when the user was unbanned.</summary>
+	public DateTime? DeletedAt { get; set; }
 
 	/// <summary>ID of User who set the Ban. Must be either an admin or a mod.</summary>
 	public Guid? BanningUserId { get; set; }
