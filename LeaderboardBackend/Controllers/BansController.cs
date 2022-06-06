@@ -34,11 +34,10 @@ public class BansController : ControllerBase
 	/// <summary>Get bans by leaderboard ID</summary>
 	/// <param name="leaderboardId">The leaderboard ID.</param>
 	/// <response code="200">A list of bans. Can be an empty array.</response>
-	/// <response code="404">No bans found for the Leaderboard.
-	/// </response>
+	/// <response code="404">No bans found for the Leaderboard.</response>
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions),
-							nameof(Conventions.Get))]
+							nameof(Conventions.GetAnon))]
 	[HttpGet("leaderboard/{leaderboardId:long}")]
 	public async Task<ActionResult<List<Ban>>> GetBansByLeaderboard(long leaderboardId)
 	{
@@ -55,11 +54,10 @@ public class BansController : ControllerBase
 	/// <summary>Get bans by user ID.</summary>
 	/// <param name="bannedUserId">The user ID.</param>
 	/// <response code="200">A list of bans. Can be an empty array.</response>
-	/// <response code="404">No bans found for the User.
-	/// </response>
+	/// <response code="404">No bans found for the User.</response>
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions),
-							nameof(Conventions.Get))]
+							nameof(Conventions.GetAnon))]
 	[HttpGet("leaderboard/{bannedUserId:Guid}")]
 	public async Task<ActionResult<List<Ban>>> GetBansByUser(Guid bannedUserId)
 	{
@@ -99,11 +97,8 @@ public class BansController : ControllerBase
 	/// <response code="401">If a non-admin calls this.</response>
 	/// <response code="403">If the banned user is also an admin.</response>
 	/// <response code="404">If the banned user is not found.</response>
-	[ProducesResponseType(StatusCodes.Status201Created)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-	[ProducesResponseType(StatusCodes.Status403Forbidden)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ApiConventionMethod(typeof(Conventions),
+							nameof(Conventions.Post))]
 	[Authorize(Policy = UserTypes.Admin)]
 	[HttpPost]
 	public async Task<ActionResult<Ban>> CreateSiteBan([FromBody] CreateSiteBanRequest body)
@@ -145,11 +140,8 @@ public class BansController : ControllerBase
 	/// <response code="401">If a non-admin or mod calls this.</response>
 	/// <response code="403">If the banned user is an admin or a mod.</response>
 	/// <response code="404">If the banned user is not found.</response>
-	[ProducesResponseType(StatusCodes.Status201Created)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-	[ProducesResponseType(StatusCodes.Status403Forbidden)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ApiConventionMethod(typeof(Conventions),
+							nameof(Conventions.Post))]
 	[Authorize(Policy = UserTypes.Mod)]
 	[HttpPost("leaderboard")]
 	public async Task<ActionResult<Ban>> CreateLeaderboardBan([FromBody] CreateLeaderboardBanRequest body)

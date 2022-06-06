@@ -30,7 +30,7 @@ public class ParticipationsController : ControllerBase
 	}
 
 	[ApiConventionMethod(typeof(Conventions),
-						 nameof(Conventions.Get))]
+						 nameof(Conventions.GetAnon))]
 	[AllowAnonymous]
 	[HttpGet("{id}")]
 	public async Task<ActionResult<Participation>> GetParticipation(long id)

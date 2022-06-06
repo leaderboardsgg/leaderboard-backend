@@ -7,6 +7,8 @@ public static class Conventions
 {
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public static void Get(
 		[ApiConventionNameMatch(ApiConventionNameMatchBehavior.Suffix)]
@@ -15,16 +17,28 @@ public static class Conventions
 		params object[] parameters)
 	{ }
 
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public static void GetAnon(
+		[ApiConventionNameMatch(ApiConventionNameMatchBehavior.Suffix)]
+		[ApiConventionTypeMatch(ApiConventionTypeMatchBehavior.Any)]
+		object id,
+		params object[] parameters)
+	{ }
+
 	[ProducesResponseType(StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public static void Post(params object[] parameters)
 	{ }
 
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status403Forbidden)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public static void Update(params object[] parameters)
 	{ }
 
