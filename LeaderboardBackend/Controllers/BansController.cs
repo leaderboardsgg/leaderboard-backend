@@ -182,4 +182,27 @@ public class BansController : ControllerBase
 		await BanService.CreateBan(ban);
 		return CreatedAtAction(nameof(GetBan), new { id = ban.Id }, ban);
 	}
+
+	/// <summary>Removes a site-wide ban. Admin-only.</summary>
+	/// <param name="id">The ban ID.</param>
+	/// <response code="204">The ban was successfully deleted.</response>
+	/// <response code="401">The user isn't logged in.</response>
+	/// <response code="403">The user is a non-admin.</response>
+	/// <response code="404">The ban could not be found.</response>
+	[ApiConventionMethod(typeof(Conventions),
+							nameof(Conventions.Delete))]
+	[Authorize(Policy = UserTypes.Admin)]
+	[HttpDelete("id")]
+	public async Task<ActionResult> DeleteSiteBan(long id)
+	{
+		try
+		{
+			await BanService.DeleteBan(id);
+			return NoContent();
+		}
+		catch (ArgumentNullException)
+		{
+			return NotFound($"Ban not found: {id}");
+		}
+	}
 }
