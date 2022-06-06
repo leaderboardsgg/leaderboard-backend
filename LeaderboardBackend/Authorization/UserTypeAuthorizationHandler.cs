@@ -48,7 +48,6 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 
 		if (user is null || !Handle(user, context, requirement))
 		{
-			// FIXME: Work out how to fail as a ForbiddenResult.
 			context.Fail();
 			return Task.CompletedTask;
 		}
