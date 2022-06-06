@@ -29,6 +29,10 @@ public class ParticipationsController : ControllerBase
 		AuthService = authService;
 	}
 
+	/// <summary>Gets a participation for a run.</summary>
+	/// <param name="id">The participation ID.</param>
+	/// <response code="200">The participation object.</response>
+	/// <response code="404">No participations found.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.GetAnon))]
 	[AllowAnonymous]
@@ -44,6 +48,10 @@ public class ParticipationsController : ControllerBase
 		return Ok(participation);
 	}
 
+	/// <summary>Creates a participation of a user for a run.</summary>
+	/// <param name="request">The request body.</param>
+	/// <response code="201">The newly-created participation object.</response>
+	/// <response code="404">Either the runner or run could not be found.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.Post))]
 	[Authorize]
@@ -78,11 +86,16 @@ public class ParticipationsController : ControllerBase
 		return CreatedAtAction(nameof(GetParticipation), new { id = participation.Id }, participation);
 	}
 
+	/// <summary>Updates the participation of a user for a run.</summary>
+	/// <remarks>Expects both a comment and a VoD link.</remarks>
+	/// <param name="request">The request body.</param>
+	/// <response code="200">A successful update.</response>
+	/// <response code="404">The participation could not be found.</response>
 	[ApiConventionMethod(typeof(Conventions),
 						 nameof(Conventions.Update))]
 	[Authorize]
-	[HttpPut]
-	public async Task<ActionResult> UpdateParticipation([FromBody] UpdateParticipationRequest request)
+	[HttpPut("{id}")]
+	public async Task<ActionResult> UpdateParticipation(long id, [FromBody] UpdateParticipationRequest request)
 	{
 		Guid? userId = AuthService.GetUserIdFromClaims(HttpContext.User);
 		if (userId is null)
