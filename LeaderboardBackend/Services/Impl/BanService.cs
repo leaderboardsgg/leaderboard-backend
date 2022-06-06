@@ -42,4 +42,11 @@ public class BanService : IBanService
 		ApplicationContext.Bans.Add(ban);
 		await ApplicationContext.SaveChangesAsync();
 	}
+
+	public async Task DeleteBan(long id)
+	{
+		Ban ban = await ApplicationContext.Bans.Where(b => b.Id == id).FirstAsync();
+		ban.DeletedAt = DateTime.Now;
+		await ApplicationContext.SaveChangesAsync();
+	}
 }
