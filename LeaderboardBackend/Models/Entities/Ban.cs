@@ -14,7 +14,7 @@ public class Ban
 
 	/// <summary>Generated on creation.</summary>
 	[Required]
-	public DateTime CreatedAt { get; set; } = default!;
+	public DateTime CreatedAt { get; set; }
 
 	/// <summary>Timestamp of when the user was unbanned.</summary>
 	public DateTime? DeletedAt { get; set; }
