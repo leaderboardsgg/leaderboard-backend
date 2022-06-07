@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -14,10 +15,10 @@ public class Ban
 
 	/// <summary>Generated on creation.</summary>
 	[Required]
-	public DateTime CreatedAt { get; set; }
+	public Instant CreatedAt { get; set; }
 
 	/// <summary>Timestamp of when the user was unbanned.</summary>
-	public DateTime? DeletedAt { get; set; }
+	public Instant? DeletedAt { get; set; }
 
 	/// <summary>ID of User who set the Ban. Must be either an admin or a mod.</summary>
 	public Guid? BanningUserId { get; set; }
