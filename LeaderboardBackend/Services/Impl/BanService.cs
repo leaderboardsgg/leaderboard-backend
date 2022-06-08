@@ -50,4 +50,14 @@ public class BanService : IBanService
 		ban.DeletedAt = SystemClock.Instance.GetCurrentInstant();
 		await ApplicationContext.SaveChangesAsync();
 	}
+
+	public async Task DeleteLeaderboardBan(long id, long leaderboardId)
+	{
+		Ban ban = await ApplicationContext.Bans
+			.Where(b => b.Id == id)
+			.Where(b => b.LeaderboardId == leaderboardId)
+			.FirstAsync();
+		ban.DeletedAt = SystemClock.Instance.GetCurrentInstant();
+		await ApplicationContext.SaveChangesAsync();
+	}
 }

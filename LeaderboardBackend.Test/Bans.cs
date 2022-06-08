@@ -134,10 +134,21 @@ internal class Bans
 		Assert.NotNull(retrieved.DeletedAt);
 	}
 
+	[Test]
+	public static async Task CreateLeaderboardBan_DeleteBan_Ok()
+	{
+		Ban created = await CreateLeaderboardBan(NormalUser.Id, "weenie was a mega meanie");
+		Assert.NotNull(created.LeaderboardId);
+		HttpResponseMessage response = await DeleteLeaderboardBan(created.Id, (long)created.LeaderboardId!);
+		Ban retrieved = await GetBan(created.Id);
+		Assert.AreEqual(HttpStatusCode.NoContent, response.StatusCode);
+		Assert.NotNull(retrieved.DeletedAt);
+	}
+
 	private static async Task<User> CreateUser(string username, string email, string password)
 	{
 		return await ApiClient.Post<User>(
-			"/api/Users/register",
+			"/api/users/register",
 			new()
 			{
 				Body = new RegisterRequest()
@@ -155,7 +166,7 @@ internal class Bans
 	private static async Task<Ban> CreateSiteBan(Guid userId, string reason)
 	{
 		return await ApiClient.Post<Ban>(
-			"api/Bans",
+			"api/bans",
 			new()
 			{
 				Body = new CreateSiteBanRequest()
@@ -171,7 +182,7 @@ internal class Bans
 	private static async Task<Ban> CreateLeaderboardBan(Guid userId, string reason)
 	{
 		return await ApiClient.Post<Ban>(
-			"api/Bans/leaderboard",
+			"api/bans/leaderboard",
 			new()
 			{
 				Body = new CreateLeaderboardBanRequest()
@@ -200,6 +211,17 @@ internal class Bans
 	{
 		return await ApiClient.Delete(
 			$"api/bans/{id}",
+			new()
+			{
+				Jwt = AdminJwt
+			}
+		);
+	}
+
+	private static async Task<HttpResponseMessage> DeleteLeaderboardBan(long id, long leaderboardId)
+	{
+		return await ApiClient.Delete(
+			$"api/bans/{id}/leaderboards/{leaderboardId}",
 			new()
 			{
 				Jwt = AdminJwt

@@ -205,4 +205,28 @@ public class BansController : ControllerBase
 			return NotFound($"Ban not found: {id}");
 		}
 	}
+
+	/// <summary>Removes a leaderboard-wide ban. Mod-only.</summary>
+	/// <param name="id">The ban ID.</param>
+	/// <param name="leaderboardId">The leaderboard ID.</param>
+	/// <response code="204">The ban was successfully deleted.</response>
+	/// <response code="401">The user isn't logged in.</response>
+	/// <response code="403">The user is a non-admin, or the ban is site-wide.</response>
+	/// <response code="404">The ban could not be found.</response>
+	[ApiConventionMethod(typeof(Conventions),
+							nameof(Conventions.Delete))]
+	[Authorize(Policy = UserTypes.Mod)]
+	[HttpDelete("{id}/leaderboards/{leaderboardId}")]
+	public async Task<ActionResult> DeleteLeaderboardBan(long id, long leaderboardId)
+	{
+		try
+		{
+			await BanService.DeleteLeaderboardBan(id, leaderboardId);
+			return NoContent();
+		}
+		catch (ArgumentNullException)
+		{
+			return NotFound($"Ban not found: {id}");
+		}
+	}
 }
