@@ -198,8 +198,7 @@ public class BansController : ControllerBase
 		{
 			await BanService.DeleteBan(id);
 			return NoContent();
-		}
-		catch (ArgumentNullException)
+		} catch (ArgumentNullException)
 		{
 			return NotFound($"Ban not found: {id}");
 		}
@@ -222,8 +221,7 @@ public class BansController : ControllerBase
 		{
 			await BanService.DeleteLeaderboardBan(id, leaderboardId);
 			return NoContent();
-		}
-		catch (ArgumentNullException)
+		} catch (ArgumentNullException)
 		{
 			return NotFound($"Ban not found: {id}");
 		}
