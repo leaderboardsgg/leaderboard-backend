@@ -183,7 +183,7 @@ public class BansController : ControllerBase
 		return CreatedAtAction(nameof(GetBan), new { id = ban.Id }, ban);
 	}
 
-	/// <summary>Removes a site-wide ban. Admin-only.</summary>
+	/// <summary>Removes a ban, including site-wide bans. Admin-only.</summary>
 	/// <param name="id">The ban ID.</param>
 	/// <response code="204">The ban was successfully deleted.</response>
 	/// <response code="401">The user isn't logged in.</response>
@@ -192,8 +192,8 @@ public class BansController : ControllerBase
 	[ApiConventionMethod(typeof(Conventions),
 							nameof(Conventions.Delete))]
 	[Authorize(Policy = UserTypes.Admin)]
-	[HttpDelete("id")]
-	public async Task<ActionResult> DeleteSiteBan(long id)
+	[HttpDelete("{id}")]
+	public async Task<ActionResult> DeleteBan(long id)
 	{
 		try
 		{

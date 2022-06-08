@@ -1,7 +1,7 @@
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
-using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Lib;
@@ -124,6 +124,16 @@ internal class Bans
 		}
 	}
 
+	[Test]
+	public static async Task CreateSiteBan_DeleteBan_Ok()
+	{
+		Ban created = await CreateSiteBan(NormalUser.Id, "weenie was a mega meanie");
+		HttpResponseMessage response = await DeleteBan(created.Id);
+		Ban retrieved = await GetBan(created.Id);
+		Assert.AreEqual(HttpStatusCode.NoContent, response.StatusCode);
+		Assert.NotNull(retrieved.DeletedAt);
+	}
+
 	private static async Task<User> CreateUser(string username, string email, string password)
 	{
 		return await ApiClient.Post<User>(
@@ -178,7 +188,18 @@ internal class Bans
 	private static async Task<Ban> GetBan(long id)
 	{
 		return await ApiClient.Get<Ban>(
-			$"api/Bans/{id}",
+			$"api/bans/{id}",
+			new()
+			{
+				Jwt = AdminJwt
+			}
+		);
+	}
+
+	private static async Task<HttpResponseMessage> DeleteBan(long id)
+	{
+		return await ApiClient.Delete(
+			$"api/bans/{id}",
 			new()
 			{
 				Jwt = AdminJwt

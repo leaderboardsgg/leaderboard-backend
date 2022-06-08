@@ -1,5 +1,6 @@
 using LeaderboardBackend.Models.Entities;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace LeaderboardBackend.Services;
 
@@ -46,7 +47,7 @@ public class BanService : IBanService
 	public async Task DeleteBan(long id)
 	{
 		Ban ban = await ApplicationContext.Bans.Where(b => b.Id == id).FirstAsync();
-		ban.DeletedAt = DateTime.Now;
+		ban.DeletedAt = SystemClock.Instance.GetCurrentInstant();
 		await ApplicationContext.SaveChangesAsync();
 	}
 }
