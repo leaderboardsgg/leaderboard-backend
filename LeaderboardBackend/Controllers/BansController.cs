@@ -31,14 +31,14 @@ public class BansController : ControllerBase
 		LeaderboardService = leaderboardService;
 	}
 
-	/// <summary>Get bans by leaderboard ID</summary>
+	/// <summary>Gets a leaderboard's bans by its ID.</summary>
 	/// <param name="leaderboardId">The leaderboard ID.</param>
 	/// <response code="200">A list of bans. Can be an empty array.</response>
-	/// <response code="404">No bans found for the Leaderboard.</response>
+	/// <response code="404">No bans found for the leaderboard.</response>
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions),
 							nameof(Conventions.GetAnon))]
-	[HttpGet("leaderboard/{leaderboardId:long}")]
+	[HttpGet("leaderboards/{leaderboardId}")]
 	public async Task<ActionResult<List<Ban>>> GetBansByLeaderboard(long leaderboardId)
 	{
 		List<Ban> bans = await BanService.GetBansByLeaderboard(leaderboardId);
@@ -51,14 +51,14 @@ public class BansController : ControllerBase
 		return Ok(bans);
 	}
 
-	/// <summary>Get bans by user ID.</summary>
+	/// <summary>Get a user's bans by their ID.</summary>
 	/// <param name="bannedUserId">The user ID.</param>
 	/// <response code="200">A list of bans. Can be an empty array.</response>
-	/// <response code="404">No bans found for the User.</response>
+	/// <response code="404">No bans found for the user.</response>
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions),
 							nameof(Conventions.GetAnon))]
-	[HttpGet("leaderboard/{bannedUserId:Guid}")]
+	[HttpGet("users/{bannedUserId}")]
 	public async Task<ActionResult<List<Ban>>> GetBansByUser(Guid bannedUserId)
 	{
 		List<Ban> bans = await BanService.GetBansByUser(bannedUserId);
@@ -71,15 +71,14 @@ public class BansController : ControllerBase
 		return Ok(bans);
 	}
 
-	/// <summary>Get a Ban from its ID.</summary>
-	/// <param name="id">The Ban ID.</param>
-	/// <response code="200">The found Ban.</response>
-	/// <response code="404">No Ban can be found.</response>
+	/// <summary>Gets a ban by its ID.</summary>
+	/// <param name="id">The ban ID.</param>
+	/// <response code="200">The found ban.</response>
+	/// <response code="404">No ban can be found.</response>
 	[AllowAnonymous]
-
 	[ApiConventionMethod(typeof(Conventions),
 							 nameof(Conventions.Get))]
-	[HttpGet("{id:long}")]
+	[HttpGet("{id}")]
 	public async Task<ActionResult<Ban>> GetBan(long id)
 	{
 		Ban? ban = await BanService.GetBanById(id);
@@ -90,7 +89,7 @@ public class BansController : ControllerBase
 		return Ok(ban);
 	}
 
-	/// <summary>Creates a side-wide ban. Admin-only.</summary>
+	/// <summary>Creates a site-wide ban. Admin-only.</summary>
 	/// <param name="body">A CreateSiteBanRequest instance.</param>
 	/// <response code="201">The created Ban.</response>
 	/// <response code="400">The request is malformed.</response>
@@ -100,7 +99,7 @@ public class BansController : ControllerBase
 	[ApiConventionMethod(typeof(Conventions),
 							nameof(Conventions.Post))]
 	[Authorize(Policy = UserTypes.Admin)]
-	[HttpPost]
+	[HttpPost("site")]
 	public async Task<ActionResult<Ban>> CreateSiteBan([FromBody] CreateSiteBanRequest body)
 	{
 		Guid? adminId = AuthService.GetUserIdFromClaims(HttpContext.User);
