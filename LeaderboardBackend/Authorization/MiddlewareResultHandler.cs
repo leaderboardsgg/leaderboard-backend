@@ -15,11 +15,8 @@ public class MiddlewareResultHandler : IAuthorizationMiddlewareResultHandler
 		AuthorizationPolicy authorizationPolicy,
 		PolicyAuthorizationResult policyAuthorizationResult)
 	{
-		if (policyAuthorizationResult.Forbidden)
-		{
-			httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-			return;
-		}
+		// FIXME: For now, we're doing a simple pass-through. In the future we'd want to
+		// conditionally return a redirect to the login page. -zysim
 
 		// Fallback to the default implementation.
 		// This can mean calling the controller action itself.
