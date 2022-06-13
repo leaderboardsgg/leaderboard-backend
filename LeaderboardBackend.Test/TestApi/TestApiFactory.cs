@@ -32,12 +32,6 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 			} else
 			{
 				dbContext.Database.Migrate();
-				// https://www.npgsql.org/efcore/mapping/enum.html#creating-your-database-enum
-				using (NpgsqlConnection conn = (NpgsqlConnection)dbContext.Database.GetDbConnection())
-				{
-					conn.Open();
-					conn.ReloadTypes();
-				}
 			}
 			Seed(dbContext);
 		});

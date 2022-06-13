@@ -5,10 +5,11 @@ namespace LeaderboardBackend.Models.Entities;
 
 public class ApplicationContext : DbContext
 {
+	static ApplicationContext()
+		=> NpgsqlConnection.GlobalTypeMapper.MapEnum<Type>();
+
 	public ApplicationContext(DbContextOptions<ApplicationContext> options)
-		: base(options) {
-			NpgsqlConnection.GlobalTypeMapper.MapEnum<Type>();
-		}
+		: base(options) {}
 
 	public DbSet<Ban> Bans { get; set; } = null!;
 	public DbSet<Category> Categories { get; set; } = null!;
