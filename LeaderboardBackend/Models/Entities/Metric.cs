@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LeaderboardBackend.Models.Entities;
 
-public enum Type {
+public enum MetricType {
 	INT,
 	FLOAT,
 	INTERVAL,
@@ -13,7 +13,7 @@ public class Metric
 	public long Id { get; set; }
 
 	[Required]
-	public Type Type { get; set; }
+	public MetricType Type { get; set; }
 
 	[Required]
 	public string Name { get; set; } = null!;

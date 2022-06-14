@@ -18,7 +18,7 @@ namespace LeaderboardBackend.Migrations
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    type = table.Column<Models.Entities.Type>(type: "type", nullable: false),
+                    type = table.Column<Models.Entities.MetricType>(type: "type", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
                     min = table.Column<int>(type: "integer", nullable: false),
                     max = table.Column<int>(type: "integer", nullable: false)

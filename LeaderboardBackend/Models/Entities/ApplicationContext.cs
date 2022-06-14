@@ -6,10 +6,11 @@ namespace LeaderboardBackend.Models.Entities;
 public class ApplicationContext : DbContext
 {
 	static ApplicationContext()
-		=> NpgsqlConnection.GlobalTypeMapper.MapEnum<Type>();
+		=> NpgsqlConnection.GlobalTypeMapper.MapEnum<MetricType>()
+			.MapEnum<RunStatus>();
 
 	public ApplicationContext(DbContextOptions<ApplicationContext> options)
-		: base(options) {}
+		: base(options) { }
 
 	public DbSet<Ban> Bans { get; set; } = null!;
 	public DbSet<Category> Categories { get; set; } = null!;
@@ -31,6 +32,7 @@ public class ApplicationContext : DbContext
 			.Property(b => b.CreatedAt)
 			.HasDefaultValueSql("now()");
 
-		modelBuilder.HasPostgresEnum<Type>();
+		modelBuilder.HasPostgresEnum<MetricType>()
+					.HasPostgresEnum<RunStatus>();
 	}
 }

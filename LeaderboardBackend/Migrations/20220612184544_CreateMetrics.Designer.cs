@@ -209,7 +209,7 @@ namespace LeaderboardBackend.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
-                    b.Property<Models.Entities.Type>("Type")
+                    b.Property<Models.Entities.MetricType>("Type")
                         .HasColumnType("type")
                         .HasColumnName("type");
 
