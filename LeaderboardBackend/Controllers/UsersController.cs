@@ -26,7 +26,7 @@ public class UsersController : ControllerBase
 	/// <response code="200">The User with the provided ID.</response>
 	/// <response code="404">If no User is found with the provided ID.</response>
 	[ApiConventionMethod(typeof(Conventions),
-						 nameof(Conventions.Get))]
+						 nameof(Conventions.GetAnon))]
 	[AllowAnonymous]
 	[HttpGet("{id:guid}")]
 	public async Task<ActionResult<User>> GetUserById(Guid id)
@@ -37,7 +37,7 @@ public class UsersController : ControllerBase
 			return NotFound();
 		}
 
-		// FIXME: Make user view model		
+		// FIXME: Make user view model
 		user.Email = "";
 		return Ok(user);
 	}

@@ -39,7 +39,7 @@ public class JudgementsController : ControllerBase
 	/// <response code="200">The Judgement with the provided ID.</response>
 	/// <response code="404">If no Judgement can be found.</response>
 	[ApiConventionMethod(typeof(Conventions),
-						 nameof(Conventions.Get))]
+						 nameof(Conventions.GetAnon))]
 	[AllowAnonymous]
 	[HttpGet("{id}")]
 	public async Task<ActionResult<JudgementViewModel>> GetJudgement(long id)

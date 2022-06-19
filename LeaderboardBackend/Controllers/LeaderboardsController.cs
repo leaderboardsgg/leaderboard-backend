@@ -24,7 +24,7 @@ public class LeaderboardsController : ControllerBase
 	/// <response code="200">The Leaderboard.</response>
 	/// <response code="404">If no Leaderboard can be found.</response>
 	[ApiConventionMethod(typeof(Conventions),
-						 nameof(Conventions.Get))]
+						 nameof(Conventions.GetAnon))]
 	[AllowAnonymous]
 	[HttpGet("{id}")]
 	public async Task<ActionResult<Leaderboard>> GetLeaderboard(long id)
