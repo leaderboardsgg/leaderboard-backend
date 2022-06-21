@@ -32,6 +32,13 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 			} else
 			{
 				dbContext.Database.Migrate();
+
+				// We need to tell Npgsql to reload all types after applying migrations.
+				// Ref: https://www.npgsql.org/efcore/mapping/enum.html
+				NpgsqlConnection conn = (NpgsqlConnection)dbContext.Database.GetDbConnection();
+				conn.Open();
+				conn.ReloadTypes();
+				conn.Close();
 			}
 			Seed(dbContext);
 		});
