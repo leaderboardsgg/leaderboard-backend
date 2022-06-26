@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -12,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LeaderboardBackend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20220607123456_Bans_CreatedAtRemoveDefault")]
-    partial class Bans_CreatedAtRemoveDefault
+    [Migration("20220626070809_Bans_UpdateCreatedAtDeletedAt")]
+    partial class Bans_UpdateCreatedAtDeletedAt
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -41,13 +42,13 @@ namespace LeaderboardBackend.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("banning_user_id");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<Instant>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<DateTime?>("DeletedAt")
+                    b.Property<Instant?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 

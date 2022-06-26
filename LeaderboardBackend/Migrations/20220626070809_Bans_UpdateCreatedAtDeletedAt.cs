@@ -1,15 +1,16 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using NodaTime;
 
 #nullable disable
 
 namespace LeaderboardBackend.Migrations
 {
-    public partial class Bans_CreatedAtRemoveDefault : Migration
+    public partial class Bans_UpdateCreatedAtDeletedAt : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<DateTime>(
+            migrationBuilder.AlterColumn<Instant>(
                 name: "created_at",
                 table: "bans",
                 type: "timestamp with time zone",
@@ -26,7 +27,7 @@ namespace LeaderboardBackend.Migrations
                 table: "bans",
                 type: "timestamp with time zone",
                 nullable: false,
-                oldClrType: typeof(DateTime),
+                oldClrType: typeof(Instant),
                 oldType: "timestamp with time zone",
                 oldDefaultValueSql: "now()");
         }
