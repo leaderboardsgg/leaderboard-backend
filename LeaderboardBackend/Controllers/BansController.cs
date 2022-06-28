@@ -74,7 +74,7 @@ public class BansController : ControllerBase
 	/// <summary>Get a Ban from its ID.</summary>
 	/// <param name="id">The Ban ID.</param>
 	/// <response code="200">The found Ban.</response>
-	/// <response code="404">If no Ban can be found.</response>
+	/// <response code="404">No Ban can be found.</response>
 	[AllowAnonymous]
 
 	[ApiConventionMethod(typeof(Conventions),
@@ -93,10 +93,10 @@ public class BansController : ControllerBase
 	/// <summary>Creates a side-wide ban. Admin-only.</summary>
 	/// <param name="body">A CreateSiteBanRequest instance.</param>
 	/// <response code="201">The created Ban.</response>
-	/// <response code="400">If the request is malformed.</response>
-	/// <response code="401">If a non-admin calls this.</response>
-	/// <response code="403">If the banned user is also an admin.</response>
-	/// <response code="404">If the banned user is not found.</response>
+	/// <response code="400">The request is malformed.</response>
+	/// <response code="401">A non-admin calls this.</response>
+	/// <response code="403">The banned user is also an admin.</response>
+	/// <response code="404">The banned user is not found.</response>
 	[ApiConventionMethod(typeof(Conventions),
 							nameof(Conventions.Post))]
 	[Authorize(Policy = UserTypes.Admin)]
@@ -136,10 +136,10 @@ public class BansController : ControllerBase
 	/// <summary>Creates a leaderboard-wide ban. Mod-only.</summary>
 	/// <param name="body">A CreateLeaderboardBanRequest instance.</param>
 	/// <response code="201">The created Ban.</response>
-	/// <response code="400">If the request is malformed.</response>
-	/// <response code="401">If a non-admin or mod calls this.</response>
-	/// <response code="403">If the banned user is an admin or a mod.</response>
-	/// <response code="404">If the banned user is not found.</response>
+	/// <response code="400">The request is malformed.</response>
+	/// <response code="401">A non-admin or mod calls this.</response>
+	/// <response code="403">The banned user is an admin or a mod.</response>
+	/// <response code="404">The banned user is not found.</response>
 	[ApiConventionMethod(typeof(Conventions),
 							nameof(Conventions.Post))]
 	[Authorize(Policy = UserTypes.Mod)]
@@ -181,5 +181,52 @@ public class BansController : ControllerBase
 
 		await BanService.CreateBan(ban);
 		return CreatedAtAction(nameof(GetBan), new { id = ban.Id }, ban);
+	}
+
+	/// <summary>Removes a ban, including site-wide bans. Admin-only.</summary>
+	/// <param name="id">The ban ID.</param>
+	/// <response code="204">The ban was successfully deleted.</response>
+	/// <response code="401">The user isn't logged in.</response>
+	/// <response code="403">The user is a non-admin.</response>
+	/// <response code="404">The ban could not be found.</response>
+	[ApiConventionMethod(typeof(Conventions),
+							nameof(Conventions.Delete))]
+	[Authorize(Policy = UserTypes.Admin)]
+	[HttpDelete("{id}")]
+	public async Task<ActionResult> DeleteBan(long id)
+	{
+		try
+		{
+			await BanService.DeleteBan(id);
+			return NoContent();
+		}
+		catch (ArgumentNullException)
+		{
+			return NotFound($"Ban not found: {id}");
+		}
+	}
+
+	/// <summary>Removes a leaderboard-wide ban. Mod-only.</summary>
+	/// <param name="id">The ban ID.</param>
+	/// <param name="leaderboardId">The leaderboard ID.</param>
+	/// <response code="204">The ban was successfully deleted.</response>
+	/// <response code="401">The user isn't logged in.</response>
+	/// <response code="403">The user is a non-admin, or the ban is site-wide.</response>
+	/// <response code="404">The ban could not be found.</response>
+	[ApiConventionMethod(typeof(Conventions),
+							nameof(Conventions.Delete))]
+	[Authorize(Policy = UserTypes.Mod)]
+	[HttpDelete("{id}/leaderboards/{leaderboardId}")]
+	public async Task<ActionResult> DeleteLeaderboardBan(long id, long leaderboardId)
+	{
+		try
+		{
+			await BanService.DeleteLeaderboardBan(id, leaderboardId);
+			return NoContent();
+		}
+		catch (ArgumentNullException)
+		{
+			return NotFound($"Ban not found: {id}");
+		}
 	}
 }

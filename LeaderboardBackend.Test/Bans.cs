@@ -1,7 +1,7 @@
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
-using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Lib;
@@ -124,10 +124,31 @@ internal class Bans
 		}
 	}
 
+	[Test]
+	public static async Task CreateSiteBan_DeleteBan_Ok()
+	{
+		Ban created = await CreateSiteBan(NormalUser.Id, "weenie was a mega meanie");
+		HttpResponseMessage response = await DeleteBan(created.Id);
+		Ban retrieved = await GetBan(created.Id);
+		Assert.AreEqual(HttpStatusCode.NoContent, response.StatusCode);
+		Assert.NotNull(retrieved.DeletedAt);
+	}
+
+	[Test]
+	public static async Task CreateLeaderboardBan_DeleteBan_Ok()
+	{
+		Ban created = await CreateLeaderboardBan(NormalUser.Id, "weenie was a mega meanie");
+		Assert.NotNull(created.LeaderboardId);
+		HttpResponseMessage response = await DeleteLeaderboardBan(created.Id, (long)created.LeaderboardId!);
+		Ban retrieved = await GetBan(created.Id);
+		Assert.AreEqual(HttpStatusCode.NoContent, response.StatusCode);
+		Assert.NotNull(retrieved.DeletedAt);
+	}
+
 	private static async Task<User> CreateUser(string username, string email, string password)
 	{
 		return await ApiClient.Post<User>(
-			"/api/Users/register",
+			"/api/users/register",
 			new()
 			{
 				Body = new RegisterRequest()
@@ -145,7 +166,7 @@ internal class Bans
 	private static async Task<Ban> CreateSiteBan(Guid userId, string reason)
 	{
 		return await ApiClient.Post<Ban>(
-			"api/Bans",
+			"api/bans",
 			new()
 			{
 				Body = new CreateSiteBanRequest()
@@ -161,7 +182,7 @@ internal class Bans
 	private static async Task<Ban> CreateLeaderboardBan(Guid userId, string reason)
 	{
 		return await ApiClient.Post<Ban>(
-			"api/Bans/leaderboard",
+			"api/bans/leaderboard",
 			new()
 			{
 				Body = new CreateLeaderboardBanRequest()
@@ -178,7 +199,29 @@ internal class Bans
 	private static async Task<Ban> GetBan(long id)
 	{
 		return await ApiClient.Get<Ban>(
-			$"api/Bans/{id}",
+			$"api/bans/{id}",
+			new()
+			{
+				Jwt = AdminJwt
+			}
+		);
+	}
+
+	private static async Task<HttpResponseMessage> DeleteBan(long id)
+	{
+		return await ApiClient.Delete(
+			$"api/bans/{id}",
+			new()
+			{
+				Jwt = AdminJwt
+			}
+		);
+	}
+
+	private static async Task<HttpResponseMessage> DeleteLeaderboardBan(long id, long leaderboardId)
+	{
+		return await ApiClient.Delete(
+			$"api/bans/{id}/leaderboards/{leaderboardId}",
 			new()
 			{
 				Jwt = AdminJwt

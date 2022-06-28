@@ -21,5 +21,9 @@ public class ApplicationContext : DbContext
 		modelBuilder.Entity<Judgement>()
 			.Property(j => j.CreatedAt)
 			.HasDefaultValueSql("now()");
+
+		modelBuilder.Entity<Ban>()
+			.Property(b => b.CreatedAt)
+			.HasDefaultValueSql("now()");
 	}
 }

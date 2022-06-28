@@ -13,4 +13,8 @@ public interface IBanService
 	Task<List<Ban>> GetBansByUser(Guid userId);
 
 	Task CreateBan(Ban user);
+
+	Task DeleteBan(long id);
+
+	Task DeleteLeaderboardBan(long id, long leaderboardId);
 }

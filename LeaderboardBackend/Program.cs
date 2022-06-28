@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using BCryptNet = BCrypt.Net.BCrypt;
 
 #region WebApplicationBuilder
@@ -186,7 +187,8 @@ static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb
 			} else
 			{
 				opt.UseNpgsql(
-					GetConnectionString(builder)
+					GetConnectionString(builder),
+					o => o.UseNodaTime()
 				).UseSnakeCaseNamingConvention();
 			}
 		}
