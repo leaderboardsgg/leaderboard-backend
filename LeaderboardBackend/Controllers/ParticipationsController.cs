@@ -89,6 +89,7 @@ public class ParticipationsController : ControllerBase
 
 	/// <summary>Updates the participation of a user for a run.</summary>
 	/// <remarks>Expects both a comment and a VoD link.</remarks>
+	/// <param name="id">The run ID.</param>
 	/// <param name="request">The request body.</param>
 	/// <response code="200">A successful update.</response>
 	/// <response code="404">The participation could not be found.</response>
