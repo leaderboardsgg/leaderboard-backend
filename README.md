@@ -57,6 +57,7 @@ After installing a code editor:
 
 * Install support for [`editorconfig` in your editor](https://editorconfig.org/#download)
 * Download the [.NET 6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) for your platform
+    > If you're [using snap](https://docs.microsoft.com/en-us/dotnet/core/install/linux-snap), you may need to [symlink dotnet directly](https://stackoverflow.com/a/70931715).
 * After cloning this repo, run the command `dotnet restore` to install all required dependencies
 * You will likely want to set up [Omnisharp](http://www.omnisharp.net/) for easier development with your editor
 	* In Visual Studio Code, you can simply install the [C# extenstion](https://github.com/OmniSharp/omnisharp-vscode) (use this link or the editor UI)
