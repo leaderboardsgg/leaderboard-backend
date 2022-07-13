@@ -57,7 +57,7 @@ After installing a code editor:
 
 * Install support for [`editorconfig` in your editor](https://editorconfig.org/#download)
 * Download the [.NET 6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) for your platform
-    > If you're [using snap](https://docs.microsoft.com/en-us/dotnet/core/install/linux-snap), you may need to [symlink dotnet directly](https://stackoverflow.com/a/70931715).
+    > Try to avoid [installing via snap](https://docs.microsoft.com/en-us/dotnet/core/install/linux-snap); trying to get dotnet running was more pain than it's worth.
 * After cloning this repo, run the command `dotnet restore` to install all required dependencies
 * You will likely want to set up [Omnisharp](http://www.omnisharp.net/) for easier development with your editor
 	* In Visual Studio Code, you can simply install the [C# extenstion](https://github.com/OmniSharp/omnisharp-vscode) (use this link or the editor UI)
@@ -67,7 +67,7 @@ After installing a code editor:
 
 ### Running the Database(s)
 
-If you would like to forgo running a Postgres database, you can set `USE_IN_MEMORY_DB` in your `.env` file to `true`, or not make a `.env` file at all, and skip to the next section. If you would like to run the Postgres database, follow these instructions:
+We use Postgres, but have the ability to run .NET's in-memory DB as well instead, which allows quicker debugging. If you would like to use the latter, you can set `USE_IN_MEMORY_DB` in your `.env` file to `true`, or not make a `.env` file at all, then skip to the next section. If you would like to use the former, follow these instructions:
 
 As mentioned above, we run Docker containers for the DB. After [installing Docker Compose](https://docs.docker.com/compose/install/), run these commands in the project root:
 
