@@ -3,6 +3,7 @@ using System;
 using LeaderboardBackend.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LeaderboardBackend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220714174040_CreateTimeMetrics")]
+    partial class CreateTimeMetrics
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -131,15 +133,15 @@ namespace LeaderboardBackend.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("approved");
 
-                    b.Property<Instant>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<Guid>("JudgeId")
+                    b.Property<Guid>("ModId")
                         .HasColumnType("uuid")
-                        .HasColumnName("judge_id");
+                        .HasColumnName("mod_id");
 
                     b.Property<string>("Note")
                         .IsRequired()
@@ -153,8 +155,8 @@ namespace LeaderboardBackend.Migrations
                     b.HasKey("Id")
                         .HasName("pk_judgements");
 
-                    b.HasIndex("JudgeId")
-                        .HasDatabaseName("ix_judgements_judge_id");
+                    b.HasIndex("ModId")
+                        .HasDatabaseName("ix_judgements_mod_id");
 
                     b.HasIndex("RunId")
                         .HasDatabaseName("ix_judgements_run_id");
@@ -264,17 +266,17 @@ namespace LeaderboardBackend.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<LocalDate>("PlayedOn")
-                        .HasColumnType("date")
-                        .HasColumnName("played_on");
+                    b.Property<DateTime>("Played")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("played");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer")
                         .HasColumnName("status");
 
-                    b.Property<Instant>("SubmittedAt")
+                    b.Property<DateTime>("Submitted")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("submitted_at");
+                        .HasColumnName("submitted");
 
                     b.HasKey("Id")
                         .HasName("pk_runs");
@@ -388,12 +390,12 @@ namespace LeaderboardBackend.Migrations
 
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.Judgement", b =>
                 {
-                    b.HasOne("LeaderboardBackend.Models.Entities.User", "Judge")
+                    b.HasOne("LeaderboardBackend.Models.Entities.User", "Mod")
                         .WithMany()
-                        .HasForeignKey("JudgeId")
+                        .HasForeignKey("ModId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_judgements_users_judge_id");
+                        .HasConstraintName("fk_judgements_users_mod_id");
 
                     b.HasOne("LeaderboardBackend.Models.Entities.Run", "Run")
                         .WithMany("Judgements")
@@ -402,7 +404,7 @@ namespace LeaderboardBackend.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_judgements_runs_run_id");
 
-                    b.Navigation("Judge");
+                    b.Navigation("Mod");
 
                     b.Navigation("Run");
                 });
