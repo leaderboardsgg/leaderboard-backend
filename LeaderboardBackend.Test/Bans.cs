@@ -137,7 +137,7 @@ internal class Bans
 	[Test]
 	public static async Task CreateLeaderboardBan_DeleteBan_Ok()
 	{
-		Ban created = await CreateLeaderboardBan(NormalUser.Id, "weenie was a mega meanie");
+		Ban created = await CreateLeaderboardBan(NormalUser.Id, "weenie was a teenie meanie");
 		Assert.NotNull(created.LeaderboardId);
 		HttpResponseMessage response = await DeleteLeaderboardBan(created.Id, (long)created.LeaderboardId!);
 		Ban retrieved = await GetBan(created.Id);
@@ -166,7 +166,7 @@ internal class Bans
 	private static async Task<Ban> CreateSiteBan(Guid userId, string reason)
 	{
 		return await ApiClient.Post<Ban>(
-			"api/bans",
+			"api/bans/site",
 			new()
 			{
 				Body = new CreateSiteBanRequest()
