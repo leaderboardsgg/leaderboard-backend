@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -23,10 +24,10 @@ public class Run
 	public Guid Id { get; set; }
 
 	[Required]
-	public DateTime Played { get; set; }
+	public Instant Played { get; set; }
 
 	[Required]
-	public DateTime Submitted { get; set; }
+	public Instant Submitted { get; set; }
 
 	[Required]
 	public RunStatus Status { get; set; }

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -34,7 +35,7 @@ public class Judgement
 
 	/// <summary>When the judgement was made.</summary>
 	[Required]
-	public DateTime CreatedAt { get; set; }
+	public Instant CreatedAt { get; set; }
 
 	/// <summary>
 	/// Comments on the judgement.
