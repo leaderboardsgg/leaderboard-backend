@@ -93,8 +93,8 @@ internal class Judgements
 			{
 				Body = new CreateRunRequest
 				{
-					Played = NodaTime.Instant.MaxValue,
-					Submitted = NodaTime.Instant.MinValue,
+					Played = NodaTime.Instant.MinValue,
+					Submitted = NodaTime.Instant.MaxValue,
 					Status = RunStatus.SUBMITTED,
 				},
 				Jwt = Jwt,
