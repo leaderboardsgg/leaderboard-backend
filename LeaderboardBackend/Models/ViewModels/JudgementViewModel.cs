@@ -37,7 +37,7 @@ public record JudgementViewModel
 	{
 		Id = judgement.Id;
 		Approved = judgement.Approved;
-		CreatedAt = judgement.CreatedAt.ToLongDateString();
+		CreatedAt = judgement.CreatedAt.ToString();
 		Note = judgement.Note;
 		ModId = judgement.ModId;
 		RunId = judgement.RunId;

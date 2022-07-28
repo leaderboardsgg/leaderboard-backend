@@ -76,8 +76,8 @@ namespace LeaderboardBackend.Test
 				{
 					Body = new CreateRunRequest
 					{
-						Played = DateTime.MinValue,
-						Submitted = DateTime.MaxValue,
+						Played = NodaTime.Instant.MinValue,
+						Submitted = NodaTime.Instant.MaxValue,
 						Status = RunStatus.CREATED
 					},
 					Jwt = Jwt
