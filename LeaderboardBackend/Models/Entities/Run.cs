@@ -4,19 +4,20 @@ using NodaTime;
 namespace LeaderboardBackend.Models.Entities;
 
 /// <summary>
-///     0: Created
-///     1: Submitted
-///     2: Pending
-///     3: Approved
-///     4: Rejected
+///     The status of the `Run`.<br/>
+///         - 0: Created<br/>
+///         - 1: Submitted<br/>
+///         - 2: Pending<br/>
+///         - 3: Approved<br/>
+///         - 4: Rejected
 /// </summary>
 public enum RunStatus
 {
-	CREATED,
-	SUBMITTED,
-	PENDING,
-	APPROVED,
-	REJECTED
+	Created,
+	Submitted,
+	Pending,
+	Approved,
+	Rejected
 }
 
 /// <summary>
@@ -34,13 +35,13 @@ public class Run
 	///     The date the `Run` was played on.
 	/// </summary>
 	[Required]
-	public Instant Played { get; set; }
+	public LocalDate PlayedOn { get; set; }
 
 	/// <summary>
 	///     The time the request was made at.
 	/// </summary>
 	[Required]
-	public Instant Submitted { get; set; }
+	public Instant SubmittedAt { get; set; }
 
 	/// <summary>
 	///     The current status of the `Run` creation.

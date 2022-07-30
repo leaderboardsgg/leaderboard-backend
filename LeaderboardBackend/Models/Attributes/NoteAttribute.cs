@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using LeaderboardBackend.Models.Requests;
 
-namespace LeaderboardBackend.Models.Annotations;
+namespace LeaderboardBackend.Models.Attributes;
 
 /// <summary>
 ///     Asserts that Note is non-empty for non-approval judgements (Approved is false or null).

@@ -6,6 +6,7 @@ using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
+using NodaTime;
 using NUnit.Framework;
 
 namespace LeaderboardBackend.Test
@@ -74,9 +75,9 @@ namespace LeaderboardBackend.Test
 				{
 					Body = new CreateRunRequest
 					{
-						Played = NodaTime.Instant.MinValue,
-						Submitted = NodaTime.Instant.MaxValue,
-						Status = RunStatus.CREATED
+						PlayedOn = LocalDate.MinIsoValue,
+						SubmittedAt = Instant.MaxValue,
+						Status = RunStatus.Created
 					},
 					Jwt = s_Jwt
 				});

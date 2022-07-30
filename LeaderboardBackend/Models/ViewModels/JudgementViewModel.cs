@@ -49,7 +49,7 @@ public record JudgementViewModel
 		Approved = judgement.Approved;
 		CreatedAt = judgement.CreatedAt.ToString();
 		Note = judgement.Note;
-		ModId = judgement.ModId;
+		ModId = judgement.JudgeId;
 		RunId = judgement.RunId;
 	}
 }

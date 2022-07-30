@@ -15,13 +15,15 @@ public class ModshipService : IModshipService
 	public async Task<Modship?> GetModship(Guid userId)
 	{
 		return await _applicationContext.Modships
-			.FirstOrDefaultAsync(m => m.UserId == userId);
+			.FirstOrDefaultAsync(modship => modship.UserId == userId);
 	}
 
 	public async Task<Modship?> GetModshipForLeaderboard(long leaderboardId, Guid userId)
 	{
 		return await _applicationContext.Modships
-			.SingleOrDefaultAsync(m => m.LeaderboardId == leaderboardId && m.UserId == userId);
+			.SingleOrDefaultAsync(modship =>
+				modship.LeaderboardId == leaderboardId
+				&& modship.UserId == userId);
 	}
 
 	public async Task CreateModship(Modship modship)
@@ -33,7 +35,7 @@ public class ModshipService : IModshipService
 	public async Task<List<Modship>> LoadUserModships(Guid userId)
 	{
 		return await _applicationContext.Modships
-			.Where(m => m.UserId == userId)
+			.Where(modship => modship.UserId == userId)
 			.ToListAsync();
 	}
 

@@ -90,11 +90,11 @@ internal class Judgements
 			{
 				Body = new CreateRunRequest
 				{
-					Played = Instant.MinValue,
-					Submitted = Instant.MaxValue,
-					Status = RunStatus.SUBMITTED,
+					PlayedOn = LocalDate.MinIsoValue,
+					SubmittedAt = Instant.MaxValue,
+					Status = RunStatus.Submitted
 				},
-				Jwt = s_Jwt,
+				Jwt = s_Jwt
 			});
 	}
 }

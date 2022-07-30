@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using Microsoft.IdentityModel.Tokens;
 
@@ -13,10 +14,10 @@ public class AuthService : IAuthService
 
 	public AuthService(IConfiguration config)
 	{
-		SymmetricSecurityKey? securityKey = new(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
+		SymmetricSecurityKey? securityKey = new(Encoding.UTF8.GetBytes(config[Jwt.KEY]));
 
 		_credentials = new(securityKey, SecurityAlgorithms.HmacSha256);
-		_issuer = config["Jwt:Issuer"];
+		_issuer = config[Jwt.ISSUER];
 	}
 
 	public string GenerateJSONWebToken(User user)
@@ -35,7 +36,7 @@ public class AuthService : IAuthService
 			signingCredentials: _credentials
 		);
 
-		return new JwtSecurityTokenHandler().WriteToken(token);
+		return Jwt.SecurityTokenHandler.WriteToken(token);
 	}
 
 	public string? GetEmailFromClaims(ClaimsPrincipal claims)
@@ -47,19 +48,13 @@ public class AuthService : IAuthService
 	{
 		string? userIdStr = claims.FindFirstValue(JwtRegisteredClaimNames.Sub);
 
-		if (userIdStr is null)
+		if (Guid.TryParse(userIdStr, out Guid userId))
+		{
+			return userId;
+		}
+		else
 		{
 			return null;
 		}
-
-		Guid? userId = null;
-
-		try
-		{
-			userId = Guid.Parse(userIdStr);
-		}
-		catch (FormatException) { }
-
-		return userId;
 	}
 }

@@ -12,7 +12,8 @@ public record CreateLeaderboardRequest
 	public string Name { get; set; } = null!;
 
 	/// <summary>
-	///     The URL-scoped unique identifier of the `Leaderboard`.
+	///     The URL-scoped unique identifier of the `Leaderboard`.<br/>
+	///     Must be [2, 80] in length and consist only of alphanumeric characters and hyphens.
 	/// </summary>
 	/// <example>foo-bar</example>
 	public string Slug { get; set; } = null!;

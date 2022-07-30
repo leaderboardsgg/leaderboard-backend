@@ -26,16 +26,40 @@ public class Judgement
 	public long Id { get; set; }
 
 	/// <summary>
-	///     The `Judgement`'s decision. May be null, true, or false.
-	/// </summary>
-	public bool? Approved { get; set; }
-
-	/// <summary>
 	///     The time the `Judgement` was made.<br/>
 	///     Generated on creation.
 	/// </summary>
 	[Required]
 	public Instant CreatedAt { get; set; }
+
+	/// <summary>
+	///     The ID of the `Run` which is being judged.
+	/// </summary>
+	[Required]
+	public Guid RunId { get; set; }
+
+	/// <summary>
+	///     Relationship model for `RunId`.
+	/// </summary>
+	[Required]
+	public Run Run { get; set; } = null!;
+
+	/// <summary>
+	///     The ID of the *Moderator* (`User`) who is making the `Judgement`.
+	/// </summary>
+	[Required]
+	public Guid JudgeId { get; set; }
+
+	/// <summary>
+	///     Relationship model for `JudgeId`.
+	/// </summary>
+	[Required]
+	public User Judge { get; set; } = null!;
+
+	/// <summary>
+	///     The `Judgement`'s decision. May be null, true, or false.
+	/// </summary>
+	public bool? Approved { get; set; }
 
 	/// <summary>
 	///     A comment elaborating on the `Judgement`'s decision. Must have a value when the
@@ -44,22 +68,4 @@ public class Judgement
 	/// <example>The video proof is not of sufficient quality.</example>
 	[Required]
 	public string Note { get; set; } = "";
-
-	/// <summary>
-	///     The ID of the *Moderator* (`User`) who is making the `Judgement`.
-	/// </summary>
-	[Required]
-	public Guid ModId { get; set; }
-
-	[Required]
-	public User Mod { get; set; } = null!;
-
-	/// <summary>
-	///     The ID of the `Run` which is being judged.
-	/// </summary>
-	[Required]
-	public Guid RunId { get; set; }
-
-	[Required]
-	public Run Run { get; set; } = null!;
 }

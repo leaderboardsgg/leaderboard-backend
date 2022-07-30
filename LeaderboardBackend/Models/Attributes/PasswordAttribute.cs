@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
-namespace LeaderboardBackend.Models.Annotations;
+namespace LeaderboardBackend.Models.Attributes;
 
 public class PasswordAttribute : ValidationAttribute
 {
@@ -13,6 +13,7 @@ public class PasswordAttribute : ValidationAttribute
 		return $"Your password has the following errors: {string.Join("; ", errors)}";
 	}
 
+	// FIXME: Use compiled Regexes instead of creating new instances every time! - Ero
 	protected override ValidationResult? IsValid(object? value, ValidationContext _)
 	{
 		List<string> errors = new();
@@ -20,7 +21,7 @@ public class PasswordAttribute : ValidationAttribute
 		if (value is null)
 		{
 			errors.Add("password must be supplied");
-			return new ValidationResult(GetErrorMessage(errors));
+			return new(GetErrorMessage(errors));
 		}
 
 		string password = (string)value;
@@ -52,7 +53,7 @@ public class PasswordAttribute : ValidationAttribute
 
 		if (errors.Count > 0)
 		{
-			return new ValidationResult(GetErrorMessage(errors));
+			return new(GetErrorMessage(errors));
 		}
 
 		return ValidationResult.Success;

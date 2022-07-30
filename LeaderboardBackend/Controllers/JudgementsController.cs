@@ -69,11 +69,13 @@ public class JudgementsController : ControllerBase
 	/// </response>
 	/// <response code="404">No `Run` with the ID from the request could be found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
-	[Authorize(Policy = UserTypes.MOD)]
+	[Authorize(Policy = UserTypes.MODERATOR)]
 	[HttpPost]
 	public async Task<ActionResult<JudgementViewModel>> CreateJudgement(
 		[FromBody] CreateJudgementRequest request)
 	{
+		// FIXME: Make sure administrators cannot call this! - Ero
+
 		Guid? modId = _authService.GetUserIdFromClaims(HttpContext.User);
 
 		if (modId is null)
@@ -85,13 +87,15 @@ public class JudgementsController : ControllerBase
 
 		if (run is null)
 		{
+			// TODO: Write a better error message. - Ero
 			_logger.LogError($"CreateJudgement: run is null. ID = {request.RunId}");
 
 			return NotFound($"Run not found for ID = {request.RunId}");
 		}
 
-		if (run.Status == RunStatus.CREATED)
+		if (run.Status == RunStatus.Created)
 		{
+			// TODO: Write a better error message. - Ero
 			_logger.LogError(
 				$"CreateJudgement: run has pending participations (i.e. run status == CREATED). " +
 				$"ID = {request.RunId}");
@@ -99,14 +103,14 @@ public class JudgementsController : ControllerBase
 			return BadRequest($"Run has pending Participations. ID = {request.RunId}");
 		}
 
-		// TODO: Update run status on body.Approved's value
+		// TODO: Update run status on body.Approved's value.
 		Judgement judgement = new()
 		{
 			Approved = request.Approved,
-			ModId = modId.Value,
+			JudgeId = modId.Value,
 			Note = request.Note,
 			Run = run,
-			RunId = run.Id,
+			RunId = run.Id
 		};
 
 		await _judgementService.CreateJudgement(judgement);

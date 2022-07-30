@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
@@ -9,7 +10,6 @@ namespace LeaderboardBackend.Authorization;
 public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequirement>
 {
 	private readonly IAuthService _authService;
-	private readonly JwtSecurityTokenHandler _jwtHandler;
 	private readonly TokenValidationParameters _jwtValidationParams;
 	private readonly IModshipService _modshipService;
 	private readonly IUserService _userService;
@@ -21,8 +21,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 		IUserService userService)
 	{
 		_authService = authService;
-		_jwtHandler = JwtSecurityTokenHandlerSingleton.Instance;
-		_jwtValidationParams = TokenValidationParametersSingleton.Instance(config);
+		_jwtValidationParams = Jwt.ValidationParameters.GetInstance(config);
 		_modshipService = modshipService;
 		_userService = userService;
 	}
@@ -31,7 +30,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 		AuthorizationHandlerContext context,
 		UserTypeRequirement requirement)
 	{
-		if (!TryGetJwtFromHttpContext(context, out string token) || !ValidateJwt(token))
+		if (!TryGetJwtFromHttpContext(context, out string? token) || !ValidateJwt(token))
 		{
 			return Task.CompletedTask;
 		}
@@ -62,8 +61,8 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 	{
 		return requirement.Type switch
 		{
-			UserTypes.ADMIN => user.Admin,
-			UserTypes.MOD => user.Admin || IsMod(user),
+			UserTypes.ADMINISTRATOR => user.Admin,
+			UserTypes.MODERATOR => user.Admin || IsMod(user),
 			UserTypes.USER => true,
 			_ => false,
 		};
@@ -74,39 +73,45 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 		return _modshipService.LoadUserModships(user.Id).Result.Count > 0;
 	}
 
-	private bool TryGetJwtFromHttpContext(AuthorizationHandlerContext context, out string token)
+	private static bool TryGetJwtFromHttpContext(
+		AuthorizationHandlerContext context,
+		[NotNullWhen(true)] out string? token)
 	{
 		if (context.Resource is not HttpContext httpContext)
 		{
-			token = "";
+			token = null;
 			return false;
 		}
 
-		try
-		{
-			// We need to strip "Bearer " out lol
-			token = httpContext.Request.Headers.Authorization.First()[7..];
+		string? header = httpContext.Request.Headers.Authorization.FirstOrDefault();
 
-			return _jwtHandler.CanReadToken(token);
-		}
-		catch (InvalidOperationException)
+		if (header is null)
 		{
-			// No token exists in the request
-			token = "";
+			token = null;
 			return false;
 		}
+
+		token = header.Replace("Bearer ", "");
+
+		if (string.IsNullOrEmpty(token))
+		{
+			token = null;
+			return false;
+		}
+
+		return Jwt.SecurityTokenHandler.CanReadToken(token);
 	}
 
 	private bool ValidateJwt(string token)
 	{
 		try
 		{
-			_jwtHandler.ValidateToken(token, _jwtValidationParams, out _);
+			Jwt.SecurityTokenHandler.ValidateToken(token, _jwtValidationParams, out _);
 
 			return true;
 		}
 		// FIXME: Trigger a redirect to login, possibly on SecurityTokenExpiredException
-		catch (Exception)
+		catch
 		{
 			return false;
 		}

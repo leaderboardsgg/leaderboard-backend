@@ -15,6 +15,18 @@ public class Category
 	public long Id { get; set; }
 
 	/// <summary>
+	///     The ID of the `Leaderboard` the `Category` is a part of.
+	/// </summary>
+	[Required]
+	public long LeaderboardId { get; set; }
+
+	/// <summary>
+	///     Relationship model for `LeaderboardId`.
+	/// </summary>
+	[JsonIgnore]
+	public Leaderboard? Leaderboard { get; set; }
+
+	/// <summary>
 	///     The display name of the `Category`.
 	/// </summary>
 	/// <example>Foo Bar Baz%</example>
@@ -46,15 +58,6 @@ public class Category
 	/// </summary>
 	[Required]
 	public int PlayersMax { get; set; }
-
-	/// <summary>
-	///     The ID of the `Leaderboard` the `Category` is a part of.
-	/// </summary>
-	[Required]
-	public long LeaderboardId { get; set; }
-
-	[JsonIgnore]
-	public Leaderboard? Leaderboard { get; set; }
 
 	public override bool Equals(object? obj)
 	{

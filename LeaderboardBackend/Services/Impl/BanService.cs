@@ -30,14 +30,14 @@ public class BanService : IBanService
 	public async Task<List<Ban>> GetBansByLeaderboard(long leaderboardId)
 	{
 		return await _applicationContext.Bans
-			.Where(b => b.LeaderboardId == leaderboardId)
+			.Where(ban => ban.LeaderboardId == leaderboardId)
 			.ToListAsync();
 	}
 
 	public async Task<List<Ban>> GetBansByUser(Guid userId)
 	{
 		return await _applicationContext.Bans
-			.Where(b => b.BannedUserId == userId)
+			.Where(ban => ban.BannedUserId == userId)
 			.ToListAsync();
 	}
 
@@ -50,7 +50,7 @@ public class BanService : IBanService
 	public async Task DeleteBan(long id)
 	{
 		Ban ban = await _applicationContext.Bans
-			.Where(b => b.Id == id)
+			.Where(ban => ban.Id == id)
 			.FirstAsync();
 
 		ban.DeletedAt = SystemClock.Instance.GetCurrentInstant();
@@ -61,8 +61,8 @@ public class BanService : IBanService
 	public async Task DeleteLeaderboardBan(long id, long leaderboardId)
 	{
 		Ban ban = await _applicationContext.Bans
-			.Where(b => b.Id == id)
-			.Where(b => b.LeaderboardId == leaderboardId)
+			.Where(ban => ban.Id == id)
+			.Where(ban => ban.LeaderboardId == leaderboardId)
 			.FirstAsync();
 
 		ban.DeletedAt = SystemClock.Instance.GetCurrentInstant();

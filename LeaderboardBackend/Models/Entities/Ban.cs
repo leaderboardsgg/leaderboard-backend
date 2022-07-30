@@ -16,13 +16,6 @@ public class Ban
 	public long Id { get; set; }
 
 	/// <summary>
-	///     The reason for the issued `Ban`.<br/>
-	///     Must not be null.
-	/// </summary>
-	[Required]
-	public string Reason { get; set; } = null!;
-
-	/// <summary>
 	///     The time the `Ban` was issued.<br/>
 	///     Generated on creation.
 	/// </summary>
@@ -40,6 +33,9 @@ public class Ban
 	/// </summary>
 	public Guid? BanningUserId { get; set; }
 
+	/// <summary>
+	///     Relationship model for `BanningUserId`.
+	/// </summary>
 	[JsonIgnore]
 	public User? BanningUser { get; set; }
 
@@ -49,6 +45,9 @@ public class Ban
 	[Required]
 	public Guid BannedUserId { get; set; }
 
+	/// <summary>
+	///     Relationship model for `BannedUserId`.
+	/// </summary>
 	[JsonIgnore]
 	public User? BannedUser { get; set; }
 
@@ -58,6 +57,16 @@ public class Ban
 	/// </summary>
 	public long? LeaderboardId { get; set; }
 
+	/// <summary>
+	///     Relationship model for `LeaderboardId`.
+	/// </summary>
 	[JsonIgnore]
 	public Leaderboard? Leaderboard { get; set; }
+
+	/// <summary>
+	///     The reason for the issued `Ban`.<br/>
+	///     Must not be null.
+	/// </summary>
+	[Required]
+	public string Reason { get; set; } = null!;
 }
