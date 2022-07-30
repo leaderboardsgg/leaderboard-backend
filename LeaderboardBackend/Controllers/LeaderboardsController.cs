@@ -28,9 +28,9 @@ public class LeaderboardsController : ControllerBase
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
 	[HttpGet("{id}")]
-	public async Task<ActionResult<Leaderboard>> GetLeaderboard(long leaderboardId)
+	public async Task<ActionResult<Leaderboard>> GetLeaderboard(long id)
 	{
-		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(leaderboardId);
+		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(id);
 
 		if (leaderboard == null)
 		{
@@ -54,7 +54,7 @@ public class LeaderboardsController : ControllerBase
 	public async Task<ActionResult<List<Leaderboard>>> GetLeaderboards(
 		[FromQuery] long[] ids)
 	{
-		return Ok(await _leaderboardService.GetLeaderboards(leaderboardIds));
+		return Ok(await _leaderboardService.GetLeaderboards(ids));
 	}
 
 	/// <summary>

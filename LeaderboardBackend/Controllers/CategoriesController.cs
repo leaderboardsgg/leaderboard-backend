@@ -26,9 +26,9 @@ public class CategoriesController : ControllerBase
 	/// <response code="404">No `Category` with the requested ID could be found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
 	[HttpGet("{id}")]
-	public async Task<ActionResult<Category>> GetCategory(long categoryId)
+	public async Task<ActionResult<Category>> GetCategory(long id)
 	{
-		Category? category = await _categoryService.GetCategory(categoryId);
+		Category? category = await _categoryService.GetCategory(id);
 
 		if (category == null)
 		{

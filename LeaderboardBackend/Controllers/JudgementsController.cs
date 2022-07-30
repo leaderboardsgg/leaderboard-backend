@@ -43,9 +43,9 @@ public class JudgementsController : ControllerBase
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
 	[AllowAnonymous]
 	[HttpGet("{id}")]
-	public async Task<ActionResult<JudgementViewModel>> GetJudgement(long judgementId)
+	public async Task<ActionResult<JudgementViewModel>> GetJudgement(long id)
 	{
-		Judgement? judgement = await _judgementService.GetJudgement(judgementId);
+		Judgement? judgement = await _judgementService.GetJudgement(id);
 
 		if (judgement is null)
 		{
