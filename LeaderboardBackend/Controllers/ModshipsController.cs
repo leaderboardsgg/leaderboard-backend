@@ -36,9 +36,9 @@ public class ModshipsController : ControllerBase
 	/// <response code="404">No `User` with the requested ID could be found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
 	[HttpGet("{id}")]
-	public async Task<ActionResult<Modship>> GetModship(Guid id)
+	public async Task<ActionResult<Modship>> GetModship(Guid modshipId)
 	{
-		Modship? modship = await _modshipService.GetModship(id);
+		Modship? modship = await _modshipService.GetModship(modshipId);
 
 		if (modship is null)
 		{

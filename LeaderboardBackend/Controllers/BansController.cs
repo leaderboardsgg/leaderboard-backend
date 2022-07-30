@@ -87,9 +87,9 @@ public class BansController : ControllerBase
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
 	[HttpGet("{id:long}")]
-	public async Task<ActionResult<Ban>> GetBan(long id)
+	public async Task<ActionResult<Ban>> GetBan(long banId)
 	{
-		Ban? ban = await _banService.GetBanById(id);
+		Ban? ban = await _banService.GetBanById(banId);
 
 		if (ban == null)
 		{
@@ -223,17 +223,17 @@ public class BansController : ControllerBase
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Delete))]
 	[Authorize(Policy = UserTypes.ADMIN)]
 	[HttpDelete("{id}")]
-	public async Task<ActionResult> DeleteBan(long id)
+	public async Task<ActionResult> DeleteBan(long banId)
 	{
 		try
 		{
-			await _banService.DeleteBan(id);
+			await _banService.DeleteBan(banId);
 
 			return NoContent();
 		}
 		catch (ArgumentNullException)
 		{
-			return NotFound($"Ban not found: {id}");
+			return NotFound($"Ban not found: {banId}");
 		}
 	}
 
@@ -250,17 +250,17 @@ public class BansController : ControllerBase
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Delete))]
 	[Authorize(Policy = UserTypes.MOD)]
 	[HttpDelete("{id}/leaderboards/{leaderboardId}")]
-	public async Task<ActionResult> DeleteLeaderboardBan(long id, long leaderboardId)
+	public async Task<ActionResult> DeleteLeaderboardBan(long banId, long leaderboardId)
 	{
 		try
 		{
-			await _banService.DeleteLeaderboardBan(id, leaderboardId);
+			await _banService.DeleteLeaderboardBan(banId, leaderboardId);
 
 			return NoContent();
 		}
 		catch (ArgumentNullException)
 		{
-			return NotFound($"Ban not found: {id}");
+			return NotFound($"Ban not found: {banId}");
 		}
 	}
 }
