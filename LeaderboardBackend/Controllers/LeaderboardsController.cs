@@ -22,15 +22,15 @@ public class LeaderboardsController : ControllerBase
 	/// <summary>
 	///     Gets a Leaderboard by its ID.
 	/// </summary>
-	/// <param name="leaderboardId">The ID of the `Leaderboard` which should be retrieved.</param>
+	/// <param name="id">The ID of the `Leaderboard` which should be retrieved.</param>
 	/// <response code="200">The `Leaderboard` was found and returned successfully.</response>
 	/// <response code="404">No `Leaderboard` with the requested ID could be found.</response>
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
 	[HttpGet("{id}")]
-	public async Task<ActionResult<Leaderboard>> GetLeaderboard(long leaderboardId)
+	public async Task<ActionResult<Leaderboard>> GetLeaderboard(long id)
 	{
-		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(leaderboardId);
+		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(id);
 
 		if (leaderboard == null)
 		{
@@ -43,9 +43,7 @@ public class LeaderboardsController : ControllerBase
 	/// <summary>
 	///     Gets Leaderboards by their IDs.
 	/// </summary>
-	/// <param name="leaderboardIds">
-	///     The IDs of the `Leaderboard`s which should be retrieved.
-	/// </param>
+	/// <param name="ids">The IDs of the `Leaderboard`s which should be retrieved.</param>
 	/// <response code="200">
 	///     The list of `Leaderboard`s was retrieved successfully. The result can be an empty
 	///     collection.
@@ -54,9 +52,9 @@ public class LeaderboardsController : ControllerBase
 	[HttpGet]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	public async Task<ActionResult<List<Leaderboard>>> GetLeaderboards(
-		[FromQuery] long[] leaderboardIds)
+		[FromQuery] long[] ids)
 	{
-		return Ok(await _leaderboardService.GetLeaderboards(leaderboardIds));
+		return Ok(await _leaderboardService.GetLeaderboards(ids));
 	}
 
 	/// <summary>

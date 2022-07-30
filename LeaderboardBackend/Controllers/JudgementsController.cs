@@ -37,15 +37,15 @@ public class JudgementsController : ControllerBase
 	/// <summary>
 	///     Gets a Judgement by its ID.
 	/// </summary>
-	/// <param name="judgementId">The ID of the `Judgement` which should be retrieved.</param>
+	/// <param name="id">The ID of the `Judgement` which should be retrieved.</param>
 	/// <response code="200">The `Judgement` was found and returned successfully.</response>
 	/// <response code="404">No `Judgement` with the requested ID could be found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
 	[AllowAnonymous]
 	[HttpGet("{id}")]
-	public async Task<ActionResult<JudgementViewModel>> GetJudgement(long judgementId)
+	public async Task<ActionResult<JudgementViewModel>> GetJudgement(long id)
 	{
-		Judgement? judgement = await _judgementService.GetJudgement(judgementId);
+		Judgement? judgement = await _judgementService.GetJudgement(id);
 
 		if (judgement is null)
 		{

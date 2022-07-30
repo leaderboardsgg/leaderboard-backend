@@ -29,16 +29,16 @@ public class ModshipsController : ControllerBase
 	/// <summary>
 	///     Gets a Modship by its ID.
 	/// </summary>
-	/// <param name="modshipId">
+	/// <param name="id">
 	///     The ID of the *Moderator* (`User`) which should be retrieved.
 	/// </param>
 	/// <response code="200">The `Modship` was found and returned successfully.</response>
 	/// <response code="404">No `User` with the requested ID could be found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
 	[HttpGet("{id}")]
-	public async Task<ActionResult<Modship>> GetModship(Guid modshipId)
+	public async Task<ActionResult<Modship>> GetModship(Guid id)
 	{
-		Modship? modship = await _modshipService.GetModship(modshipId);
+		Modship? modship = await _modshipService.GetModship(id);
 
 		if (modship is null)
 		{

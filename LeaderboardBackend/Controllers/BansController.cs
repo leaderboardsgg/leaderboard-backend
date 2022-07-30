@@ -81,15 +81,15 @@ public class BansController : ControllerBase
 	/// <summary>
 	///     Gets a Ban by its ID.
 	/// </summary>
-	/// <param name="banId">The ID of the `Ban` which should be retrieved.</param>
+	/// <param name="id">The ID of the `Ban` which should be retrieved.</param>
 	/// <response code="200">The `Ban` was found and returned successfully.</response>
 	/// <response code="404">No `Ban` with the requested ID could be found.</response>
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
 	[HttpGet("{id:long}")]
-	public async Task<ActionResult<Ban>> GetBan(long banId)
+	public async Task<ActionResult<Ban>> GetBan(long id)
 	{
-		Ban? ban = await _banService.GetBanById(banId);
+		Ban? ban = await _banService.GetBanById(id);
 
 		if (ban == null)
 		{
@@ -215,7 +215,7 @@ public class BansController : ControllerBase
 	///     Lifts a Leaderboard-scoped or site-scoped Ban.
 	///     This request is restricted to Administrators.
 	/// </summary>
-	/// <param name="banId">The ID of the `Ban` to remove.</param>
+	/// <param name="id">The ID of the `Ban` to remove.</param>
 	/// <response code="204">The `Ban` was removed successfully.</response>
 	/// <response code="401">The requesting `User` is not logged-in.</response>
 	/// <response code="403">The requesting `User` is unauthorized to lift `Ban`s.</response>
@@ -223,17 +223,17 @@ public class BansController : ControllerBase
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Delete))]
 	[Authorize(Policy = UserTypes.ADMIN)]
 	[HttpDelete("{id}")]
-	public async Task<ActionResult> DeleteBan(long banId)
+	public async Task<ActionResult> DeleteBan(long id)
 	{
 		try
 		{
-			await _banService.DeleteBan(banId);
+			await _banService.DeleteBan(id);
 
 			return NoContent();
 		}
 		catch (ArgumentNullException)
 		{
-			return NotFound($"Ban not found: {banId}");
+			return NotFound($"Ban not found: {id}");
 		}
 	}
 
@@ -241,7 +241,7 @@ public class BansController : ControllerBase
 	///     Lift a Leaderboard-scoped Ban.
 	///     This request is restricted to Moderators and Administrators.
 	/// </summary>
-	/// <param name="banId">The ID of the `Ban` to remove.</param>
+	/// <param name="id">The ID of the `Ban` to remove.</param>
 	/// <param name="leaderboardId">The ID of the `Leaderboard` the `Ban` is scoped to.</param>
 	/// <response code="204">The `Ban` was removed successfully.</response>
 	/// <response code="401">The requesting `User` is not logged-in.</response>
@@ -250,17 +250,17 @@ public class BansController : ControllerBase
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Delete))]
 	[Authorize(Policy = UserTypes.MOD)]
 	[HttpDelete("{id}/leaderboards/{leaderboardId}")]
-	public async Task<ActionResult> DeleteLeaderboardBan(long banId, long leaderboardId)
+	public async Task<ActionResult> DeleteLeaderboardBan(long id, long leaderboardId)
 	{
 		try
 		{
-			await _banService.DeleteLeaderboardBan(banId, leaderboardId);
+			await _banService.DeleteLeaderboardBan(id, leaderboardId);
 
 			return NoContent();
 		}
 		catch (ArgumentNullException)
 		{
-			return NotFound($"Ban not found: {banId}");
+			return NotFound($"Ban not found: {id}");
 		}
 	}
 }
