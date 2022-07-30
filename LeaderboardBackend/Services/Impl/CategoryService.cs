@@ -4,21 +4,22 @@ namespace LeaderboardBackend.Services;
 
 public class CategoryService : ICategoryService
 {
-	private readonly ApplicationContext ApplicationContext;
+	private readonly ApplicationContext _applicationContext;
 
 	public CategoryService(ApplicationContext applicationContext)
 	{
-		ApplicationContext = applicationContext;
+		_applicationContext = applicationContext;
 	}
 
 	public async Task<Category?> GetCategory(long id)
 	{
-		return await ApplicationContext.Categories.FindAsync(id);
+		return await _applicationContext.Categories
+			.FindAsync(id);
 	}
 
 	public async Task CreateCategory(Category category)
 	{
-		ApplicationContext.Categories.Add(category);
-		await ApplicationContext.SaveChangesAsync();
+		_applicationContext.Categories.Add(category);
+		await _applicationContext.SaveChangesAsync();
 	}
 }

@@ -5,16 +5,17 @@ namespace LeaderboardBackend.Services;
 
 public class LeaderboardService : ILeaderboardService
 {
-	private readonly ApplicationContext ApplicationContext;
+	private readonly ApplicationContext _applicationContext;
 
 	public LeaderboardService(ApplicationContext applicationContext)
 	{
-		ApplicationContext = applicationContext;
+		_applicationContext = applicationContext;
 	}
 
 	public async Task<Leaderboard?> GetLeaderboard(long id)
 	{
-		return await ApplicationContext.Leaderboards.FindAsync(id);
+		return await _applicationContext.Leaderboards
+			.FindAsync(id);
 	}
 
 	// FIXME: Paginate this
@@ -22,16 +23,20 @@ public class LeaderboardService : ILeaderboardService
 	{
 		if (ids is null)
 		{
-			return await ApplicationContext.Leaderboards.ToListAsync();
-		} else
+			return await _applicationContext.Leaderboards
+				.ToListAsync();
+		}
+		else
 		{
-			return await ApplicationContext.Leaderboards.Where(l => ids.Contains(l.Id)).ToListAsync();
+			return await _applicationContext.Leaderboards
+				.Where(l => ids.Contains(l.Id))
+				.ToListAsync();
 		}
 	}
 
 	public async Task CreateLeaderboard(Leaderboard leaderboard)
 	{
-		ApplicationContext.Leaderboards.Add(leaderboard);
-		await ApplicationContext.SaveChangesAsync();
+		_applicationContext.Leaderboards.Add(leaderboard);
+		await _applicationContext.SaveChangesAsync();
 	}
 }

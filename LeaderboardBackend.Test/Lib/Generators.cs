@@ -9,6 +9,7 @@ internal static class Generators
 	{
 		using Aes crypto = Aes.Create();
 		crypto.GenerateKey();
+
 		return Convert.ToBase64String(crypto.Key);
 	}
 }

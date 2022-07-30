@@ -6,6 +6,7 @@ using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
+using NodaTime;
 using NUnit.Framework;
 
 namespace LeaderboardBackend.Test;
@@ -13,29 +14,27 @@ namespace LeaderboardBackend.Test;
 [TestFixture]
 internal class Judgements
 {
-	private static TestApiFactory Factory = null!;
-	private static TestApiClient ApiClient = null!;
-	private static Leaderboard DefaultLeaderboard = null!;
-	private static string? Jwt;
+	private static TestApiClient s_ApiClient = null!;
+	private static Leaderboard s_DefaultLeaderboard = null!;
+	private static TestApiFactory s_Factory = null!;
+	private static string? s_Jwt;
 
-	private static readonly string ValidUsername = "Test";
-	private static readonly string ValidPassword = "c00l_pAssword";
-	private static readonly string ValidEmail = "test@email.com";
+	private const string VALID_USERNAME = "Test";
+	private const string VALID_PASSWORD = "c00l_pAssword";
+	private const string VALID_EMAIL = "test@email.com";
 
 	[SetUp]
 	public static async Task SetUp()
 	{
-		Factory = new TestApiFactory();
-		ApiClient = Factory.CreateTestApiClient();
+		s_Factory = new TestApiFactory();
+		s_ApiClient = s_Factory.CreateTestApiClient();
 
-		// Set up a default Leaderboard and a mod user for that leaderboard to use as the Jwt for tests
-		string adminJwt = (await ApiClient.LoginAdminUser()).Token;
-		User mod = await ApiClient.RegisterUser(
-			ValidUsername,
-			ValidEmail,
-			ValidPassword
-		);
-		DefaultLeaderboard = await ApiClient.Post<Leaderboard>(
+		// Set up a default Leaderboard and a mod user for that leaderboard to use as the Jwt for
+		// tests
+		string adminJwt = (await s_ApiClient.LoginAdminUser()).Token;
+		User mod = await s_ApiClient.RegisterUser(VALID_USERNAME, VALID_EMAIL, VALID_PASSWORD);
+
+		s_DefaultLeaderboard = await s_ApiClient.Post<Leaderboard>(
 			"/api/leaderboards",
 			new()
 			{
@@ -45,22 +44,21 @@ internal class Judgements
 					Slug = Generators.GenerateRandomString(),
 				},
 				Jwt = adminJwt,
-			}
-		);
-		Modship modship = await ApiClient.Post<Modship>(
+			});
+
+		Modship modship = await s_ApiClient.Post<Modship>(
 			"/api/modships",
 			new()
 			{
 				Body = new CreateModshipRequest
 				{
-					LeaderboardId = DefaultLeaderboard.Id,
+					LeaderboardId = s_DefaultLeaderboard.Id,
 					UserId = mod.Id,
 				},
 				Jwt = adminJwt,
-			}
-		);
+			});
 
-		Jwt = (await ApiClient.LoginUser(ValidEmail, ValidPassword)).Token;
+		s_Jwt = (await s_ApiClient.LoginUser(VALID_EMAIL, VALID_PASSWORD)).Token;
 	}
 
 	[Test]
@@ -68,7 +66,7 @@ internal class Judgements
 	{
 		Run run = await CreateRun();
 
-		JudgementViewModel? createdJudgement = await ApiClient.Post<JudgementViewModel>(
+		JudgementViewModel? createdJudgement = await s_ApiClient.Post<JudgementViewModel>(
 			"/api/judgements",
 			new()
 			{
@@ -78,27 +76,25 @@ internal class Judgements
 					Note = "It is a cool run",
 					Approved = true,
 				},
-				Jwt = Jwt,
-			}
-		);
+				Jwt = s_Jwt,
+			});
 
 		Assert.NotNull(createdJudgement);
 	}
 
 	private async Task<Run> CreateRun()
 	{
-		return await ApiClient.Post<Run>(
+		return await s_ApiClient.Post<Run>(
 			"/api/runs",
 			new()
 			{
 				Body = new CreateRunRequest
 				{
-					Played = NodaTime.Instant.MinValue,
-					Submitted = NodaTime.Instant.MaxValue,
+					Played = Instant.MinValue,
+					Submitted = Instant.MaxValue,
 					Status = RunStatus.SUBMITTED,
 				},
-				Jwt = Jwt,
-			}
-		);
+				Jwt = s_Jwt,
+			});
 	}
 }

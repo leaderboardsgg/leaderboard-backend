@@ -8,35 +8,35 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LeaderboardBackend.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
+[Route("api/[controller]")]
 public class ModshipsController : ControllerBase
 {
-	private readonly ILeaderboardService LeaderboardService;
-	private readonly IModshipService ModshipService;
-	private readonly IUserService UserService;
+	private readonly ILeaderboardService _leaderboardService;
+	private readonly IModshipService _modshipService;
+	private readonly IUserService _userService;
 
 	public ModshipsController(
 		ILeaderboardService leaderboardService,
 		IModshipService modshipService,
-		IUserService userService
-	)
+		IUserService userService)
 	{
-		LeaderboardService = leaderboardService;
-		ModshipService = modshipService;
-		UserService = userService;
+		_leaderboardService = leaderboardService;
+		_modshipService = modshipService;
+		_userService = userService;
 	}
 
-	/// <summary>Gets a Modship.</summary>
+	/// <summary>
+	///     Gets a Modship.
+	/// </summary>
 	/// <param name="id">The mod User's ID.</param>
 	/// <response code="200">The Modship.</response>
 	/// <response code="404">If no Modship can be found.</response>
-	[ApiConventionMethod(typeof(Conventions),
-						 nameof(Conventions.Get))]
+	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
 	[HttpGet("{id}")]
 	public async Task<ActionResult<Modship>> GetModship(Guid id)
 	{
-		Modship? modship = await ModshipService.GetModship(id);
+		Modship? modship = await _modshipService.GetModship(id);
 
 		if (modship is null)
 		{
@@ -46,19 +46,20 @@ public class ModshipsController : ControllerBase
 		return Ok(modship);
 	}
 
-	/// <summary>Makes a User a Mod for a Leaderboard. Admin-only.</summary>
+	/// <summary>
+	///     Makes a User a Mod for a Leaderboard. Admin-only.
+	/// </summary>
 	/// <param name="body">A CreateModshipRequest instance.</param>
 	/// <response code="201">An object containing the Modship ID.</response>
 	/// <response code="400">If the request is malformed.</response>
 	/// <response code="404">If a non-admin calls this.</response>
-	[ApiConventionMethod(typeof(Conventions),
-						 nameof(Conventions.Post))]
-	[Authorize(Policy = UserTypes.Admin)]
+	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
+	[Authorize(Policy = UserTypes.ADMIN)]
 	[HttpPost]
 	public async Task<ActionResult> CreateModship([FromBody] CreateModshipRequest body)
 	{
-		User? user = await UserService.GetUserById(body.UserId);
-		Leaderboard? leaderboard = await LeaderboardService.GetLeaderboard(body.LeaderboardId);
+		User? user = await _userService.GetUserById(body.UserId);
+		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(body.LeaderboardId);
 
 		if (user is null || leaderboard is null)
 		{
@@ -73,37 +74,40 @@ public class ModshipsController : ControllerBase
 			Leaderboard = leaderboard
 		};
 
-		await ModshipService.CreateModship(modship);
+		await _modshipService.CreateModship(modship);
+
 		return CreatedAtAction(nameof(GetModship), new { id = modship.Id }, modship);
 	}
 
-	/// <summary>Removes a User as a Mod from a Leaderboard. Admin-only.</summary>
+	/// <summary>
+	///     Removes a User as a Mod from a Leaderboard. Admin-only.
+	/// </summary>
 	/// <param name="body">A RemoveModshipRequest</param>
 	/// <response code="204">Request was successfull.</response>
 	/// <response code="400">If the request is malformed.</response>
 	/// <response code="404">The User, Leaderboard or Modship was not found.</response>
-	[ApiConventionMethod(typeof(Conventions),
-						 nameof(Conventions.Delete))]
-	[Authorize(Policy = UserTypes.Admin)]
+	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Delete))]
+	[Authorize(Policy = UserTypes.ADMIN)]
 	[HttpDelete]
 	public async Task<ActionResult> DeleteMod([FromBody] RemoveModshipRequest body)
 	{
-		User? user = await UserService.GetUserById(body.UserId);
-		Leaderboard? leaderboard = await LeaderboardService.GetLeaderboard(body.LeaderboardId);
+		User? user = await _userService.GetUserById(body.UserId);
+		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(body.LeaderboardId);
 
 		if (user is null || leaderboard is null)
 		{
 			return NotFound();
 		}
 
-		Modship? toBeDeleted = await ModshipService.GetModshipForLeaderboard(leaderboard.Id, user.Id);
+		Modship? toBeDeleted = await _modshipService
+			.GetModshipForLeaderboard(leaderboard.Id, user.Id);
 
 		if (toBeDeleted is null)
 		{
 			return NotFound();
 		}
 
-		await ModshipService.DeleteModship(toBeDeleted);
+		await _modshipService.DeleteModship(toBeDeleted);
 
 		return NoContent();
 	}

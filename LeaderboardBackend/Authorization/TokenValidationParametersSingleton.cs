@@ -5,21 +5,23 @@ namespace LeaderboardBackend.Authorization;
 
 public sealed class TokenValidationParametersSingleton
 {
-	private static TokenValidationParameters? parameters = null;
+	private static TokenValidationParameters? s_Parameters;
 
 	public static TokenValidationParameters Instance(IConfiguration configuration)
 	{
-		if (parameters is not null)
+		if (s_Parameters is not null)
 		{
-			return parameters;
+			return s_Parameters;
 		}
+
 		SymmetricSecurityKey key = new(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
-		parameters = new()
+		s_Parameters = new()
 		{
 			IssuerSigningKey = key,
 			ValidAudience = configuration["Jwt:Issuer"],
 			ValidIssuer = configuration["Jwt:Issuer"]
 		};
-		return parameters;
+
+		return s_Parameters;
 	}
 }

@@ -4,21 +4,22 @@ namespace LeaderboardBackend.Services;
 
 public class RunService : IRunService
 {
-	private readonly ApplicationContext ApplicationContext;
+	private readonly ApplicationContext _applicationContext;
 
 	public RunService(ApplicationContext applicationContext)
 	{
-		ApplicationContext = applicationContext;
+		_applicationContext = applicationContext;
 	}
 
 	public async Task<Run?> GetRun(Guid id)
 	{
-		return await ApplicationContext.Runs.FindAsync(id);
+		return await _applicationContext.Runs
+			.FindAsync(id);
 	}
 
 	public async Task CreateRun(Run run)
 	{
-		ApplicationContext.Runs.Add(run);
-		await ApplicationContext.SaveChangesAsync();
+		_applicationContext.Runs.Add(run);
+		await _applicationContext.SaveChangesAsync();
 	}
 }

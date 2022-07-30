@@ -16,9 +16,9 @@ public class PlayersMaxAttribute : ValidationAttribute
 
 		if (request.PlayersMax < request.PlayersMin)
 		{
-			return new ValidationResult(
-				$"playersMax ({request.PlayersMax}) must be at least equal to playersMin ({request.PlayersMin})."
-			);
+			return new(
+				$"playersMax ({request.PlayersMax}) must be at least equal to " +
+				$"playersMin ({request.PlayersMin}).");
 		}
 
 		return ValidationResult.Success;

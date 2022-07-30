@@ -13,16 +13,16 @@ namespace LeaderboardBackend.Test
 	[TestFixture]
 	internal class Runs
 	{
-		private static TestApiFactory Factory = null!;
-		private static TestApiClient ApiClient = null!;
-		private static string Jwt = null!;
+		private static TestApiClient s_ApiClient = null!;
+		private static TestApiFactory s_Factory = null!;
+		private static string s_Jwt = null!;
 
 		[SetUp]
 		public static async Task SetUp()
 		{
-			Factory = new TestApiFactory();
-			ApiClient = Factory.CreateTestApiClient();
-			Jwt = (await ApiClient.LoginAdminUser()).Token;
+			s_Factory = new TestApiFactory();
+			s_ApiClient = s_Factory.CreateTestApiClient();
+			s_Jwt = (await s_ApiClient.LoginAdminUser()).Token;
 		}
 
 		[Test]
@@ -41,7 +41,7 @@ namespace LeaderboardBackend.Test
 		{
 			Run createdRun = await CreateRun();
 
-			Participation createdParticipation = await ApiClient.Post<Participation>(
+			Participation createdParticipation = await s_ApiClient.Post<Participation>(
 				"api/participations",
 				new()
 				{
@@ -52,17 +52,15 @@ namespace LeaderboardBackend.Test
 						RunId = createdRun.Id,
 						RunnerId = TestInitCommonFields.Admin.Id
 					},
-					Jwt = Jwt
-				}
-			);
+					Jwt = s_Jwt
+				});
 
-			List<Participation> retrieved = await ApiClient.Get<List<Participation>>(
+			List<Participation> retrieved = await s_ApiClient.Get<List<Participation>>(
 				$"api/runs/{createdRun.Id}/participations",
 				new()
 				{
-					Jwt = Jwt
-				}
-			);
+					Jwt = s_Jwt
+				});
 
 			Assert.NotNull(retrieved);
 			Assert.AreEqual(createdParticipation.Id, retrieved[0].Id);
@@ -70,7 +68,7 @@ namespace LeaderboardBackend.Test
 
 		private static async Task<Run> CreateRun()
 		{
-			return await ApiClient.Post<Run>(
+			return await s_ApiClient.Post<Run>(
 				"/api/runs",
 				new()
 				{
@@ -80,21 +78,18 @@ namespace LeaderboardBackend.Test
 						Submitted = NodaTime.Instant.MaxValue,
 						Status = RunStatus.CREATED
 					},
-					Jwt = Jwt
-				}
-			);
+					Jwt = s_Jwt
+				});
 		}
 
 		private static async Task<Run> GetRun(Guid id)
 		{
-			return await ApiClient.Get<Run>(
+			return await s_ApiClient.Get<Run>(
 				$"/api/runs/{id}",
 				new()
 				{
-					Jwt = Jwt
-				}
-			);
+					Jwt = s_Jwt
+				});
 		}
-
 	}
 }

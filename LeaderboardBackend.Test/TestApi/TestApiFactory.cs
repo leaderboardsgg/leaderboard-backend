@@ -25,13 +25,16 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 			using ServiceProvider scope = services.BuildServiceProvider();
 			ApplicationContext dbContext = scope.GetRequiredService<ApplicationContext>();
 			dbContext.Database.EnsureDeleted();
+
 			if (dbContext.Database.IsInMemory())
 			{
 				dbContext.Database.EnsureCreated();
-			} else
+			}
+			else
 			{
 				dbContext.Database.Migrate();
 			}
+
 			Seed(dbContext);
 		});
 	}
@@ -42,7 +45,7 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 		return new TestApiClient(client);
 	}
 
-	private void Seed(ApplicationContext dbContext)
+	private static void Seed(ApplicationContext dbContext)
 	{
 
 		Leaderboard leaderboard = new()
@@ -60,8 +63,8 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 			Admin = true,
 		};
 
-		dbContext.Add<User>(admin);
-		dbContext.Add<Leaderboard>(leaderboard);
+		dbContext.Add(admin);
+		dbContext.Add(leaderboard);
 
 		dbContext.SaveChanges();
 	}

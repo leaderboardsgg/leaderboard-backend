@@ -2,14 +2,13 @@ namespace LeaderboardBackend.Jobs.Core;
 
 internal class ConsoleMenu<T>
 {
-	private string Header;
-
-	private List<T> Items;
+	private readonly string _header;
+	private readonly List<T> _items;
 
 	public ConsoleMenu(string header, List<T> items)
 	{
-		Items = items;
-		Header = header;
+		_items = items;
+		_header = header;
 	}
 
 	public T? Choose()
@@ -17,6 +16,7 @@ internal class ConsoleMenu<T>
 		int choice = 0;
 
 		ConsoleKeyInfo keyInfo;
+
 		do
 		{
 			WriteMenu(choice);
@@ -25,42 +25,51 @@ internal class ConsoleMenu<T>
 			switch (keyInfo.Key)
 			{
 				case ConsoleKey.Q:
-					return default;
+					{
+						return default;
+					}
 
 				case ConsoleKey.UpArrow:
-					choice++;
-					if (choice == Items.Count)
 					{
-						choice = 0;
+						choice++;
+						if (choice == _items.Count)
+						{
+							choice = 0;
+						}
+
+						break;
 					}
-					break;
 
 				case ConsoleKey.DownArrow:
-					choice--;
-					if (choice == -1)
 					{
-						choice = Items.Count - 1;
+						choice--;
+						if (choice == -1)
+						{
+							choice = _items.Count - 1;
+						}
+
+						break;
 					}
-					break;
 			}
 		} while (keyInfo.Key != ConsoleKey.Enter);
 
-		return Items.ElementAt(choice);
+		return _items.ElementAt(choice);
 	}
 
 	private void WriteMenu(int index)
 	{
 		Console.Clear();
 
-		Console.WriteLine($"{Header}\n\n" +
-		"Controls\n" +
-		"	up, down: change selection\n" +
-		"	enter:    choose item\n" +
-		"	q:        quit\n");
+		Console.WriteLine(
+			$"{_header}\n\n" +
+			$"Controls\n" +
+			$"    up, down: change selection\n" +
+			$"    enter:    choose item\n" +
+			$"    q:        quit\n");
 
-		for (int i = 0; i < Items.Count; i++)
+		for (int i = 0; i < _items.Count; i++)
 		{
-			T item = Items[i];
+			T item = _items[i];
 			char prefix = i == index ? '>' : ' ';
 			Console.WriteLine($"{prefix}{item?.ToString()}");
 		}

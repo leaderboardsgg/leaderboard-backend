@@ -3,10 +3,14 @@ using LeaderboardBackend.Models.Requests;
 
 namespace LeaderboardBackend.Models.Annotations;
 
-/// <summary>Asserts that Note is non-empty for non-approval judgements (Approved is false or null).</summary>
+/// <summary>
+///     Asserts that Note is non-empty for non-approval judgements (Approved is false or null).
+/// </summary>
 public class NoteAttribute : ValidationAttribute
 {
-	protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+	protected override ValidationResult? IsValid(
+		object? value,
+		ValidationContext validationContext)
 	{
 		string note = (string)value!;
 

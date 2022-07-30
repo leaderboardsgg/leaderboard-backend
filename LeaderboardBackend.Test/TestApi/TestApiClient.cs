@@ -28,70 +28,70 @@ internal sealed class RequestFailureException : Exception
 
 internal class TestApiClient
 {
-	private HttpClient Client;
+	private readonly HttpClient _client;
 
 	public TestApiClient(HttpClient client)
 	{
-		Client = client;
+		_client = client;
 	}
 
-	public async Task<Res> Get<Res>(
-		string endpoint,
-		HttpRequestInit init
-	) => await SendAndRead<Res>(endpoint, init with { Method = HttpMethod.Get });
+	public async Task<TResponse> Get<TResponse>(string endpoint, HttpRequestInit init)
+	{
+		return await SendAndRead<TResponse>(endpoint, init with { Method = HttpMethod.Get });
+	}
 
-	public async Task<Res> Post<Res>(
-		string endpoint,
-		HttpRequestInit init
-	) => await SendAndRead<Res>(endpoint, init with { Method = HttpMethod.Post });
+	public async Task<TResponse> Post<TResponse>(string endpoint, HttpRequestInit init)
+	{
+		return await SendAndRead<TResponse>(endpoint, init with { Method = HttpMethod.Post });
+	}
 
-	public async Task<HttpResponseMessage> Delete(
-		string endpoint,
-		HttpRequestInit init
-	) => await Send(endpoint, init with { Method = HttpMethod.Delete });
+	public async Task<HttpResponseMessage> Delete(string endpoint, HttpRequestInit init)
+	{
+		return await Send(endpoint, init with { Method = HttpMethod.Delete });
+	}
 
-	private async Task<Res> SendAndRead<Res>(
-		string endpoint,
-		HttpRequestInit init
-	)
+	private async Task<TResponse> SendAndRead<TResponse>(string endpoint, HttpRequestInit init)
 	{
 		HttpResponseMessage response = await Send(endpoint, init);
-		return await ReadFromResponseBody<Res>(response);
+		return await ReadFromResponseBody<TResponse>(response);
 	}
 
-	private async Task<HttpResponseMessage> Send(
-		string endpoint,
-		HttpRequestInit init
-	)
+	private async Task<HttpResponseMessage> Send(string endpoint, HttpRequestInit init)
 	{
-		HttpResponseMessage response = await Client.SendAsync(
+		HttpResponseMessage response = await _client.SendAsync(
 			CreateRequestMessage(
 				endpoint,
 				init,
 				TestInitCommonFields.JsonSerializerOptions
 			)
 		);
+
 		if (!response.IsSuccessStatusCode)
 		{
 			throw new RequestFailureException(response);
 		}
+
 		return response;
 	}
 
-	private async Task<T> ReadFromResponseBody<T>(HttpResponseMessage response)
+	private static async Task<T> ReadFromResponseBody<T>(HttpResponseMessage response)
 	{
 		string rawJson = await response.Content.ReadAsStringAsync();
-		T? obj = JsonSerializer.Deserialize<T>(rawJson, TestInitCommonFields.JsonSerializerOptions);
+		T? obj = JsonSerializer.Deserialize<T>(
+			rawJson,
+			TestInitCommonFields.JsonSerializerOptions);
+
 		Assert.NotNull(obj);
+
 		return obj!;
 	}
 
-	private HttpRequestMessage CreateRequestMessage(
+	private static HttpRequestMessage CreateRequestMessage(
 		string endpoint,
 		HttpRequestInit init,
-		JsonSerializerOptions options
-	) =>
-		new(init.Method, endpoint)
+		JsonSerializerOptions options)
+	{
+		return new(init.Method, endpoint)
 		{
 			Headers =
 			{
@@ -109,4 +109,5 @@ internal class TestApiClient
 				_ => default
 			}
 		};
+	}
 }

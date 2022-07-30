@@ -11,9 +11,9 @@ internal static class UserApiExtensions
 		this TestApiClient client,
 		string username,
 		string email,
-		string password
-	) =>
-		await client.Post<User>(
+		string password)
+	{
+		return await client.Post<User>(
 			"/api/users/register",
 			new()
 			{
@@ -26,13 +26,14 @@ internal static class UserApiExtensions
 				}
 			}
 		);
+	}
 
 	public static async Task<LoginResponse> LoginUser(
 		this TestApiClient apiClient,
 		string email,
-		string password
-	) =>
-		await apiClient.Post<LoginResponse>(
+		string password)
+	{
+		return await apiClient.Post<LoginResponse>(
 			"/api/users/login",
 			new()
 			{
@@ -43,11 +44,11 @@ internal static class UserApiExtensions
 				}
 			}
 		);
+	}
 
-	public static async Task<LoginResponse> LoginAdminUser(
-		this TestApiClient apiClient
-	) =>
-		await apiClient.Post<LoginResponse>(
+	public static async Task<LoginResponse> LoginAdminUser(this TestApiClient apiClient)
+	{
+		return await apiClient.Post<LoginResponse>(
 			"/api/users/login",
 			new()
 			{
@@ -58,4 +59,5 @@ internal static class UserApiExtensions
 				}
 			}
 		);
+	}
 }

@@ -6,29 +6,29 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LeaderboardBackend.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
 [Produces("application/json")]
+[Route("api/[controller]")]
 public class CategoriesController : ControllerBase
 {
-	private readonly ICategoryService CategoryService;
+	private readonly ICategoryService _categoryService;
 
-	public CategoriesController(
-		ICategoryService categoryService
-	)
+	public CategoriesController(ICategoryService categoryService)
 	{
-		CategoryService = categoryService;
+		_categoryService = categoryService;
 	}
 
-	/// <summary>Gets a Category from its ID.</summary>
+	/// <summary>
+	///     Gets a Category from its ID.
+	/// </summary>
 	/// <response code="200">The Category with the provided ID.</response>
 	/// <response code="404">If no Category can be found.</response>
-	[ApiConventionMethod(typeof(Conventions),
-						 nameof(Conventions.Get))]
+	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
 	[HttpGet("{id}")]
 	public async Task<ActionResult<Category>> GetCategory(long id)
 	{
-		Category? category = await CategoryService.GetCategory(id);
+		Category? category = await _categoryService.GetCategory(id);
+
 		if (category == null)
 		{
 			return NotFound();
@@ -38,13 +38,14 @@ public class CategoriesController : ControllerBase
 	}
 
 	// FIXME: Allow only mods to call this
-	/// <summary>Creates a new Category. Mod-only.</summary>
+	/// <summary>
+	///     Creates a new Category. Mod-only.
+	/// </summary>
 	/// <param name="body">A CreateCategoryRequest instance.</param>
 	/// <response code="201">The created Category.</response>
 	/// <response code="400">If the request is malformed.</response>
 	/// <response code="404">If a non-mod calls this.</response>
-	[ApiConventionMethod(typeof(Conventions),
-						 nameof(Conventions.Post))]
+	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
 	[HttpPost]
 	public async Task<ActionResult<Category>> CreateCategory([FromBody] CreateCategoryRequest body)
 	{
@@ -58,7 +59,8 @@ public class CategoriesController : ControllerBase
 			LeaderboardId = body.LeaderboardId,
 		};
 
-		await CategoryService.CreateCategory(category);
+		await _categoryService.CreateCategory(category);
+
 		return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
 	}
 }

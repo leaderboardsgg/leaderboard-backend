@@ -7,14 +7,15 @@ namespace LeaderboardBackend.Jobs.Core;
 
 internal static class Options
 {
-	public static string StringLine(string optionName, Func<string?, bool>? validator = null, string invalidMessage = "Invalid input.")
+	public static string StringLine(
+		string optionName,
+		Func<string?, bool>? validator = null,
+		string invalidMessage = "Invalid input.")
 	{
-		if (validator is null)
-		{
-			validator = s => !string.IsNullOrWhiteSpace(s);
-		}
+		validator ??= s => !string.IsNullOrWhiteSpace(s);
 
 		string? input = null;
+
 		do
 		{
 			Console.Write($"{optionName}: ");
@@ -32,6 +33,7 @@ internal static class Options
 	{
 		Console.Write($"{question} (y/[N]): ");
 		string? input = Console.ReadLine();
+
 		return input is not null && input.Trim() == "y";
 	}
 
@@ -41,6 +43,7 @@ internal static class Options
 
 		RegisterRequest request = new();
 		bool valid = false;
+
 		do
 		{
 			string username = StringLine("Username");
@@ -51,6 +54,7 @@ internal static class Options
 				validator: s => !string.IsNullOrWhiteSpace(s) && s == password,
 				invalidMessage: "Passwords must match"
 			);
+
 			request = new()
 			{
 				Username = username,
@@ -58,9 +62,11 @@ internal static class Options
 				Password = password,
 				PasswordConfirm = passwordConfirm,
 			};
+
 			List<ValidationResult> errors = new();
 			ValidationContext ctx = new(request);
 			valid = Validator.TryValidateObject(request, ctx, errors, validateAllProperties: true);
+
 			if (errors.Count > 0)
 			{
 				Console.WriteLine($"Entity was invalid: {string.Join('/', errors.Select(r => r.ErrorMessage))}");

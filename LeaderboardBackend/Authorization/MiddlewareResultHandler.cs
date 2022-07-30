@@ -6,8 +6,7 @@ namespace LeaderboardBackend.Authorization;
 
 public class MiddlewareResultHandler : IAuthorizationMiddlewareResultHandler
 {
-	private readonly AuthorizationMiddlewareResultHandler DefaultHandler =
-		 new();
+	private readonly AuthorizationMiddlewareResultHandler _defaultHandler = new();
 
 	public async Task HandleAsync(
 		RequestDelegate requestDelegate,
@@ -23,7 +22,10 @@ public class MiddlewareResultHandler : IAuthorizationMiddlewareResultHandler
 
 		// Fallback to the default implementation.
 		// This can mean calling the controller action itself.
-		await DefaultHandler.HandleAsync(requestDelegate, httpContext, authorizationPolicy,
-							   policyAuthorizationResult);
+		await _defaultHandler.HandleAsync(
+			requestDelegate,
+			httpContext,
+			authorizationPolicy,
+			policyAuthorizationResult);
 	}
 }

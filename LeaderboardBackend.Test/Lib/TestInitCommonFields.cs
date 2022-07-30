@@ -6,13 +6,13 @@ namespace LeaderboardBackend.Test.Lib;
 
 internal record TestInitCommonFields
 {
-	public static JsonSerializerOptions JsonSerializerOptions = new()
+	public static JsonSerializerOptions JsonSerializerOptions { get; } = new()
 	{
 		ReferenceHandler = ReferenceHandler.IgnoreCycles,
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 	};
 
-	public static User Admin = new()
+	public static User Admin { get; } = new()
 	{
 		Id = System.Guid.NewGuid(),
 		Username = "AyyLmaoGaming",

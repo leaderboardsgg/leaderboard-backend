@@ -6,27 +6,39 @@ namespace LeaderboardBackend.Models.Entities;
 
 public class Ban
 {
-	/// <summary>Generated on creation.</summary>
+	/// <summary>
+	///     Generated on creation.
+	/// </summary>
 	public long Id { get; set; }
 
-	/// <summary>Can't be <code>null</code>.</summary>
+	/// <summary>
+	///     Can't be <code>null</code>.
+	/// </summary>
 	[Required]
 	public string Reason { get; set; } = null!;
 
-	/// <summary>Generated on creation.</summary>
+	/// <summary>
+	///     Generated on creation.
+	/// </summary>
 	[Required]
 	public Instant CreatedAt { get; set; }
 
-	/// <summary>Timestamp of when the user was unbanned.</summary>
+	/// <summary>
+	///     Timestamp of when the user was unbanned.
+	/// </summary>
 	public Instant? DeletedAt { get; set; }
 
-	/// <summary>ID of User who set the Ban. Must be either an admin or a mod.</summary>
+	/// <summary>
+	///     ID of User who set the Ban. Must be either an admin or a mod.
+	/// </summary>
 	public Guid? BanningUserId { get; set; }
 
 	[JsonIgnore]
 	public User? BanningUser { get; set; }
 
-	/// <summary>ID of User who received the Ban.</summary>
+	/// <summary>
+	///     ID of User who received the Ban.
+	/// </summary>
 	[Required]
 	public Guid BannedUserId { get; set; }
 
@@ -34,7 +46,8 @@ public class Ban
 	public User? BannedUser { get; set; }
 
 	/// <summary>
-	/// ID of Leaderboard this Ban belongs to. If <code>null</code>, then this Ban is site-wide.
+	///     ID of Leaderboard this Ban belongs to. If <code>null</code>, then this Ban is
+	///     site-wide.
 	/// </summary>
 	public long? LeaderboardId { get; set; }
 

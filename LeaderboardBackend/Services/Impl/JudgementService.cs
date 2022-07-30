@@ -4,21 +4,22 @@ namespace LeaderboardBackend.Services;
 
 public class JudgementService : IJudgementService
 {
-	private readonly ApplicationContext ApplicationContext;
+	private readonly ApplicationContext _applicationContext;
 
 	public JudgementService(ApplicationContext applicationContext)
 	{
-		ApplicationContext = applicationContext;
+		_applicationContext = applicationContext;
 	}
 
 	public async Task<Judgement?> GetJudgement(long id)
 	{
-		return await ApplicationContext.Judgements.FindAsync(id);
+		return await _applicationContext.Judgements
+			.FindAsync(id);
 	}
 
 	public async Task CreateJudgement(Judgement judgement)
 	{
-		ApplicationContext.Judgements.Add(judgement);
-		await ApplicationContext.SaveChangesAsync();
+		_applicationContext.Judgements.Add(judgement);
+		await _applicationContext.SaveChangesAsync();
 	}
 }
