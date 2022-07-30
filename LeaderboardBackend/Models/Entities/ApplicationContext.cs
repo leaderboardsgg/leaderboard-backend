@@ -19,11 +19,11 @@ public class ApplicationContext : DbContext
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		modelBuilder.Entity<Judgement>()
-			.Property(j => j.CreatedAt)
+			.Property(judgement => judgement.CreatedAt)
 			.HasDefaultValueSql("now()");
 
 		modelBuilder.Entity<Ban>()
-			.Property(b => b.CreatedAt)
+			.Property(ban => ban.CreatedAt)
 			.HasDefaultValueSql("now()");
 	}
 }
