@@ -66,6 +66,7 @@ internal class Leaderboards
 	public static async Task CreateLeaderboards_GetLeaderboards()
 	{
 		HashSet<Leaderboard> createdLeaderboards = new();
+
 		for (int i = 0; i < 5; i++)
 		{
 			createdLeaderboards.Add(

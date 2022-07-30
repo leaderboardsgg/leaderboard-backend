@@ -33,14 +33,12 @@ internal class Bans
 		s_NormalUser = await s_ApiClient.RegisterUser(
 			"normal",
 			"normal@email.com",
-			"Passw0rd!"
-		);
+			"Passw0rd!");
 
 		s_ModUser = await s_ApiClient.RegisterUser(
 			"mod",
 			"mod@email.com",
-			"Passw0rd!"
-		);
+			"Passw0rd!");
 
 		s_DefaultLeaderboard = await s_ApiClient.Post<Leaderboard>(
 			"/api/leaderboards",
@@ -52,8 +50,7 @@ internal class Bans
 					Slug = Generators.GenerateRandomString(),
 				},
 				Jwt = s_AdminJwt,
-			}
-		);
+			});
 
 		await s_ApiClient.Post<Modship>(
 			"/api/modships",
@@ -65,9 +62,7 @@ internal class Bans
 					UserId = s_ModUser.Id,
 				},
 				Jwt = s_AdminJwt,
-			}
-
-		);
+			});
 
 		s_ModJwt = (await s_ApiClient.LoginUser("mod@email.com", "Passw0rd!")).Token;
 	}
@@ -161,8 +156,7 @@ internal class Bans
 					PasswordConfirm = password
 				},
 				Jwt = s_AdminJwt
-			}
-		);
+			});
 	}
 
 	private static async Task<Ban> CreateSiteBan(Guid userId, string reason)
@@ -177,8 +171,7 @@ internal class Bans
 					Reason = reason
 				},
 				Jwt = s_AdminJwt
-			}
-		);
+			});
 	}
 
 	private static async Task<Ban> CreateLeaderboardBan(Guid userId, string reason)
@@ -194,8 +187,7 @@ internal class Bans
 					LeaderboardId = s_DefaultLeaderboard.Id
 				},
 				Jwt = s_ModJwt
-			}
-		);
+			});
 	}
 
 	private static async Task<Ban> GetBan(long id)
@@ -205,8 +197,7 @@ internal class Bans
 			new()
 			{
 				Jwt = s_AdminJwt
-			}
-		);
+			});
 	}
 
 	private static async Task<HttpResponseMessage> DeleteBan(long id)
@@ -216,8 +207,7 @@ internal class Bans
 			new()
 			{
 				Jwt = s_AdminJwt
-			}
-		);
+			});
 	}
 
 	private static async Task<HttpResponseMessage> DeleteLeaderboardBan(long id, long leaderboardId)
@@ -227,7 +217,6 @@ internal class Bans
 			new()
 			{
 				Jwt = s_AdminJwt
-			}
-		);
+			});
 	}
 }
