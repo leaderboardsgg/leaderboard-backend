@@ -27,16 +27,18 @@ public class ModshipsController : ControllerBase
 	}
 
 	/// <summary>
-	///     Gets a Modship.
+	///     Gets a Modship by its ID.
 	/// </summary>
-	/// <param name="id">The mod User's ID.</param>
-	/// <response code="200">The Modship.</response>
-	/// <response code="404">If no Modship can be found.</response>
+	/// <param name="modshipId">
+	///     The ID of the *Moderator* (`User`) which should be retrieved.
+	/// </param>
+	/// <response code="200">The `Modship` was found and returned successfully.</response>
+	/// <response code="404">No `User` with the requested ID could be found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
 	[HttpGet("{id}")]
-	public async Task<ActionResult<Modship>> GetModship(Guid id)
+	public async Task<ActionResult<Modship>> GetModship(Guid modshipId)
 	{
-		Modship? modship = await _modshipService.GetModship(id);
+		Modship? modship = await _modshipService.GetModship(modshipId);
 
 		if (modship is null)
 		{
@@ -47,19 +49,26 @@ public class ModshipsController : ControllerBase
 	}
 
 	/// <summary>
-	///     Makes a User a Mod for a Leaderboard. Admin-only.
+	///     Promotes a User to Moderator for a Leaderboard.
+	///     This request is restricted to Administrators.
 	/// </summary>
-	/// <param name="body">A CreateModshipRequest instance.</param>
-	/// <response code="201">An object containing the Modship ID.</response>
-	/// <response code="400">If the request is malformed.</response>
-	/// <response code="404">If a non-admin calls this.</response>
+	/// <param name="request">
+	///     The `CreateModshipRequest` instance from which to perform the promotion.
+	/// </param>
+	/// <response code="201">
+	///     The `User` was promoted successfully. The `Modship` is returned.
+	/// </response>
+	/// <response code="400">The request was malformed.</response>
+	/// <response code="404">
+	///     The requesting `User` is unauthorized to promote other `User`s.
+	/// </response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
 	[Authorize(Policy = UserTypes.ADMIN)]
 	[HttpPost]
-	public async Task<ActionResult> CreateModship([FromBody] CreateModshipRequest body)
+	public async Task<ActionResult> CreateModship([FromBody] CreateModshipRequest request)
 	{
-		User? user = await _userService.GetUserById(body.UserId);
-		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(body.LeaderboardId);
+		User? user = await _userService.GetUserById(request.UserId);
+		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(request.LeaderboardId);
 
 		if (user is null || leaderboard is null)
 		{
@@ -68,8 +77,8 @@ public class ModshipsController : ControllerBase
 
 		Modship modship = new()
 		{
-			LeaderboardId = body.LeaderboardId,
-			UserId = body.UserId,
+			LeaderboardId = request.LeaderboardId,
+			UserId = request.UserId,
 			User = user,
 			Leaderboard = leaderboard
 		};
@@ -80,19 +89,25 @@ public class ModshipsController : ControllerBase
 	}
 
 	/// <summary>
-	///     Removes a User as a Mod from a Leaderboard. Admin-only.
+	///     Demotes a Moderator to User for a Leaderboard.
+	///     This request is restricted to Administrators.
 	/// </summary>
-	/// <param name="body">A RemoveModshipRequest</param>
-	/// <response code="204">Request was successfull.</response>
-	/// <response code="400">If the request is malformed.</response>
-	/// <response code="404">The User, Leaderboard or Modship was not found.</response>
+	/// <param name="request">
+	///     The `RemoveModshipRequest` instance from which to perform the demotion.
+	/// </param>
+	/// <response code="204">The `User` was demoted successfully.</response>
+	/// <response code="400">The request was malformed.</response>
+	/// <response code="404">
+	///     No `User`, `Leaderboard`, or `Modship` with the requested IDs could be found, or the
+	///     requesting `User` is unauthorized to demote other `User`s.
+	/// </response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Delete))]
 	[Authorize(Policy = UserTypes.ADMIN)]
 	[HttpDelete]
-	public async Task<ActionResult> DeleteMod([FromBody] RemoveModshipRequest body)
+	public async Task<ActionResult> DeleteMod([FromBody] RemoveModshipRequest request)
 	{
-		User? user = await _userService.GetUserById(body.UserId);
-		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(body.LeaderboardId);
+		User? user = await _userService.GetUserById(request.UserId);
+		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(request.LeaderboardId);
 
 		if (user is null || leaderboard is null)
 		{

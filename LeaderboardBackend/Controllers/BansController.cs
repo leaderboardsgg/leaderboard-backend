@@ -31,11 +31,15 @@ public class BansController : ControllerBase
 	}
 
 	/// <summary>
-	///     Get bans by leaderboard ID
+	///     Gets all Bans associated with a Leaderboard ID.
 	/// </summary>
-	/// <param name="leaderboardId">The leaderboard ID.</param>
-	/// <response code="200">A list of bans. Can be an empty array.</response>
-	/// <response code="404">No bans found for the Leaderboard.</response>
+	/// <param name="leaderboardId">
+	///     The ID of the `Leaderboard` whose `Ban`s should be listed.
+	/// </param>
+	/// <response code="200">
+	///     The list of `Ban`s was retrieved successfully. The result can be an empty collection.
+	/// </response>
+	/// <response code="404">No `Leaderboard` with the requested ID could be found.</response>
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
 	[HttpGet("leaderboard/{leaderboardId:long}")]
@@ -52,11 +56,13 @@ public class BansController : ControllerBase
 	}
 
 	/// <summary>
-	///     Get bans by user ID.
+	///     Gets all Bans associated with a User ID.
 	/// </summary>
-	/// <param name="bannedUserId">The user ID.</param>
-	/// <response code="200">A list of bans. Can be an empty array.</response>
-	/// <response code="404">No bans found for the User.</response>
+	/// <param name="bannedUserId">The ID of the `User` whose `Ban`s should be listed.</param>
+	/// <response code="200">
+	///     The list of `Ban`s was retrieved successfully. The result can be an empty collection.
+	/// </response>
+	/// <response code="404">No `User` with the requested ID could be found.</response>
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
 	[HttpGet("leaderboard/{bannedUserId:Guid}")]
@@ -73,17 +79,17 @@ public class BansController : ControllerBase
 	}
 
 	/// <summary>
-	///     Get a Ban from its ID.
+	///     Gets a Ban by its ID.
 	/// </summary>
-	/// <param name="id">The Ban ID.</param>
-	/// <response code="200">The found Ban.</response>
-	/// <response code="404">No Ban can be found.</response>
+	/// <param name="banId">The ID of the `Ban` which should be retrieved.</param>
+	/// <response code="200">The `Ban` was found and returned successfully.</response>
+	/// <response code="404">No `Ban` with the requested ID could be found.</response>
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
 	[HttpGet("{id:long}")]
-	public async Task<ActionResult<Ban>> GetBan(long id)
+	public async Task<ActionResult<Ban>> GetBan(long banId)
 	{
-		Ban? ban = await _banService.GetBanById(id);
+		Ban? ban = await _banService.GetBanById(banId);
 
 		if (ban == null)
 		{
@@ -94,18 +100,25 @@ public class BansController : ControllerBase
 	}
 
 	/// <summary>
-	///     Creates a side-wide ban. Admin-only.
+	///     Issues a site-scoped Ban.
+	///     This request is restricted to Administrators.
 	/// </summary>
-	/// <param name="body">A CreateSiteBanRequest instance.</param>
-	/// <response code="201">The created Ban.</response>
-	/// <response code="400">The request is malformed.</response>
-	/// <response code="401">A non-admin calls this.</response>
-	/// <response code="403">The banned user is also an admin.</response>
-	/// <response code="404">The banned user is not found.</response>
+	/// <param name="request">
+	///     The `CreateSiteBanRequest` instance from which to create the `Ban`.
+	/// </param>
+	/// <response code="201">The `Ban` was created and returned successfully.</response>
+	/// <response code="400">The request was malformed.</response>
+	/// <response code="401">
+	///     The requesting `User` is unauthorized to issue site-scoped `Ban`s.
+	/// </response>
+	/// <response code="403">
+	///     The `User` to be banned was also an Administrator. This operation is forbidden.
+	/// </response>
+	/// <response code="404">The `User` to be banned was not found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
 	[Authorize(Policy = UserTypes.ADMIN)]
 	[HttpPost]
-	public async Task<ActionResult<Ban>> CreateSiteBan([FromBody] CreateSiteBanRequest body)
+	public async Task<ActionResult<Ban>> CreateSiteBan([FromBody] CreateSiteBanRequest request)
 	{
 		Guid? adminId = _authService.GetUserIdFromClaims(HttpContext.User);
 
@@ -114,7 +127,7 @@ public class BansController : ControllerBase
 			return Forbid();
 		}
 
-		User? bannedUser = await _userService.GetUserById(body.UserId);
+		User? bannedUser = await _userService.GetUserById(request.UserId);
 
 		if (bannedUser is null)
 		{
@@ -128,7 +141,7 @@ public class BansController : ControllerBase
 
 		Ban ban = new()
 		{
-			Reason = body.Reason,
+			Reason = request.Reason,
 			BanningUserId = adminId,
 			BannedUserId = bannedUser.Id,
 		};
@@ -139,18 +152,26 @@ public class BansController : ControllerBase
 	}
 
 	/// <summary>
-	///     Creates a leaderboard-wide ban. Mod-only.
+	///     Issues a Leaderboard-scoped Ban.
+	///     This request is restricted to Moderators and Administrators.
 	/// </summary>
-	/// <param name="body">A CreateLeaderboardBanRequest instance.</param>
-	/// <response code="201">The created Ban.</response>
-	/// <response code="400">The request is malformed.</response>
-	/// <response code="401">A non-admin or mod calls this.</response>
-	/// <response code="403">The banned user is an admin or a mod.</response>
-	/// <response code="404">The banned user is not found.</response>
+	/// <param name="request">
+	///     The `CreateLeaderboardBanRequest` instance from which to create the `Ban`.
+	/// </param>
+	/// <response code="201">The `Ban` was created and returned successfully.</response>
+	/// <response code="400">The request was malformed.</response>
+	/// <response code="401">
+	///     The requesting `User` is unauthorized to issue `Leaderboard`-scoped `Ban`s.
+	/// </response>
+	/// <response code="403">
+	///     The `User` to be banned was also an Administrator. This operation is forbidden.
+	/// </response>
+	/// <response code="404">The `User` to be banned was not found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
 	[Authorize(Policy = UserTypes.MOD)]
 	[HttpPost("leaderboard")]
-	public async Task<ActionResult<Ban>> CreateLeaderboardBan([FromBody] CreateLeaderboardBanRequest body)
+	public async Task<ActionResult<Ban>> CreateLeaderboardBan(
+		[FromBody] CreateLeaderboardBanRequest request)
 	{
 		Guid? modId = _authService.GetUserIdFromClaims(HttpContext.User);
 
@@ -159,8 +180,8 @@ public class BansController : ControllerBase
 			return Forbid();
 		}
 
-		User? bannedUser = await _userService.GetUserById(body.UserId);
-		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(body.LeaderboardId);
+		User? bannedUser = await _userService.GetUserById(request.UserId);
+		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(request.LeaderboardId);
 
 		if (bannedUser is null)
 		{
@@ -179,7 +200,7 @@ public class BansController : ControllerBase
 
 		Ban ban = new()
 		{
-			Reason = body.Reason,
+			Reason = request.Reason,
 			BanningUserId = modId,
 			BannedUserId = bannedUser.Id,
 			LeaderboardId = leaderboard.Id
@@ -191,53 +212,55 @@ public class BansController : ControllerBase
 	}
 
 	/// <summary>
-	///     Removes a ban, including site-wide bans. Admin-only.
+	///     Lifts a Leaderboard-scoped or site-scoped Ban.
+	///     This request is restricted to Administrators.
 	/// </summary>
-	/// <param name="id">The ban ID.</param>
-	/// <response code="204">The ban was successfully deleted.</response>
-	/// <response code="401">The user isn't logged in.</response>
-	/// <response code="403">The user is a non-admin.</response>
-	/// <response code="404">The ban could not be found.</response>
+	/// <param name="banId">The ID of the `Ban` to remove.</param>
+	/// <response code="204">The `Ban` was removed successfully.</response>
+	/// <response code="401">The requesting `User` is not logged-in.</response>
+	/// <response code="403">The requesting `User` is unauthorized to lift `Ban`s.</response>
+	/// <response code="404">No `Ban` with the requested ID could be found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Delete))]
 	[Authorize(Policy = UserTypes.ADMIN)]
 	[HttpDelete("{id}")]
-	public async Task<ActionResult> DeleteBan(long id)
+	public async Task<ActionResult> DeleteBan(long banId)
 	{
 		try
 		{
-			await _banService.DeleteBan(id);
+			await _banService.DeleteBan(banId);
 
 			return NoContent();
 		}
 		catch (ArgumentNullException)
 		{
-			return NotFound($"Ban not found: {id}");
+			return NotFound($"Ban not found: {banId}");
 		}
 	}
 
 	/// <summary>
-	///     Removes a leaderboard-wide ban. Mod-only.
+	///     Lift a Leaderboard-scoped Ban.
+	///     This request is restricted to Moderators and Administrators.
 	/// </summary>
-	/// <param name="id">The ban ID.</param>
-	/// <param name="leaderboardId">The leaderboard ID.</param>
-	/// <response code="204">The ban was successfully deleted.</response>
-	/// <response code="401">The user isn't logged in.</response>
-	/// <response code="403">The user is a non-admin, or the ban is site-wide.</response>
-	/// <response code="404">The ban could not be found.</response>
+	/// <param name="banId">The ID of the `Ban` to remove.</param>
+	/// <param name="leaderboardId">The ID of the `Leaderboard` the `Ban` is scoped to.</param>
+	/// <response code="204">The `Ban` was removed successfully.</response>
+	/// <response code="401">The requesting `User` is not logged-in.</response>
+	/// <response code="403">The requesting `User` is unauthorized to lift `Ban`s.</response>
+	/// <response code="404">No `Ban` with the requested ID could be found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Delete))]
 	[Authorize(Policy = UserTypes.MOD)]
 	[HttpDelete("{id}/leaderboards/{leaderboardId}")]
-	public async Task<ActionResult> DeleteLeaderboardBan(long id, long leaderboardId)
+	public async Task<ActionResult> DeleteLeaderboardBan(long banId, long leaderboardId)
 	{
 		try
 		{
-			await _banService.DeleteLeaderboardBan(id, leaderboardId);
+			await _banService.DeleteLeaderboardBan(banId, leaderboardId);
 
 			return NoContent();
 		}
 		catch (ArgumentNullException)
 		{
-			return NotFound($"Ban not found: {id}");
+			return NotFound($"Ban not found: {banId}");
 		}
 	}
 }

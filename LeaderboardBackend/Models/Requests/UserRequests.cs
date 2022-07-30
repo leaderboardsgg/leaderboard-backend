@@ -4,29 +4,29 @@ using LeaderboardBackend.Models.Annotations;
 namespace LeaderboardBackend.Models.Requests;
 
 /// <summary>
-///     Request object sent when logging a User in.
+///     This request object is sent when a `User` is attempting to log in.
 /// </summary>
 public record LoginRequest
 {
 	/// <summary>
-	///     User's email.
+	///     The `User`'s email address.
 	/// </summary>
-	/// <example>ayylmao.gaming@alg.gg</example>
+	/// <example>john.doe@example.com</example>
 	[EmailAddress]
 	[Required]
 	public string Email { get; set; } = null!;
 
 	/// <summary>
-	///     User's password. It:
+	///     The `User`'s password. It:
 	///     <ul>
-	///       <li>must be 8-80 characters long, inclusive;</li>
+	///       <li>supports Unicode;</li>
+	///       <li>must be [8, 80] in length;</li>
 	///       <li>must have at least:</li>
 	///         <ul>
-	///           <li>an uppercase letter;</li>
-	///           <li>a lowercase letter; and</li>
-	///           <li>a number.</li>
+	///           <li>one uppercase letter;</li>
+	///           <li>one lowercase letter; and</li>
+	///           <li>one number.</li>
 	///         </ul>
-	///       <li>supports Unicode.</li>
 	///     </ul>
 	/// </summary>
 	/// <example>P4ssword</example>
@@ -36,61 +36,62 @@ public record LoginRequest
 }
 
 /// <summary>
-///     Response object received on a successful login.
+///     This response object is received upon a successful log-in request.
 /// </summary>
 public record LoginResponse
 {
 	/// <summary>
-	///     A JWT to authenticate and authorize future queries with.
+	///     A JSON Web Token to authenticate and authorize queries with.
 	/// </summary>
 	[Required]
 	public string Token { get; set; } = null!;
 }
 
 /// <summary>
-///     Request object sent when registering a User.
+///     This request object is sent when a `User` is attempting to register.
 /// </summary>
 public record RegisterRequest
 {
 	/// <summary>
-	///     The username to register with. It must be:
+	///     The username of the `User`. It:
+	///     <ul>
+	///       <li>must be [2, 25] in length;</li>
+	///       <li>must be made up of letters sandwiching zero or one of:</li>
 	///       <ul>
-	///         <li>2-25 characters long, inclusive;</li>
-	///         <li>made up of letters sandwiching zero or one of:</li>
-	///         <ul>
-	///           <li>hyphen;</li>
-	///           <li>underscore; or</li>
-	///           <li>apostrophe</li>
-	///         </ul>
+	///         <li>hyphen;</li>
+	///         <li>underscore; or</li>
+	///         <li>apostrophe</li>
 	///       </ul>
-	///     Usernames are also saved with casing, but matched without. This means you won't
-	///     be able to register as "Cool" if someone already called "cool" exists.
+	///     </ul>
+	///     Usernames are saved case-sensitively, but matcehd against case-insensitively.
+	///     A `User` may not register with the name 'Cool' when another `User` with the name 'cool'
+	///     exists.
 	/// </summary>
-	/// <example>Ayy-l'maoGaming</example>
+	/// <example>J'on-Doe</example>
 	[RegularExpression("(?:[a-zA-Z0-9][-_']?){1,12}[a-zA-Z0-9]",
 		ErrorMessage = "Your name must be between 2 and 25 characters, made up of letters sandwiching zero or one hyphen, underscore, or apostrophe.")]
 	[Required]
 	public string Username { get; set; } = null!;
 
 	/// <summary>
-	///     User's email.
+	///     The `User`'s email address.
 	/// </summary>
-	/// <example>ayylmao.gaming@alg.gg</example>
+	/// <example>john.doe@example.com</example>
 	[EmailAddress]
 	[Required]
 	public string Email { get; set; } = null!;
 
 	/// <summary>
-	///     User's password. It:
+	///     The `User`'s password. It:
 	///     <ul>
-	///       <li>must be 8-80 characters long, inclusive;</li>
+	///       <li>supports Unicode;</li>
+	///       <li>must be [8, 80] in length;</li>
 	///       <li>must have at least:</li>
 	///         <ul>
-	///           <li>an uppercase letter;</li>
-	///           <li>a lowercase letter; and</li>
-	///           <li>a number.</li>
+	///           <li>one uppercase letter;</li>
+	///           <li>one lowercase letter; and</li>
+	///           <li>one number.</li>
 	///         </ul>
-	///       <li>supports Unicode.</li>
 	///     </ul>
 	/// </summary>
 	/// <example>P4ssword</example>
@@ -99,9 +100,8 @@ public record RegisterRequest
 	public string Password { get; set; } = null!;
 
 	/// <summary>
-	///     Password confirmation. It must match <code>password</code>.
+	///     The password confirmation. This value must match `Password`.
 	/// </summary>
-	/// <example>P4ssword</example>
 	[Compare("Password", ErrorMessage = "The password confirmation must match your password.")]
 	[Required]
 	public string PasswordConfirm { get; set; } = null!;

@@ -19,15 +19,16 @@ public class CategoriesController : ControllerBase
 	}
 
 	/// <summary>
-	///     Gets a Category from its ID.
+	///     Gets a Category by its ID.
 	/// </summary>
-	/// <response code="200">The Category with the provided ID.</response>
-	/// <response code="404">If no Category can be found.</response>
+	/// <param name="categoryId">The ID of the `Category` which should be retrieved.</param>
+	/// <response code="200">The `Category` was found and returned successfully.</response>
+	/// <response code="404">No `Category` with the requested ID could be found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
 	[HttpGet("{id}")]
-	public async Task<ActionResult<Category>> GetCategory(long id)
+	public async Task<ActionResult<Category>> GetCategory(long categoryId)
 	{
-		Category? category = await _categoryService.GetCategory(id);
+		Category? category = await _categoryService.GetCategory(categoryId);
 
 		if (category == null)
 		{
@@ -37,26 +38,33 @@ public class CategoriesController : ControllerBase
 		return Ok(category);
 	}
 
-	// FIXME: Allow only mods to call this
 	/// <summary>
-	///     Creates a new Category. Mod-only.
+	///     Creates a new Category.
+	///     This request is restricted to Moderators.
 	/// </summary>
-	/// <param name="body">A CreateCategoryRequest instance.</param>
-	/// <response code="201">The created Category.</response>
-	/// <response code="400">If the request is malformed.</response>
-	/// <response code="404">If a non-mod calls this.</response>
+	/// <param name="request">
+	///     The `CreateCategoryRequest` instance from which to create the `Category`.
+	/// </param>
+	/// <response code="201">The `Category` was created and returned successfully.</response>
+	/// <response code="400">The request was malformed.</response>
+	/// <response code="404">
+	///     The requesting `User` is unauthorized to create a `Category`.
+	/// </response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
 	[HttpPost]
-	public async Task<ActionResult<Category>> CreateCategory([FromBody] CreateCategoryRequest body)
+	public async Task<ActionResult<Category>> CreateCategory(
+		[FromBody] CreateCategoryRequest request)
 	{
+		// FIXME: Allow only mods to call this
+
 		Category category = new()
 		{
-			Name = body.Name,
-			Slug = body.Slug,
-			Rules = body.Rules,
-			PlayersMin = body.PlayersMin ?? 1,
-			PlayersMax = body.PlayersMax ?? body.PlayersMin ?? 1,
-			LeaderboardId = body.LeaderboardId,
+			Name = request.Name,
+			Slug = request.Slug,
+			Rules = request.Rules,
+			PlayersMin = request.PlayersMin ?? 1,
+			PlayersMax = request.PlayersMax ?? request.PlayersMin ?? 1,
+			LeaderboardId = request.LeaderboardId,
 		};
 
 		await _categoryService.CreateCategory(category);

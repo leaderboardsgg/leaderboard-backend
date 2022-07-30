@@ -22,11 +22,11 @@ public class UsersController : ControllerBase
 	}
 
 	/// <summary>
-	///     Gets a User by ID.
+	///     Gets a User by their ID.
 	/// </summary>
-	/// <param name="id">The User's ID. It must be a GUID.</param>
-	/// <response code="200">The User with the provided ID.</response>
-	/// <response code="404">If no User is found with the provided ID.</response>
+	/// <param name="id">The ID of the `User` which should be retrieved.</param>
+	/// <response code="200">The `User` was found and returned successfully.</response>
+	/// <response code="404">No `User` with the requested ID could be found.</response>
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
 	[HttpGet("{id:guid}")]
@@ -46,27 +46,33 @@ public class UsersController : ControllerBase
 	}
 
 	/// <summary>
-	///     Registers a new user.
+	///     Registers a new User.
 	/// </summary>
-	/// <param name="body">A RegisterRequest instance.</param>
-	/// <response code="201">The created User object.</response>
-	/// <response code="400">If the passwords don't match, or if the request is otherwise malformed.</response>
-	/// <response code="409">If login details can't be found.</response>
+	/// <param name="request">
+	///     The `RegisterRequest` instance from which register the `User`.
+	/// </param>
+	/// <response code="201">The `User` was registered and returned successfully.</response>
+	/// <response code="400">
+	///     The passwords did not match or the request was otherwise malformed.
+	/// </response>
+	/// <response code="409">
+	///     A `User` with the specified username or email already exists.
+	/// </response>
 	[AllowAnonymous]
 	[HttpPost("register")]
 	[ProducesResponseType(StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status409Conflict)]
-	public async Task<ActionResult<User>> Register([FromBody] RegisterRequest body)
+	public async Task<ActionResult<User>> Register([FromBody] RegisterRequest request)
 	{
-		if (await _userService.GetUserByEmail(body.Email) is not null)
+		if (await _userService.GetUserByEmail(request.Email) is not null)
 		{
 			// FIXME: Do a redirect to the login page.
 			// ref: https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/actions?view=aspnetcore-6.0#1-methods-resulting-in-an-empty-response-body
 			return Conflict("A user already exists with this email.");
 		}
 
-		if (await _userService.GetUserByName(body.Username) is not null)
+		if (await _userService.GetUserByName(request.Username) is not null)
 		{
 			// FIXME: Do a redirect to the login page.
 			// ref: https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/actions?view=aspnetcore-6.0#1-methods-resulting-in-an-empty-response-body
@@ -75,9 +81,9 @@ public class UsersController : ControllerBase
 
 		User newUser = new()
 		{
-			Username = body.Username,
-			Email = body.Email,
-			Password = BCryptNet.EnhancedHashPassword(body.Password)
+			Username = request.Username,
+			Email = request.Email,
+			Password = BCryptNet.EnhancedHashPassword(request.Password)
 		};
 
 		await _userService.CreateUser(newUser);
@@ -86,29 +92,33 @@ public class UsersController : ControllerBase
 	}
 
 	/// <summary>
-	///     Logs a new user in.
+	///     Logs a User in.
 	/// </summary>
-	/// <param name="body">A LoginRequest instance.</param>
-	/// <response code="200">A <code>LoginResponse</code> object.</response>
-	/// <response code="400">If the request is malformed.</response>
-	/// <response code="401">If the wrong details were passed.</response>
-	/// <response code="404">If a User can't be found.</response>
+	/// <param name="request">
+	///     The `LoginRequest` instance from which to perform the login.
+	/// </param>
+	/// <response code="200">
+	///     The `User` was logged in successfully. A `LoginResponse` is returned.
+	/// </response>
+	/// <response code="400">The request was malformed.</response>
+	/// <response code="401">The password passed was incorrect.</response>
+	/// <response code="404">No `User` with the requested details could be found.</response>
 	[AllowAnonymous]
 	[HttpPost("login")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest body)
+	public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
 	{
-		User? user = await _userService.GetUserByEmail(body.Email);
+		User? user = await _userService.GetUserByEmail(request.Email);
 
 		if (user is null)
 		{
 			return NotFound();
 		}
 
-		if (!BCryptNet.EnhancedVerify(body.Password, user.Password))
+		if (!BCryptNet.EnhancedVerify(request.Password, user.Password))
 		{
 			return Unauthorized();
 		}
@@ -119,14 +129,15 @@ public class UsersController : ControllerBase
 	}
 
 	/// <summary>
-	///     Gets the currently logged-in user.
+	///     Gets the currently logged-in User.
 	/// </summary>
 	/// <remarks>
-	/// <p>You <em>must</em> call this with the 'Authorization' header, passing a valid JWT bearer token. </p>
-	/// <p>I.e. <code>{ 'Authorization': 'Bearer JWT' }</code></p>
+	///     Call this method with the 'Authorization' header. A valid JWT bearer token must be
+	///     passed.<br/>
+	///     Example: `{ 'Authorization': 'Bearer JWT' }`.
 	/// </remarks>
-	/// <response code="200">Returns with the User's details.</response>
-	/// <response code="403">If an invalid JWT was passed in.</response>
+	/// <response code="200">The `User` was found and returned successfully..</response>
+	/// <response code="403">An invalid JWT was passed in.</response>
 	[HttpGet("me")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status403Forbidden)]

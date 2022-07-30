@@ -29,11 +29,11 @@ public class ParticipationsController : ControllerBase
 	}
 
 	/// <summary>
-	///     Gets a participation for a run.
+	///     Gets a Participation by its ID.
 	/// </summary>
-	/// <param name="id">The participation ID.</param>
-	/// <response code="200">The participation object.</response>
-	/// <response code="404">No participations found.</response>
+	/// <param name="id">The ID of the `Participation` which should be retrieved.</param>
+	/// <response code="200">The `Participation` was found and returned successfully.</response>
+	/// <response code="404">No `Participation` with the requested ID could be found.</response>
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
 	[HttpGet("{id}")]
@@ -49,11 +49,13 @@ public class ParticipationsController : ControllerBase
 	}
 
 	/// <summary>
-	///     Creates a participation of a user for a run.
+	///     Creates a Participation for a User.
 	/// </summary>
-	/// <param name="request">The request body.</param>
-	/// <response code="201">The newly-created participation object.</response>
-	/// <response code="404">Either the runner or run could not be found.</response>
+	/// <param name="request">
+	///     The `CreateParticipationRequest` instance from which to create the `Participation`.
+	/// </param>
+	/// <response code="201">The `Participation` was created and returned successfully.</response>
+	/// <response code="404">No `User` or `Run` with the requested IDs could be found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
 	[HttpPost]
 	public async Task<ActionResult> CreateParticipation(
@@ -94,12 +96,14 @@ public class ParticipationsController : ControllerBase
 	}
 
 	/// <summary>
-	///     Updates the participation of a user for a run.
+	///     Updates the Participation of a User for a Run.
 	/// </summary>
-	/// <remarks>Expects both a comment and a VoD link.</remarks>
-	/// <param name="request">The request body.</param>
-	/// <response code="200">A successful update.</response>
-	/// <response code="404">The participation could not be found.</response>
+	/// <remarks>A comment and VOD link must be provided.</remarks>
+	/// <param name="request">
+	///     The `UpdateParticipationRequest` instance from which to perform the demotion.
+	/// </param>
+	/// <response code="200">The `Participation` was updated successfully.</response>
+	/// <response code="404">No `Participation` with the requested ID could be found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Update))]
 	[Authorize]
 	[HttpPut]

@@ -4,47 +4,46 @@ using LeaderboardBackend.Models.Annotations;
 namespace LeaderboardBackend.Models.Requests;
 
 /// <summary>
-///     Request object sent when creating a Category.
+///     This request object is sent when creating a `Category`.
 /// </summary>
 public record CreateCategoryRequest
 {
 	/// <summary>
-	///     Name for the new Category.
+	///     The display name of the `Category`.
 	/// </summary>
-	/// <example>Mongolian Throat Singing%</example>
+	/// <example>Foo Bar Baz%</example>
 	[Required]
 	public string Name { get; set; } = null!;
 
 	/// <summary>
-	///     The bit in the URL that uniquely identifies this Category. <br/>
-	///     E.g.: https://leaderboards.gg/slug-for-board/slug-for-category <br/>
-	///     Must be 2-25 characters inclusive and only consist of letters, numbers, and
-	///     hyphens.
+	///     The URL-scoped unique identifier of the `Category`.<br/>
+	///     Must be [2, 25] in length and consist only of alphanumeric characters and hyphens.
 	/// </summary>
-	/// <example>mongolian-throat-singing</example>
+	/// <example>foo-bar-baz</example>
 	[Required]
 	public string Slug { get; set; } = null!;
 
 	/// <summary>
-	///     Category-specific rules.
+	///     The rules of the `Category`.
 	/// </summary>
+	/// <example>Video proof is required.</example>
 	public string? Rules { get; set; }
 
 	/// <summary>
-	///     Minimum player count for this Category. Defaults to 1.
+	///     The minimum player count of the `Category`. The default is 1.
 	/// </summary>
 	[Range(1, int.MaxValue)]
 	public int? PlayersMin { get; set; }
 
 	/// <summary>
-	///     Maximum player count for this Category. Defaults to PlayersMin.
+	///     The maximum player count of the `Category`. The default is `PlayersMin`.
 	/// </summary>
 	[Range(1, int.MaxValue)]
 	[PlayersMax]
 	public int? PlayersMax { get; set; }
 
 	/// <summary>
-	///     ID of the Leaderboard this Category belongs to.
+	///     The ID of the `Leaderboard` the `Category` is a part of.
 	/// </summary>
 	[Required]
 	public long LeaderboardId { get; set; }
