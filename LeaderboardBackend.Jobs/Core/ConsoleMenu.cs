@@ -25,31 +25,31 @@ internal class ConsoleMenu<T>
 			switch (keyInfo.Key)
 			{
 				case ConsoleKey.Q:
-					{
-						return default;
-					}
+				{
+					return default;
+				}
 
 				case ConsoleKey.UpArrow:
+				{
+					choice++;
+					if (choice == _items.Count)
 					{
-						choice++;
-						if (choice == _items.Count)
-						{
-							choice = 0;
-						}
-
-						break;
+						choice = 0;
 					}
+
+					break;
+				}
 
 				case ConsoleKey.DownArrow:
+				{
+					choice--;
+					if (choice == -1)
 					{
-						choice--;
-						if (choice == -1)
-						{
-							choice = _items.Count - 1;
-						}
-
-						break;
+						choice = _items.Count - 1;
 					}
+
+					break;
+				}
 			}
 		} while (keyInfo.Key != ConsoleKey.Enter);
 
