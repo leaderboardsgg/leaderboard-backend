@@ -6,58 +6,67 @@ namespace LeaderboardBackend.Services;
 
 public class BanService : IBanService
 {
-	private ApplicationContext ApplicationContext;
-	private IConfiguration Config;
+	private readonly ApplicationContext _applicationContext;
+	private readonly IConfiguration _config;
+
 	public BanService(ApplicationContext applicationContext, IConfiguration config)
 	{
-		ApplicationContext = applicationContext;
-		Config = config;
+		_applicationContext = applicationContext;
+		_config = config;
 	}
 
 	public async Task<Ban?> GetBanById(long id)
 	{
-		return await ApplicationContext.Bans.FindAsync(id);
+		return await _applicationContext.Bans
+			.FindAsync(id);
 	}
 
 	public async Task<List<Ban>> GetBans()
 	{
-		return await ApplicationContext.Bans.ToListAsync();
+		return await _applicationContext.Bans
+			.ToListAsync();
 	}
 
 	public async Task<List<Ban>> GetBansByLeaderboard(long leaderboardId)
 	{
-		return await ApplicationContext.Bans.Where(
-			b => b.LeaderboardId == leaderboardId
-		).ToListAsync();
+		return await _applicationContext.Bans
+			.Where(b => b.LeaderboardId == leaderboardId)
+			.ToListAsync();
 	}
 
 	public async Task<List<Ban>> GetBansByUser(Guid userId)
 	{
-		return await ApplicationContext.Bans.Where(
-			b => b.BannedUserId == userId
-		).ToListAsync();
+		return await _applicationContext.Bans
+			.Where(b => b.BannedUserId == userId)
+			.ToListAsync();
 	}
 
 	public async Task CreateBan(Ban ban)
 	{
-		ApplicationContext.Bans.Add(ban);
-		await ApplicationContext.SaveChangesAsync();
+		_applicationContext.Bans.Add(ban);
+		await _applicationContext.SaveChangesAsync();
 	}
 
 	public async Task DeleteBan(long id)
 	{
-		Ban ban = await ApplicationContext.Bans.Where(b => b.Id == id).FirstAsync();
+		Ban ban = await _applicationContext.Bans
+			.Where(b => b.Id == id)
+			.FirstAsync();
+
 		ban.DeletedAt = SystemClock.Instance.GetCurrentInstant();
-		await ApplicationContext.SaveChangesAsync();
+
+		await _applicationContext.SaveChangesAsync();
 	}
 
 	public async Task DeleteLeaderboardBan(long id, long leaderboardId)
 	{
-		Ban ban = await ApplicationContext.Bans
+		Ban ban = await _applicationContext.Bans
 			.Where(b => b.Id == id)
 			.Where(b => b.LeaderboardId == leaderboardId)
 			.FirstAsync();
+
 		ban.DeletedAt = SystemClock.Instance.GetCurrentInstant();
-		await ApplicationContext.SaveChangesAsync();
+
+		await _applicationContext.SaveChangesAsync();
 	}
 }

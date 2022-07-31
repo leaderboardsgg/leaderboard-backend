@@ -4,11 +4,11 @@ using NodaTime;
 namespace LeaderboardBackend.Models.Entities;
 
 /// <summary>
-/// 0: Created
-/// 1: Submitted
-/// 2: Pending
-/// 3: Approved
-/// 4: Rejected
+///     0: Created
+///     1: Submitted
+///     2: Pending
+///     3: Approved
+///     4: Rejected
 /// </summary>
 public enum RunStatus
 {

@@ -8,15 +8,15 @@ namespace LeaderboardBackend.Services;
 
 public class AuthService : IAuthService
 {
-	private readonly SigningCredentials Credentials;
-	private readonly string Issuer;
+	private readonly SigningCredentials _credentials;
+	private readonly string _issuer;
 
 	public AuthService(IConfiguration config)
 	{
 		SymmetricSecurityKey? securityKey = new(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
 
-		Credentials = new(securityKey, SecurityAlgorithms.HmacSha256);
-		Issuer = config["Jwt:Issuer"];
+		_credentials = new(securityKey, SecurityAlgorithms.HmacSha256);
+		_issuer = config["Jwt:Issuer"];
 	}
 
 	public string GenerateJSONWebToken(User user)
@@ -28,11 +28,11 @@ public class AuthService : IAuthService
 		};
 
 		JwtSecurityToken token = new(
-			issuer: Issuer,
-			audience: Issuer,
+			issuer: _issuer,
+			audience: _issuer,
 			claims: claims,
 			expires: DateTime.Now.AddMinutes(30),
-			signingCredentials: Credentials
+			signingCredentials: _credentials
 		);
 
 		return new JwtSecurityTokenHandler().WriteToken(token);
@@ -46,16 +46,19 @@ public class AuthService : IAuthService
 	public Guid? GetUserIdFromClaims(ClaimsPrincipal claims)
 	{
 		string? userIdStr = claims.FindFirstValue(JwtRegisteredClaimNames.Sub);
+
 		if (userIdStr is null)
 		{
 			return null;
 		}
 
 		Guid? userId = null;
+
 		try
 		{
 			userId = Guid.Parse(userIdStr);
-		} catch (FormatException) { }
+		}
+		catch (FormatException) { }
 
 		return userId;
 	}

@@ -1,8 +1,8 @@
 namespace LeaderboardBackend.Authorization;
 
-public readonly record struct UserTypes
+public static class UserTypes
 {
-	public const string Admin = "Admin";
-	public const string Mod = "Mod";
-	public const string User = "User";
+	public const string ADMIN = "Admin";
+	public const string MOD = "Mod";
+	public const string USER = "User";
 }

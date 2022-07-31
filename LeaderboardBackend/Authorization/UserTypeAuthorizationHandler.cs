@@ -8,45 +8,45 @@ namespace LeaderboardBackend.Authorization;
 
 public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequirement>
 {
-	private readonly JwtSecurityTokenHandler JwtHandler;
-	private readonly TokenValidationParameters JwtValidationParams;
-	private readonly IUserService UserService;
-	private readonly IModshipService ModshipService;
-	private readonly IAuthService AuthService;
+	private readonly IAuthService _authService;
+	private readonly JwtSecurityTokenHandler _jwtHandler;
+	private readonly TokenValidationParameters _jwtValidationParams;
+	private readonly IModshipService _modshipService;
+	private readonly IUserService _userService;
 
 	public UserTypeAuthorizationHandler(
+		IAuthService authService,
 		IConfiguration config,
 		IModshipService modshipService,
-		IUserService userService,
-		IAuthService authService
-	)
+		IUserService userService)
 	{
-		JwtHandler = JwtSecurityTokenHandlerSingleton.Instance;
-		JwtValidationParams = TokenValidationParametersSingleton.Instance(config);
-		UserService = userService;
-		ModshipService = modshipService;
-		AuthService = authService;
+		_authService = authService;
+		_jwtHandler = JwtSecurityTokenHandlerSingleton.Instance;
+		_jwtValidationParams = TokenValidationParametersSingleton.Instance(config);
+		_modshipService = modshipService;
+		_userService = userService;
 	}
 
 	protected override Task HandleRequirementAsync(
 		AuthorizationHandlerContext context,
-		UserTypeRequirement requirement
-	)
+		UserTypeRequirement requirement)
 	{
 		if (!TryGetJwtFromHttpContext(context, out string token) || !ValidateJwt(token))
 		{
 			return Task.CompletedTask;
 		}
 
-		Guid? userId = AuthService.GetUserIdFromClaims(context.User);
+		Guid? userId = _authService.GetUserIdFromClaims(context.User);
+
 		if (userId is null)
 		{
 			context.Fail();
 			return Task.CompletedTask;
 		}
-		User? user = UserService.GetUserById(userId.Value).Result;
 
-		if (user is null || !Handle(user, context, requirement))
+		User? user = _userService.GetUserById(userId.Value).Result;
+
+		if (user is null || !Handle(user, requirement))
 		{
 			// FIXME: Work out how to fail as a ForbiddenResult.
 			context.Fail();
@@ -58,19 +58,21 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 		return Task.CompletedTask;
 	}
 
-	private bool Handle(
-		User user,
-		AuthorizationHandlerContext _,
-		UserTypeRequirement requirement
-	) => requirement.Type switch
+	private bool Handle(User user, UserTypeRequirement requirement)
 	{
-		UserTypes.Admin => user.Admin,
-		UserTypes.Mod => user.Admin || IsMod(user),
-		UserTypes.User => true,
-		_ => false,
-	};
+		return requirement.Type switch
+		{
+			UserTypes.ADMIN => user.Admin,
+			UserTypes.MOD => user.Admin || IsMod(user),
+			UserTypes.USER => true,
+			_ => false,
+		};
+	}
 
-	private bool IsMod(User user) => ModshipService.LoadUserModships(user.Id).Result.Count() > 0;
+	private bool IsMod(User user)
+	{
+		return _modshipService.LoadUserModships(user.Id).Result.Count > 0;
+	}
 
 	private bool TryGetJwtFromHttpContext(AuthorizationHandlerContext context, out string token)
 	{
@@ -79,12 +81,15 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 			token = "";
 			return false;
 		}
+
 		try
 		{
 			// We need to strip "Bearer " out lol
-			token = httpContext.Request.Headers.Authorization.First().Substring(7);
-			return JwtHandler.CanReadToken(token);
-		} catch (InvalidOperationException)
+			token = httpContext.Request.Headers.Authorization.First()[7..];
+
+			return _jwtHandler.CanReadToken(token);
+		}
+		catch (InvalidOperationException)
 		{
 			// No token exists in the request
 			token = "";
@@ -96,11 +101,8 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 	{
 		try
 		{
-			JwtHandler.ValidateToken(
-				token,
-				JwtValidationParams,
-				out _
-			);
+			_jwtHandler.ValidateToken(token, _jwtValidationParams, out _);
+
 			return true;
 		}
 		// FIXME: Trigger a redirect to login, possibly on SecurityTokenExpiredException

@@ -17,7 +17,6 @@ using Npgsql;
 using BCryptNet = BCrypt.Net.BCrypt;
 
 #region WebApplicationBuilder
-
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 DotEnv.Load(options: new DotEnvOptions(
@@ -30,7 +29,7 @@ DotEnv.Load(options: new DotEnvOptions(
 // Configure database context
 bool exists = EnvReader.TryGetBooleanValue("USE_IN_MEMORY_DB", out bool inMemoryDb);
 bool useInMemoryDb = exists && inMemoryDb;
-ConfigureDbContext<ApplicationContext>(builder, useInMemoryDb);
+configureDbContext<ApplicationContext>(builder, useInMemoryDb);
 
 // Add services to the container.
 builder.Services.AddScoped<IUserService, UserService>();
@@ -86,24 +85,24 @@ builder.Services
 // Configure authorisation.
 builder.Services.AddAuthorization(options =>
 {
-	options.AddPolicy(UserTypes.Admin, policy =>
+	options.AddPolicy(UserTypes.ADMIN, policy =>
 	{
 		policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
 		policy.RequireAuthenticatedUser();
-		policy.Requirements.Add(new UserTypeRequirement(UserTypes.Admin));
+		policy.Requirements.Add(new UserTypeRequirement(UserTypes.ADMIN));
 	});
-	options.AddPolicy(UserTypes.Mod, policy =>
+	options.AddPolicy(UserTypes.MOD, policy =>
 	{
 		policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
 		policy.RequireAuthenticatedUser();
-		policy.Requirements.Add(new UserTypeRequirement(UserTypes.Mod));
+		policy.Requirements.Add(new UserTypeRequirement(UserTypes.MOD));
 	});
 
 	// Handles empty [Authorize] attributes
 	options.DefaultPolicy = new AuthorizationPolicyBuilder()
 		.AddAuthenticationSchemes(new[] { JwtBearerDefaults.AuthenticationScheme })
 		.RequireAuthenticatedUser()
-		.AddRequirements(new[] { new UserTypeRequirement(UserTypes.User) })
+		.AddRequirements(new[] { new UserTypeRequirement(UserTypes.USER) })
 		.Build();
 
 	options.FallbackPolicy = new AuthorizationPolicyBuilder()
@@ -115,11 +114,9 @@ builder.Services.AddAuthorization(options =>
 // Can't use AddSingleton here since we call the DB in the Handler
 builder.Services.AddScoped<IAuthorizationHandler, UserTypeAuthorizationHandler>();
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, MiddlewareResultHandler>();
-
 #endregion
 
 #region WebApplication
-
 WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -153,13 +150,11 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
 #endregion
 
 #region Helpers
-
 // Add application's Database Context to the container.
-static string GetConnectionString(WebApplicationBuilder builder)
+static string getConnectionString(WebApplicationBuilder builder)
 {
 	string portVar = builder.Configuration["Db:PortVar"];
 	if (
@@ -172,11 +167,12 @@ static string GetConnectionString(WebApplicationBuilder builder)
 	{
 		throw new Exception("Database env var(s) not set. Is there a .env?");
 	}
+
 	return $"Server={host};Port={port};User Id={user};Password={password};Database={db};Include Error Detail=true";
 }
 
 // Configure a Database context, configuring based on the USE_IN_MEMORY_DATABASE environment variable.
-static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb) where T : DbContext
+static void configureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb) where T : DbContext
 {
 	builder.Services.AddDbContext<T>(
 		opt =>
@@ -184,21 +180,19 @@ static void ConfigureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb
 			if (inMemoryDb)
 			{
 				opt.UseInMemoryDatabase("LeaderboardBackend");
-			} else
+			}
+			else
 			{
 				opt.UseNpgsql(
-					GetConnectionString(builder),
+					getConnectionString(builder),
 					o => o.UseNodaTime()
 				).UseSnakeCaseNamingConvention();
 			}
 		}
 	);
 }
-
 #endregion
 
 #region Accessible Program class
-
 public partial class Program { }
-
 #endregion

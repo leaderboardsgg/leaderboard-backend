@@ -8,28 +8,30 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LeaderboardBackend.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
+[Route("api/[controller]")]
 public class LeaderboardsController : ControllerBase
 {
-	private readonly ILeaderboardService LeaderboardService;
+	private readonly ILeaderboardService _leaderboardService;
 
 	public LeaderboardsController(ILeaderboardService leaderboardService)
 	{
-		LeaderboardService = leaderboardService;
+		_leaderboardService = leaderboardService;
 	}
 
-	/// <summary>Gets a leaderboard.</summary>
+	/// <summary>
+	///     Gets a leaderboard.
+	/// </summary>
 	/// <param name="id">The leaderboard's ID.</param>
 	/// <response code="200">The Leaderboard.</response>
 	/// <response code="404">If no Leaderboard can be found.</response>
-	[ApiConventionMethod(typeof(Conventions),
-						 nameof(Conventions.GetAnon))]
 	[AllowAnonymous]
+	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
 	[HttpGet("{id}")]
 	public async Task<ActionResult<Leaderboard>> GetLeaderboard(long id)
 	{
-		Leaderboard? leaderboard = await LeaderboardService.GetLeaderboard(id);
+		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(id);
+
 		if (leaderboard == null)
 		{
 			return NotFound();
@@ -38,27 +40,31 @@ public class LeaderboardsController : ControllerBase
 		return Ok(leaderboard);
 	}
 
-	/// <summary>Gets leaderboards. Can be an empty array.</summary>
+	/// <summary>
+	///     Gets leaderboards. Can be an empty array.
+	/// </summary>
 	/// <param name="ids">The IDs.</param>
 	/// <response code="200">An array of Leaderboards. Can be empty.</response>
-	[ProducesResponseType(StatusCodes.Status200OK)]
 	[AllowAnonymous]
 	[HttpGet]
+	[ProducesResponseType(StatusCodes.Status200OK)]
 	public async Task<ActionResult<List<Leaderboard>>> GetLeaderboards([FromQuery] long[] ids)
 	{
-		return Ok(await LeaderboardService.GetLeaderboards(ids));
+		return Ok(await _leaderboardService.GetLeaderboards(ids));
 	}
 
-	/// <summary>Creates a new Leaderboard. Admin-only.</summary>
+	/// <summary>
+	///     Creates a new Leaderboard. Admin-only.
+	/// </summary>
 	/// <param name="body">A CreateLeaderboardRequest instance.</param>
 	/// <response code="201">The created Leaderboard.</response>
 	/// <response code="400">If the request is malformed.</response>
 	/// <response code="404">If a non-admin calls this.</response>
-	[ApiConventionMethod(typeof(Conventions),
-						 nameof(Conventions.Post))]
-	[Authorize(Policy = UserTypes.Admin)]
+	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
+	[Authorize(Policy = UserTypes.ADMIN)]
 	[HttpPost]
-	public async Task<ActionResult<Leaderboard>> CreateLeaderboard([FromBody] CreateLeaderboardRequest body)
+	public async Task<ActionResult<Leaderboard>> CreateLeaderboard(
+		[FromBody] CreateLeaderboardRequest body)
 	{
 		Leaderboard leaderboard = new()
 		{
@@ -66,7 +72,8 @@ public class LeaderboardsController : ControllerBase
 			Slug = body.Slug
 		};
 
-		await LeaderboardService.CreateLeaderboard(leaderboard);
+		await _leaderboardService.CreateLeaderboard(leaderboard);
+
 		return CreatedAtAction(nameof(GetLeaderboard), new { id = leaderboard.Id }, leaderboard);
 	}
 }

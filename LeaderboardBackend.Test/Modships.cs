@@ -14,16 +14,16 @@ namespace LeaderboardBackend.Test;
 [TestFixture]
 internal class Modships
 {
-	private static TestApiFactory Factory = null!;
-	private static TestApiClient ApiClient = null!;
-	private static string Jwt = null!;
+	private static TestApiClient s_ApiClient = null!;
+	private static TestApiFactory s_Factory = null!;
+	private static string s_Jwt = null!;
 
 	[SetUp]
 	public static async Task SetUp()
 	{
-		Factory = new TestApiFactory();
-		ApiClient = Factory.CreateTestApiClient();
-		Jwt = (await ApiClient.LoginAdminUser()).Token;
+		s_Factory = new TestApiFactory();
+		s_ApiClient = s_Factory.CreateTestApiClient();
+		s_Jwt = (await s_ApiClient.LoginAdminUser()).Token;
 	}
 
 	[Test]
@@ -61,7 +61,8 @@ internal class Modships
 			// Confirm that modship is deleted -> 404 NotFound -> Api Client throws RequestFailureException
 			await GetModship();
 			Assert.Fail("GetModship should have failed, because the Modship should not exist anymore");
-		} catch (RequestFailureException e)
+		}
+		catch (RequestFailureException e)
 		{
 			Assert.AreEqual(created, retrieved);
 			Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);
@@ -81,7 +82,7 @@ internal class Modships
 
 	private static async Task<Leaderboard> CreateLeaderboard()
 	{
-		return await ApiClient.Post<Leaderboard>(
+		return await s_ApiClient.Post<Leaderboard>(
 			"/api/leaderboards",
 			new()
 			{
@@ -90,25 +91,23 @@ internal class Modships
 					Name = "Mario Goes to Jail II",
 					Slug = "mario-goes-to-jail-ii"
 				},
-				Jwt = Jwt
-			}
-		);
+				Jwt = s_Jwt
+			});
 	}
 
 	private static async Task<Modship> GetModship()
 	{
-		return await ApiClient.Get<Modship>(
+		return await s_ApiClient.Get<Modship>(
 			$"/api/modships/{TestInitCommonFields.Admin.Id}",
 			new()
 			{
-				Jwt = Jwt
-			}
-		);
+				Jwt = s_Jwt
+			});
 	}
 
 	private static async Task<Modship> CreateModship(long leaderboardId)
 	{
-		return await ApiClient.Post<Modship>(
+		return await s_ApiClient.Post<Modship>(
 			"/api/modships",
 			new()
 			{
@@ -117,14 +116,13 @@ internal class Modships
 					LeaderboardId = leaderboardId,
 					UserId = TestInitCommonFields.Admin.Id,
 				},
-				Jwt = Jwt
-			}
-		);
+				Jwt = s_Jwt
+			});
 	}
 
 	private static async Task<HttpResponseMessage> DeleteModship(long leaderboardId)
 	{
-		return await ApiClient.Delete(
+		return await s_ApiClient.Delete(
 			"/api/modships",
 			new()
 			{
@@ -133,8 +131,7 @@ internal class Modships
 					LeaderboardId = leaderboardId,
 					UserId = TestInitCommonFields.Admin.Id,
 				},
-				Jwt = Jwt
-			}
-		);
+				Jwt = s_Jwt
+			});
 	}
 }

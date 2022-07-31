@@ -9,42 +9,43 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LeaderboardBackend.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
 [Produces("application/json")]
+[Route("api/[controller]")]
 public class JudgementsController : ControllerBase
 {
-	private readonly ILogger Logger;
-	private readonly IJudgementService JudgementService;
-	private readonly IRunService RunService;
-	private readonly IUserService UserService;
-	private readonly IAuthService AuthService;
+	private readonly IAuthService _authService;
+	private readonly ILogger _logger;
+	private readonly IJudgementService _judgementService;
+	private readonly IRunService _runService;
+	private readonly IUserService _userService;
 
 	public JudgementsController(
+		IAuthService authService,
 		ILogger<JudgementsController> logger,
 		IJudgementService judgementService,
 		IRunService runService,
-		IUserService userService,
-		IAuthService authService
-	)
+		IUserService userService)
 	{
-		Logger = logger;
-		JudgementService = judgementService;
-		RunService = runService;
-		UserService = userService;
-		AuthService = authService;
+		_authService = authService;
+		_logger = logger;
+		_judgementService = judgementService;
+		_runService = runService;
+		_userService = userService;
 	}
 
-	/// <summary>Gets a Judgement from its ID.</summary>
+	/// <summary>
+	///     Gets a Judgement from its ID.
+	/// </summary>
 	/// <response code="200">The Judgement with the provided ID.</response>
 	/// <response code="404">If no Judgement can be found.</response>
-	[ApiConventionMethod(typeof(Conventions),
-						 nameof(Conventions.GetAnon))]
+	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
 	[AllowAnonymous]
 	[HttpGet("{id}")]
 	public async Task<ActionResult<JudgementViewModel>> GetJudgement(long id)
 	{
-		Judgement? judgement = await JudgementService.GetJudgement(id);
+		Judgement? judgement = await _judgementService.GetJudgement(id);
+
 		if (judgement is null)
 		{
 			return NotFound();
@@ -53,32 +54,36 @@ public class JudgementsController : ControllerBase
 		return Ok(new JudgementViewModel(judgement));
 	}
 
-	/// <summary>Creates a judgement for a run.</summary>
+	/// <summary>
+	///     Creates a judgement for a run.
+	/// </summary>
 	/// <response code="201">The created judgement.</response>
 	/// <response code="400">The request body is malformed.</response>
 	/// <response code="404">For an invalid judgement.</response>
-	[ApiConventionMethod(typeof(Conventions),
-						nameof(Conventions.Post))]
-	[Authorize(Policy = UserTypes.Mod)]
+	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
+	[Authorize(Policy = UserTypes.MOD)]
 	[HttpPost]
-	public async Task<ActionResult<JudgementViewModel>> CreateJudgement([FromBody] CreateJudgementRequest body)
+	public async Task<ActionResult<JudgementViewModel>> CreateJudgement(
+		[FromBody] CreateJudgementRequest body)
 	{
-		Guid? modId = AuthService.GetUserIdFromClaims(HttpContext.User);
+		Guid? modId = _authService.GetUserIdFromClaims(HttpContext.User);
+
 		if (modId is null)
 		{
 			return Forbid();
 		}
-		Run? run = await RunService.GetRun(body.RunId);
+
+		Run? run = await _runService.GetRun(body.RunId);
 
 		if (run is null)
 		{
-			Logger.LogError($"CreateJudgement: run is null. ID = {body.RunId}");
+			_logger.LogError($"CreateJudgement: run is null. ID = {body.RunId}");
 			return NotFound($"Run not found for ID = {body.RunId}");
 		}
 
 		if (run.Status == RunStatus.CREATED)
 		{
-			Logger.LogError($"CreateJudgement: run has pending participations (i.e. run status == CREATED). ID = {body.RunId}");
+			_logger.LogError($"CreateJudgement: run has pending participations (i.e. run status == CREATED). ID = {body.RunId}");
 			return BadRequest($"Run has pending Participations. ID = {body.RunId}");
 		}
 
@@ -92,7 +97,7 @@ public class JudgementsController : ControllerBase
 			RunId = run.Id,
 		};
 
-		await JudgementService.CreateJudgement(judgement);
+		await _judgementService.CreateJudgement(judgement);
 
 		JudgementViewModel judgementView = new(judgement);
 

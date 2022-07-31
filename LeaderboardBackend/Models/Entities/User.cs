@@ -6,28 +6,32 @@ namespace LeaderboardBackend.Models.Entities;
 
 public class User
 {
-	/// <summary>A GUID that identifies the User. Generated on creation.</summary>
+	/// <summary>
+	///     A GUID that identifies the User. Generated on creation.
+	/// </summary>
 	/// <example>4b3835ca-dee1-4019-82b4-d2d26a7cce74</example>
 	public Guid Id { get; set; }
 
 	/// <summary>
-	/// The User's name. Must be:
-	/// <ul>
-	///   <li>between 2 - 25 characters inclusive; and</li>
-	///   <li>an alphanumeric sequence, each separated by zero or one of:</li>
-	///   <ul>
-	///     <li>an underscore;</li>
-	///     <li>a hyphen; or</li>
-	///     <li>an apostrophe</li>
-	///   </ul>
-	/// </ul>
-	/// Saving a name is case-sensitive, but matching against existing Users won't be.
+	///     The User's name. Must be:
+	///     <ul>
+	///       <li>between 2 - 25 characters inclusive; and</li>
+	///       <li>an alphanumeric sequence, each separated by zero or one of:</li>
+	///       <ul>
+	///         <li>an underscore;</li>
+	///         <li>a hyphen; or</li>
+	///         <li>an apostrophe</li>
+	///       </ul>
+	///     </ul>
+	///     Saving a name is case-sensitive, but matching against existing Users won't be.
 	/// </summary>
 	/// <example>Ayylmao Gaming</example>
 	[Required]
 	public string Username { get; set; } = null!;
 
-	/// <summary>The User's email. Must be, well, an email.</summary>
+	/// <summary>
+	///     The User's email. Must be, well, an email.
+	/// </summary>
 	/// <example>ayylmao.gaming@alg.gg</example>
 	[Required]
 	public string Email { get; set; } = null!;
@@ -36,10 +40,14 @@ public class User
 	[JsonIgnore]
 	public string Password { get; set; } = null!;
 
-	/// <summary>User's about text. I.e. a personal description.</summary>
+	/// <summary>
+	///     User's about text. I.e. a personal description.
+	/// </summary>
 	public string? About { get; set; }
 
-	/// <summary>User's admin status.</summary>
+	/// <summary>
+	///     User's admin status.
+	/// </summary>
 	[Required]
 	public bool Admin { get; set; } = false;
 
@@ -55,8 +63,8 @@ public class User
 
 	public override bool Equals(object? obj)
 	{
-		return obj is User user &&
-			   Id.Equals(user.Id);
+		return obj is User user
+			&& Id.Equals(user.Id);
 	}
 
 	public override int GetHashCode()
