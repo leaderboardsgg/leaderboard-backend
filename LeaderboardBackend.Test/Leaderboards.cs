@@ -31,11 +31,7 @@ internal class Leaderboards
 	public static void GetLeaderboard_NotFound()
 	{
 		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
-		{
-			await s_ApiClient.Get<Leaderboard>(
-				$"/api/leaderboards/2",
-				new());
-		})!;
+			await s_ApiClient.Get<Leaderboard>($"/api/leaderboards/2", new()))!;
 
 		Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);
 	}
@@ -50,9 +46,9 @@ internal class Leaderboards
 				Body = new CreateLeaderboardRequest
 				{
 					Name = Generators.GenerateRandomString(),
-					Slug = Generators.GenerateRandomString(),
+					Slug = Generators.GenerateRandomString()
 				},
-				Jwt = s_Jwt,
+				Jwt = s_Jwt
 			});
 
 		Leaderboard retrievedLeaderboard = await s_ApiClient.Get<Leaderboard>(
@@ -77,9 +73,9 @@ internal class Leaderboards
 						Body = new CreateLeaderboardRequest
 						{
 							Name = Generators.GenerateRandomString(),
-							Slug = Generators.GenerateRandomString(),
+							Slug = Generators.GenerateRandomString()
 						},
-						Jwt = s_Jwt,
+						Jwt = s_Jwt
 					}));
 		}
 

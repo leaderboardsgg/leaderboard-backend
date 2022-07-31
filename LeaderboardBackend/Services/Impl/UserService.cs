@@ -28,12 +28,14 @@ public class UserService : IUserService
 
 	public async Task<User?> GetUserByName(string name)
 	{
+		string lowerName = name.ToLower();
+
 		// We save a username with casing, but match without.
 		// Effectively you can't have two separate users named e.g. "cool" and "cOoL".
 		return await _applicationContext.Users
 			.FirstOrDefaultAsync(user =>
 				user.Username != null
-				&& user.Username.Equals(name, StringComparison.OrdinalIgnoreCase));
+				&& user.Username.ToLower() == lowerName);
 	}
 
 	public async Task CreateUser(User user)

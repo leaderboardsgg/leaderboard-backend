@@ -58,10 +58,7 @@ namespace LeaderboardBackend.Test
 
 			List<Participation> retrieved = await s_ApiClient.Get<List<Participation>>(
 				$"api/runs/{createdRun.Id}/participations",
-				new()
-				{
-					Jwt = s_Jwt
-				});
+				new() { Jwt = s_Jwt });
 
 			Assert.NotNull(retrieved);
 			Assert.AreEqual(createdParticipation.Id, retrieved[0].Id);
@@ -85,12 +82,7 @@ namespace LeaderboardBackend.Test
 
 		private static async Task<Run> GetRun(Guid id)
 		{
-			return await s_ApiClient.Get<Run>(
-				$"/api/runs/{id}",
-				new()
-				{
-					Jwt = s_Jwt
-				});
+			return await s_ApiClient.Get<Run>($"/api/runs/{id}", new() { Jwt = s_Jwt });
 		}
 	}
 }

@@ -99,10 +99,7 @@ internal class Modships
 	{
 		return await s_ApiClient.Get<Modship>(
 			$"/api/modships/{TestInitCommonFields.Admin.Id}",
-			new()
-			{
-				Jwt = s_Jwt
-			});
+			new() { Jwt = s_Jwt });
 	}
 
 	private static async Task<Modship> CreateModship(long leaderboardId)
@@ -114,7 +111,7 @@ internal class Modships
 				Body = new CreateModshipRequest
 				{
 					LeaderboardId = leaderboardId,
-					UserId = TestInitCommonFields.Admin.Id,
+					UserId = TestInitCommonFields.Admin.Id
 				},
 				Jwt = s_Jwt
 			});
@@ -129,7 +126,7 @@ internal class Modships
 				Body = new RemoveModshipRequest
 				{
 					LeaderboardId = leaderboardId,
-					UserId = TestInitCommonFields.Admin.Id,
+					UserId = TestInitCommonFields.Admin.Id
 				},
 				Jwt = s_Jwt
 			});

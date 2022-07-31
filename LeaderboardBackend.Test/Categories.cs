@@ -28,11 +28,7 @@ internal class Categories
 	public static void GetCategory_Unauthorized()
 	{
 		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
-		{
-			await s_ApiClient.Get<Category>(
-				$"/api/categories/1",
-				new());
-		})!;
+			await s_ApiClient.Get<Category>($"/api/categories/1", new()))!;
 
 		Assert.AreEqual(HttpStatusCode.Unauthorized, e.Response.StatusCode);
 	}
@@ -41,14 +37,7 @@ internal class Categories
 	public static void GetCategory_NotFound()
 	{
 		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
-		{
-			await s_ApiClient.Get<Category>(
-				$"/api/categories/69",
-				new()
-				{
-					Jwt = s_Jwt,
-				});
-		})!;
+			await s_ApiClient.Get<Category>($"/api/categories/69", new() { Jwt = s_Jwt }))!;
 
 		Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);
 	}
@@ -63,9 +52,9 @@ internal class Categories
 				Body = new CreateLeaderboardRequest()
 				{
 					Name = Generators.GenerateRandomString(),
-					Slug = Generators.GenerateRandomString(),
+					Slug = Generators.GenerateRandomString()
 				},
-				Jwt = s_Jwt,
+				Jwt = s_Jwt
 			});
 
 		Category createdCategory = await s_ApiClient.Post<Category>(
@@ -76,19 +65,16 @@ internal class Categories
 				{
 					Name = Generators.GenerateRandomString(),
 					Slug = Generators.GenerateRandomString(),
-					LeaderboardId = createdLeaderboard.Id,
+					LeaderboardId = createdLeaderboard.Id
 				},
-				Jwt = s_Jwt,
+				Jwt = s_Jwt
 			});
 
 		Assert.AreEqual(1, createdCategory.PlayersMax);
 
 		Category retrievedCategory = await s_ApiClient.Get<Category>(
 			$"/api/categories/{createdCategory?.Id}",
-			new()
-			{
-				Jwt = s_Jwt,
-			});
+			new() { Jwt = s_Jwt });
 
 		Assert.AreEqual(createdCategory, retrievedCategory);
 	}

@@ -30,15 +30,9 @@ internal class Bans
 		s_AdminJwt = (await s_ApiClient.LoginAdminUser()).Token;
 
 		// Set up users and leaderboard
-		s_NormalUser = await s_ApiClient.RegisterUser(
-			"normal",
-			"normal@email.com",
-			"Passw0rd!");
+		s_NormalUser = await s_ApiClient.RegisterUser("normal", "normal@email.com", "Passw0rd!");
 
-		s_ModUser = await s_ApiClient.RegisterUser(
-			"mod",
-			"mod@email.com",
-			"Passw0rd!");
+		s_ModUser = await s_ApiClient.RegisterUser("mod", "mod@email.com", "Passw0rd!");
 
 		s_DefaultLeaderboard = await s_ApiClient.Post<Leaderboard>(
 			"/api/leaderboards",
@@ -47,9 +41,9 @@ internal class Bans
 				Body = new CreateLeaderboardRequest
 				{
 					Name = Generators.GenerateRandomString(),
-					Slug = Generators.GenerateRandomString(),
+					Slug = Generators.GenerateRandomString()
 				},
-				Jwt = s_AdminJwt,
+				Jwt = s_AdminJwt
 			});
 
 		await s_ApiClient.Post<Modship>(
@@ -59,9 +53,9 @@ internal class Bans
 				Body = new CreateModshipRequest
 				{
 					LeaderboardId = s_DefaultLeaderboard.Id,
-					UserId = s_ModUser.Id,
+					UserId = s_ModUser.Id
 				},
-				Jwt = s_AdminJwt,
+				Jwt = s_AdminJwt
 			});
 
 		s_ModJwt = (await s_ApiClient.LoginUser("mod@email.com", "Passw0rd!")).Token;
@@ -192,31 +186,18 @@ internal class Bans
 
 	private static async Task<Ban> GetBan(long id)
 	{
-		return await s_ApiClient.Get<Ban>(
-			$"api/bans/{id}",
-			new()
-			{
-				Jwt = s_AdminJwt
-			});
+		return await s_ApiClient.Get<Ban>($"api/bans/{id}", new() { Jwt = s_AdminJwt });
 	}
 
 	private static async Task<HttpResponseMessage> DeleteBan(long id)
 	{
-		return await s_ApiClient.Delete(
-			$"api/bans/{id}",
-			new()
-			{
-				Jwt = s_AdminJwt
-			});
+		return await s_ApiClient.Delete($"api/bans/{id}", new() { Jwt = s_AdminJwt });
 	}
 
 	private static async Task<HttpResponseMessage> DeleteLeaderboardBan(long id, long leaderboardId)
 	{
 		return await s_ApiClient.Delete(
 			$"api/bans/{id}/leaderboards/{leaderboardId}",
-			new()
-			{
-				Jwt = s_AdminJwt
-			});
+			new() { Jwt = s_AdminJwt });
 	}
 }
