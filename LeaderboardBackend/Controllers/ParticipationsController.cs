@@ -40,7 +40,6 @@ public class ParticipationsController : ControllerBase
 	public async Task<ActionResult<Participation>> GetParticipation(long id)
 	{
 		Participation? participation = await _participationService.GetParticipation(id);
-
 		if (participation == null)
 		{
 			return NotFound();

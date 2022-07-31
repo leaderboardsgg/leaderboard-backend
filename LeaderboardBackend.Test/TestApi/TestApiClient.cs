@@ -53,7 +53,6 @@ internal class TestApiClient
 	private async Task<TResponse> SendAndRead<TResponse>(string endpoint, HttpRequestInit init)
 	{
 		HttpResponseMessage response = await Send(endpoint, init);
-
 		return await ReadFromResponseBody<TResponse>(response);
 	}
 
