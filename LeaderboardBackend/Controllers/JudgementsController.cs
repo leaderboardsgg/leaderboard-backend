@@ -35,10 +35,11 @@ public class JudgementsController : ControllerBase
 	}
 
 	/// <summary>
-	///     Gets a Judgement from its ID.
+	///     Gets a Judgement by its ID.
 	/// </summary>
-	/// <response code="200">The Judgement with the provided ID.</response>
-	/// <response code="404">If no Judgement can be found.</response>
+	/// <param name="id">The ID of the `Judgement` which should be retrieved.</param>
+	/// <response code="200">The `Judgement` was found and returned successfully.</response>
+	/// <response code="404">No `Judgement` with the requested ID could be found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
 	[AllowAnonymous]
 	[HttpGet("{id}")]
@@ -55,16 +56,23 @@ public class JudgementsController : ControllerBase
 	}
 
 	/// <summary>
-	///     Creates a judgement for a run.
+	///     Creates a new Judgement for a Run.
+	///     This request is restricted to Moderators.
 	/// </summary>
-	/// <response code="201">The created judgement.</response>
-	/// <response code="400">The request body is malformed.</response>
-	/// <response code="404">For an invalid judgement.</response>
+	/// <param name="request">
+	///     The `CreateJudgementRequest` instance from which to create the `Judgement`.
+	/// </param>
+	/// <response code="201">The `Judgement` was created and returned successfully.</response>
+	/// <response code="400">The request was malformed.</response>
+	/// <response code="403">
+	///     The requesting `User` is unauthorized to create `Judgement`s.
+	/// </response>
+	/// <response code="404">No `Run` with the ID from the request could be found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
 	[Authorize(Policy = UserTypes.MOD)]
 	[HttpPost]
 	public async Task<ActionResult<JudgementViewModel>> CreateJudgement(
-		[FromBody] CreateJudgementRequest body)
+		[FromBody] CreateJudgementRequest request)
 	{
 		Guid? modId = _authService.GetUserIdFromClaims(HttpContext.User);
 
@@ -73,26 +81,30 @@ public class JudgementsController : ControllerBase
 			return Forbid();
 		}
 
-		Run? run = await _runService.GetRun(body.RunId);
+		Run? run = await _runService.GetRun(request.RunId);
 
 		if (run is null)
 		{
-			_logger.LogError($"CreateJudgement: run is null. ID = {body.RunId}");
-			return NotFound($"Run not found for ID = {body.RunId}");
+			_logger.LogError($"CreateJudgement: run is null. ID = {request.RunId}");
+
+			return NotFound($"Run not found for ID = {request.RunId}");
 		}
 
 		if (run.Status == RunStatus.CREATED)
 		{
-			_logger.LogError($"CreateJudgement: run has pending participations (i.e. run status == CREATED). ID = {body.RunId}");
-			return BadRequest($"Run has pending Participations. ID = {body.RunId}");
+			_logger.LogError(
+				$"CreateJudgement: run has pending participations (i.e. run status == CREATED). " +
+				$"ID = {request.RunId}");
+
+			return BadRequest($"Run has pending Participations. ID = {request.RunId}");
 		}
 
 		// TODO: Update run status on body.Approved's value
 		Judgement judgement = new()
 		{
-			Approved = body.Approved,
+			Approved = request.Approved,
 			ModId = modId.Value,
-			Note = body.Note,
+			Note = request.Note,
 			Run = run,
 			RunId = run.Id,
 		};

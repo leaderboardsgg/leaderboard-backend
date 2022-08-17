@@ -3,36 +3,36 @@ using System.ComponentModel.DataAnnotations;
 namespace LeaderboardBackend.Models.Requests;
 
 /// <summary>
-///     Request object sent when setting a User as mod for a Leaderboard.
+///     This request object is sent when promoting a `User` to *Moderator* for a `Leaderboard`.
 /// </summary>
 public record CreateModshipRequest
 {
 	/// <summary>
-	///     The Leaderboard ID.
+	///     The ID of the `Leaderboard` the `User` should become a *Moderator* for.
 	/// </summary>
 	[Required]
 	public long LeaderboardId { get; set; }
 
 	/// <summary>
-	///     The User ID.
+	///     The ID of the `User` who should be promoted.
 	/// </summary>
 	[Required]
 	public Guid UserId { get; set; }
 }
 
 /// <summary>
-///     Request object sent when removing a User as mod for a Leaderboard.
+///     This request object is sent when demoting a `User` as a *Moderator* from a `Leaderboard`.
 /// </summary>
 public record RemoveModshipRequest
 {
 	/// <summary>
-	///     The Leaderboard ID.
+	///     The ID of the `Leaderboard` the `User` should be demoted from.
 	/// </summary>
 	[Required]
 	public long LeaderboardId { get; set; }
 
 	/// <summary>
-	///     The User ID.
+	///     The ID of the `User` who should be demoted.
 	/// </summary>
 	[Required]
 	public Guid UserId { get; set; }

@@ -4,73 +4,62 @@ using NodaTime;
 namespace LeaderboardBackend.Models.Entities;
 
 /// <summary>
-///     A decision by a mod on a run submission.
+///     Represents a decision made by a *Moderator* (`User`) about a `Run`.
 /// </summary>
 /// <remarks>
-///     The latest judgement on a run updates its status.
-///     A judgement can be one of these three types: <br/>
-///     - an approval if Approval == true; <br/>
-///     - a rejection if Approval == false; and <br/>
-///     - a comment if Approval == null. <br/>
-///     Judgements are NOT created if: <br/>
-///     - its related run has "CREATED" status; <br/>
-///     - its Note is empty while its Approved is false or null. <br/>
-///     I.e. for the second point, a mod MUST add a note if they want to reject or simply comment on a submission. <br/>
-///     Moderators CANNOT modify their judgements once made.
+///     The latest Judgement on a Run updates its status.<br/>
+///     A Judgement may be one of these types:<br/>
+///         - an approval (when Approval is true);<br/>
+///         - a rejection (when Approval is false);<br/>
+///         - a comment (when Approval is null).<br/>
+///     A Judgement is not created when:<br/>
+///         - the related Run's status is CREATED;<br/>
+///         - its Note is empty while Approved is null or false.<br/>
+///     A Judgement may not be modified once created.
 /// </remarks>
 public class Judgement
 {
 	/// <summary>
+	///     The unique identifier of the `Judgement`.<br/>
 	///     Generated on creation.
 	/// </summary>
 	public long Id { get; set; }
 
 	/// <summary>
-	///     Defines this judgement, which in turn defines the status of its related run. <br />
-	///     If:
-	///       <ul>
-	///         <li>true, run is approved;</li>
-	///         <li>false, run is rejected;</li>
-	///         <li>null, run is commented on.</li>
-	///       </ul>
-	///     For the latter two, Note MUST be non-empty.
+	///     The `Judgement`'s decision. May be null, true, or false.
 	/// </summary>
 	public bool? Approved { get; set; }
 
 	/// <summary>
-	///     When the judgement was made.
+	///     The time the `Judgement` was made.<br/>
+	///     Generated on creation.
 	/// </summary>
 	[Required]
 	public Instant CreatedAt { get; set; }
 
 	/// <summary>
-	///     Comments on the judgement.
-	///     MUST be non-empty for rejections or comments (Approved ∈ {false, null}).
+	///     A comment elaborating on the `Judgement`'s decision. Must have a value when the
+	///     affected `Run` is not approved (`Approved` is null or false).
 	/// </summary>
+	/// <example>The video proof is not of sufficient quality.</example>
 	[Required]
 	public string Note { get; set; } = "";
 
 	/// <summary>
-	///     ID of the mod that made this judgement.
+	///     The ID of the *Moderator* (`User`) who is making the `Judgement`.
 	/// </summary>
 	[Required]
 	public Guid ModId { get; set; }
 
-	/// <summary>
-	///     Model of the mod that made this judgement.
-	/// </summary>
 	[Required]
 	public User Mod { get; set; } = null!;
 
 	/// <summary>
-	///     ID of the related run.
+	///     The ID of the `Run` which is being judged.
 	/// </summary>
 	[Required]
 	public Guid RunId { get; set; }
 
-	/// <summary>
-	///     Model of the related run.
-	/// </summary>
 	[Required]
 	public Run Run { get; set; } = null!;
 }

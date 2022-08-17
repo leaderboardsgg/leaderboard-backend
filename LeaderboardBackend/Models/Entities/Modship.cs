@@ -3,15 +3,19 @@ using System.Text.Json.Serialization;
 
 namespace LeaderboardBackend.Models.Entities;
 
+/// <summary>
+///     Represents the *Moderator* status of a `User`.
+/// </summary>
 public class Modship
 {
 	/// <summary>
+	///     The unique identifier of the `Modship`.<br/>
 	///     Generated on creation.
 	/// </summary>
 	public long Id { get; set; }
 
 	/// <summary>
-	///     The mod's ID.
+	///     The ID of the *Moderator* (`User`).
 	/// </summary>
 	[Required]
 	public Guid UserId { get; set; }
@@ -19,7 +23,7 @@ public class Modship
 	public User? User { get; set; } = null!;
 
 	/// <summary>
-	///     ID of the Leaderboard the User is a mod for.
+	///     The ID of the `Leaderboard` the `User` is a *Moderator* for.
 	/// </summary>
 	[Required]
 	public long LeaderboardId { get; set; }

@@ -3,17 +3,21 @@ using System.Text.Json.Serialization;
 
 namespace LeaderboardBackend.Models.Entities;
 
+/// <summary>
+///     Represents a collection of `Category` entities.
+/// </summary>
 public class Leaderboard
 {
 	/// <summary>
+	///     The unique identifier of the `Leaderboard`.<br/>
 	///     Generated on creation.
 	/// </summary>
 	public long Id { get; set; }
 
 	/// <summary>
-	///     The Leaderboard's aka game's name. Pretty straightforward.
+	///     The display name of the `Leaderboard` to create.
 	/// </summary>
-	/// <example>Mario Goes to Jail II</example>
+	/// <example>Foo Bar</example>
 	[Required]
 	public string Name { get; set; } = null!;
 

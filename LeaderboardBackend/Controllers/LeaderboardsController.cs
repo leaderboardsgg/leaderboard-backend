@@ -20,11 +20,11 @@ public class LeaderboardsController : ControllerBase
 	}
 
 	/// <summary>
-	///     Gets a leaderboard.
+	///     Gets a Leaderboard by its ID.
 	/// </summary>
-	/// <param name="id">The leaderboard's ID.</param>
-	/// <response code="200">The Leaderboard.</response>
-	/// <response code="404">If no Leaderboard can be found.</response>
+	/// <param name="id">The ID of the `Leaderboard` which should be retrieved.</param>
+	/// <response code="200">The `Leaderboard` was found and returned successfully.</response>
+	/// <response code="404">No `Leaderboard` with the requested ID could be found.</response>
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
 	[HttpGet("{id}")]
@@ -41,35 +41,44 @@ public class LeaderboardsController : ControllerBase
 	}
 
 	/// <summary>
-	///     Gets leaderboards. Can be an empty array.
+	///     Gets Leaderboards by their IDs.
 	/// </summary>
-	/// <param name="ids">The IDs.</param>
-	/// <response code="200">An array of Leaderboards. Can be empty.</response>
+	/// <param name="ids">The IDs of the `Leaderboard`s which should be retrieved.</param>
+	/// <response code="200">
+	///     The list of `Leaderboard`s was retrieved successfully. The result can be an empty
+	///     collection.
+	/// </response>
 	[AllowAnonymous]
 	[HttpGet]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	public async Task<ActionResult<List<Leaderboard>>> GetLeaderboards([FromQuery] long[] ids)
+	public async Task<ActionResult<List<Leaderboard>>> GetLeaderboards(
+		[FromQuery] long[] ids)
 	{
 		return Ok(await _leaderboardService.GetLeaderboards(ids));
 	}
 
 	/// <summary>
-	///     Creates a new Leaderboard. Admin-only.
+	///     Creates a new Leaderboard.
+	///     This request is restricted to Administrators.
 	/// </summary>
-	/// <param name="body">A CreateLeaderboardRequest instance.</param>
-	/// <response code="201">The created Leaderboard.</response>
-	/// <response code="400">If the request is malformed.</response>
-	/// <response code="404">If a non-admin calls this.</response>
+	/// <param name="request">
+	///     The `CreateLeaderboardRequest` instance from which to create the `Leaderboard`.
+	/// </param>
+	/// <response code="201">The `Leaderboard` was created and returned successfully.</response>
+	/// <response code="400">The request was malformed.</response>
+	/// <response code="404">
+	///     The requesting `User` is unauthorized to create `Leaderboard`s.
+	/// </response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
 	[Authorize(Policy = UserTypes.ADMIN)]
 	[HttpPost]
 	public async Task<ActionResult<Leaderboard>> CreateLeaderboard(
-		[FromBody] CreateLeaderboardRequest body)
+		[FromBody] CreateLeaderboardRequest request)
 	{
 		Leaderboard leaderboard = new()
 		{
-			Name = body.Name,
-			Slug = body.Slug
+			Name = request.Name,
+			Slug = request.Slug
 		};
 
 		await _leaderboardService.CreateLeaderboard(leaderboard);

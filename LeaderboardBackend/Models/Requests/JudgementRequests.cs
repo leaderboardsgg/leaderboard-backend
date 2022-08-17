@@ -3,30 +3,25 @@ using LeaderboardBackend.Models.Annotations;
 namespace LeaderboardBackend.Models.Requests;
 
 /// <summary>
-///     Request object sent when creating a Judgement.
+///     This request object is sent when creating a `Judgement`.
 /// </summary>
 public record CreateJudgementRequest
 {
-
 	/// <summary>
-	///     GUID of the run.
+	///     The ID of the `Run` that is being judged.
 	/// </summary>
-	/// <example>e1c010d7-b499-4196-be17-aa27a053f3dc</example>
 	public Guid RunId { get; set; }
 
 	/// <summary>
-	///     Judgement comments. Must be provided if not outright approving a run ("Approved" is
-	///     false or null).
-	///     Acts as mod feedback for the runner.
+	///     A comment elaborating on the `Judgement`'s decision. Must have a value when the
+	///     affected `Run` is not approved (`Approved` is null or false).
 	/// </summary>
-	/// <example>e1c010d7-b499-4196-be17-aa27a053f3dc</example>
+	/// <example>The video proof is not of sufficient quality.</example>
 	[Note]
 	public string Note { get; set; } = null!;
 
 	/// <summary>
-	///     The judgement result. Can be true, false, or null. For the latter two, "Note" must be
-	///     non-empty.
+	///     The `Judgement`'s decision. May be null, true, or false.
 	/// </summary>
-	/// <example>e1c010d7-b499-4196-be17-aa27a053f3dc</example>
 	public bool? Approved { get; set; }
 }

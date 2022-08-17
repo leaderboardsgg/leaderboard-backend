@@ -3,37 +3,45 @@ using LeaderboardBackend.Models.Annotations;
 
 namespace LeaderboardBackend.Models.Requests;
 
+/// <summary>
+///     This request object is sent when banning a `User` from the site.
+/// </summary>
 public record CreateSiteBanRequest
 {
 	/// <summary>
-	///     The ID of the user, who should be banned.
+	///     The ID of the `User` which is banned.
 	/// </summary>
 	[Required]
 	public Guid UserId { get; set; }
 
 	/// <summary>
-	///     The reason why the user is banned.
+	///     The reason as to the `User`'s ban.
 	/// </summary>
+	/// <example>Abusive or hateful conduct.</example>
 	[Required]
 	public string Reason { get; set; } = null!;
 };
 
+/// <summary>
+///     This request object is sent when banning a `User` from a `Leaderboard`.
+/// </summary>
 public record CreateLeaderboardBanRequest
 {
 	/// <summary>
-	///     The ID of the user, who should be banned.
+	///     The ID of the `User` which is banned.
 	/// </summary>
 	[Required]
 	public Guid UserId { get; set; }
 
 	/// <summary>
-	///     The reason why the user is banned.
+	///     The reason for the `User`'s ban.
 	/// </summary>
+	/// <example>Abusive or hateful conduct.</example>
 	[Required]
 	public string Reason { get; set; } = null!;
 
 	/// <summary>
-	///     The ID of the leaderboard on which the user should be banned.
+	///     The ID of the `Leaderboard` from which the `User` is banned.
 	/// </summary>
 	public long LeaderboardId { get; set; }
 }
