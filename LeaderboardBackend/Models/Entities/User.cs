@@ -19,7 +19,7 @@ public class User
 	///     The username of the `User`. It:
 	///     <ul>
 	///       <li>must be [2, 25] in length;</li>
-	///       <li>must be made up of letters sandwiching zero or one of:</li>
+	///       <li>must be made up of alphanumeric characters around zero or one of:</li>
 	///       <ul>
 	///         <li>hyphen;</li>
 	///         <li>underscore; or</li>
