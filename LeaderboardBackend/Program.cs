@@ -85,17 +85,17 @@ builder.Services
 // Configure authorisation.
 builder.Services.AddAuthorization(options =>
 {
-	options.AddPolicy(UserTypes.ADMIN, policy =>
+	options.AddPolicy(UserTypes.ADMINISTRATOR, policy =>
 	{
 		policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
 		policy.RequireAuthenticatedUser();
-		policy.Requirements.Add(new UserTypeRequirement(UserTypes.ADMIN));
+		policy.Requirements.Add(new UserTypeRequirement(UserTypes.ADMINISTRATOR));
 	});
-	options.AddPolicy(UserTypes.MOD, policy =>
+	options.AddPolicy(UserTypes.MODERATOR, policy =>
 	{
 		policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
 		policy.RequireAuthenticatedUser();
-		policy.Requirements.Add(new UserTypeRequirement(UserTypes.MOD));
+		policy.Requirements.Add(new UserTypeRequirement(UserTypes.MODERATOR));
 	});
 
 	// Handles empty [Authorize] attributes

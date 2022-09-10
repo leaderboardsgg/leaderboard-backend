@@ -28,6 +28,8 @@ public class CategoriesController : ControllerBase
 	[HttpGet("{id}")]
 	public async Task<ActionResult<Category>> GetCategory(long id)
 	{
+		// NOTE: Should this use [AllowAnonymous]? - Ero
+
 		Category? category = await _categoryService.GetCategory(id);
 
 		if (category == null)
@@ -55,8 +57,10 @@ public class CategoriesController : ControllerBase
 	public async Task<ActionResult<Category>> CreateCategory(
 		[FromBody] CreateCategoryRequest request)
 	{
-		// FIXME: Allow only mods to call this
+		// FIXME: Allow only moderators to call this! - Ero
+		// NOTE: Allow administrators to call this as well? - Ero
 
+		// NOTE: Check that body.PlayersMax > body.PlayersMin? - Ero
 		Category category = new()
 		{
 			Name = request.Name,

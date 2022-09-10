@@ -29,7 +29,7 @@ public class LeaderboardService : ILeaderboardService
 		else
 		{
 			return await _applicationContext.Leaderboards
-				.Where(l => ids.Contains(l.Id))
+				.Where(leaderboard => ids.Contains(leaderboard.Id))
 				.ToListAsync();
 		}
 	}

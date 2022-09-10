@@ -6,6 +6,7 @@ using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
+using NodaTime;
 using NUnit.Framework;
 
 namespace LeaderboardBackend.Test
@@ -57,10 +58,7 @@ namespace LeaderboardBackend.Test
 
 			List<Participation> retrieved = await s_ApiClient.Get<List<Participation>>(
 				$"api/runs/{createdRun.Id}/participations",
-				new()
-				{
-					Jwt = s_Jwt
-				});
+				new() { Jwt = s_Jwt });
 
 			Assert.NotNull(retrieved);
 			Assert.AreEqual(createdParticipation.Id, retrieved[0].Id);
@@ -74,9 +72,9 @@ namespace LeaderboardBackend.Test
 				{
 					Body = new CreateRunRequest
 					{
-						Played = NodaTime.Instant.MinValue,
-						Submitted = NodaTime.Instant.MaxValue,
-						Status = RunStatus.CREATED
+						PlayedOn = LocalDate.MinIsoValue,
+						SubmittedAt = Instant.MaxValue,
+						Status = RunStatus.Created
 					},
 					Jwt = s_Jwt
 				});
@@ -84,12 +82,7 @@ namespace LeaderboardBackend.Test
 
 		private static async Task<Run> GetRun(Guid id)
 		{
-			return await s_ApiClient.Get<Run>(
-				$"/api/runs/{id}",
-				new()
-				{
-					Jwt = s_Jwt
-				});
+			return await s_ApiClient.Get<Run>($"/api/runs/{id}", new() { Jwt = s_Jwt });
 		}
 	}
 }

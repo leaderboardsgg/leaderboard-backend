@@ -40,6 +40,7 @@ public class ParticipationsController : ControllerBase
 	public async Task<ActionResult<Participation>> GetParticipation(long id)
 	{
 		Participation? participation = await _participationService.GetParticipation(id);
+
 		if (participation == null)
 		{
 			return NotFound();
@@ -61,7 +62,9 @@ public class ParticipationsController : ControllerBase
 	public async Task<ActionResult> CreateParticipation(
 		[FromBody] CreateParticipationRequest request)
 	{
-		// TODO: Maybe create validation middleware
+		// FIXME: Should return Task<ActionResult<Participation>>! - Ero
+		// TODO: Maybe create validation middleware.
+
 		if (request.IsSubmitter && (request.Comment is null || request.Vod is null))
 		{
 			return BadRequest();
@@ -72,6 +75,7 @@ public class ParticipationsController : ControllerBase
 
 		// FIXME: runner null check should probably 500 if it equals the caller's ID. In fact, we
 		// might want to review this method. It's pretty weird. - zysim
+		// TODO: Split these into separate NotFound returns with appropriate messages. - Ero
 		if (runner is null || run is null)
 		{
 			return NotFound();
@@ -95,6 +99,7 @@ public class ParticipationsController : ControllerBase
 			participation);
 	}
 
+	// NOTE: Why does this expect a comment? A Participation (update) shouldn't require that. - Ero
 	/// <summary>
 	///     Updates the Participation of a User for a Run.
 	/// </summary>

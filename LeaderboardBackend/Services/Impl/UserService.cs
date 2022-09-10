@@ -23,23 +23,24 @@ public class UserService : IUserService
 	public async Task<User?> GetUserByEmail(string email)
 	{
 		return await _applicationContext.Users
-			.FirstOrDefaultAsync(u => u.Email == email);
+			.FirstOrDefaultAsync(user => user.Email == email);
 	}
 
 	public async Task<User?> GetUserByName(string name)
 	{
+		string lowerName = name.ToLower();
+
 		// We save a username with casing, but match without.
 		// Effectively you can't have two separate users named e.g. "cool" and "cOoL".
 		return await _applicationContext.Users
-			.FirstOrDefaultAsync(u =>
-				u.Username != null
-				&& u.Username.ToLower() == name.ToLower());
+			.FirstOrDefaultAsync(user =>
+				user.Username != null
+				&& user.Username.ToLower() == lowerName);
 	}
 
 	public async Task CreateUser(User user)
 	{
 		_applicationContext.Users.Add(user);
-
 		await _applicationContext.SaveChangesAsync();
 	}
 }

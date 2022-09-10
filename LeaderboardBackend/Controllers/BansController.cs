@@ -45,6 +45,8 @@ public class BansController : ControllerBase
 	[HttpGet("leaderboard/{leaderboardId:long}")]
 	public async Task<ActionResult<List<Ban>>> GetBansByLeaderboard(long leaderboardId)
 	{
+		// FIXME: Fix NotFound response! Should correspond to the Leaderboard not existing! - Ero
+
 		List<Ban> bans = await _banService.GetBansByLeaderboard(leaderboardId);
 
 		if (bans.Count == 0)
@@ -68,6 +70,8 @@ public class BansController : ControllerBase
 	[HttpGet("leaderboard/{bannedUserId:Guid}")]
 	public async Task<ActionResult<List<Ban>>> GetBansByUser(Guid bannedUserId)
 	{
+		// FIXME: Fix NotFound response! Should correspond to the User not existing! - Ero
+
 		List<Ban> bans = await _banService.GetBansByUser(bannedUserId);
 
 		if (bans.Count == 0)
@@ -89,6 +93,8 @@ public class BansController : ControllerBase
 	[HttpGet("{id:long}")]
 	public async Task<ActionResult<Ban>> GetBan(long id)
 	{
+		// NOTE: Should this use Conventions.GetAnon? - Ero
+
 		Ban? ban = await _banService.GetBanById(id);
 
 		if (ban == null)
@@ -116,12 +122,13 @@ public class BansController : ControllerBase
 	/// </response>
 	/// <response code="404">The `User` to be banned was not found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
-	[Authorize(Policy = UserTypes.ADMIN)]
+	[Authorize(Policy = UserTypes.ADMINISTRATOR)]
 	[HttpPost]
 	public async Task<ActionResult<Ban>> CreateSiteBan([FromBody] CreateSiteBanRequest request)
 	{
 		Guid? adminId = _authService.GetUserIdFromClaims(HttpContext.User);
 
+		// FIXME: Should return Unauthorized()! - Ero
 		if (adminId is null)
 		{
 			return Forbid();
@@ -134,6 +141,7 @@ public class BansController : ControllerBase
 			return NotFound("User not found");
 		}
 
+		// FIXME: Should return Forbid("Admin users cannot be banned.")! - Ero
 		if (bannedUser.Admin)
 		{
 			return StatusCode(StatusCodes.Status403Forbidden, "Admin users cannot be banned.");
@@ -168,18 +176,23 @@ public class BansController : ControllerBase
 	/// </response>
 	/// <response code="404">The `User` to be banned was not found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
-	[Authorize(Policy = UserTypes.MOD)]
+	[Authorize(Policy = UserTypes.MODERATOR)]
 	[HttpPost("leaderboard")]
 	public async Task<ActionResult<Ban>> CreateLeaderboardBan(
 		[FromBody] CreateLeaderboardBanRequest request)
 	{
+		// FIXME: Allow only moderators to call this! - Ero
+		// NOTE: Allow administrators to call this as well? - Ero
+
 		Guid? modId = _authService.GetUserIdFromClaims(HttpContext.User);
 
+		// FIXME: Should return Unauthorized()! - Ero
 		if (modId is null)
 		{
 			return Forbid();
 		}
 
+		// FIXME: Check whether the User is valid and only afterwards get the Leaderboard! - Ero
 		User? bannedUser = await _userService.GetUserById(request.UserId);
 		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(request.LeaderboardId);
 
@@ -193,6 +206,7 @@ public class BansController : ControllerBase
 			return NotFound("Leaderboard not found");
 		}
 
+		// FIXME: Should return Forbid("Admin users cannot be banned.")! - Ero
 		if (bannedUser.Admin || bannedUser.Modships is not null)
 		{
 			return StatusCode(StatusCodes.Status403Forbidden, "Cannot ban users with same or higher rights.");
@@ -221,10 +235,13 @@ public class BansController : ControllerBase
 	/// <response code="403">The requesting `User` is unauthorized to lift `Ban`s.</response>
 	/// <response code="404">No `Ban` with the requested ID could be found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Delete))]
-	[Authorize(Policy = UserTypes.ADMIN)]
+	[Authorize(Policy = UserTypes.ADMINISTRATOR)]
 	[HttpDelete("{id}")]
 	public async Task<ActionResult> DeleteBan(long id)
 	{
+		// FIXME: Return a value specifying whether the request was successful instead of
+		// catching! - Ero
+
 		try
 		{
 			await _banService.DeleteBan(id);
@@ -248,10 +265,16 @@ public class BansController : ControllerBase
 	/// <response code="403">The requesting `User` is unauthorized to lift `Ban`s.</response>
 	/// <response code="404">No `Ban` with the requested ID could be found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Delete))]
-	[Authorize(Policy = UserTypes.MOD)]
+	[Authorize(Policy = UserTypes.MODERATOR)]
 	[HttpDelete("{id}/leaderboards/{leaderboardId}")]
 	public async Task<ActionResult> DeleteLeaderboardBan(long id, long leaderboardId)
 	{
+		// FIXME: Allow only moderators to call this! - Ero
+		// NOTE: Allow administrators to call this as well? - Ero
+
+		// FIXME: Return a value specifying whether the request was successful instead of
+		// catching! - Ero
+
 		try
 		{
 			await _banService.DeleteLeaderboardBan(id, leaderboardId);

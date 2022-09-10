@@ -7,53 +7,48 @@ internal class ConsoleMenu<T>
 
 	public ConsoleMenu(string header, List<T> items)
 	{
-		_items = items;
 		_header = header;
+		_items = items;
 	}
 
 	public T? Choose()
 	{
 		int choice = 0;
 
-		ConsoleKeyInfo keyInfo;
-
-		do
+		while (true)
 		{
 			WriteMenu(choice);
-			keyInfo = Console.ReadKey();
 
-			switch (keyInfo.Key)
+			switch (Console.ReadKey().Key)
 			{
-				case ConsoleKey.Q:
+				case ConsoleKey.Enter:
 				{
-					return default;
+					return _items[choice];
 				}
-
 				case ConsoleKey.UpArrow:
 				{
-					choice++;
-					if (choice == _items.Count)
+					if (choice++ == _items.Count)
 					{
 						choice = 0;
 					}
 
-					break;
+					continue;
 				}
-
 				case ConsoleKey.DownArrow:
 				{
-					choice--;
-					if (choice == -1)
+					if (choice-- == -1)
 					{
 						choice = _items.Count - 1;
 					}
 
-					break;
+					continue;
+				}
+				case ConsoleKey.Q:
+				{
+					return default;
 				}
 			}
-		} while (keyInfo.Key != ConsoleKey.Enter);
-
-		return _items.ElementAt(choice);
+		}
 	}
 
 	private void WriteMenu(int index)

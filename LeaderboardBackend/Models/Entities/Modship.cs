@@ -20,6 +20,9 @@ public class Modship
 	[Required]
 	public Guid UserId { get; set; }
 
+	/// <summary>
+	///     Relationship model for `UserId`.
+	/// </summary>
 	public User? User { get; set; } = null!;
 
 	/// <summary>
@@ -28,6 +31,9 @@ public class Modship
 	[Required]
 	public long LeaderboardId { get; set; }
 
+	/// <summary>
+	///     Relationship model for `LeaderboardId`.
+	/// </summary>
 	public Leaderboard? Leaderboard { get; set; } = null!;
 
 	public override bool Equals(object? obj)

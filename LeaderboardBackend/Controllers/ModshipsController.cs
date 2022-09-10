@@ -38,6 +38,8 @@ public class ModshipsController : ControllerBase
 	[HttpGet("{id}")]
 	public async Task<ActionResult<Modship>> GetModship(Guid id)
 	{
+		// NOTE: Should this use [AllowAnonymous]? - Ero
+
 		Modship? modship = await _modshipService.GetModship(id);
 
 		if (modship is null)
@@ -63,13 +65,16 @@ public class ModshipsController : ControllerBase
 	///     The requesting `User` is unauthorized to promote other `User`s.
 	/// </response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
-	[Authorize(Policy = UserTypes.ADMIN)]
+	[Authorize(Policy = UserTypes.ADMINISTRATOR)]
 	[HttpPost]
 	public async Task<ActionResult> CreateModship([FromBody] CreateModshipRequest request)
 	{
+		// FIXME: Should return Task<ActionResult<Modship>>! - Ero
+
 		User? user = await _userService.GetUserById(request.UserId);
 		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(request.LeaderboardId);
 
+		// TODO: Split these into separate NotFound returns with appropriate messages. - Ero
 		if (user is null || leaderboard is null)
 		{
 			return NotFound();
@@ -102,7 +107,7 @@ public class ModshipsController : ControllerBase
 	///     requesting `User` is unauthorized to demote other `User`s.
 	/// </response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Delete))]
-	[Authorize(Policy = UserTypes.ADMIN)]
+	[Authorize(Policy = UserTypes.ADMINISTRATOR)]
 	[HttpDelete]
 	public async Task<ActionResult> DeleteMod([FromBody] RemoveModshipRequest request)
 	{

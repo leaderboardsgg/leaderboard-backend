@@ -32,6 +32,8 @@ public class RunsController : ControllerBase
 	[HttpGet("{id}")]
 	public async Task<ActionResult<Run>> GetRun(Guid id)
 	{
+		// NOTE: Should this use [AllowAnonymous]? - Ero
+
 		Run? run = await _runService.GetRun(id);
 
 		if (run is null)
@@ -53,10 +55,13 @@ public class RunsController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult> CreateRun([FromBody] CreateRunRequest request)
 	{
+		// FIXME: Should return Task<ActionResult<Run>>! - Ero
+		// NOTE: Return NotFound for anything in here? - Ero
+
 		Run run = new()
 		{
-			Played = request.Played,
-			Submitted = request.Submitted,
+			PlayedOn = request.PlayedOn,
+			SubmittedAt = request.SubmittedAt,
 			Status = request.Status,
 		};
 
@@ -81,6 +86,8 @@ public class RunsController : ControllerBase
 	[HttpGet("{id}/participations")]
 	public async Task<ActionResult<List<Participation>>> GetParticipations(Guid id)
 	{
+		// NOTE: Should this use [AllowAnonymous]? - Ero
+
 		Run? run = await _runService.GetRun(id);
 
 		if (run is null)
@@ -91,7 +98,9 @@ public class RunsController : ControllerBase
 		List<Participation> participations = await _participationService
 			.GetParticipationsForRun(run);
 
-		if (!participations.Any())
+		// NOTE: If a Run happens to have 0 Participations, there's something else severely wrong.
+		// Should perhaps return something much more critical. - Ero
+		if (participations.Count == 0)
 		{
 			return NotFound("No participations for this run were found");
 		}

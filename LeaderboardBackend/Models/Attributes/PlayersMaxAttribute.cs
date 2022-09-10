@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using LeaderboardBackend.Models.Requests;
 
-namespace LeaderboardBackend.Models.Annotations;
+namespace LeaderboardBackend.Models.Attributes;
 
 public class PlayersMaxAttribute : ValidationAttribute
 {

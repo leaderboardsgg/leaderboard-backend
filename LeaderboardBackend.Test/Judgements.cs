@@ -41,9 +41,9 @@ internal class Judgements
 				Body = new CreateLeaderboardRequest
 				{
 					Name = Generators.GenerateRandomString(),
-					Slug = Generators.GenerateRandomString(),
+					Slug = Generators.GenerateRandomString()
 				},
-				Jwt = adminJwt,
+				Jwt = adminJwt
 			});
 
 		Modship modship = await s_ApiClient.Post<Modship>(
@@ -53,9 +53,9 @@ internal class Judgements
 				Body = new CreateModshipRequest
 				{
 					LeaderboardId = s_DefaultLeaderboard.Id,
-					UserId = mod.Id,
+					UserId = mod.Id
 				},
-				Jwt = adminJwt,
+				Jwt = adminJwt
 			});
 
 		s_Jwt = (await s_ApiClient.LoginUser(VALID_EMAIL, VALID_PASSWORD)).Token;
@@ -74,15 +74,15 @@ internal class Judgements
 				{
 					RunId = run.Id,
 					Note = "It is a cool run",
-					Approved = true,
+					Approved = true
 				},
-				Jwt = s_Jwt,
+				Jwt = s_Jwt
 			});
 
 		Assert.NotNull(createdJudgement);
 	}
 
-	private async Task<Run> CreateRun()
+	private static async Task<Run> CreateRun()
 	{
 		return await s_ApiClient.Post<Run>(
 			"/api/runs",
@@ -90,11 +90,11 @@ internal class Judgements
 			{
 				Body = new CreateRunRequest
 				{
-					Played = Instant.MinValue,
-					Submitted = Instant.MaxValue,
-					Status = RunStatus.SUBMITTED,
+					PlayedOn = LocalDate.MinIsoValue,
+					SubmittedAt = Instant.MaxValue,
+					Status = RunStatus.Submitted
 				},
-				Jwt = s_Jwt,
+				Jwt = s_Jwt
 			});
 	}
 }

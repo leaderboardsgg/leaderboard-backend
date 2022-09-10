@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using LeaderboardBackend.Models.Annotations;
+using LeaderboardBackend.Models.Attributes;
 
 namespace LeaderboardBackend.Models.Requests;
 
@@ -43,5 +43,6 @@ public record CreateLeaderboardBanRequest
 	/// <summary>
 	///     The ID of the `Leaderboard` from which the `User` is banned.
 	/// </summary>
+	[Required]
 	public long LeaderboardId { get; set; }
 }

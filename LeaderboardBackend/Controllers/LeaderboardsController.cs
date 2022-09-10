@@ -70,7 +70,7 @@ public class LeaderboardsController : ControllerBase
 	///     The requesting `User` is unauthorized to create `Leaderboard`s.
 	/// </response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
-	[Authorize(Policy = UserTypes.ADMIN)]
+	[Authorize(Policy = UserTypes.ADMINISTRATOR)]
 	[HttpPost]
 	public async Task<ActionResult<Leaderboard>> CreateLeaderboard(
 		[FromBody] CreateLeaderboardRequest request)

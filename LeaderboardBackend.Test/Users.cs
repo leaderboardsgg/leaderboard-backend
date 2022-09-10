@@ -31,10 +31,7 @@ internal class Users
 	{
 		Guid randomGuid = new();
 		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
-			await s_ApiClient.Get<User>(
-				$"/api/users/{randomGuid}",
-				new()
-			))!;
+			await s_ApiClient.Get<User>($"/api/users/{randomGuid}", new()))!;
 
 		Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);
 	}
@@ -47,9 +44,7 @@ internal class Users
 			VALID_EMAIL,
 			VALID_PASSWORD);
 
-		User retrievedUser = await s_ApiClient.Get<User>(
-			$"/api/users/{createdUser?.Id}",
-			new());
+		User retrievedUser = await s_ApiClient.Get<User>($"/api/users/{createdUser?.Id}", new());
 
 		Assert.AreEqual(createdUser, retrievedUser);
 	}
@@ -65,22 +60,22 @@ internal class Users
 				Username = VALID_USERNAME,
 				Password = VALID_PASSWORD,
 				PasswordConfirm = "someotherpassword",
-				Email = VALID_EMAIL,
+				Email = VALID_EMAIL
 			},
 			new()
 			{
 				Username = VALID_USERNAME,
 				Password = VALID_PASSWORD,
 				PasswordConfirm = VALID_PASSWORD,
-				Email = "whatisthis",
+				Email = "whatisthis"
 			},
 			new()
 			{
 				Username = "B",
 				Password = VALID_PASSWORD,
 				PasswordConfirm = VALID_PASSWORD,
-				Email = VALID_EMAIL,
-			},
+				Email = VALID_EMAIL
+			}
 		};
 
 		foreach (RegisterRequest request in requests)
@@ -88,9 +83,7 @@ internal class Users
 			// Not using the helper here because it's easier for this test implementation
 			// to have a table of requests and send them directly.
 			RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
-			{
-				await s_ApiClient.Post<User>("/api/users/register", new() { Body = request });
-			})!;
+				await s_ApiClient.Post<User>("/api/users/register", new() { Body = request }))!;
 
 			Assert.AreEqual(
 				HttpStatusCode.BadRequest,
@@ -103,10 +96,7 @@ internal class Users
 	public static void Me_Unauthorized()
 	{
 		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
-			await s_ApiClient.Get<User>(
-				$"/api/users/me",
-				new()
-			))!;
+			await s_ApiClient.Get<User>($"/api/users/me", new()))!;
 
 		Assert.AreEqual(HttpStatusCode.Unauthorized, e.Response.StatusCode);
 	}
@@ -124,12 +114,7 @@ internal class Users
 		LoginResponse login = await s_ApiClient.LoginUser(createdUser.Email, VALID_PASSWORD);
 
 		// Me
-		User me = await s_ApiClient.Get<User>(
-			"api/users/me",
-			new()
-			{
-				Jwt = login.Token
-			});
+		User me = await s_ApiClient.Get<User>("api/users/me", new() { Jwt = login.Token });
 
 		Assert.AreEqual(createdUser, me);
 	}

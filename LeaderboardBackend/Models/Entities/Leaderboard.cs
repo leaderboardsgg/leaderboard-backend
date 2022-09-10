@@ -22,32 +22,36 @@ public class Leaderboard
 	public string Name { get; set; } = null!;
 
 	/// <summary>
-	///     The bit in the URL after the domain that can be used to identify a Leaderboard.
-	///     Meant to be human-readable. It must be:
-	///     <ul>
-	///       <li>between 2-80 characters, inclusive</li>
-	///       <li>a string of characters separated by hyphens, if desired</li>
-	///     </ul>
+	///     The URL-scoped unique identifier of the `Leaderboard`.<br/>
+	///     Must be [2, 80] in length and consist only of alphanumeric characters and hyphens.
 	/// </summary>
-	/// <example>mario-goes-to-jail-ii</example>
+	/// <example>foo-bar</example>
 	[Required]
 	public string Slug { get; set; } = null!;
 
 	/// <summary>
-	///     The general rules for the Leaderboard.<br/>
-	///     Category-specific rules are tied to the Category.
+	///     The general rules for the Leaderboard.
 	/// </summary>
-	/// <example>Timer starts on selecting New Game and ends when the first tear drops.</example>
+	/// <example>Timer starts on selecting New Game and ends when the final boss is beaten.</example>
 	public string? Rules { get; set; }
 
-	[JsonIgnore]
-	public List<Ban>? Bans { get; set; }
-
+	/// <summary>
+	///     A collection of `Category` entities for the `Leaderboard`.
+	/// </summary>
 	[JsonIgnore]
 	public List<Category>? Categories { get; set; }
 
+	/// <summary>
+	///     A collection of *Moderator*s (`Users`) for the `Leaderboard`.
+	/// </summary>
 	[JsonIgnore]
 	public List<Modship>? Modships { get; set; }
+
+	/// <summary>
+	///     A collection of `Ban`s scoped to the `Leaderboard`.
+	/// </summary>
+	[JsonIgnore]
+	public List<Ban>? Bans { get; set; }
 
 	public override bool Equals(object? obj)
 	{

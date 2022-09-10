@@ -65,6 +65,8 @@ public class UsersController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status409Conflict)]
 	public async Task<ActionResult<User>> Register([FromBody] RegisterRequest request)
 	{
+		// FIXME: Use ApiConventionMethod here! - Ero
+
 		if (await _userService.GetUserByEmail(request.Email) is not null)
 		{
 			// FIXME: Do a redirect to the login page.
@@ -111,6 +113,8 @@ public class UsersController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
 	{
+		// FIXME: Use ApiConventionMethod here! - Ero
+
 		User? user = await _userService.GetUserByEmail(request.Email);
 
 		if (user is null)
@@ -143,6 +147,8 @@ public class UsersController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status403Forbidden)]
 	public async Task<ActionResult<User>> Me()
 	{
+		// FIXME: Use ApiConventionMethod here! - Ero
+
 		string? email = _authService.GetEmailFromClaims(HttpContext.User);
 
 		if (email is null)
@@ -152,6 +158,7 @@ public class UsersController : ControllerBase
 
 		User? user = await _userService.GetUserByEmail(email);
 
+		// FIXME: Should return NotFound()! - Ero
 		if (user is null)
 		{
 			return Forbid();

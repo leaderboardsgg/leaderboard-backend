@@ -13,13 +13,13 @@ public record CreateRunRequest
 	///     The date the `Run` was played on.
 	/// </summary>
 	[Required]
-	public Instant Played { get; set; }
+	public LocalDate PlayedOn { get; set; }
 
 	/// <summary>
 	///     The time the request was made at.
 	/// </summary>
 	[Required]
-	public Instant Submitted { get; set; }
+	public Instant SubmittedAt { get; set; }
 
 	/// <summary>
 	///     The current status of the `Run` creation.

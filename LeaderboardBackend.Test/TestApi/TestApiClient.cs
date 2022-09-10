@@ -53,6 +53,7 @@ internal class TestApiClient
 	private async Task<TResponse> SendAndRead<TResponse>(string endpoint, HttpRequestInit init)
 	{
 		HttpResponseMessage response = await Send(endpoint, init);
+
 		return await ReadFromResponseBody<TResponse>(response);
 	}
 
@@ -62,9 +63,7 @@ internal class TestApiClient
 			CreateRequestMessage(
 				endpoint,
 				init,
-				TestInitCommonFields.JsonSerializerOptions
-			)
-		);
+				TestInitCommonFields.JsonSerializerOptions));
 
 		if (!response.IsSuccessStatusCode)
 		{
@@ -95,7 +94,7 @@ internal class TestApiClient
 		{
 			Headers =
 			{
-				Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, init.Jwt)
+				Authorization = new(JwtBearerDefaults.AuthenticationScheme, init.Jwt)
 			},
 			Content = init.Body switch
 			{
@@ -103,8 +102,8 @@ internal class TestApiClient
 				{
 					Headers =
 					{
-						ContentType = new("application/json"),
-					},
+						ContentType = new("application/json")
+					}
 				},
 				_ => default
 			}

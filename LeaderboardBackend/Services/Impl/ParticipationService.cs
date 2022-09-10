@@ -22,7 +22,7 @@ public class ParticipationService : IParticipationService
 	public async Task<Participation?> GetParticipationForUser(Guid userId)
 	{
 		return await _applicationContext.Participations
-			.SingleOrDefaultAsync(p => p.RunnerId == userId);
+			.SingleOrDefaultAsync(participation => participation.RunnerId == userId);
 	}
 
 	public async Task CreateParticipation(Participation participation)
@@ -40,7 +40,7 @@ public class ParticipationService : IParticipationService
 	public async Task<List<Participation>> GetParticipationsForRun(Run run)
 	{
 		return await _applicationContext.Participations
-			.Where(p => p.RunId == run.Id)
+			.Where(participation => participation.RunId == run.Id)
 			.ToListAsync();
 	}
 }
