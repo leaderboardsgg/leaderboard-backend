@@ -15,6 +15,7 @@ public class ApplicationContext : DbContext
 	public DbSet<Participation> Participations { get; set; } = null!;
 	public DbSet<Run> Runs { get; set; } = null!;
 	public DbSet<User> Users { get; set; } = null!;
+	public DbSet<Variable> Variables { get; set; } = null!;
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
