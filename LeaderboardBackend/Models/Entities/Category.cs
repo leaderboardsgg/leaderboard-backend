@@ -59,6 +59,12 @@ public class Category
 	[Required]
 	public int PlayersMax { get; set; }
 
+	/// <summary>
+	///     A collection of `Variable`s on the `Category`.
+	/// </summary>
+	public List<Variable>? Variables { get; set; }
+
+	// TODO: Figure out how to compare Variables too
 	public override bool Equals(object? obj)
 	{
 		return obj is Category category

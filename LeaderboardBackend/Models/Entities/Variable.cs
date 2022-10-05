@@ -34,6 +34,12 @@ public class Variable
 	[Required]
 	public string? Slug { get; set; }
 
+	/// <summary>
+	///     A collection `Category`s on the `Variable`.
+	/// </summary>
+	public List<Category>? Categories { get; set; }
+
+	// TODO: Figure out how to compare Categories too
 	public override bool Equals(object? obj)
 	{
 		return obj is Variable variable
