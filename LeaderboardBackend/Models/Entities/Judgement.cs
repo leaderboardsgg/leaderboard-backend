@@ -17,7 +17,7 @@ namespace LeaderboardBackend.Models.Entities;
 ///         - its Note is empty while Approved is null or false.<br/>
 ///     A Judgement may not be modified once created.
 /// </remarks>
-public class Judgement
+public class Judgement : Timestamps
 {
 	/// <summary>
 	///     The unique identifier of the `Judgement`.<br/>

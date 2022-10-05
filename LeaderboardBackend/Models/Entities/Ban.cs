@@ -7,7 +7,7 @@ namespace LeaderboardBackend.Models.Entities;
 /// <summary>
 ///     Represents a site-scoped or `Leaderboard`-scoped `Ban` tied to a `User`.
 /// </summary>
-public class Ban
+public class Ban : Timestamps
 {
 	/// <summary>
 	///     The unique identifier of the `Ban`.<br/>

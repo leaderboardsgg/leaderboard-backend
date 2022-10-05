@@ -7,7 +7,7 @@ namespace LeaderboardBackend.Models.Entities;
 /// <summary>
 ///     Represents a user account registered on the website.
 /// </summary>
-public class User
+public class User : Timestamps
 {
 	/// <summary>
 	///     The unique identifier of the `User`.<br/>

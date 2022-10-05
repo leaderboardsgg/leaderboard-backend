@@ -6,7 +6,7 @@ namespace LeaderboardBackend.Models.Entities;
 /// <summary>
 ///     Represents the *Moderator* status of a `User`.
 /// </summary>
-public class Modship
+public class Modship : Timestamps
 {
 	/// <summary>
 	///     The unique identifier of the `Modship`.<br/>
