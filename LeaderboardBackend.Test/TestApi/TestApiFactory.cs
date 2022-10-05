@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using BCryptNet = BCrypt.Net.BCrypt;
+using Npgsql;
 
 namespace LeaderboardBackend.Test.TestApi;
 
@@ -33,6 +34,10 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 			else
 			{
 				dbContext.Database.Migrate();
+				NpgsqlConnection conn = (NpgsqlConnection)dbContext.Database.GetDbConnection();
+				conn.Open();
+				conn.ReloadTypes();
+				conn.Close();
 			}
 
 			Seed(dbContext);

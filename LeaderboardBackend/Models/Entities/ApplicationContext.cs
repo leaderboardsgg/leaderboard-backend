@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -16,8 +17,15 @@ public class ApplicationContext : DbContext
 	public DbSet<Run> Runs { get; set; } = null!;
 	public DbSet<User> Users { get; set; } = null!;
 
+	static ApplicationContext()
+	{
+		NpgsqlConnection.GlobalTypeMapper.MapEnum<RunStatus>();
+	}
+
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
+		modelBuilder.HasPostgresEnum<RunStatus>();
+
 		modelBuilder.Entity<Judgement>()
 			.Property(judgement => judgement.CreatedAt)
 			.HasDefaultValueSql("now()");
