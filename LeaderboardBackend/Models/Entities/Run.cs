@@ -59,4 +59,10 @@ public class Run
 	/// </summary>
 	[Required]
 	public List<Participation>? Participations { get; set; }
+
+	/// <summary>
+	///     A collection of `VariableValue`s on the `Run`.
+	/// </summary>
+	[Required]
+	public List<VariableValue>? VariableValues { get; set; }
 }

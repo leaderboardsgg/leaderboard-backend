@@ -16,6 +16,7 @@ public class ApplicationContext : DbContext
 	public DbSet<Run> Runs { get; set; } = null!;
 	public DbSet<User> Users { get; set; } = null!;
 	public DbSet<Variable> Variables { get; set; } = null!;
+	public DbSet<VariableValue> VariableValues { get; set; } = null!;
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
