@@ -16,18 +16,6 @@ public class Ban : Timestamps
 	public long Id { get; set; }
 
 	/// <summary>
-	///     The time the `Ban` was issued.<br/>
-	///     Generated on creation.
-	/// </summary>
-	[Required]
-	public Instant CreatedAt { get; set; }
-
-	/// <summary>
-	///     The time the `Ban` was lifted.
-	/// </summary>
-	public Instant? DeletedAt { get; set; }
-
-	/// <summary>
 	///     The ID of the `User` who issued the `Ban`.<br/>
 	///     Must be a *Moderator* or *Administrator*.
 	/// </summary>

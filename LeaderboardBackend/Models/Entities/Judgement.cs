@@ -26,13 +26,6 @@ public class Judgement : Timestamps
 	public long Id { get; set; }
 
 	/// <summary>
-	///     The time the `Judgement` was made.<br/>
-	///     Generated on creation.
-	/// </summary>
-	[Required]
-	public Instant CreatedAt { get; set; }
-
-	/// <summary>
 	///     The ID of the `Run` which is being judged.
 	/// </summary>
 	[Required]
