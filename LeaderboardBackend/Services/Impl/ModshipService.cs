@@ -42,6 +42,7 @@ public class ModshipService : IModshipService
 
 	public async Task DeleteModship(Modship modship)
 	{
+		modship.UpdatedAt = SystemClock.Instance.GetCurrentInstant();
 		modship.DeletedAt = SystemClock.Instance.GetCurrentInstant();
 
 		await _applicationContext.SaveChangesAsync();

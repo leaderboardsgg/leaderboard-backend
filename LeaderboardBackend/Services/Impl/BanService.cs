@@ -53,6 +53,7 @@ public class BanService : IBanService
 			.Where(ban => ban.Id == id)
 			.FirstAsync();
 
+		ban.UpdatedAt = SystemClock.Instance.GetCurrentInstant();
 		ban.DeletedAt = SystemClock.Instance.GetCurrentInstant();
 
 		await _applicationContext.SaveChangesAsync();
@@ -65,6 +66,7 @@ public class BanService : IBanService
 			.Where(ban => ban.LeaderboardId == leaderboardId)
 			.FirstAsync();
 
+		ban.UpdatedAt = SystemClock.Instance.GetCurrentInstant();
 		ban.DeletedAt = SystemClock.Instance.GetCurrentInstant();
 
 		await _applicationContext.SaveChangesAsync();

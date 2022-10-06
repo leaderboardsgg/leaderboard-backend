@@ -1,5 +1,6 @@
 using LeaderboardBackend.Models.Entities;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace LeaderboardBackend.Services;
 
@@ -34,6 +35,7 @@ public class ParticipationService : IParticipationService
 	public async Task UpdateParticipation(Participation participation)
 	{
 		_applicationContext.Participations.Update(participation);
+		participation.UpdatedAt = SystemClock.Instance.GetCurrentInstant();
 		await _applicationContext.SaveChangesAsync();
 	}
 
