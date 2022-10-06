@@ -6,7 +6,7 @@ namespace LeaderboardBackend.Models.Entities;
 /// <summary>
 ///     Represents a collection of `Category` entities.
 /// </summary>
-public class Leaderboard : Timestamps
+public class Leaderboard : BaseEntity
 {
 	/// <summary>
 	///     The unique identifier of the `Leaderboard`.<br/>

@@ -5,7 +5,7 @@ namespace LeaderboardBackend.Models.Entities;
 /// <summary>
 ///     Represents the participation of a `User` on a `Run`.
 /// </summary>
-public class Participation : Timestamps
+public class Participation : BaseEntity
 {
 	/// <summary>
 	///     The unique identifier of the `Participation`.<br/>

@@ -2,9 +2,9 @@ using System.ComponentModel.DataAnnotations;
 using NodaTime;
 
 /// <summary>
-///     Base class that provides timestamp fields to all Entities.
+///     Base class that provides common fields to all Entities.
 /// </summary>
-public class Timestamps
+public class BaseEntity
 {
 	/// <summary>
 	///     The time this entity was created.

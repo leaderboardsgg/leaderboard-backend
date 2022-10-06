@@ -23,7 +23,7 @@ public enum RunStatus
 /// <summary>
 ///     Represents an entry on a `Category`.
 /// </summary>
-public class Run : Timestamps
+public class Run : BaseEntity
 {
 	/// <summary>
 	///     The unique identifier of the `Run`.<br/>
