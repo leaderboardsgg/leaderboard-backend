@@ -59,6 +59,11 @@ public class Category : BaseEntity
 	[Required]
 	public int PlayersMax { get; set; }
 
+	/// <summary>
+	///     A collection of `NumericalMetric`s scoped to the `Category`.
+	/// </summary>
+	public List<NumericalMetric>? NumericalMetrics { get; set; }
+
 	public override bool Equals(object? obj)
 	{
 		return obj is Category category

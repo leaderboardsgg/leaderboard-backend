@@ -61,13 +61,18 @@ public class Run : BaseEntity
 	public List<Participation>? Participations { get; set; }
 
 	/// <summary>
-	/// 	The ID of the `Category` for `Run`.
+	/// 	The ID of the `Category` tied to the `Run`.
 	/// </summary>
 	[Required]
 	public long CategoryId { get; set; }
 
 	/// <summary>
-	/// 	Relationship model for `CategoryId`.
+	/// 	The `Category` object itself, which is tied to the `Run`.
 	/// </summary>
 	public Category? Category { get; set; }
+
+	/// <summary>
+	///     A collection of `NumericalMetric`s scoped to the `Run`.
+	/// </summary>
+	public List<NumericalMetric>? NumericalMetrics { get; set; }
 }
