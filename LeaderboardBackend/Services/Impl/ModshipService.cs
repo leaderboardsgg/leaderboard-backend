@@ -1,5 +1,6 @@
 using LeaderboardBackend.Models.Entities;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace LeaderboardBackend.Services;
 
@@ -41,7 +42,7 @@ public class ModshipService : IModshipService
 
 	public async Task DeleteModship(Modship modship)
 	{
-		_applicationContext.Entry(modship).State = EntityState.Deleted;
+		modship.DeletedAt = SystemClock.Instance.GetCurrentInstant();
 
 		await _applicationContext.SaveChangesAsync();
 	}
