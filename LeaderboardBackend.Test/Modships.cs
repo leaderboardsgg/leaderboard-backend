@@ -56,17 +56,9 @@ internal class Modships
 		HttpResponseMessage response = await DeleteModship(createdLeaderboard.Id);
 		Assert.IsTrue(response.IsSuccessStatusCode);
 
-		try
-		{
-			// Confirm that modship is deleted -> 404 NotFound -> Api Client throws RequestFailureException
-			await GetModship();
-			Assert.Fail("GetModship should have failed, because the Modship should not exist anymore");
-		}
-		catch (RequestFailureException e)
-		{
-			Assert.AreEqual(created, retrieved);
-			Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);
-		}
+		Modship deleted = await GetModship();
+		Assert.AreEqual(retrieved.Id, deleted.Id);
+		Assert.NotNull(deleted.DeletedAt);
 	}
 
 	[Test]
