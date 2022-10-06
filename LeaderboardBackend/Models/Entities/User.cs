@@ -95,6 +95,7 @@ public class User : BaseEntity
 	public override bool Equals(object? obj)
 	{
 		return obj is User user
+			&& base.Equals(user)
 			&& Id.Equals(user.Id);
 	}
 

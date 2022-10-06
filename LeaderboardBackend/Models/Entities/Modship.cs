@@ -39,6 +39,7 @@ public class Modship : BaseEntity
 	public override bool Equals(object? obj)
 	{
 		return obj is Modship modship
+			&& base.Equals(modship)
 			&& Id == modship.Id
 			&& UserId == modship.UserId
 			&& LeaderboardId == modship.LeaderboardId;

@@ -62,6 +62,7 @@ public class Category : BaseEntity
 	public override bool Equals(object? obj)
 	{
 		return obj is Category category
+			&& base.Equals(category)
 			&& Id == category.Id
 			&& Name == category.Name
 			&& Slug == category.Slug

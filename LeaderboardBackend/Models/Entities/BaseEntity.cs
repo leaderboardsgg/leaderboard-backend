@@ -22,4 +22,12 @@ public class BaseEntity
 	///     The time this entity was deleted.
 	/// </summary>
 	public Instant? DeletedAt { get; set; }
+
+	public override bool Equals(object? obj)
+	{
+		return obj is BaseEntity entity
+			&& CreatedAt == entity.CreatedAt
+			&& UpdatedAt == entity.UpdatedAt
+			&& DeletedAt == entity.DeletedAt;
+	}
 }

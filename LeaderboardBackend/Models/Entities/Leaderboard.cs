@@ -56,6 +56,7 @@ public class Leaderboard : BaseEntity
 	public override bool Equals(object? obj)
 	{
 		return obj is Leaderboard leaderboard
+			&& base.Equals(leaderboard)
 			&& Id == leaderboard.Id
 			&& Name == leaderboard.Name
 			&& Slug == leaderboard.Slug;
