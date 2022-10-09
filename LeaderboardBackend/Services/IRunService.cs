@@ -2,8 +2,7 @@ using LeaderboardBackend.Models.Entities;
 
 namespace LeaderboardBackend.Services;
 
-public interface IRunService
+public interface IRunService : IBaseService<Run, Guid>
 {
-	Task<Run?> GetRun(Guid id);
-	Task CreateRun(Run run);
+	Task<List<Run>> GetRuns(Guid[] ids);
 }
