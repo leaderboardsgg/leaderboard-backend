@@ -1,4 +1,5 @@
 using LeaderboardBackend.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace LeaderboardBackend.Services;
 
@@ -15,6 +16,11 @@ public class CategoryService : ICategoryService
 	{
 		return await _applicationContext.Categories
 			.FindAsync(id);
+	}
+
+	public async Task<List<Category>> GetCategories(long[] ids)
+	{
+		return await _applicationContext.Categories.Where(cat => ids.Contains(cat.Id)).ToListAsync();
 	}
 
 	public async Task CreateCategory(Category category)
