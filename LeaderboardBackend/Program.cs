@@ -41,6 +41,7 @@ builder.Services.AddScoped<IParticipationService, ParticipationService>();
 builder.Services.AddScoped<IJudgementService, JudgementService>();
 builder.Services.AddScoped<IRunService, RunService>();
 builder.Services.AddScoped<IBanService, BanService>();
+builder.Services.AddScoped<INumericalMetricService, NumericalMetricService>();
 
 // Add controllers to the container.
 builder.Services.AddControllers(opt =>
