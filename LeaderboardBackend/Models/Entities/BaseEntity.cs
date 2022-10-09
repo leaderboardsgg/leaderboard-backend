@@ -10,13 +10,13 @@ public class BaseEntity
 	///     The time this entity was created.
 	/// </summary>
 	[Required]
-	public Instant CreatedAt { get; set; }
+	public Instant CreatedAt { get; set; } = SystemClock.Instance.GetCurrentInstant();
 
 	/// <summary>
 	///     The time this entity was updated.
 	/// </summary>
 	[Required]
-	public Instant UpdatedAt { get; set; }
+	public Instant UpdatedAt { get; set; } = SystemClock.Instance.GetCurrentInstant();
 
 	/// <summary>
 	///     The time this entity was deleted.
@@ -29,5 +29,10 @@ public class BaseEntity
 			&& CreatedAt == entity.CreatedAt
 			&& UpdatedAt == entity.UpdatedAt
 			&& DeletedAt == entity.DeletedAt;
+	}
+
+	public override int GetHashCode()
+	{
+		return HashCode.Combine(CreatedAt, UpdatedAt, DeletedAt);
 	}
 }
