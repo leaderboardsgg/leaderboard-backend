@@ -30,14 +30,15 @@ public class CategoriesController : ControllerBase
 	{
 		// NOTE: Should this use [AllowAnonymous]? - Ero
 
-		Category? category = await _categoryService.GetCategory(id);
-
-		if (category == null)
+		try
+		{
+			Category category = await _categoryService.Get(id);
+			return Ok(category);
+		}
+		catch (System.Exception)
 		{
 			return NotFound();
 		}
-
-		return Ok(category);
 	}
 
 	/// <summary>
@@ -71,7 +72,7 @@ public class CategoriesController : ControllerBase
 			LeaderboardId = request.LeaderboardId,
 		};
 
-		await _categoryService.CreateCategory(category);
+		await _categoryService.Create(category);
 
 		return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
 	}

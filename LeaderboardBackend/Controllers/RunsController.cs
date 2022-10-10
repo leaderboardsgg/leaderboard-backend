@@ -35,15 +35,15 @@ public class RunsController : ControllerBase
 	public async Task<ActionResult<Run>> GetRun(Guid id)
 	{
 		// NOTE: Should this use [AllowAnonymous]? - Ero
-
-		Run? run = await _runService.GetRun(id);
-
-		if (run is null)
+		try
+		{
+			Run run = await _runService.Get(id);
+			return Ok(run);
+		}
+		catch (System.Exception)
 		{
 			return NotFound();
 		}
-
-		return Ok(run);
 	}
 
 	/// <summary>
@@ -68,7 +68,7 @@ public class RunsController : ControllerBase
 			CategoryId = request.CategoryId
 		};
 
-		await _runService.CreateRun(run);
+		await _runService.Create(run);
 
 		return CreatedAtAction(nameof(GetRun), new { id = run.Id }, run);
 	}
@@ -91,7 +91,7 @@ public class RunsController : ControllerBase
 	{
 		// NOTE: Should this use [AllowAnonymous]? - Ero
 
-		Run? run = await _runService.GetRun(id);
+		Run? run = await _runService.Get(id);
 
 		if (run is null)
 		{

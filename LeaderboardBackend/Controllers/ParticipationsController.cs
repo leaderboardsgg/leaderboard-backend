@@ -71,7 +71,7 @@ public class ParticipationsController : ControllerBase
 		}
 
 		User? runner = await _userService.GetUserById(request.RunnerId);
-		Run? run = await _runService.GetRun(request.RunId);
+		Run? run = await _runService.Get(request.RunId);
 
 		// FIXME: runner null check should probably 500 if it equals the caller's ID. In fact, we
 		// might want to review this method. It's pretty weird. - zysim

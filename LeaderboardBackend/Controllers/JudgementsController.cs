@@ -83,7 +83,7 @@ public class JudgementsController : ControllerBase
 			return Forbid();
 		}
 
-		Run? run = await _runService.GetRun(request.RunId);
+		Run? run = await _runService.Get(request.RunId);
 
 		if (run is null)
 		{
