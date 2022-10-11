@@ -18,6 +18,7 @@ internal class Judgements
 	private static Leaderboard s_DefaultLeaderboard = null!;
 	private static TestApiFactory s_Factory = null!;
 	private static string? s_Jwt;
+	private static long s_CategoryId;
 
 	private const string VALID_USERNAME = "Test";
 	private const string VALID_PASSWORD = "c00l_pAssword";
@@ -45,6 +46,21 @@ internal class Judgements
 				},
 				Jwt = adminJwt
 			});
+
+		Category createdCategory = await s_ApiClient.Post<Category>(
+				"/api/categories",
+				new()
+				{
+					Body = new CreateCategoryRequest()
+					{
+						Name = Generators.GenerateRandomString(),
+						Slug = Generators.GenerateRandomString(),
+						LeaderboardId = s_DefaultLeaderboard.Id,
+					},
+					Jwt = adminJwt,
+				}
+			);
+		s_CategoryId = createdCategory.Id;
 
 		Modship modship = await s_ApiClient.Post<Modship>(
 			"/api/modships",
@@ -92,7 +108,8 @@ internal class Judgements
 				{
 					PlayedOn = LocalDate.MinIsoValue,
 					SubmittedAt = Instant.MaxValue,
-					Status = RunStatus.Submitted
+					Status = RunStatus.Submitted,
+					CategoryId = s_CategoryId
 				},
 				Jwt = s_Jwt
 			});
