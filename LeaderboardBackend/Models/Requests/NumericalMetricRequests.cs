@@ -9,7 +9,7 @@ namespace LeaderboardBackend.Models.Requests;
 public record CreateNumericalMetricRequest
 {
 	/// <summary>
-	///     The name for the `NumericalMetric`. Must not be `null`.
+	///     The name for the `NumericalMetric`. Must not be empty.
 	/// </summary>
 	[Required]
 	[MinLength(3)]
@@ -19,7 +19,7 @@ public record CreateNumericalMetricRequest
 	///     The inclusive lower bound for the `NumericalMetric`. Defaults to 0.
 	/// </summary>
 	/// <example>0</example>
-	public long? Min { get; set; } = 0;
+	public long Min { get; set; } = 0;
 
 	/// <summary>
 	///     The inclusive upper bound for the `NumericalMetric`. Defaults to - and must at least be - `Min + 1`.
@@ -30,16 +30,14 @@ public record CreateNumericalMetricRequest
 	/// <summary>
 	///     The list of `Category` ID(s) to be associated with this `NumericalMetric`. Must not be empty.
 	/// </summary>
-	[Required]
-	[MinLength(1, ErrorMessage = "You must tie at least one Category ID to this NumericalMetric.")]
+	[Required(ErrorMessage = "You must pass at least one Category ID to this NumericalMetric.")]
+	[MinLength(1, ErrorMessage = "You must pass at least one Category ID to this NumericalMetric.")]
 	public long[] CategoryIds { get; set; } = null!;
 
 	/// <summary>
-	///     The list of `Run` ID(s) to be associated with this `NumericalMetric`. Must not be empty.
+	///     The list of `Run` ID(s) to be associated with this `NumericalMetric`. Can be empty.
 	/// </summary>
-	[Required]
-	[MinLength(1, ErrorMessage = "You must tie at least one Run ID to this NumericalMetric.")]
-	public Guid[] RunIds { get; set; } = null!;
+	public Guid[] RunIds { get; set; } = { };
 };
 
 public record struct ParsedCreateNumericalMetricRequest
@@ -52,22 +50,11 @@ public record struct ParsedCreateNumericalMetricRequest
 
 	public static ParsedCreateNumericalMetricRequest Parse(CreateNumericalMetricRequest raw)
 	{
-		long min = 0, max = 1;
-		if (raw.Min is null)
-		{
-			min = 0;
-		}
-
-		if (raw.Max is null)
-		{
-			max = min + 1;
-		}
-
 		return new()
 		{
 			Name = raw.Name,
-			Min = min,
-			Max = max,
+			Min = raw.Min,
+			Max = raw.Max ?? raw.Min + 1,
 			CategoryIds = raw.CategoryIds,
 			RunIds = raw.RunIds,
 		};
