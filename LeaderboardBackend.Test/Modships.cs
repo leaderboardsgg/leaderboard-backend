@@ -14,16 +14,16 @@ namespace LeaderboardBackend.Test;
 [TestFixture]
 internal class Modships
 {
-	private static TestApiClient s_ApiClient = null!;
-	private static TestApiFactory s_Factory = null!;
-	private static string s_Jwt = null!;
+	private static TestApiClient s_apiClient = null!;
+	private static TestApiFactory s_factory = null!;
+	private static string s_jwt = null!;
 
 	[SetUp]
 	public static async Task SetUp()
 	{
-		s_Factory = new TestApiFactory();
-		s_ApiClient = s_Factory.CreateTestApiClient();
-		s_Jwt = (await s_ApiClient.LoginAdminUser()).Token;
+		s_factory = new TestApiFactory();
+		s_apiClient = s_factory.CreateTestApiClient();
+		s_jwt = (await s_apiClient.LoginAdminUser()).Token;
 	}
 
 	[Test]
@@ -82,7 +82,7 @@ internal class Modships
 
 	private static async Task<Leaderboard> CreateLeaderboard()
 	{
-		return await s_ApiClient.Post<Leaderboard>(
+		return await s_apiClient.Post<Leaderboard>(
 			"/api/leaderboards",
 			new()
 			{
@@ -91,20 +91,20 @@ internal class Modships
 					Name = "Mario Goes to Jail II",
 					Slug = "mario-goes-to-jail-ii"
 				},
-				Jwt = s_Jwt
+				Jwt = s_jwt
 			});
 	}
 
 	private static async Task<Modship> GetModship()
 	{
-		return await s_ApiClient.Get<Modship>(
+		return await s_apiClient.Get<Modship>(
 			$"/api/modships/{TestInitCommonFields.Admin.Id}",
-			new() { Jwt = s_Jwt });
+			new() { Jwt = s_jwt });
 	}
 
 	private static async Task<Modship> CreateModship(long leaderboardId)
 	{
-		return await s_ApiClient.Post<Modship>(
+		return await s_apiClient.Post<Modship>(
 			"/api/modships",
 			new()
 			{
@@ -113,13 +113,13 @@ internal class Modships
 					LeaderboardId = leaderboardId,
 					UserId = TestInitCommonFields.Admin.Id
 				},
-				Jwt = s_Jwt
+				Jwt = s_jwt
 			});
 	}
 
 	private static async Task<HttpResponseMessage> DeleteModship(long leaderboardId)
 	{
-		return await s_ApiClient.Delete(
+		return await s_apiClient.Delete(
 			"/api/modships",
 			new()
 			{
@@ -128,7 +128,7 @@ internal class Modships
 					LeaderboardId = leaderboardId,
 					UserId = TestInitCommonFields.Admin.Id
 				},
-				Jwt = s_Jwt
+				Jwt = s_jwt
 			});
 	}
 }

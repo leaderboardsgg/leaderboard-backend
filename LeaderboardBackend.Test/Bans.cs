@@ -14,27 +14,27 @@ namespace LeaderboardBackend.Test;
 [TestFixture]
 internal class Bans
 {
-	private static string? s_AdminJwt;
-	private static TestApiClient s_ApiClient = null!;
-	private static Leaderboard s_DefaultLeaderboard = null!;
-	private static TestApiFactory s_Factory = null!;
-	private static string? s_ModJwt;
-	private static User s_ModUser = null!;
-	private static User s_NormalUser = null!;
+	private static string? s_adminJwt;
+	private static TestApiClient s_apiClient = null!;
+	private static Leaderboard s_defaultLeaderboard = null!;
+	private static TestApiFactory s_factory = null!;
+	private static string? s_modJwt;
+	private static User s_modUser = null!;
+	private static User s_normalUser = null!;
 
 	[SetUp]
 	public static async Task SetUp()
 	{
-		s_Factory = new TestApiFactory();
-		s_ApiClient = s_Factory.CreateTestApiClient();
-		s_AdminJwt = (await s_ApiClient.LoginAdminUser()).Token;
+		s_factory = new TestApiFactory();
+		s_apiClient = s_factory.CreateTestApiClient();
+		s_adminJwt = (await s_apiClient.LoginAdminUser()).Token;
 
 		// Set up users and leaderboard
-		s_NormalUser = await s_ApiClient.RegisterUser("normal", "normal@email.com", "Passw0rd!");
+		s_normalUser = await s_apiClient.RegisterUser("normal", "normal@email.com", "Passw0rd!");
 
-		s_ModUser = await s_ApiClient.RegisterUser("mod", "mod@email.com", "Passw0rd!");
+		s_modUser = await s_apiClient.RegisterUser("mod", "mod@email.com", "Passw0rd!");
 
-		s_DefaultLeaderboard = await s_ApiClient.Post<Leaderboard>(
+		s_defaultLeaderboard = await s_apiClient.Post<Leaderboard>(
 			"/api/leaderboards",
 			new()
 			{
@@ -43,28 +43,28 @@ internal class Bans
 					Name = Generators.GenerateRandomString(),
 					Slug = Generators.GenerateRandomString()
 				},
-				Jwt = s_AdminJwt
+				Jwt = s_adminJwt
 			});
 
-		await s_ApiClient.Post<Modship>(
+		await s_apiClient.Post<Modship>(
 			"/api/modships",
 			new()
 			{
 				Body = new CreateModshipRequest
 				{
-					LeaderboardId = s_DefaultLeaderboard.Id,
-					UserId = s_ModUser.Id
+					LeaderboardId = s_defaultLeaderboard.Id,
+					UserId = s_modUser.Id
 				},
-				Jwt = s_AdminJwt
+				Jwt = s_adminJwt
 			});
 
-		s_ModJwt = (await s_ApiClient.LoginUser("mod@email.com", "Passw0rd!")).Token;
+		s_modJwt = (await s_apiClient.LoginUser("mod@email.com", "Passw0rd!")).Token;
 	}
 
 	[Test]
 	public static async Task CreateSiteBan_Ok()
 	{
-		Ban created = await CreateSiteBan(s_NormalUser.Id, "reason");
+		Ban created = await CreateSiteBan(s_normalUser.Id, "reason");
 		Ban retrieved = await GetBan(created.Id);
 
 		Assert.IsNotNull(created);
@@ -91,7 +91,7 @@ internal class Bans
 	[Test]
 	public static async Task CreateLeaderboardBan_Ok()
 	{
-		Ban created = await CreateLeaderboardBan(s_NormalUser.Id, "reason");
+		Ban created = await CreateLeaderboardBan(s_normalUser.Id, "reason");
 		Ban retrieved = await GetBan(created.Id);
 
 		Assert.IsNotNull(created);
@@ -106,7 +106,7 @@ internal class Bans
 	{
 		try
 		{
-			await CreateLeaderboardBan(s_ModUser.Id, "reason");
+			await CreateLeaderboardBan(s_modUser.Id, "reason");
 			Assert.Fail("You should not be able to ban a mod (yourself).");
 		}
 		catch (RequestFailureException e)
@@ -118,7 +118,7 @@ internal class Bans
 	[Test]
 	public static async Task CreateSiteBan_DeleteBan_Ok()
 	{
-		Ban created = await CreateSiteBan(s_NormalUser.Id, "weenie was a mega meanie");
+		Ban created = await CreateSiteBan(s_normalUser.Id, "weenie was a mega meanie");
 		HttpResponseMessage response = await DeleteBan(created.Id);
 		Ban retrieved = await GetBan(created.Id);
 		Assert.AreEqual(HttpStatusCode.NoContent, response.StatusCode);
@@ -128,7 +128,7 @@ internal class Bans
 	[Test]
 	public static async Task CreateLeaderboardBan_DeleteBan_Ok()
 	{
-		Ban created = await CreateLeaderboardBan(s_NormalUser.Id, "weenie was a mega meanie");
+		Ban created = await CreateLeaderboardBan(s_normalUser.Id, "weenie was a mega meanie");
 		Assert.NotNull(created.LeaderboardId);
 		HttpResponseMessage response = await DeleteLeaderboardBan(created.Id, (long)created.LeaderboardId!);
 		Ban retrieved = await GetBan(created.Id);
@@ -138,7 +138,7 @@ internal class Bans
 
 	private static async Task<User> CreateUser(string username, string email, string password)
 	{
-		return await s_ApiClient.Post<User>(
+		return await s_apiClient.Post<User>(
 			"/api/users/register",
 			new()
 			{
@@ -149,13 +149,13 @@ internal class Bans
 					Password = password,
 					PasswordConfirm = password
 				},
-				Jwt = s_AdminJwt
+				Jwt = s_adminJwt
 			});
 	}
 
 	private static async Task<Ban> CreateSiteBan(Guid userId, string reason)
 	{
-		return await s_ApiClient.Post<Ban>(
+		return await s_apiClient.Post<Ban>(
 			"api/bans",
 			new()
 			{
@@ -164,13 +164,13 @@ internal class Bans
 					UserId = userId,
 					Reason = reason
 				},
-				Jwt = s_AdminJwt
+				Jwt = s_adminJwt
 			});
 	}
 
 	private static async Task<Ban> CreateLeaderboardBan(Guid userId, string reason)
 	{
-		return await s_ApiClient.Post<Ban>(
+		return await s_apiClient.Post<Ban>(
 			"api/bans/leaderboard",
 			new()
 			{
@@ -178,26 +178,26 @@ internal class Bans
 				{
 					UserId = userId,
 					Reason = reason,
-					LeaderboardId = s_DefaultLeaderboard.Id
+					LeaderboardId = s_defaultLeaderboard.Id
 				},
-				Jwt = s_ModJwt
+				Jwt = s_modJwt
 			});
 	}
 
 	private static async Task<Ban> GetBan(long id)
 	{
-		return await s_ApiClient.Get<Ban>($"api/bans/{id}", new() { Jwt = s_AdminJwt });
+		return await s_apiClient.Get<Ban>($"api/bans/{id}", new() { Jwt = s_adminJwt });
 	}
 
 	private static async Task<HttpResponseMessage> DeleteBan(long id)
 	{
-		return await s_ApiClient.Delete($"api/bans/{id}", new() { Jwt = s_AdminJwt });
+		return await s_apiClient.Delete($"api/bans/{id}", new() { Jwt = s_adminJwt });
 	}
 
 	private static async Task<HttpResponseMessage> DeleteLeaderboardBan(long id, long leaderboardId)
 	{
-		return await s_ApiClient.Delete(
+		return await s_apiClient.Delete(
 			$"api/bans/{id}/leaderboards/{leaderboardId}",
-			new() { Jwt = s_AdminJwt });
+			new() { Jwt = s_adminJwt });
 	}
 }
