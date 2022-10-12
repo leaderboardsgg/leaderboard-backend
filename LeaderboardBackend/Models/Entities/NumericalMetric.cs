@@ -48,15 +48,45 @@ public class NumericalMetric : BaseEntity
 	// Should we also match the equalities of Runs and Categories? - Shep
 	public override bool Equals(object? obj)
 	{
-		return obj is NumericalMetric category
-			&& Id == category.Id
-			&& Name == category.Name
-			&& Min == category.Min
-			&& Max == category.Max;
+		return obj is NumericalMetric metric
+			&& Id == metric.Id
+			&& Name == metric.Name
+			&& Min == metric.Min
+			&& Max == metric.Max
+			&& AreCategoriesEqual(metric)
+			&& AreRunsEqual(metric);
 	}
 
 	public override int GetHashCode()
 	{
 		return HashCode.Combine(Id, Name, Min, Max);
+	}
+
+	private bool AreCategoriesEqual(NumericalMetric comp)
+	{
+		if (Categories is null && comp.Categories is null)
+		{
+			return true;
+		}
+
+		return Categories!.ConvertAll(cat => cat.Id)
+			.OrderBy(i => i)
+			.SequenceEqual(
+				comp.Categories!.ConvertAll(cat => cat.Id).OrderBy(i => i)
+			);
+	}
+
+	private bool AreRunsEqual(NumericalMetric comp)
+	{
+		if (Runs is null && comp.Runs is null)
+		{
+			return true;
+		}
+
+		return Runs!.ConvertAll(cat => cat.Id)
+			.OrderBy(i => i)
+			.SequenceEqual(
+				comp.Runs!.ConvertAll(cat => cat.Id).OrderBy(i => i)
+			);
 	}
 }
