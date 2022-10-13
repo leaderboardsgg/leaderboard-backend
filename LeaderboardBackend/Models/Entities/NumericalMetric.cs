@@ -1,5 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -45,16 +45,16 @@ public class NumericalMetric : BaseEntity
 	/// </summary>
 	public List<Run>? Runs { get; set; }
 
-	// Should we also match the equalities of Runs and Categories? - Shep
 	public override bool Equals(object? obj)
 	{
 		return obj is NumericalMetric metric
-			&& Id == metric.Id
-			&& Name == metric.Name
-			&& Min == metric.Min
-			&& Max == metric.Max
-			&& AreCategoriesEqual(metric)
-			&& AreRunsEqual(metric);
+				&& base.Equals(metric)
+				&& Id == metric.Id
+				&& Name == metric.Name
+				&& Min == metric.Min
+				&& Max == metric.Max
+				&& AreCategoriesEqual(metric)
+				&& AreRunsEqual(metric);
 	}
 
 	public override int GetHashCode()
@@ -64,29 +64,33 @@ public class NumericalMetric : BaseEntity
 
 	private bool AreCategoriesEqual(NumericalMetric comp)
 	{
-		if (Categories is null && comp.Categories is null)
+		if ((Categories is null || Categories.Count is 0) && (comp.Categories is null || comp.Categories.Count is 0))
 		{
 			return true;
 		}
 
-		return Categories!.ConvertAll(cat => cat.Id)
-			.OrderBy(i => i)
-			.SequenceEqual(
-				comp.Categories!.ConvertAll(cat => cat.Id).OrderBy(i => i)
-			);
+		return Categories is List<Category> ours
+			&& comp.Categories is List<Category> theirs
+			&& ours.ConvertAll(cat => cat.Id)
+				.OrderBy(i => i)
+				.SequenceEqual(
+					theirs.ConvertAll(cat => cat.Id).OrderBy(i => i)
+				);
 	}
 
 	private bool AreRunsEqual(NumericalMetric comp)
 	{
-		if (Runs is null && comp.Runs is null)
+		if ((Runs is null || Runs.Count is 0) && (comp.Runs is null || comp.Runs.Count is 0))
 		{
 			return true;
 		}
 
-		return Runs!.ConvertAll(cat => cat.Id)
-			.OrderBy(i => i)
-			.SequenceEqual(
-				comp.Runs!.ConvertAll(cat => cat.Id).OrderBy(i => i)
-			);
+		return Runs is List<Run> ours
+			&& comp.Runs is List<Run> theirs
+			&& ours.ConvertAll(cat => cat.Id)
+				.OrderBy(i => i)
+				.SequenceEqual(
+					theirs.ConvertAll(cat => cat.Id).OrderBy(i => i)
+				);
 	}
 }
