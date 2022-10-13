@@ -115,7 +115,7 @@ public class RunsController : ControllerBase
 	[HttpGet("{id}/category")]
 	public async Task<ActionResult<Category>> GetCategoryForRun(Guid id)
 	{
-		Run? run = await _runService.GetRun(id);
+		Run? run = await _runService.Get(id);
 
 		if (run is null)
 		{

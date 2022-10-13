@@ -46,45 +46,51 @@ internal class NumericalMetrics
 	}
 
 	private static async Task<Leaderboard> CreateLeaderboard()
-		=> await s_ApiClient.Post<Leaderboard>(
-			"/api/leaderboards",
-			new()
-			{
-				Body = new CreateLeaderboardRequest()
-				{
-					Name = Generators.GenerateRandomString(),
-					Slug = Generators.GenerateRandomString()
-				},
-				Jwt = s_Jwt
-			});
+	{
+		return await s_ApiClient.Post<Leaderboard>(
+					"/api/leaderboards",
+					new()
+					{
+						Body = new CreateLeaderboardRequest()
+						{
+							Name = Generators.GenerateRandomString(),
+							Slug = Generators.GenerateRandomString()
+						},
+						Jwt = s_Jwt
+					});
+	}
 
 	private static async Task<Category> CreateCategory(Leaderboard createdLeaderboard)
-		=> await s_ApiClient.Post<Category>(
-			"/api/categories",
-			new()
-			{
-				Body = new CreateCategoryRequest()
-				{
-					Name = Generators.GenerateRandomString(),
-					Slug = Generators.GenerateRandomString(),
-					LeaderboardId = createdLeaderboard.Id
-				},
-				Jwt = s_Jwt
-			});
+	{
+		return await s_ApiClient.Post<Category>(
+					"/api/categories",
+					new()
+					{
+						Body = new CreateCategoryRequest()
+						{
+							Name = Generators.GenerateRandomString(),
+							Slug = Generators.GenerateRandomString(),
+							LeaderboardId = createdLeaderboard.Id
+						},
+						Jwt = s_Jwt
+					});
+	}
 
 	private static async Task<Run> CreateRun()
-		=> await s_ApiClient.Post<Run>(
-			"/api/runs",
-			new()
-			{
-				Body = new CreateRunRequest
-				{
-					PlayedOn = LocalDate.MinIsoValue,
-					SubmittedAt = Instant.MaxValue,
-					Status = RunStatus.Created
-				},
-				Jwt = s_Jwt
-			});
+	{
+		return await s_ApiClient.Post<Run>(
+					"/api/runs",
+					new()
+					{
+						Body = new CreateRunRequest
+						{
+							PlayedOn = LocalDate.MinIsoValue,
+							SubmittedAt = Instant.MaxValue,
+							Status = RunStatus.Created
+						},
+						Jwt = s_Jwt
+					});
+	}
 
 	private static async Task<NumericalMetric> CreateNumericalMetric(
 		string name,
@@ -125,11 +131,13 @@ internal class NumericalMetrics
 	}
 
 	private static async Task<NumericalMetric> GetNumericalMetric(long id)
-		=> await s_ApiClient.Get<NumericalMetric>(
-			$"/api/numericalmetrics/{id}",
-			new()
-			{
-				Jwt = s_Jwt,
-			}
-		);
+	{
+		return await s_ApiClient.Get<NumericalMetric>(
+					$"/api/numericalmetrics/{id}",
+					new()
+					{
+						Jwt = s_Jwt,
+					}
+				);
+	}
 }
