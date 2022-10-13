@@ -14,16 +14,46 @@ namespace LeaderboardBackend.Test
 	[TestFixture]
 	internal class Runs
 	{
-		private static TestApiClient s_ApiClient = null!;
-		private static TestApiFactory s_Factory = null!;
-		private static string s_Jwt = null!;
+		private static TestApiClient s_apiClient = null!;
+		private static TestApiFactory s_factory = null!;
+		private static string s_jwt = null!;
+		private static long s_categoryId;
 
 		[SetUp]
 		public static async Task SetUp()
 		{
-			s_Factory = new TestApiFactory();
-			s_ApiClient = s_Factory.CreateTestApiClient();
-			s_Jwt = (await s_ApiClient.LoginAdminUser()).Token;
+			s_factory = new TestApiFactory();
+			s_apiClient = s_factory.CreateTestApiClient();
+			s_jwt = (await s_apiClient.LoginAdminUser()).Token;
+
+			Leaderboard createdLeaderboard = await s_apiClient.Post<Leaderboard>(
+				"/api/leaderboards",
+				new()
+				{
+					Body = new CreateLeaderboardRequest()
+					{
+						Name = Generators.GenerateRandomString(),
+						Slug = Generators.GenerateRandomString(),
+					},
+					Jwt = s_jwt,
+				}
+			);
+
+			Category createdCategory = await s_apiClient.Post<Category>(
+				"/api/categories",
+				new()
+				{
+					Body = new CreateCategoryRequest()
+					{
+						Name = Generators.GenerateRandomString(),
+						Slug = Generators.GenerateRandomString(),
+						LeaderboardId = createdLeaderboard.Id,
+					},
+					Jwt = s_jwt,
+				}
+			);
+
+			s_categoryId = createdCategory.Id;
 		}
 
 		[Test]
@@ -42,7 +72,7 @@ namespace LeaderboardBackend.Test
 		{
 			Run createdRun = await CreateRun();
 
-			Participation createdParticipation = await s_ApiClient.Post<Participation>(
+			Participation createdParticipation = await s_apiClient.Post<Participation>(
 				"api/participations",
 				new()
 				{
@@ -53,20 +83,37 @@ namespace LeaderboardBackend.Test
 						RunId = createdRun.Id,
 						RunnerId = TestInitCommonFields.Admin.Id
 					},
-					Jwt = s_Jwt
+					Jwt = s_jwt
 				});
 
-			List<Participation> retrieved = await s_ApiClient.Get<List<Participation>>(
+			List<Participation> retrieved = await s_apiClient.Get<List<Participation>>(
 				$"api/runs/{createdRun.Id}/participations",
-				new() { Jwt = s_Jwt });
+				new() { Jwt = s_jwt });
 
 			Assert.NotNull(retrieved);
 			Assert.AreEqual(createdParticipation.Id, retrieved[0].Id);
 		}
 
+		[Test]
+		public static async Task GetCategory_OK()
+		{
+			Run createdRun = await CreateRun();
+
+			Category category = await s_apiClient.Get<Category>(
+				$"api/runs/{createdRun.Id}/category",
+				new()
+				{
+					Jwt = s_jwt
+				}
+			);
+
+			Assert.NotNull(category);
+			Assert.AreEqual(category.Id, s_categoryId);
+		}
+
 		private static async Task<Run> CreateRun()
 		{
-			return await s_ApiClient.Post<Run>(
+			return await s_apiClient.Post<Run>(
 				"/api/runs",
 				new()
 				{
@@ -74,15 +121,16 @@ namespace LeaderboardBackend.Test
 					{
 						PlayedOn = LocalDate.MinIsoValue,
 						SubmittedAt = Instant.MaxValue,
-						Status = RunStatus.Created
+						Status = RunStatus.Created,
+						CategoryId = s_categoryId
 					},
-					Jwt = s_Jwt
+					Jwt = s_jwt
 				});
 		}
 
 		private static async Task<Run> GetRun(Guid id)
 		{
-			return await s_ApiClient.Get<Run>($"/api/runs/{id}", new() { Jwt = s_Jwt });
+			return await s_apiClient.Get<Run>($"/api/runs/{id}", new() { Jwt = s_jwt });
 		}
 	}
 }

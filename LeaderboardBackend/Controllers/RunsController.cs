@@ -12,11 +12,13 @@ public class RunsController : ControllerBase
 {
 	private readonly IParticipationService _participationService;
 	private readonly IRunService _runService;
+	private readonly ICategoryService _categoryService;
 
-	public RunsController(IParticipationService participationService, IRunService runService)
+	public RunsController(IParticipationService participationService, IRunService runService, ICategoryService categoryService)
 	{
 		_participationService = participationService;
 		_runService = runService;
+		_categoryService = categoryService;
 	}
 
 	/// <summary>
@@ -63,6 +65,7 @@ public class RunsController : ControllerBase
 			PlayedOn = request.PlayedOn,
 			SubmittedAt = request.SubmittedAt,
 			Status = request.Status,
+			CategoryId = request.CategoryId
 		};
 
 		await _runService.CreateRun(run);
@@ -106,5 +109,26 @@ public class RunsController : ControllerBase
 		}
 
 		return Ok(participations);
+	}
+
+	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
+	[HttpGet("{id}/category")]
+	public async Task<ActionResult<Category>> GetCategoryForRun(Guid id)
+	{
+		Run? run = await _runService.GetRun(id);
+
+		if (run is null)
+		{
+			return NotFound("Run not found");
+		}
+
+		Category? category = await _categoryService.GetCategoryForRun(run);
+
+		if (category is null)
+		{
+			return NotFound("Category not found");
+		}
+
+		return Ok(category);
 	}
 }

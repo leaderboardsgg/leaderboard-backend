@@ -15,23 +15,23 @@ namespace LeaderboardBackend.Test;
 [TestFixture]
 internal class Leaderboards
 {
-	private static TestApiClient s_ApiClient = null!;
-	private static TestApiFactory s_Factory = null!;
-	private static string? s_Jwt;
+	private static TestApiClient s_apiClient = null!;
+	private static TestApiFactory s_factory = null!;
+	private static string? s_jwt;
 
 	[SetUp]
 	public static async Task SetUp()
 	{
-		s_Factory = new TestApiFactory();
-		s_ApiClient = s_Factory.CreateTestApiClient();
-		s_Jwt = (await s_ApiClient.LoginAdminUser()).Token;
+		s_factory = new TestApiFactory();
+		s_apiClient = s_factory.CreateTestApiClient();
+		s_jwt = (await s_apiClient.LoginAdminUser()).Token;
 	}
 
 	[Test]
 	public static void GetLeaderboard_NotFound()
 	{
 		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
-			await s_ApiClient.Get<Leaderboard>($"/api/leaderboards/2", new()))!;
+			await s_apiClient.Get<Leaderboard>($"/api/leaderboards/2", new()))!;
 
 		Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);
 	}
@@ -39,7 +39,7 @@ internal class Leaderboards
 	[Test]
 	public static async Task CreateLeaderboard_GetLeaderboard_OK()
 	{
-		Leaderboard createdLeaderboard = await s_ApiClient.Post<Leaderboard>(
+		Leaderboard createdLeaderboard = await s_apiClient.Post<Leaderboard>(
 			"/api/leaderboards",
 			new()
 			{
@@ -48,10 +48,10 @@ internal class Leaderboards
 					Name = Generators.GenerateRandomString(),
 					Slug = Generators.GenerateRandomString()
 				},
-				Jwt = s_Jwt
+				Jwt = s_jwt
 			});
 
-		Leaderboard retrievedLeaderboard = await s_ApiClient.Get<Leaderboard>(
+		Leaderboard retrievedLeaderboard = await s_apiClient.Get<Leaderboard>(
 			$"/api/leaderboards/{createdLeaderboard?.Id}",
 			new());
 
@@ -66,7 +66,7 @@ internal class Leaderboards
 		for (int i = 0; i < 5; i++)
 		{
 			createdLeaderboards.Add(
-				await s_ApiClient.Post<Leaderboard>(
+				await s_apiClient.Post<Leaderboard>(
 					"/api/leaderboards",
 					new()
 					{
@@ -75,14 +75,14 @@ internal class Leaderboards
 							Name = Generators.GenerateRandomString(),
 							Slug = Generators.GenerateRandomString()
 						},
-						Jwt = s_Jwt
+						Jwt = s_jwt
 					}));
 		}
 
 		IEnumerable<long> leaderboardIds = createdLeaderboards.Select(l => l.Id).ToList();
 		string leaderboardIdQuery = ListToQueryString(leaderboardIds, "ids");
 
-		List<Leaderboard> leaderboards = await s_ApiClient.Get<List<Leaderboard>>(
+		List<Leaderboard> leaderboards = await s_apiClient.Get<List<Leaderboard>>(
 			$"api/leaderboards?{leaderboardIdQuery}",
 			new());
 
