@@ -6,7 +6,7 @@ namespace LeaderboardBackend.Services;
 
 public class NumericalMetricService : INumericalMetricService
 {
-	private ApplicationContext _applicationContext;
+	private readonly ApplicationContext _applicationContext;
 	public NumericalMetricService(ApplicationContext applicationContext)
 	{
 		_applicationContext = applicationContext;
@@ -14,8 +14,18 @@ public class NumericalMetricService : INumericalMetricService
 
 	public async Task<NumericalMetric> Get(long id)
 	{
-		return await _applicationContext.NumericalMetrics
+		NumericalMetric metric = await _applicationContext.NumericalMetrics
 			.FirstAsync(metric => metric.Id == id);
+
+		await _applicationContext.Entry(metric)
+			.Collection(m => m.Categories)
+			.LoadAsync();
+
+		await _applicationContext.Entry(metric)
+			.Collection(m => m.Runs)
+			.LoadAsync();
+
+		return metric;
 	}
 
 	public async Task Create(NumericalMetric numericalMetric)
