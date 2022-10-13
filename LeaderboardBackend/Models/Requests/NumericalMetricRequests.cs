@@ -1,5 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace LeaderboardBackend.Models.Requests;
 
@@ -48,15 +48,12 @@ public record struct ParsedCreateNumericalMetricRequest
 	public long[] CategoryIds;
 	public Guid[] RunIds;
 
-	public static ParsedCreateNumericalMetricRequest Parse(CreateNumericalMetricRequest raw)
+	public ParsedCreateNumericalMetricRequest(CreateNumericalMetricRequest raw)
 	{
-		return new()
-		{
-			Name = raw.Name,
-			Min = raw.Min,
-			Max = raw.Max ?? raw.Min + 1,
-			CategoryIds = raw.CategoryIds,
-			RunIds = raw.RunIds,
-		};
+		Name = raw.Name;
+		Min = raw.Min;
+		Max = raw.Max ?? raw.Min + 1;
+		CategoryIds = raw.CategoryIds;
+		RunIds = raw.RunIds;
 	}
 }

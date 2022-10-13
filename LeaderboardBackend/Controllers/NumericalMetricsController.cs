@@ -12,9 +12,9 @@ namespace LeaderboardBackend.Controllers;
 [Route("api/[controller]")]
 public class NumericalMetricsController : ControllerBase
 {
-	private INumericalMetricService _numericalMetricService;
-	private ICategoryService _categoryService;
-	private IRunService _runService;
+	private readonly INumericalMetricService _numericalMetricService;
+	private readonly ICategoryService _categoryService;
+	private readonly IRunService _runService;
 
 	public NumericalMetricsController(
 		INumericalMetricService numericalMetricService,
@@ -62,7 +62,7 @@ public class NumericalMetricsController : ControllerBase
 	public async Task<ActionResult<NumericalMetric>> CreateNumericalMetric(CreateNumericalMetricRequest request)
 	{
 		// TODO: Check for existing NumericalMetrics
-		ParsedCreateNumericalMetricRequest parsed = ParsedCreateNumericalMetricRequest.Parse(request);
+		ParsedCreateNumericalMetricRequest parsed = new(request);
 
 		try
 		{
