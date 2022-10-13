@@ -23,6 +23,25 @@ namespace LeaderboardBackend.Migrations
 
 			NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+			modelBuilder.Entity("CategoryNumericalMetric", b =>
+				{
+					b.Property<long>("CategoriesId")
+						.HasColumnType("bigint")
+						.HasColumnName("categories_id");
+
+					b.Property<long>("NumericalMetricsId")
+						.HasColumnType("bigint")
+						.HasColumnName("numerical_metrics_id");
+
+					b.HasKey("CategoriesId", "NumericalMetricsId")
+						.HasName("pk_category_numerical_metric");
+
+					b.HasIndex("NumericalMetricsId")
+						.HasDatabaseName("ix_category_numerical_metric_numerical_metrics_id");
+
+					b.ToTable("category_numerical_metric", (string)null);
+				});
+
 			modelBuilder.Entity("LeaderboardBackend.Models.Entities.Ban", b =>
 				{
 					b.Property<long>("Id")
@@ -268,6 +287,46 @@ namespace LeaderboardBackend.Migrations
 					b.ToTable("modships", (string)null);
 				});
 
+			modelBuilder.Entity("LeaderboardBackend.Models.Entities.NumericalMetric", b =>
+				{
+					b.Property<long>("Id")
+						.ValueGeneratedOnAdd()
+						.HasColumnType("bigint")
+						.HasColumnName("id");
+
+					NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+					b.Property<Instant>("CreatedAt")
+						.HasColumnType("timestamp with time zone")
+						.HasColumnName("created_at");
+
+					b.Property<Instant?>("DeletedAt")
+						.HasColumnType("timestamp with time zone")
+						.HasColumnName("deleted_at");
+
+					b.Property<long>("Max")
+						.HasColumnType("bigint")
+						.HasColumnName("max");
+
+					b.Property<long>("Min")
+						.HasColumnType("bigint")
+						.HasColumnName("min");
+
+					b.Property<string>("Name")
+						.IsRequired()
+						.HasColumnType("text")
+						.HasColumnName("name");
+
+					b.Property<Instant>("UpdatedAt")
+						.HasColumnType("timestamp with time zone")
+						.HasColumnName("updated_at");
+
+					b.HasKey("Id")
+						.HasName("pk_numerical_metrics");
+
+					b.ToTable("numerical_metrics", (string)null);
+				});
+
 			modelBuilder.Entity("LeaderboardBackend.Models.Entities.Participation", b =>
 				{
 					b.Property<long>("Id")
@@ -409,6 +468,42 @@ namespace LeaderboardBackend.Migrations
 					b.ToTable("users", (string)null);
 				});
 
+			modelBuilder.Entity("NumericalMetricRun", b =>
+				{
+					b.Property<long>("NumericalMetricsId")
+						.HasColumnType("bigint")
+						.HasColumnName("numerical_metrics_id");
+
+					b.Property<Guid>("RunsId")
+						.HasColumnType("uuid")
+						.HasColumnName("runs_id");
+
+					b.HasKey("NumericalMetricsId", "RunsId")
+						.HasName("pk_numerical_metric_run");
+
+					b.HasIndex("RunsId")
+						.HasDatabaseName("ix_numerical_metric_run_runs_id");
+
+					b.ToTable("numerical_metric_run", (string)null);
+				});
+
+			modelBuilder.Entity("CategoryNumericalMetric", b =>
+				{
+					b.HasOne("LeaderboardBackend.Models.Entities.Category", null)
+						.WithMany()
+						.HasForeignKey("CategoriesId")
+						.OnDelete(DeleteBehavior.Cascade)
+						.IsRequired()
+						.HasConstraintName("fk_category_numerical_metric_categories_categories_id");
+
+					b.HasOne("LeaderboardBackend.Models.Entities.NumericalMetric", null)
+						.WithMany()
+						.HasForeignKey("NumericalMetricsId")
+						.OnDelete(DeleteBehavior.Cascade)
+						.IsRequired()
+						.HasConstraintName("fk_category_numerical_metric_numerical_metrics_numerical_metri");
+				});
+
 			modelBuilder.Entity("LeaderboardBackend.Models.Entities.Ban", b =>
 				{
 					b.HasOne("LeaderboardBackend.Models.Entities.User", "BannedUser")
@@ -548,6 +643,24 @@ namespace LeaderboardBackend.Migrations
 
 					b.Navigation("Participations");
 				});
+
+			modelBuilder.Entity("NumericalMetricRun", b =>
+				{
+					b.HasOne("LeaderboardBackend.Models.Entities.NumericalMetric", null)
+						.WithMany()
+						.HasForeignKey("NumericalMetricsId")
+						.OnDelete(DeleteBehavior.Cascade)
+						.IsRequired()
+						.HasConstraintName("fk_numerical_metric_run_numerical_metrics_numerical_metrics_id");
+
+					b.HasOne("LeaderboardBackend.Models.Entities.Run", null)
+						.WithMany()
+						.HasForeignKey("RunsId")
+						.OnDelete(DeleteBehavior.Cascade)
+						.IsRequired()
+						.HasConstraintName("fk_numerical_metric_run_runs_runs_id");
+				});
+
 #pragma warning restore 612, 618
 		}
 	}
