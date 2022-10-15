@@ -72,7 +72,7 @@ public class Run : BaseEntity
 	public Category? Category { get; set; }
 
 	/// <summary>
-	///     A collection of `NumericalMetric`s scoped to the `Run`.
+	///     A collection of `IntegerMetric`s scoped to the `Run`.
 	/// </summary>
-	public List<NumericalMetric>? NumericalMetrics { get; set; }
+	public List<IntegerMetric>? IntegerMetrics { get; set; }
 }

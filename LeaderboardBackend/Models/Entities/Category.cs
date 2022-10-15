@@ -60,9 +60,9 @@ public class Category : BaseEntity
 	public int PlayersMax { get; set; }
 
 	/// <summary>
-	///     A collection of `NumericalMetric`s scoped to the `Category`.
+	///     A collection of `IntegerMetric`s scoped to the `Category`.
 	/// </summary>
-	public List<NumericalMetric>? NumericalMetrics { get; set; }
+	public List<IntegerMetric>? IntegerMetrics { get; set; }
 
 	public override bool Equals(object? obj)
 	{

@@ -10,37 +10,37 @@ namespace LeaderboardBackend.Controllers;
 [ApiController]
 [Produces("application/json")]
 [Route("api/[controller]")]
-public class NumericalMetricsController : ControllerBase
+public class IntegerMetricsController : ControllerBase
 {
-	private readonly INumericalMetricService _numericalMetricService;
+	private readonly IIntegerMetricService _integerMetricService;
 	private readonly ICategoryService _categoryService;
 	private readonly IRunService _runService;
 
-	public NumericalMetricsController(
-		INumericalMetricService numericalMetricService,
+	public IntegerMetricsController(
+		IIntegerMetricService integerMetricService,
 		ICategoryService categoryService,
 		IRunService runService
 	)
 	{
-		_numericalMetricService = numericalMetricService;
+		_integerMetricService = integerMetricService;
 		_categoryService = categoryService;
 		_runService = runService;
 	}
 
 	/// <summary>
-	///     Gets a NumericalMetric by its ID.
+	///     Gets a IntegerMetric by its ID.
 	/// </summary>
-	/// <param name="id">The ID of the `NumericalMetric` which should be retrieved.</param>
-	/// <response code="200">The `NumericalMetric` was found and returned successfully.</response>
-	/// <response code="404">No `NumericalMetric` with the requested ID could be found.</response>
+	/// <param name="id">The ID of the `IntegerMetric` which should be retrieved.</param>
+	/// <response code="200">The `IntegerMetric` was found and returned successfully.</response>
+	/// <response code="404">No `IntegerMetric` with the requested ID could be found.</response>
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
 	[HttpGet("{id}")]
-	public async Task<ActionResult<NumericalMetric>> GetNumericalMetric(long id)
+	public async Task<ActionResult<IntegerMetric>> GetIntegerMetric(long id)
 	{
 		try
 		{
-			NumericalMetric metric = await _numericalMetricService.Get(id);
+			IntegerMetric metric = await _integerMetricService.Get(id);
 			return Ok(metric);
 		}
 		catch (System.Exception)
@@ -50,25 +50,25 @@ public class NumericalMetricsController : ControllerBase
 	}
 
 	/// <summary>
-	///     Creates a new NumericalMetric.
+	///     Creates a new IntegerMetric.
 	/// </summary>
 	/// <param name="request">
-	///     The `CreateNumericalMetricRequest` instance from which to create the `NumericalMetric`.
+	///     The `CreateIntegerMetricRequest` instance from which to create the `IntegerMetric`.
 	/// </param>
-	/// <response code="201">The `NumericalMetric` was created and returned successfully.</response>
+	/// <response code="201">The `IntegerMetric` was created and returned successfully.</response>
 	/// <response code="400">The `Category` or `Run` IDs passed to the request do not exist.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
 	[HttpPost]
-	public async Task<ActionResult<NumericalMetric>> CreateNumericalMetric(CreateNumericalMetricRequest request)
+	public async Task<ActionResult<IntegerMetric>> CreateIntegerMetric(CreateIntegerMetricRequest request)
 	{
-		// TODO: Check for existing NumericalMetrics
-		ParsedCreateNumericalMetricRequest parsed = new(request);
+		// TODO: Check for existing IntegerMetrics
+		ParsedCreateIntegerMetricRequest parsed = new(request);
 
 		try
 		{
 			List<Category> categories = await _categoryService.GetCategories(parsed.CategoryIds);
 			// TODO: Error on categories.Count == 0
-			NumericalMetric metric = new()
+			IntegerMetric metric = new()
 			{
 				Categories = categories,
 				Max = parsed.Max,
@@ -83,9 +83,9 @@ public class NumericalMetricsController : ControllerBase
 				metric.Runs = runs;
 			}
 
-			await _numericalMetricService.Create(metric);
+			await _integerMetricService.Create(metric);
 
-			return CreatedAtAction(nameof(GetNumericalMetric), new { id = metric.Id }, metric);
+			return CreatedAtAction(nameof(GetIntegerMetric), new { id = metric.Id }, metric);
 		}
 		catch (System.Exception)
 		{
@@ -94,21 +94,21 @@ public class NumericalMetricsController : ControllerBase
 	}
 
 	/// <summary>
-	///     Deletes a NumericalMetric.
+	///     Deletes a IntegerMetric.
 	/// </summary>
 	/// <param name="id">
-	///     The id of the `NumericalMetric` to be deleted.
+	///     The id of the `IntegerMetric` to be deleted.
 	/// </param>
-	/// <response code="201">The `NumericalMetric` was created and returned successfully.</response>
+	/// <response code="201">The `IntegerMetric` was created and returned successfully.</response>
 	/// <response code="400">The `Category` or `Run` IDs passed to the request do not exist.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Delete))]
 	[HttpDelete]
-	public async Task<ActionResult> DeleteNumericalMetric(long id)
+	public async Task<ActionResult> DeleteIntegerMetric(long id)
 	{
 		try
 		{
-			NumericalMetric metric = await _numericalMetricService.Get(id);
-			await _numericalMetricService.Delete(metric);
+			IntegerMetric metric = await _integerMetricService.Get(id);
+			await _integerMetricService.Delete(metric);
 			return NoContent();
 		}
 		catch (System.Exception)

@@ -4,17 +4,17 @@ using NodaTime;
 
 namespace LeaderboardBackend.Services;
 
-public class NumericalMetricService : INumericalMetricService
+public class IntegerMetricService : IIntegerMetricService
 {
 	private readonly ApplicationContext _applicationContext;
-	public NumericalMetricService(ApplicationContext applicationContext)
+	public IntegerMetricService(ApplicationContext applicationContext)
 	{
 		_applicationContext = applicationContext;
 	}
 
-	public async Task<NumericalMetric> Get(long id)
+	public async Task<IntegerMetric> Get(long id)
 	{
-		NumericalMetric metric = await _applicationContext.NumericalMetrics
+		IntegerMetric metric = await _applicationContext.IntegerMetrics
 			.FirstAsync(metric => metric.Id == id);
 
 		await _applicationContext.Entry(metric)
@@ -28,13 +28,13 @@ public class NumericalMetricService : INumericalMetricService
 		return metric;
 	}
 
-	public async Task Create(NumericalMetric numericalMetric)
+	public async Task Create(IntegerMetric integerMetric)
 	{
-		_applicationContext.NumericalMetrics.Add(numericalMetric);
+		_applicationContext.IntegerMetrics.Add(integerMetric);
 		await _applicationContext.SaveChangesAsync();
 	}
 
-	public async Task Delete(NumericalMetric metric)
+	public async Task Delete(IntegerMetric metric)
 	{
 		metric.DeletedAt = SystemClock.Instance.GetCurrentInstant();
 		await _applicationContext.SaveChangesAsync();

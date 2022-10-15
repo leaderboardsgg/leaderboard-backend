@@ -12,7 +12,7 @@ using NUnit.Framework;
 namespace LeaderboardBackend.Test;
 
 [TestFixture]
-internal class NumericalMetrics
+internal class IntegerMetrics
 {
 	private static TestApiClient s_ApiClient = null!;
 	private static TestApiFactory s_Factory = null!;
@@ -27,12 +27,12 @@ internal class NumericalMetrics
 	}
 
 	[Test]
-	public static async Task CreateNumericalMetric_GetNumericalMetric_OK()
+	public static async Task CreateIntegerMetric_GetIntegerMetric_OK()
 	{
 		Leaderboard createdLeaderboard = await CreateLeaderboard();
 		Category createdCategory = await CreateCategory(createdLeaderboard);
 
-		NumericalMetric createdMetric = await CreateNumericalMetric(
+		IntegerMetric createdMetric = await CreateIntegerMetric(
 			"Score",
 			null,
 			null,
@@ -40,7 +40,7 @@ internal class NumericalMetrics
 			null
 		);
 
-		NumericalMetric retrievedMetric = await GetNumericalMetric(createdMetric.Id);
+		IntegerMetric retrievedMetric = await GetIntegerMetric(createdMetric.Id);
 
 		Assert.AreEqual(createdMetric, retrievedMetric);
 	}
@@ -92,7 +92,7 @@ internal class NumericalMetrics
 					});
 	}
 
-	private static async Task<NumericalMetric> CreateNumericalMetric(
+	private static async Task<IntegerMetric> CreateIntegerMetric(
 		string name,
 		long? min,
 		long? max,
@@ -100,7 +100,7 @@ internal class NumericalMetrics
 		Guid[]? runIds
 	)
 	{
-		CreateNumericalMetricRequest request = new()
+		CreateIntegerMetricRequest request = new()
 		{
 			Name = name,
 			CategoryIds = categoryIds,
@@ -121,8 +121,8 @@ internal class NumericalMetrics
 			request.RunIds = (Guid[])runIds;
 		}
 
-		return await s_ApiClient.Post<NumericalMetric>(
-			"/api/numericalmetrics",
+		return await s_ApiClient.Post<IntegerMetric>(
+			"/api/integermetrics",
 			new()
 			{
 				Body = request,
@@ -130,10 +130,10 @@ internal class NumericalMetrics
 			});
 	}
 
-	private static async Task<NumericalMetric> GetNumericalMetric(long id)
+	private static async Task<IntegerMetric> GetIntegerMetric(long id)
 	{
-		return await s_ApiClient.Get<NumericalMetric>(
-					$"/api/numericalmetrics/{id}",
+		return await s_ApiClient.Get<IntegerMetric>(
+					$"/api/integermetrics/{id}",
 					new()
 					{
 						Jwt = s_Jwt,

@@ -4,18 +4,18 @@ using System.Diagnostics.CodeAnalysis;
 namespace LeaderboardBackend.Models.Entities;
 
 /// <summary>
-///     Represents a `NumericalMetric` for a `Category`.
+///     Represents a `IntegerMetric` for a `Category`.
 /// </summary>
-public class NumericalMetric : BaseEntity
+public class IntegerMetric : BaseEntity
 {
 	/// <summary>
-	///     The unique identifier of the `NumericalMetric`.<br/>
+	///     The unique identifier of the `IntegerMetric`.<br/>
 	///     Generated on creation.
 	/// </summary>
 	public long Id { get; set; }
 
 	/// <summary>
-	///     The display name of the `NumericalMetric`.
+	///     The display name of the `IntegerMetric`.
 	/// </summary>
 	/// <example>Foo</example>
 	[NotNull]
@@ -23,31 +23,31 @@ public class NumericalMetric : BaseEntity
 	public string? Name { get; set; }
 
 	/// <summary>
-	///     The minimum value of the `NumericalMetric`. The default is 0.
+	///     The minimum value of the `IntegerMetric`. The default is 0.
 	/// </summary>
 	[Required]
 	public long Min { get; set; }
 
 	/// <summary>
-	///     The maximum value of the `NumericalMetric`. The default is `Min` + 1.
+	///     The maximum value of the `IntegerMetric`. The default is `Min` + 1.
 	/// </summary>
 	[Required]
 	public long Max { get; set; }
 
 	/// <summary>
-	///     A collection of `Category`s scoped to the `NumericalMetric`.
+	///     A collection of `Category`s scoped to the `IntegerMetric`.
 	/// </summary>
 	[MinLength(1)]
 	public List<Category>? Categories { get; set; }
 
 	/// <summary>
-	///     A collection of `Run`s scoped to the `NumericalMetric`.
+	///     A collection of `Run`s scoped to the `IntegerMetric`.
 	/// </summary>
 	public List<Run>? Runs { get; set; }
 
 	public override bool Equals(object? obj)
 	{
-		return obj is NumericalMetric metric
+		return obj is IntegerMetric metric
 				&& base.Equals(metric)
 				&& Id == metric.Id
 				&& Name == metric.Name
@@ -62,7 +62,7 @@ public class NumericalMetric : BaseEntity
 		return HashCode.Combine(Id, Name, Min, Max);
 	}
 
-	private bool AreCategoriesEqual(NumericalMetric comp)
+	private bool AreCategoriesEqual(IntegerMetric comp)
 	{
 		if ((Categories is null || Categories.Count is 0) && (comp.Categories is null || comp.Categories.Count is 0))
 		{
@@ -78,7 +78,7 @@ public class NumericalMetric : BaseEntity
 				);
 	}
 
-	private bool AreRunsEqual(NumericalMetric comp)
+	private bool AreRunsEqual(IntegerMetric comp)
 	{
 		if ((Runs is null || Runs.Count is 0) && (comp.Runs is null || comp.Runs.Count is 0))
 		{
