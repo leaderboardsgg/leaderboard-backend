@@ -70,4 +70,15 @@ public class Run : BaseEntity
 	/// 	Relationship model for `CategoryId`.
 	/// </summary>
 	public Category? Category { get; set; }
+
+	public override bool Equals(object? obj)
+	{
+		return obj is Run run
+			&& Id == run.Id;
+	}
+
+	public override int GetHashCode()
+	{
+		return HashCode.Combine(Id, PlayedOn, SubmittedAt, Status, CategoryId);
+	}
 }

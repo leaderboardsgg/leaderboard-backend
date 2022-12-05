@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -61,4 +60,15 @@ public class Judgement : BaseEntity
 	/// <example>The video proof is not of sufficient quality.</example>
 	[Required]
 	public string Note { get; set; } = "";
+
+	public override bool Equals(object? obj)
+	{
+		return obj is Judgement judgement
+			&& Id == judgement.Id;
+	}
+
+	public override int GetHashCode()
+	{
+		return HashCode.Combine(Id, RunId, JudgeId, Approved);
+	}
 }

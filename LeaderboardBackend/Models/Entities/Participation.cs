@@ -46,4 +46,15 @@ public class Participation : BaseEntity
 	///     An optional link to video proof of the `Run`.
 	/// </summary>
 	public string? Vod { get; set; }
+
+	public override bool Equals(object? obj)
+	{
+		return obj is Participation participation
+			&& Id == participation.Id;
+	}
+
+	public override int GetHashCode()
+	{
+		return HashCode.Combine(Id, RunnerId, RunId);
+	}
 }

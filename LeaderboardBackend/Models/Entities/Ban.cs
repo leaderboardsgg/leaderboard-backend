@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -57,4 +56,15 @@ public class Ban : BaseEntity
 	/// </summary>
 	[Required]
 	public string Reason { get; set; } = null!;
+
+	public override bool Equals(object? obj)
+	{
+		return obj is Ban ban
+			&& Id == ban.Id;
+	}
+
+	public override int GetHashCode()
+	{
+		return HashCode.Combine(Id, BanningUserId, BannedUserId, LeaderboardId, Reason);
+	}
 }

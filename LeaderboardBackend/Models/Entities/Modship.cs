@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -39,10 +38,7 @@ public class Modship : BaseEntity
 	public override bool Equals(object? obj)
 	{
 		return obj is Modship modship
-			&& base.Equals(modship)
-			&& Id == modship.Id
-			&& UserId == modship.UserId
-			&& LeaderboardId == modship.LeaderboardId;
+			&& Id == modship.Id;
 	}
 
 	public override int GetHashCode()
