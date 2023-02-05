@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using DotNetEnv;
 using DotNetEnv.Configuration;
+using FluentValidation;
 using LeaderboardBackend;
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
@@ -25,14 +26,17 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 // Configuration / Options
 if (!builder.Environment.IsProduction())
 {
-	AppConfig? appConfig = builder.Configuration.Get<AppConfig>();
-	EnvConfigurationSource dotEnvSource = new(new string[] { appConfig?.EnvPath ?? ".env" }, LoadOptions.NoClobber());
+	AppConfig? appConfigWithoutDotEnv = builder.Configuration.Get<AppConfig>();
+	EnvConfigurationSource dotEnvSource = new(new string[] { appConfigWithoutDotEnv?.EnvPath ?? ".env" }, LoadOptions.NoClobber());
 	builder.Configuration.Sources.Insert(0, dotEnvSource); // all other configuration providers override .env
 }
 
+// add all FluentValidation validators
+builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
 builder.Services.AddOptions<AppConfig>()
 	.Bind(builder.Configuration)
-	.ValidateDataAnnotationsRecursively()
+	.ValidateFluentValidation()
 	.ValidateOnStart();
 
 // Configure database context
@@ -84,6 +88,31 @@ builder.Services.AddScoped<IParticipationService, ParticipationService>();
 builder.Services.AddScoped<IJudgementService, JudgementService>();
 builder.Services.AddScoped<IRunService, RunService>();
 builder.Services.AddScoped<IBanService, BanService>();
+
+AppConfig? appConfig = builder.Configuration.Get<AppConfig>();
+if (!string.IsNullOrWhiteSpace(appConfig?.AllowedOrigins))
+{
+	builder.Services.AddCors(options =>
+	{
+		options.AddDefaultPolicy(policy => policy
+			.WithOrigins(appConfig.ParseAllowedOrigins())
+			.SetIsOriginAllowedToAllowWildcardSubdomains()
+			.AllowAnyMethod()
+			.AllowAnyHeader()
+		);
+	});
+}
+else if (builder.Environment.IsDevelopment())
+{
+	builder.Services.AddCors(options =>
+	{
+		options.AddDefaultPolicy(policy => policy
+			.AllowAnyOrigin()
+			.AllowAnyMethod()
+			.AllowAnyHeader()
+		);
+	});
+}
 
 // Add controllers to the container.
 builder.Services.AddControllers(opt =>
@@ -200,6 +229,7 @@ using (ApplicationContext context = scope.ServiceProvider.GetRequiredService<App
 	}
 }
 
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
