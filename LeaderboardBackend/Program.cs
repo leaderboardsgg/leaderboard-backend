@@ -1,10 +1,12 @@
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using dotenv.net;
-using dotenv.net.Utilities;
+using DotNetEnv;
+using DotNetEnv.Configuration;
+using LeaderboardBackend;
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
@@ -12,6 +14,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using BCryptNet = BCrypt.Net.BCrypt;
@@ -19,17 +22,57 @@ using BCryptNet = BCrypt.Net.BCrypt;
 #region WebApplicationBuilder
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-DotEnv.Load(options: new DotEnvOptions(
-	ignoreExceptions: false,
-	overwriteExistingVars: false,
-	envFilePaths: new[] { builder.Configuration["EnvPath"] },
-	trimValues: true
-));
+// Configuration / Options
+if (!builder.Environment.IsProduction())
+{
+	AppConfig? appConfig = builder.Configuration.Get<AppConfig>();
+	EnvConfigurationSource dotEnvSource = new(new string[] { appConfig?.EnvPath ?? ".env" }, LoadOptions.NoClobber());
+	builder.Configuration.Sources.Insert(0, dotEnvSource); // all other configuration providers override .env
+}
+
+builder.Services.AddOptions<AppConfig>()
+	.Bind(builder.Configuration)
+	.ValidateDataAnnotationsRecursively()
+	.ValidateOnStart();
 
 // Configure database context
-bool exists = EnvReader.TryGetBooleanValue("USE_IN_MEMORY_DB", out bool inMemoryDb);
-bool useInMemoryDb = exists && inMemoryDb;
-configureDbContext<ApplicationContext>(builder, useInMemoryDb);
+builder.Services.AddOptions<ApplicationContextConfig>()
+	.BindConfiguration(ApplicationContextConfig.KEY)
+	.ValidateDataAnnotationsRecursively()
+	.ValidateOnStart();
+
+builder.Services.AddDbContext<ApplicationContext>((services, opt) =>
+{
+	ApplicationContextConfig appConfig = services.GetRequiredService<IOptions<ApplicationContextConfig>>().Value;
+	if (appConfig.UseInMemoryDb)
+	{
+		opt.UseInMemoryDatabase("LeaderboardBackend");
+	}
+	else if (appConfig.Pg is not null)
+	{
+		PostgresConfig db = appConfig.Pg;
+		NpgsqlConnectionStringBuilder connectionBuilder = new()
+		{
+			Host = db.Host,
+			Username = db.User,
+			Password = db.Password,
+			Database = db.Db,
+			IncludeErrorDetail = true,
+		};
+
+		if (db.Port is not null)
+		{
+			connectionBuilder.Port = db.Port.Value;
+		}
+
+		opt.UseNpgsql(connectionBuilder.ConnectionString, o => o.UseNodaTime());
+		opt.UseSnakeCaseNamingConvention();
+	}
+	else
+	{
+		throw new UnreachableException("The database configuration is invalid but it was not caught by validation!");
+	}
+});
 
 // Add services to the container.
 builder.Services.AddScoped<IUserService, UserService>();
@@ -65,22 +108,27 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Configure JWT Authentication.
+builder.Services.AddOptions<JwtConfig>()
+	.BindConfiguration(JwtConfig.KEY)
+	.ValidateDataAnnotationsRecursively()
+	.ValidateOnStart();
+
+builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+	.Configure<IOptions<JwtConfig>>((opt, jwtConfig) => opt.TokenValidationParameters = new TokenValidationParameters
+	{
+		ValidateIssuer = true,
+		ValidateAudience = true,
+		ValidateLifetime = true,
+		ValidateIssuerSigningKey = true,
+		ValidIssuer = jwtConfig.Value.Issuer,
+		ValidAudience = jwtConfig.Value.Issuer,
+		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.Value.Key))
+	});
+
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 builder.Services
 	.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-	.AddJwtBearer(options =>
-	{
-		options.TokenValidationParameters = new TokenValidationParameters
-		{
-			ValidateIssuer = true,
-			ValidateAudience = true,
-			ValidateLifetime = true,
-			ValidateIssuerSigningKey = true,
-			ValidIssuer = builder.Configuration["Jwt:Issuer"],
-			ValidAudience = builder.Configuration["Jwt:Issuer"],
-			IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-		};
-	});
+	.AddJwtBearer();
 
 // Configure authorisation.
 builder.Services.AddAuthorization(options =>
@@ -126,22 +174,31 @@ if (app.Environment.IsDevelopment())
 	app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "LeaderboardBackend v1"));
 }
 
-// If in memory DB, the only way to have an admin user is to seed it at startup.
-if (inMemoryDb)
+using (IServiceScope scope = app.Services.CreateScope())
+using (ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>())
 {
-	using IServiceScope scope = app.Services.CreateScope();
-	ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+	ApplicationContextConfig config = scope.ServiceProvider
+		.GetRequiredService<IOptions<ApplicationContextConfig>>().Value;
 
-	User admin = new()
+	if (config.MigrateDb)
 	{
-		Username = "Galactus",
-		Email = "omega@star.com",
-		Password = BCryptNet.EnhancedHashPassword("3ntr0pyChaos"),
-		Admin = true,
-	};
+		context.Database.Migrate();
+	}
 
-	context.Users.Add(admin);
-	await context.SaveChangesAsync();
+	if (config.UseInMemoryDb)
+	{
+		// If in memory DB, the only way to have an admin user is to seed it at startup.
+		User admin = new()
+		{
+			Username = "Galactus",
+			Email = "omega@star.com",
+			Password = BCryptNet.EnhancedHashPassword("3ntr0pyChaos"),
+			Admin = true,
+		};
+
+		context.Users.Add(admin);
+		await context.SaveChangesAsync();
+	}
 }
 
 app.UseAuthentication();
@@ -150,47 +207,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-#endregion
-
-#region Helpers
-// Add application's Database Context to the container.
-static string getConnectionString(WebApplicationBuilder builder)
-{
-	string portVar = builder.Configuration["Db:PortVar"];
-	if (
-		!EnvReader.TryGetStringValue("POSTGRES_HOST", out string host) ||
-		!EnvReader.TryGetStringValue("POSTGRES_USER", out string user) ||
-		!EnvReader.TryGetStringValue("POSTGRES_PASSWORD", out string password) ||
-		!EnvReader.TryGetStringValue("POSTGRES_DB", out string db) ||
-		!EnvReader.TryGetIntValue(portVar, out int port)
-	)
-	{
-		throw new Exception("Database env var(s) not set. Is there a .env?");
-	}
-
-	return $"Server={host};Port={port};User Id={user};Password={password};Database={db};Include Error Detail=true";
-}
-
-// Configure a Database context, configuring based on the USE_IN_MEMORY_DATABASE environment variable.
-static void configureDbContext<T>(WebApplicationBuilder builder, bool inMemoryDb) where T : DbContext
-{
-	builder.Services.AddDbContext<T>(
-		opt =>
-		{
-			if (inMemoryDb)
-			{
-				opt.UseInMemoryDatabase("LeaderboardBackend");
-			}
-			else
-			{
-				opt.UseNpgsql(
-					getConnectionString(builder),
-					o => o.UseNodaTime()
-				).UseSnakeCaseNamingConvention();
-			}
-		}
-	);
-}
 #endregion
 
 #region Accessible Program class

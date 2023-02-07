@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace LeaderboardBackend.Services;
@@ -12,12 +13,13 @@ public class AuthService : IAuthService
 	private readonly SigningCredentials _credentials;
 	private readonly string _issuer;
 
-	public AuthService(IConfiguration config)
+	public AuthService(IOptions<JwtConfig> options)
 	{
-		SymmetricSecurityKey? securityKey = new(Encoding.UTF8.GetBytes(config[Jwt.KEY]));
+		JwtConfig config = options.Value;
+		SymmetricSecurityKey? securityKey = new(Encoding.UTF8.GetBytes(config.Key));
 
 		_credentials = new(securityKey, SecurityAlgorithms.HmacSha256);
-		_issuer = config[Jwt.ISSUER];
+		_issuer = config.Issuer;
 	}
 
 	public string GenerateJSONWebToken(User user)

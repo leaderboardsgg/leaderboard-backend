@@ -7,12 +7,10 @@ namespace LeaderboardBackend.Services;
 public class BanService : IBanService
 {
 	private readonly ApplicationContext _applicationContext;
-	private readonly IConfiguration _config;
 
-	public BanService(ApplicationContext applicationContext, IConfiguration config)
+	public BanService(ApplicationContext applicationContext)
 	{
 		_applicationContext = applicationContext;
-		_config = config;
 	}
 
 	public async Task<Ban?> GetBanById(long id)
