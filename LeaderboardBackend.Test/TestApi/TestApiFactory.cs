@@ -21,6 +21,18 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 
 		builder.ConfigureServices(services =>
 		{
+			int testPort = DotNetEnv.Env.GetInt("POSTGRES_TEST_PORT", -1);
+			if (testPort >= 0)
+			{
+				services.Configure<ApplicationContextConfig>(conf =>
+				{
+					if (conf.Pg is not null)
+					{
+						conf.Pg.Port = (ushort)testPort;
+					}
+				});
+			}
+
 			// Reset the database on every test run
 			using ServiceProvider scope = services.BuildServiceProvider();
 			ApplicationContext dbContext = scope.GetRequiredService<ApplicationContext>();
