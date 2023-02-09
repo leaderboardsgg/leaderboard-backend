@@ -9,10 +9,10 @@ jobs:
         steps:
         - name: Checkout repo
           uses: actions/checkout@v2
-        - name: Setup dotnet 6
+        - name: Setup dotnet 7
           uses: actions/setup-dotnet@v1
           with:
-            dotnet-version: '6.0.x'
+            dotnet-version: '7.0.x'
         - name: Create .env file
           run: cp example.env .env
         - name: Spin up containers

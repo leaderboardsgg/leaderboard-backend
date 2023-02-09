@@ -11,7 +11,7 @@ This repo is a proof-of-concept for switching to a C# with ASP.NET Core stack. T
 ## Tech-Stack Information
 
 * JSON REST API intended for the leaderboards.gg site
-* C# with ASP.NET Core, .NET 6
+* C# with ASP.NET Core, .NET 7
 * Docker containers for PostgreSQL hosting and management run via [Docker Compose](https://docs.docker.com/compose/install/)
 
 # Project Setup
@@ -34,7 +34,7 @@ There are a couple options available for you to choose, depending on your OS.
 If you are on Windows/are a beginner, this will likely be the easiest to use.
 
 * Download [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) (Community edition is free) or modify your existing install
-  * You must choose this version as we use the .NET 6 SDK which older versions do not support
+  * You must choose this version as we use the .NET 7 SDK which older versions do not support
 * In the section where you choose your Workloads, select at least "ASP.NET and Web Development"
 
 Once VS has set itself up, you'll have to explicitly tell it to _not_ override our .editorconfig settings*. Go to Tools -> Customise -> Commands, pick "File" in the "Menu bar" item, then in the Add Command window, choose File -> Advanced Save Options, and finally, set that to "Current Setting". Screenshot below for a little extra clarity:
@@ -56,7 +56,7 @@ A few cross-platform editor choices would be:
 After installing a code editor:
 
 * Install support for [`editorconfig` in your editor](https://editorconfig.org/#download)
-* Download the [.NET 6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) for your platform
+* Download the [.NET 7 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/7.0) for your platform
     > Try to avoid [installing via snap](https://docs.microsoft.com/en-us/dotnet/core/install/linux-snap); trying to get dotnet running was more pain than it's worth.
 * After cloning this repo, run the command `dotnet restore` to install all required dependencies
 * You will likely want to set up [Omnisharp](http://www.omnisharp.net/) for easier development with your editor
