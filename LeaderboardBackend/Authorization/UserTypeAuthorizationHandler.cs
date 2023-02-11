@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using System.IdentityModel.Tokens.Jwt;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace LeaderboardBackend.Authorization;
@@ -16,12 +16,12 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 
 	public UserTypeAuthorizationHandler(
 		IAuthService authService,
-		IConfiguration config,
+		IOptions<JwtConfig> config,
 		IModshipService modshipService,
 		IUserService userService)
 	{
 		_authService = authService;
-		_jwtValidationParams = Jwt.ValidationParameters.GetInstance(config);
+		_jwtValidationParams = Jwt.ValidationParameters.GetInstance(config.Value);
 		_modshipService = modshipService;
 		_userService = userService;
 	}

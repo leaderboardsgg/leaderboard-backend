@@ -18,6 +18,6 @@ jobs:
         - name: Spin up containers
           run: docker compose up -d
         - name: Run Tests on In Memory Database
-          run: USE_IN_MEMORY_DB=true dotnet test LeaderboardBackend.Test
+          run: ApplicationContext__UseInMemoryDb=true dotnet test LeaderboardBackend.Test
         - name: Run Tests on Test Postgres Database
-          run: USE_IN_MEMORY_DB=false dotnet test LeaderboardBackend.Test
+          run: ApplicationContext__UseInMemoryDb=false dotnet test LeaderboardBackend.Test

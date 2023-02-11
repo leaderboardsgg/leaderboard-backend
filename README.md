@@ -67,7 +67,7 @@ After installing a code editor:
 
 ### Running the Database(s)
 
-We use Postgres, but have the ability to run .NET's in-memory DB as well instead, which allows quicker debugging. If you would like to use the latter, you can set `USE_IN_MEMORY_DB` in your `.env` file to `true`, or not make a `.env` file at all, then skip to the next section. If you would like to use the former, follow these instructions:
+We use Postgres, but have the ability to run .NET's in-memory DB as well instead, which allows quicker debugging. If you would like to use the latter, you can set `ApplicationContext__UseInMemoryDb` in your `.env` file to `true`, or not make a `.env` file at all, then skip to the next section. If you would like to use the former, follow these instructions:
 
 As mentioned above, we run Docker containers for the DB. After [installing Docker Compose](https://docs.docker.com/compose/install/), run these commands in the project root:
 
