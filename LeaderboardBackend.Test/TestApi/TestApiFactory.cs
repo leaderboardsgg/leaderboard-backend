@@ -1,5 +1,7 @@
+using System;
 using System.Net.Http;
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Test.Fixtures;
 using LeaderboardBackend.Test.Lib;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -19,36 +21,55 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 
 		base.ConfigureWebHost(builder);
 
-		builder.ConfigureServices(services =>
-		{
-			int testPort = DotNetEnv.Env.GetInt("POSTGRES_TEST_PORT", -1);
-			if (testPort >= 0)
+        builder.ConfigureServices(services =>
+        {
+			if (TestConfig.DatabaseBackend == DatabaseBackend.TestContainer)
 			{
+				if (PostgresDatabaseFixture.PostgresContainer is null)
+				{
+					throw new InvalidOperationException("Postgres container is not initialized.");
+				}
+
 				services.Configure<ApplicationContextConfig>(conf =>
 				{
-					if (conf.Pg is not null)
+					conf.UseInMemoryDb = false;
+					conf.Pg = new PostgresConfig
 					{
-						conf.Pg.Port = (ushort)testPort;
-					}
+						Db = PostgresDatabaseFixture.PostgresContainer.Database,
+						Port = (ushort)PostgresDatabaseFixture.PostgresContainer.Port,
+						Host = PostgresDatabaseFixture.PostgresContainer.Hostname,
+						User = PostgresDatabaseFixture.PostgresContainer.Username,
+						Password = PostgresDatabaseFixture.PostgresContainer.Password
+					};
 				});
-			}
-
-			// Reset the database on every test run
-			using ServiceProvider scope = services.BuildServiceProvider();
-			ApplicationContext dbContext = scope.GetRequiredService<ApplicationContext>();
-			dbContext.Database.EnsureDeleted();
-
-			if (dbContext.Database.IsInMemory())
-			{
-				dbContext.Database.EnsureCreated();
 			}
 			else
 			{
-				dbContext.Database.Migrate();
+				services.Configure<ApplicationContextConfig>(conf =>
+				{
+					conf.UseInMemoryDb = true;
+				});
 			}
 
-			Seed(dbContext);
-		});
+			using IServiceScope scope = services.BuildServiceProvider().CreateScope();
+            ApplicationContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+			switch (TestConfig.DatabaseBackend)
+			{
+				case DatabaseBackend.TestContainer when !PostgresDatabaseFixture.HasCreatedTemplate:
+					dbContext.Database.Migrate();
+					Seed(dbContext);
+					PostgresDatabaseFixture.CreateTemplateFromCurrentDb();
+					break;
+				case DatabaseBackend.InMemory:
+					if (dbContext.Database.EnsureCreated())
+					{
+						Seed(dbContext);
+					}
+
+					break;
+			}
+        });
 	}
 
 	public TestApiClient CreateTestApiClient()
@@ -56,10 +77,8 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 		HttpClient client = CreateClient();
 		return new TestApiClient(client);
 	}
-
 	private static void Seed(ApplicationContext dbContext)
 	{
-
 		Leaderboard leaderboard = new()
 		{
 			Name = "Mario Goes to Jail",
@@ -79,5 +98,33 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 		dbContext.Add(leaderboard);
 
 		dbContext.SaveChanges();
+	}
+
+	/// <summary>
+	/// Deletes and recreates the database
+	/// </summary>
+	public void ResetDatabase()
+	{
+		switch (TestConfig.DatabaseBackend)
+		{
+			case DatabaseBackend.InMemory:
+				ResetInMemoryDb();
+				break;
+			case DatabaseBackend.TestContainer:
+				PostgresDatabaseFixture.ResetDatabaseToTemplate();
+				break;
+			default:
+				throw new NotImplementedException("Database reset is not implemented.");
+		}
+	}
+
+	private void ResetInMemoryDb()
+	{
+		using IServiceScope scope = Services.CreateScope();
+		ApplicationContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+		dbContext.Database.EnsureDeleted();
+		dbContext.Database.EnsureCreated();
+
+		Seed(dbContext);
 	}
 }

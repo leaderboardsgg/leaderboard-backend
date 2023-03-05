@@ -12,7 +12,7 @@ This repo is a proof-of-concept for switching to a C# with ASP.NET Core stack. T
 
 * JSON REST API intended for the leaderboards.gg site
 * C# with ASP.NET Core, .NET 7
-* Docker containers for PostgreSQL hosting and management run via [Docker Compose](https://docs.docker.com/compose/install/)
+* Docker containers for PostgreSQL hosting and management run via [Docker Compose](https://docs.docker.com/compose/install/), and also for integration tests with [Testcontainers](https://dotnet.testcontainers.org/)
 
 # Project Setup
 
@@ -145,6 +145,8 @@ dotnet run --project LeaderboardBackend --urls https://localhost:7128 // dotnet 
 The value provided to `--urls` has to match what's listed under `applicationUrl` in `LeaderboardBackend/Properties/launchSettings.json`. As of this writing, it's `https://localhost:7128`.
 
 #### Test the App
+Docker is required to run integration tests against a real database.  
+However, if you would like to run the tests with an in-memory database, you can set the following environment variable: `INTEGRATION_TESTS_DB_BACKEND=InMemory`.
 
 To run the tests, run the following commands from the root of the project:
 
