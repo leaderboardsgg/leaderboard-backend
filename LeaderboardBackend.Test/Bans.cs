@@ -23,21 +23,11 @@ internal class Bans
 	private static User s_normalUser = null!;
 
 	[OneTimeSetUp]
-	public void OneTimeSetup()
+	public async Task OneTimeSetup()
 	{
 		s_factory = new();
 		s_apiClient = s_factory.CreateTestApiClient();
-	}
 
-	[OneTimeTearDown]
-	public void OneTimeTeardown()
-	{
-		s_factory.Dispose();
-	}
-
-	[SetUp]
-	public async Task SetUp()
-	{
 		s_factory.ResetDatabase();
 
 		s_adminJwt = (await s_apiClient.LoginAdminUser()).Token;
@@ -72,6 +62,12 @@ internal class Bans
 			});
 
 		s_modJwt = (await s_apiClient.LoginUser("mod@email.com", "Passw0rd!")).Token;
+	}
+
+	[OneTimeTearDown]
+	public void OneTimeTeardown()
+	{
+		s_factory.Dispose();
 	}
 
 	[Test]

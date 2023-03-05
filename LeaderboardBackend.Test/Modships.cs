@@ -19,10 +19,12 @@ internal class Modships
 	private static string s_jwt = null!;
 
 	[OneTimeSetUp]
-	public void OneTimeSetUp()
+	public async Task OneTimeSetUp()
 	{
 		s_factory = new TestApiFactory();
 		s_apiClient = s_factory.CreateTestApiClient();
+
+		s_jwt = (await s_apiClient.LoginAdminUser()).Token;
 	}
 
 	[OneTimeTearDown]
@@ -32,10 +34,9 @@ internal class Modships
 	}
 
 	[SetUp]
-	public async Task SetUp()
+	public void SetUp()
 	{
 		s_factory.ResetDatabase();
-		s_jwt = (await s_apiClient.LoginAdminUser()).Token;
 	}
 
 	[Test]
