@@ -35,11 +35,11 @@ internal class TestApiFactory : WebApplicationFactory<Program>
 					conf.UseInMemoryDb = false;
 					conf.Pg = new PostgresConfig
 					{
-						Db = PostgresDatabaseFixture.PostgresContainer.Database,
-						Port = (ushort)PostgresDatabaseFixture.PostgresContainer.Port,
+						Db = PostgresDatabaseFixture.Database!,
+						Port = (ushort)PostgresDatabaseFixture.Port,
 						Host = PostgresDatabaseFixture.PostgresContainer.Hostname,
-						User = PostgresDatabaseFixture.PostgresContainer.Username,
-						Password = PostgresDatabaseFixture.PostgresContainer.Password
+						User = PostgresDatabaseFixture.Username!,
+						Password = PostgresDatabaseFixture.Password!
 					};
 				});
 			}
