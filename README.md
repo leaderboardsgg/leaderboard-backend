@@ -65,31 +65,43 @@ After installing a code editor:
 
 ## Running the Application
 
-### Running the Database(s)
+The application reads configuration from environment variables, a `.env` file, and a `appsettings.json` file.
 
-We use Postgres, but have the ability to run .NET's in-memory DB as well instead, which allows quicker debugging. If you would like to use the latter, you can set `ApplicationContext__UseInMemoryDb` in your `.env` file to `true`, or not make a `.env` file at all, then skip to the next section. If you would like to use the former, follow these instructions:
-
-As mentioned above, we run Docker containers for the DB. After [installing Docker Compose](https://docs.docker.com/compose/install/), run these commands in the project root:
-
+The easiest is to make a `.env` file. As a starting point, you can copy the template file `example.env` at the project root and rename it to `.env`.
 ```bash
 cp example.env .env
-sudo docker-compose (or docker compose) up -d
 ```
+
+### Running the Database(s)
+We use Postgres, but have the ability to run Entity Framework's in-memory DB as well instead, which allows quicker debugging.
+
+**Running with Postgres is highly encouraged**, as the in-memory DB will not behave the same as Postgres,
+and [some features will not work at all](https://learn.microsoft.com/en-us/ef/core/testing/choosing-a-testing-strategy#in-memory-as-a-database-fake) (for example: transactions and constraints).
+
+#### Postgres with Docker compose
+As mentioned above, we run Docker containers for the DB. After [installing Docker Compose](https://docs.docker.com/compose/install/), run this command in the project root:
+
+```bash
+docker compose up -d
+```
+If you're using Linux, you might need to run Docker with `sudo`.
 
 This starts up:
 - Adminer which is a GUI manager for the databases
-- The main Postgres DB
-- The test Postgres DB
+- A Postgres DB
 
-Using the default values provided in `example.env`, input these values in Adminer for access:
+If you're using the default values provided in `example.env`, input these values in Adminer for access:
 
-| Field | Value |
-| --- | --- |
-| System | PostgreSQL |
-| Server | db (for main) / db-test (for test) |
-| Username | admin |
-| Password | example |
-| Database | leaderboardsmain / leaderboardstest |
+| Field    | Value              | Comment
+| -------- | ------------------ | -------
+| System   | PostgreSQL         |
+| Server   | `db`               | You cannot set it to `localhost` because it must match the Docker container name
+| Username | `admin`            | Corresponds to the `ApplicationContext__PG__USER` config
+| Password | `example`          | Corresponds to `ApplicationContext__PG__PASSWORD`
+| Database | `leaderboardsmain` | Corresponds to `ApplicationContext__PG__DB`
+
+#### In-memory database
+To use the in-memory database, set `ApplicationContext__UseInMemoryDb` in your `.env` file to `true`.
 
 ### Visual Studio
 
@@ -145,8 +157,8 @@ dotnet run --project LeaderboardBackend --urls https://localhost:7128 // dotnet 
 The value provided to `--urls` has to match what's listed under `applicationUrl` in `LeaderboardBackend/Properties/launchSettings.json`. As of this writing, it's `https://localhost:7128`.
 
 #### Test the App
-Docker is required to run integration tests against a real database.  
-However, if you would like to run the tests with an in-memory database, you can set the following environment variable: `INTEGRATION_TESTS_DB_BACKEND=InMemory`.
+Docker is required to run integration tests against a real Postgres database.  
+However, if you would still like to run the tests with an in-memory database, you can set the following environment variable: `INTEGRATION_TESTS_DB_BACKEND=InMemory`.
 
 To run the tests, run the following commands from the root of the project:
 
