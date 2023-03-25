@@ -212,23 +212,31 @@ using (ApplicationContext context = scope.ServiceProvider.GetRequiredService<App
 
 	if (args.Contains("--migrate-db")) // the only way to migrate a production database
 	{
-		context.Database.Migrate();
+		if (!config.UseInMemoryDb)
+		{
+			context.Database.Migrate();
+		}
+
 		return;
 	}
 
 	if (config.UseInMemoryDb)
 	{
-		// If in memory DB, the only way to have an admin user is to seed it at startup.
-		User admin = new()
+		context.Database.EnsureCreated();
+		User? defaultUser = context.Find<User>(ApplicationContext.s_SeedAdminId);
+		if (defaultUser is null)
 		{
-			Username = "Galactus",
-			Email = "omega@star.com",
-			Password = BCryptNet.EnhancedHashPassword("3ntr0pyChaos"),
-			Admin = true,
-		};
+			throw new InvalidOperationException("The default user was not correctly seeded.");
+		}
 
-		context.Users.Add(admin);
-		await context.SaveChangesAsync();
+		defaultUser.Username = Environment.GetEnvironmentVariable("LGG_ADMIN_USERNAME") ?? defaultUser.Username;
+		defaultUser.Email = Environment.GetEnvironmentVariable("LGG_ADMIN_EMAIL") ?? defaultUser.Email;
+		string? newPassword = Environment.GetEnvironmentVariable("LGG_ADMIN_PASSWORD");
+		if (newPassword is not null)
+		{
+			defaultUser.Password = BCryptNet.EnhancedHashPassword(newPassword);
+		}
+		context.SaveChanges();
 	}
 	else if (config.MigrateDb && app.Environment.IsDevelopment())
 	{
