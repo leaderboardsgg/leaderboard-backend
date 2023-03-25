@@ -203,11 +203,18 @@ if (app.Environment.IsDevelopment())
 	app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "LeaderboardBackend v1"));
 }
 
+// Database creation / migration
 using (IServiceScope scope = app.Services.CreateScope())
 using (ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>())
 {
 	ApplicationContextConfig config = scope.ServiceProvider
 		.GetRequiredService<IOptions<ApplicationContextConfig>>().Value;
+
+	if (args.Contains("--migrate-db")) // the only way to migrate a production database
+	{
+		context.Database.Migrate();
+		return;
+	}
 
 	if (config.UseInMemoryDb)
 	{
@@ -223,8 +230,9 @@ using (ApplicationContext context = scope.ServiceProvider.GetRequiredService<App
 		context.Users.Add(admin);
 		await context.SaveChangesAsync();
 	}
-	else if (config.MigrateDb)
+	else if (config.MigrateDb && app.Environment.IsDevelopment())
 	{
+		// migration as part of the startup phase (dev env only)
 		context.Database.Migrate();
 	}
 }
