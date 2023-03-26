@@ -18,12 +18,25 @@ internal class Modships
 	private static TestApiFactory s_factory = null!;
 	private static string s_jwt = null!;
 
-	[SetUp]
-	public static async Task SetUp()
+	[OneTimeSetUp]
+	public async Task OneTimeSetUp()
 	{
 		s_factory = new TestApiFactory();
 		s_apiClient = s_factory.CreateTestApiClient();
+
 		s_jwt = (await s_apiClient.LoginAdminUser()).Token;
+	}
+
+	[OneTimeTearDown]
+	public void OneTimeTearDown()
+	{
+		s_factory.Dispose();
+	}
+
+	[SetUp]
+	public void SetUp()
+	{
+		s_factory.ResetDatabase();
 	}
 
 	[Test]

@@ -19,19 +19,27 @@ internal class Leaderboards
 	private static TestApiFactory s_factory = null!;
 	private static string? s_jwt;
 
-	[SetUp]
-	public static async Task SetUp()
+	[OneTimeSetUp]
+	public async Task OneTimeSetUp()
 	{
 		s_factory = new TestApiFactory();
 		s_apiClient = s_factory.CreateTestApiClient();
+
+		s_factory.ResetDatabase();
 		s_jwt = (await s_apiClient.LoginAdminUser()).Token;
+	}
+
+	[OneTimeTearDown]
+	public void OneTimeTearDown()
+	{
+		s_factory.Dispose();
 	}
 
 	[Test]
 	public static void GetLeaderboard_NotFound()
 	{
 		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
-			await s_apiClient.Get<Leaderboard>($"/api/leaderboards/2", new()))!;
+			await s_apiClient.Get<Leaderboard>($"/api/leaderboards/{long.MaxValue}", new()))!;
 
 		Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);
 	}

@@ -16,6 +16,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Testcontainers" Version="3.0.0" />
+    <PackageReference Include="Testcontainers.PostgreSql" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="../.env">
+    <None Include="../.env" Condition="Exists('../.env')">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

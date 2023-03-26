@@ -22,11 +22,14 @@ internal class Bans
 	private static User s_modUser = null!;
 	private static User s_normalUser = null!;
 
-	[SetUp]
-	public static async Task SetUp()
+	[OneTimeSetUp]
+	public async Task OneTimeSetup()
 	{
-		s_factory = new TestApiFactory();
+		s_factory = new();
 		s_apiClient = s_factory.CreateTestApiClient();
+
+		s_factory.ResetDatabase();
+
 		s_adminJwt = (await s_apiClient.LoginAdminUser()).Token;
 
 		// Set up users and leaderboard
@@ -59,6 +62,12 @@ internal class Bans
 			});
 
 		s_modJwt = (await s_apiClient.LoginUser("mod@email.com", "Passw0rd!")).Token;
+	}
+
+	[OneTimeTearDown]
+	public void OneTimeTeardown()
+	{
+		s_factory.Dispose();
 	}
 
 	[Test]

@@ -19,11 +19,18 @@ namespace LeaderboardBackend.Test
 		private static string s_jwt = null!;
 		private static long s_categoryId;
 
-		[SetUp]
-		public static async Task SetUp()
+		[OneTimeSetUp]
+		public void OneTimeSetUp()
 		{
 			s_factory = new TestApiFactory();
 			s_apiClient = s_factory.CreateTestApiClient();
+		}
+
+		[SetUp]
+		public async Task SetUp()
+		{
+			s_factory.ResetDatabase();
+
 			s_jwt = (await s_apiClient.LoginAdminUser()).Token;
 
 			Leaderboard createdLeaderboard = await s_apiClient.Post<Leaderboard>(

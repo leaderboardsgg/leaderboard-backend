@@ -24,11 +24,13 @@ internal class Judgements
 	private const string VALID_PASSWORD = "c00l_pAssword";
 	private const string VALID_EMAIL = "test@email.com";
 
-	[SetUp]
-	public static async Task SetUp()
+	[OneTimeSetUp]
+	public async Task OneTimeSetup()
 	{
 		s_factory = new TestApiFactory();
 		s_apiClient = s_factory.CreateTestApiClient();
+
+		s_factory.ResetDatabase();
 
 		// Set up a default Leaderboard and a mod user for that leaderboard to use as the Jwt for
 		// tests
@@ -75,6 +77,12 @@ internal class Judgements
 			});
 
 		s_jwt = (await s_apiClient.LoginUser(VALID_EMAIL, VALID_PASSWORD)).Token;
+	}
+
+	[OneTimeTearDown]
+	public void OneTimeTearDown()
+	{
+		s_factory.Dispose();
 	}
 
 	[Test]

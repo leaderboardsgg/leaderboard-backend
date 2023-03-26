@@ -180,11 +180,6 @@ using (ApplicationContext context = scope.ServiceProvider.GetRequiredService<App
 	ApplicationContextConfig config = scope.ServiceProvider
 		.GetRequiredService<IOptions<ApplicationContextConfig>>().Value;
 
-	if (config.MigrateDb)
-	{
-		context.Database.Migrate();
-	}
-
 	if (config.UseInMemoryDb)
 	{
 		// If in memory DB, the only way to have an admin user is to seed it at startup.
@@ -198,6 +193,10 @@ using (ApplicationContext context = scope.ServiceProvider.GetRequiredService<App
 
 		context.Users.Add(admin);
 		await context.SaveChangesAsync();
+	}
+	else if (config.MigrateDb)
+	{
+		context.Database.Migrate();
 	}
 }
 

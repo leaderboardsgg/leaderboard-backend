@@ -17,11 +17,19 @@ internal class Categories
 	private static string? s_jwt;
 
 	[OneTimeSetUp]
-	public static async Task SetUp()
+	public async Task OneTimeSetUp()
 	{
 		s_factory = new TestApiFactory();
 		s_apiClient = s_factory.CreateTestApiClient();
+
+		s_factory.ResetDatabase();
 		s_jwt = (await s_apiClient.LoginAdminUser()).Token;
+	}
+
+	[OneTimeTearDown]
+	public void OneTimeTearDown()
+	{
+		s_factory.Dispose();
 	}
 
 	[Test]
