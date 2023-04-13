@@ -1,4 +1,4 @@
-app = "lgg-backend-dev"
+app = "lbgg-backend-dev"
 
 [build]
   dockerfile = "Dockerfile"
