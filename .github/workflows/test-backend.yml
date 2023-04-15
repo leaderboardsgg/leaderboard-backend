@@ -13,9 +13,15 @@ jobs:
           uses: actions/setup-dotnet@v1
           with:
             dotnet-version: '7.0.x'
-        - name: Restore NuGet packages 
+        - name: Restore NuGet packages
           run: dotnet restore
+        - name: Backup committed openapi.json
+          run: cp LeaderboardBackend/openapi.json /tmp/committed-openapi.json
         - name: Build
           run: dotnet build --no-restore
+        - name: Verify that committed openapi.json is up-to-date
+          run: |
+            diff --brief LeaderboardBackend/openapi.json /tmp/committed-openapi.json \
+                || (echo "LeaderboardBackend/openapi.json is outdated. Please build the project and commit the auto-generated file."; exit 1)
         - name: Run tests
           run: dotnet test LeaderboardBackend.Test --no-restore

@@ -49,4 +49,17 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <OpenApiFile Include="openapi.json" />
+    <Content Remove="@(OpenApiFile)" />
+    <None Include="@(OpenApiFile)" />
+    <!-- required to be detected by the "fast up-to-date" feature of Visual Studio https://github.com/dotnet/project-system/blob/main/docs/up-to-date-check.md -->
+    <UpToDateCheckOutput Include="@(OpenApiFile)" /> 
+  </ItemGroup>
+
+  <Target Name="SwaggerPostBuildTarget" Condition="'$(DISABLE_OPENAPI_FILE_GEN)' != 'true'" AfterTargets="Build" Inputs="$(OutputPath)/$(AssemblyName).dll" Outputs="@(OpenApiFile)">
+    <Exec Command="dotnet tool restore"></Exec>
+    <Exec EnvironmentVariables="EnvPath=../swagger-gen.env;ASPNETCORE_ENVIRONMENT=development" Command="dotnet tool run swagger tofile --output &quot;@(OpenApiFile)&quot; &quot;$(OutputPath)/$(AssemblyName).dll&quot; v1"></Exec>
+  </Target>
+
 </Project>

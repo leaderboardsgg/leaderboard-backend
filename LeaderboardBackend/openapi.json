@@ -1,0 +1,3071 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "LeaderboardBackend",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/Bans/leaderboard/{leaderboardId}": {
+      "get": {
+        "tags": [
+          "Bans"
+        ],
+        "summary": "Gets all Bans associated with a Leaderboard ID.",
+        "parameters": [
+          {
+            "name": "leaderboardId",
+            "in": "path",
+            "description": "The ID of the `Leaderboard` whose `Ban`s should be listed.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The list of `Ban`s was retrieved successfully. The result can be an empty collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Ban"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `Leaderboard` with the requested ID could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Bans/leaderboard/{bannedUserId}": {
+      "get": {
+        "tags": [
+          "Bans"
+        ],
+        "summary": "Gets all Bans associated with a User ID.",
+        "parameters": [
+          {
+            "name": "bannedUserId",
+            "in": "path",
+            "description": "The ID of the `User` whose `Ban`s should be listed.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The list of `Ban`s was retrieved successfully. The result can be an empty collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Ban"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `User` with the requested ID could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Bans/{id}": {
+      "get": {
+        "tags": [
+          "Bans"
+        ],
+        "summary": "Gets a Ban by its ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the `Ban` which should be retrieved.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The `Ban` was found and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ban"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `Ban` with the requested ID could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Bans"
+        ],
+        "summary": "Lifts a Leaderboard-scoped or site-scoped Ban.\r\nThis request is restricted to Administrators.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the `Ban` to remove.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The `Ban` was removed successfully."
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The requesting `User` is not logged-in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The requesting `User` is unauthorized to lift `Ban`s.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `Ban` with the requested ID could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Bans": {
+      "post": {
+        "tags": [
+          "Bans"
+        ],
+        "summary": "Issues a site-scoped Ban.\r\nThis request is restricted to Administrators.",
+        "requestBody": {
+          "description": "The `CreateSiteBanRequest` instance from which to create the `Ban`.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSiteBanRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSiteBanRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSiteBanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The `Ban` was created and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ban"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The requesting `User` is unauthorized to issue site-scoped `Ban`s.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The `User` to be banned was also an Administrator. This operation is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The `User` to be banned was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Bans/leaderboard": {
+      "post": {
+        "tags": [
+          "Bans"
+        ],
+        "summary": "Issues a Leaderboard-scoped Ban.\r\nThis request is restricted to Moderators and Administrators.",
+        "requestBody": {
+          "description": "The `CreateLeaderboardBanRequest` instance from which to create the `Ban`.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLeaderboardBanRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLeaderboardBanRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLeaderboardBanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The `Ban` was created and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ban"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The requesting `User` is unauthorized to issue `Leaderboard`-scoped `Ban`s.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The `User` to be banned was also an Administrator. This operation is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The `User` to be banned was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Bans/{id}/leaderboards/{leaderboardId}": {
+      "delete": {
+        "tags": [
+          "Bans"
+        ],
+        "summary": "Lift a Leaderboard-scoped Ban.\r\nThis request is restricted to Moderators and Administrators.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the `Ban` to remove.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "leaderboardId",
+            "in": "path",
+            "description": "The ID of the `Leaderboard` the `Ban` is scoped to.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The `Ban` was removed successfully."
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The requesting `User` is not logged-in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The requesting `User` is unauthorized to lift `Ban`s.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `Ban` with the requested ID could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Categories/{id}": {
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Gets a Category by its ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the `Category` which should be retrieved.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The `Category` was found and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `Category` with the requested ID could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Categories": {
+      "post": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Creates a new Category.\r\nThis request is restricted to Moderators.",
+        "requestBody": {
+          "description": "The `CreateCategoryRequest` instance from which to create the `Category`.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The `Category` was created and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requesting `User` is unauthorized to create a `Category`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Judgements/{id}": {
+      "get": {
+        "tags": [
+          "Judgements"
+        ],
+        "summary": "Gets a Judgement by its ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the `Judgement` which should be retrieved.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The `Judgement` was found and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JudgementViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `Judgement` with the requested ID could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Judgements": {
+      "post": {
+        "tags": [
+          "Judgements"
+        ],
+        "summary": "Creates a new Judgement for a Run.\r\nThis request is restricted to Moderators.",
+        "requestBody": {
+          "description": "The `CreateJudgementRequest` instance from which to create the `Judgement`.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateJudgementRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateJudgementRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateJudgementRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The `Judgement` was created and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JudgementViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The requesting `User` is unauthorized to create `Judgement`s.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `Run` with the ID from the request could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Leaderboards/{id}": {
+      "get": {
+        "tags": [
+          "Leaderboards"
+        ],
+        "summary": "Gets a Leaderboard by its ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the `Leaderboard` which should be retrieved.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The `Leaderboard` was found and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Leaderboard"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Leaderboard"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `Leaderboard` with the requested ID could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Leaderboards": {
+      "get": {
+        "tags": [
+          "Leaderboards"
+        ],
+        "summary": "Gets Leaderboards by their IDs.",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "query",
+            "description": "The IDs of the `Leaderboard`s which should be retrieved.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The list of `Leaderboard`s was retrieved successfully. The result can be an empty\r\ncollection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Leaderboard"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Leaderboard"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Leaderboards"
+        ],
+        "summary": "Creates a new Leaderboard.\r\nThis request is restricted to Administrators.",
+        "requestBody": {
+          "description": "The `CreateLeaderboardRequest` instance from which to create the `Leaderboard`.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLeaderboardRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLeaderboardRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLeaderboardRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The `Leaderboard` was created and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Leaderboard"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Leaderboard"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requesting `User` is unauthorized to create `Leaderboard`s.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Modships/{id}": {
+      "get": {
+        "tags": [
+          "Modships"
+        ],
+        "summary": "Gets a Modship by its ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the *Moderator* (`User`) which should be retrieved.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The `Modship` was found and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Modship"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Modship"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `User` with the requested ID could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Modships": {
+      "post": {
+        "tags": [
+          "Modships"
+        ],
+        "summary": "Promotes a User to Moderator for a Leaderboard.\r\nThis request is restricted to Administrators.",
+        "requestBody": {
+          "description": "The `CreateModshipRequest` instance from which to perform the promotion.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateModshipRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateModshipRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateModshipRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The `User` was promoted successfully. The `Modship` is returned."
+          },
+          "400": {
+            "description": "The request was malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requesting `User` is unauthorized to promote other `User`s.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Modships"
+        ],
+        "summary": "Demotes a Moderator to User for a Leaderboard.\r\nThis request is restricted to Administrators.",
+        "requestBody": {
+          "description": "The `RemoveModshipRequest` instance from which to perform the demotion.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveModshipRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveModshipRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveModshipRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "The `User` was demoted successfully."
+          },
+          "400": {
+            "description": "The request was malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `User`, `Leaderboard`, or `Modship` with the requested IDs could be found, or the\r\nrequesting `User` is unauthorized to demote other `User`s.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Participations/{id}": {
+      "get": {
+        "tags": [
+          "Participations"
+        ],
+        "summary": "Gets a Participation by its ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the `Participation` which should be retrieved.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The `Participation` was found and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Participation"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Participation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `Participation` with the requested ID could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Participations": {
+      "post": {
+        "tags": [
+          "Participations"
+        ],
+        "summary": "Creates a Participation for a User.",
+        "requestBody": {
+          "description": "The `CreateParticipationRequest` instance from which to create the `Participation`.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateParticipationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateParticipationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateParticipationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The `Participation` was created and returned successfully."
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `User` or `Run` with the requested IDs could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Participations"
+        ],
+        "summary": "Updates the Participation of a User for a Run.",
+        "description": "A comment and VOD link must be provided.",
+        "requestBody": {
+          "description": "The `UpdateParticipationRequest` instance from which to perform the demotion.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateParticipationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateParticipationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateParticipationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The `Participation` was updated successfully."
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `Participation` with the requested ID could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Runs/{id}": {
+      "get": {
+        "tags": [
+          "Runs"
+        ],
+        "summary": "Gets a Run by its ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the `Run` which should be retrieved.<br />\r\nIt must be possible to parse this to `long` for this request to complete.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The `Run` was found and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `Run` with the requested ID could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Runs": {
+      "post": {
+        "tags": [
+          "Runs"
+        ],
+        "summary": "Creates a new Run.",
+        "requestBody": {
+          "description": "The `CreateRunRequest` instance from which to create the `Run`.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRunRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRunRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRunRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The `Run` was created and returned successfully."
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Runs/{id}/participations": {
+      "get": {
+        "tags": [
+          "Runs"
+        ],
+        "summary": "Gets all Participations associated with a Run ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the `Run` whose `Participation`s should be retrieved.<br />\r\nIt must be possible to parse this to `long` for this request to complete.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The list of `Participation`s was retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Participation"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Participation"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `Run` with the requested ID could be found or the `Run` does not contain any\r\n`Participation`s.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Runs/{id}/category": {
+      "get": {
+        "tags": [
+          "Runs"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Users/{id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Gets a User by their ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the `User` which should be retrieved.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The `User` was found and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `User` with the requested ID could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Users/register": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Registers a new User.",
+        "requestBody": {
+          "description": "The `RegisterRequest` instance from which register the `User`.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The `User` was registered and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The passwords did not match or the request was otherwise malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A `User` with the specified username or email already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Users/login": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Logs a User in.",
+        "requestBody": {
+          "description": "The `LoginRequest` instance from which to perform the login.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The `User` was logged in successfully. A `LoginResponse` is returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The password passed was incorrect.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `User` with the requested details could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Users/me": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Gets the currently logged-in User.",
+        "description": "Call this method with the 'Authorization' header. A valid JWT bearer token must be\r\npassed.<br />\r\nExample: `{ 'Authorization': 'Bearer JWT' }`.",
+        "responses": {
+          "200": {
+            "description": "The `User` was found and returned successfully..",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "An invalid JWT was passed in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Ban": {
+        "required": [
+          "bannedUserId",
+          "createdAt",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the `Ban`.<br />\r\nGenerated on creation.",
+            "format": "int64"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "deletedAt": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "banningUserId": {
+            "type": "string",
+            "description": "The ID of the `User` who issued the `Ban`.<br />\r\nMust be a *Moderator* or *Administrator*.",
+            "format": "uuid",
+            "nullable": true
+          },
+          "bannedUserId": {
+            "type": "string",
+            "description": "The ID of the `User` who received the `Ban`.",
+            "format": "uuid"
+          },
+          "leaderboardId": {
+            "type": "integer",
+            "description": "ID of the `Leaderboard` the `Ban` belongs to.<br />\r\nIf this value is null, the `Ban` is site-wide.",
+            "format": "int64",
+            "nullable": true
+          },
+          "reason": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The reason for the issued `Ban`.<br />\r\nMust not be null."
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a site-scoped or `Leaderboard`-scoped `Ban` tied to a `User`."
+      },
+      "CalendarSystem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "minYear": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "maxYear": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "eras": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Era"
+            },
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Category": {
+        "required": [
+          "leaderboardId",
+          "name",
+          "playersMax",
+          "playersMin",
+          "slug"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the `Category`.<br />\r\nGenerated on creation.",
+            "format": "int64"
+          },
+          "leaderboardId": {
+            "type": "integer",
+            "description": "The ID of the `Leaderboard` the `Category` is a part of.",
+            "format": "int64"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The display name of the `Category`.",
+            "example": "Foo Bar Baz%"
+          },
+          "slug": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The URL-scoped unique identifier of the `Category`.<br />\r\nMust be [2, 25] in length and consist only of alphanumeric characters and hyphens.",
+            "example": "foo-bar-baz"
+          },
+          "rules": {
+            "type": "string",
+            "description": "The rules of the `Category`.",
+            "nullable": true,
+            "example": "Video proof is required."
+          },
+          "playersMin": {
+            "type": "integer",
+            "description": "The minimum player count of the `Category`. The default is 1.",
+            "format": "int32"
+          },
+          "playersMax": {
+            "type": "integer",
+            "description": "The maximum player count of the `Category`. The default is `PlayersMin`.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a `Category` tied to a `Leaderboard`."
+      },
+      "CreateCategoryRequest": {
+        "required": [
+          "leaderboardId",
+          "name",
+          "slug"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The display name of the `Category`.",
+            "example": "Foo Bar Baz%"
+          },
+          "slug": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The URL-scoped unique identifier of the `Category`.<br />\r\nMust be [2, 25] in length and consist only of alphanumeric characters and hyphens.",
+            "example": "foo-bar-baz"
+          },
+          "rules": {
+            "type": "string",
+            "description": "The rules of the `Category`.",
+            "nullable": true,
+            "example": "Video proof is required."
+          },
+          "playersMin": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "description": "The minimum player count of the `Category`. The default is 1.",
+            "format": "int32",
+            "nullable": true
+          },
+          "playersMax": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "description": "The maximum player count of the `Category`. The default is `PlayersMin`.",
+            "format": "int32",
+            "nullable": true
+          },
+          "leaderboardId": {
+            "type": "integer",
+            "description": "The ID of the `Leaderboard` the `Category` is a part of.",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false,
+        "description": "This request object is sent when creating a `Category`."
+      },
+      "CreateJudgementRequest": {
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "description": "The ID of the `Run` that is being judged.",
+            "format": "uuid"
+          },
+          "note": {
+            "type": "string",
+            "description": "A comment elaborating on the `Judgement`'s decision. Must have a value when the\r\naffected `Run` is not approved (`Approved` is null or false).",
+            "nullable": true,
+            "example": "The video proof is not of sufficient quality."
+          },
+          "approved": {
+            "type": "boolean",
+            "description": "The `Judgement`'s decision. May be null, true, or false.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "This request object is sent when creating a `Judgement`."
+      },
+      "CreateLeaderboardBanRequest": {
+        "required": [
+          "leaderboardId",
+          "reason",
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "The ID of the `User` which is banned.",
+            "format": "uuid"
+          },
+          "reason": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The reason for the `User`'s ban.",
+            "example": "Abusive or hateful conduct."
+          },
+          "leaderboardId": {
+            "type": "integer",
+            "description": "The ID of the `Leaderboard` from which the `User` is banned.",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false,
+        "description": "This request object is sent when banning a `User` from a `Leaderboard`."
+      },
+      "CreateLeaderboardRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The display name of the `Leaderboard` to create.",
+            "nullable": true,
+            "example": "Foo Bar"
+          },
+          "slug": {
+            "type": "string",
+            "description": "The URL-scoped unique identifier of the `Leaderboard`.<br />\r\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
+            "nullable": true,
+            "example": "foo-bar"
+          }
+        },
+        "additionalProperties": false,
+        "description": "This request object is sent when creating a `Leaderboard`."
+      },
+      "CreateModshipRequest": {
+        "required": [
+          "leaderboardId",
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "leaderboardId": {
+            "type": "integer",
+            "description": "The ID of the `Leaderboard` the `User` should become a *Moderator* for.",
+            "format": "int64"
+          },
+          "userId": {
+            "type": "string",
+            "description": "The ID of the `User` who should be promoted.",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false,
+        "description": "This request object is sent when promoting a `User` to *Moderator* for a `Leaderboard`."
+      },
+      "CreateParticipationRequest": {
+        "required": [
+          "isSubmitter",
+          "runId",
+          "runnerId"
+        ],
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string",
+            "description": "An optional comment about the `Participation`.",
+            "nullable": true
+          },
+          "vod": {
+            "type": "string",
+            "description": "An optional link to video proof of the `Run`.",
+            "nullable": true
+          },
+          "runnerId": {
+            "type": "string",
+            "description": "The ID of the `User` who is participating.",
+            "format": "uuid"
+          },
+          "runId": {
+            "type": "string",
+            "description": "The ID of the `Run` the `Participation` is created on.",
+            "format": "uuid"
+          },
+          "isSubmitter": {
+            "type": "boolean",
+            "description": "Indicates whether the `Participation` is for the `User` who is creating it."
+          }
+        },
+        "additionalProperties": false,
+        "description": "This request object is sent when creating a `Participation` for a `User` on a `Run`."
+      },
+      "CreateRunRequest": {
+        "required": [
+          "categoryId",
+          "playedOn",
+          "status",
+          "submittedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "playedOn": {
+            "$ref": "#/components/schemas/LocalDate"
+          },
+          "submittedAt": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RunStatus"
+          },
+          "categoryId": {
+            "type": "integer",
+            "description": "The ID of the `Category` for the `Run`.",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false,
+        "description": "This request object is sent when creating a `Run`."
+      },
+      "CreateSiteBanRequest": {
+        "required": [
+          "reason",
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "The ID of the `User` which is banned.",
+            "format": "uuid"
+          },
+          "reason": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The reason as to the `User`'s ban.",
+            "example": "Abusive or hateful conduct."
+          }
+        },
+        "additionalProperties": false,
+        "description": "This request object is sent when banning a `User` from the site."
+      },
+      "Era": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Instant": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "IsoDayOfWeek": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "Judgement": {
+        "required": [
+          "createdAt",
+          "judge",
+          "judgeId",
+          "note",
+          "run",
+          "runId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the `Judgement`.<br />\r\nGenerated on creation.",
+            "format": "int64"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "runId": {
+            "type": "string",
+            "description": "The ID of the `Run` which is being judged.",
+            "format": "uuid"
+          },
+          "run": {
+            "$ref": "#/components/schemas/Run"
+          },
+          "judgeId": {
+            "type": "string",
+            "description": "The ID of the *Moderator* (`User`) who is making the `Judgement`.",
+            "format": "uuid"
+          },
+          "judge": {
+            "$ref": "#/components/schemas/User"
+          },
+          "approved": {
+            "type": "boolean",
+            "description": "The `Judgement`'s decision. May be null, true, or false.",
+            "nullable": true
+          },
+          "note": {
+            "minLength": 1,
+            "type": "string",
+            "description": "A comment elaborating on the `Judgement`'s decision. Must have a value when the\r\naffected `Run` is not approved (`Approved` is null or false).",
+            "example": "The video proof is not of sufficient quality."
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a decision made by a *Moderator* (`User`) about a `Run`."
+      },
+      "JudgementViewModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the `Judgement`.",
+            "format": "int64"
+          },
+          "approved": {
+            "type": "boolean",
+            "description": "The `Judgement`'s decision. May be null, true, or false.<br />\r\n`Note` will be non-empty when the decision is null or false.",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The time the `Judgement` was made.",
+            "nullable": true,
+            "example": "2022-01-01T12:34:56Z / 2022-01-01T12:34:56+01:00"
+          },
+          "note": {
+            "type": "string",
+            "description": "A comment elaborating on the `Judgement`'s decision. Will have a value when the\r\naffected `Run` is not approved (`Approved` is null or false).",
+            "nullable": true
+          },
+          "modId": {
+            "type": "string",
+            "description": "The ID of the *Moderator* (`User`) who made the `Judgement`.",
+            "format": "uuid"
+          },
+          "runId": {
+            "type": "string",
+            "description": "The ID of the `Run` which was judged.",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a decision made by a *Moderator* (`User`) about a `Run`.<br />\r\nSee: LeaderboardBackend.Models.Entities.Judgement."
+      },
+      "Leaderboard": {
+        "required": [
+          "name",
+          "slug"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the `Leaderboard`.<br />\r\nGenerated on creation.",
+            "format": "int64"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The display name of the `Leaderboard` to create.",
+            "example": "Foo Bar"
+          },
+          "slug": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The URL-scoped unique identifier of the `Leaderboard`.<br />\r\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
+            "example": "foo-bar"
+          },
+          "rules": {
+            "type": "string",
+            "description": "The general rules for the Leaderboard.",
+            "nullable": true,
+            "example": "Timer starts on selecting New Game and ends when the final boss is beaten."
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a collection of `Category` entities."
+      },
+      "LocalDate": {
+        "type": "object",
+        "properties": {
+          "calendar": {
+            "$ref": "#/components/schemas/CalendarSystem"
+          },
+          "year": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "month": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "day": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dayOfWeek": {
+            "$ref": "#/components/schemas/IsoDayOfWeek"
+          },
+          "yearOfEra": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "era": {
+            "$ref": "#/components/schemas/Era"
+          },
+          "dayOfYear": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LoginRequest": {
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The `User`'s email address.",
+            "format": "email",
+            "example": "john.doe@example.com"
+          },
+          "password": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The `User`'s password. It:\r\n<ul><li>supports Unicode;</li><li>must be [8, 80] in length;</li><li>must have at least:</li><ul><li>one uppercase letter;</li><li>one lowercase letter; and</li><li>one number.</li></ul></ul>",
+            "example": "P4ssword"
+          }
+        },
+        "additionalProperties": false,
+        "description": "This request object is sent when a `User` is attempting to log in."
+      },
+      "LoginResponse": {
+        "required": [
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "minLength": 1,
+            "type": "string",
+            "description": "A JSON Web Token to authenticate and authorize queries with."
+          }
+        },
+        "additionalProperties": false,
+        "description": "This response object is received upon a successful log-in request."
+      },
+      "Modship": {
+        "required": [
+          "leaderboardId",
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the `Modship`.<br />\r\nGenerated on creation.",
+            "format": "int64"
+          },
+          "userId": {
+            "type": "string",
+            "description": "The ID of the *Moderator* (`User`).",
+            "format": "uuid"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "leaderboardId": {
+            "type": "integer",
+            "description": "The ID of the `Leaderboard` the `User` is a *Moderator* for.",
+            "format": "int64"
+          },
+          "leaderboard": {
+            "$ref": "#/components/schemas/Leaderboard"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the *Moderator* status of a `User`."
+      },
+      "Participation": {
+        "required": [
+          "run",
+          "runId",
+          "runner",
+          "runnerId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the `Participation`.<br />\r\nGenerated on creation.",
+            "format": "int64"
+          },
+          "runnerId": {
+            "type": "string",
+            "description": "The ID of the `User` who is participating.",
+            "format": "uuid"
+          },
+          "runner": {
+            "$ref": "#/components/schemas/User"
+          },
+          "runId": {
+            "type": "string",
+            "description": "The ID of the `Run` the `Participation` is created on.",
+            "format": "uuid"
+          },
+          "run": {
+            "$ref": "#/components/schemas/Run"
+          },
+          "comment": {
+            "type": "string",
+            "description": "An optional comment about the `Participation`.",
+            "nullable": true
+          },
+          "vod": {
+            "type": "string",
+            "description": "An optional link to video proof of the `Run`.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the participation of a `User` on a `Run`."
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { }
+      },
+      "RegisterRequest": {
+        "required": [
+          "email",
+          "password",
+          "passwordConfirm",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "minLength": 1,
+            "pattern": "(?:[a-zA-Z0-9][-_']?){1,12}[a-zA-Z0-9]",
+            "type": "string",
+            "description": "The username of the `User`. It:\r\n<ul><li>must be [2, 25] in length;</li><li>must be made up of letters sandwiching zero or one of:</li><ul><li>hyphen;</li><li>underscore; or</li><li>apostrophe</li></ul></ul>\r\nUsernames are saved case-sensitively, but matcehd against case-insensitively.\r\nA `User` may not register with the name 'Cool' when another `User` with the name 'cool'\r\nexists.",
+            "example": "J'on-Doe"
+          },
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The `User`'s email address.",
+            "format": "email",
+            "example": "john.doe@example.com"
+          },
+          "password": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The `User`'s password. It:\r\n<ul><li>supports Unicode;</li><li>must be [8, 80] in length;</li><li>must have at least:</li><ul><li>one uppercase letter;</li><li>one lowercase letter; and</li><li>one number.</li></ul></ul>",
+            "example": "P4ssword"
+          },
+          "passwordConfirm": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The password confirmation. This value must match `Password`."
+          }
+        },
+        "additionalProperties": false,
+        "description": "This request object is sent when a `User` is attempting to register."
+      },
+      "RemoveModshipRequest": {
+        "required": [
+          "leaderboardId",
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "leaderboardId": {
+            "type": "integer",
+            "description": "The ID of the `Leaderboard` the `User` should be demoted from.",
+            "format": "int64"
+          },
+          "userId": {
+            "type": "string",
+            "description": "The ID of the `User` who should be demoted.",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false,
+        "description": "This request object is sent when demoting a `User` as a *Moderator* from a `Leaderboard`."
+      },
+      "Run": {
+        "required": [
+          "categoryId",
+          "participations",
+          "playedOn",
+          "status",
+          "submittedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the `Run`.<br />\r\nGenerated on creation.",
+            "format": "uuid"
+          },
+          "playedOn": {
+            "$ref": "#/components/schemas/LocalDate"
+          },
+          "submittedAt": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RunStatus"
+          },
+          "judgements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Judgement"
+            },
+            "description": "A collection of `Judgement`s made about the `Run`.",
+            "nullable": true
+          },
+          "participations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Participation"
+            },
+            "description": "A collection of `Participation`s on the `Run`."
+          },
+          "categoryId": {
+            "type": "integer",
+            "description": "The ID of the `Category` for `Run`.",
+            "format": "int64"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents an entry on a `Category`."
+      },
+      "RunStatus": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "type": "integer",
+        "description": "The status of the `Run`.<br />\r\n    - 0: Created<br />\r\n    - 1: Submitted<br />\r\n    - 2: Pending<br />\r\n    - 3: Approved<br />\r\n    - 4: Rejected",
+        "format": "int32"
+      },
+      "UpdateParticipationRequest": {
+        "required": [
+          "vod"
+        ],
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string",
+            "description": "A comment about the `Participation`.",
+            "nullable": true
+          },
+          "vod": {
+            "minLength": 1,
+            "type": "string",
+            "description": "A link to video proof of the `Run`."
+          }
+        },
+        "additionalProperties": false,
+        "description": "This request object is sent when updating a `Participation`."
+      },
+      "User": {
+        "required": [
+          "admin",
+          "email",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the `User`.<br />\r\nGenerated on creation.",
+            "format": "uuid"
+          },
+          "username": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The username of the `User`. It:\r\n<ul><li>must be [2, 25] in length;</li><li>must be made up of alphanumeric characters around zero or one of:</li><ul><li>hyphen;</li><li>underscore; or</li><li>apostrophe</li></ul></ul>\r\nUsernames are saved case-sensitively, but matcehd against case-insensitively.\r\nA `User` may not register with the name 'Cool' when another `User` with the name 'cool'\r\nexists.",
+            "example": "J'on-Doe"
+          },
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The `User`'s email address.",
+            "example": "john.doe@example.com"
+          },
+          "about": {
+            "type": "string",
+            "description": "The `User`'s personal description, displayed on their profile.",
+            "nullable": true
+          },
+          "admin": {
+            "type": "boolean",
+            "description": "The `User`'s administrator status."
+          },
+          "bansGiven": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ban"
+            },
+            "description": "The `Ban`s the `User` has issued.",
+            "nullable": true
+          },
+          "bansReceived": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ban"
+            },
+            "description": "The `Ban`s the `User` has received.",
+            "nullable": true
+          },
+          "modships": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Modship"
+            },
+            "description": "The `Modship`s associated with the `User`.",
+            "nullable": true
+          },
+          "participations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Participation"
+            },
+            "description": "The `Participation`s associated with the `User`.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a user account registered on the website."
+      }
+    }
+  }
+}
