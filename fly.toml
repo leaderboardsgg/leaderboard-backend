@@ -21,3 +21,8 @@ app = "lbgg-backend-dev"
   [[services.ports]]
     handlers = ["tls", "http"]
     port = 443
+
+  [services.concurrency]
+    type = "requests"
+    hard_limit = 5
+    soft_limit = 5
