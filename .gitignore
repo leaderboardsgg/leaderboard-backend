@@ -396,3 +396,4 @@ FodyWeavers.xsd
 # Environment files
 *.env
 !example.env
+!swagger-gen.env
