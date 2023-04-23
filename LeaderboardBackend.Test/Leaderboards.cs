@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
-using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
@@ -39,7 +38,7 @@ internal class Leaderboards
 	public static void GetLeaderboard_NotFound()
 	{
 		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
-			await s_apiClient.Get<Leaderboard>($"/api/leaderboards/{long.MaxValue}", new()))!;
+			await s_apiClient.Get<LeaderboardViewModel>($"/api/leaderboards/{long.MaxValue}", new()))!;
 
 		Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);
 	}
@@ -47,7 +46,7 @@ internal class Leaderboards
 	[Test]
 	public static async Task CreateLeaderboard_GetLeaderboard_OK()
 	{
-		Leaderboard createdLeaderboard = await s_apiClient.Post<Leaderboard>(
+		LeaderboardViewModel createdLeaderboard = await s_apiClient.Post<LeaderboardViewModel>(
 			"/api/leaderboards",
 			new()
 			{
@@ -59,7 +58,7 @@ internal class Leaderboards
 				Jwt = s_jwt
 			});
 
-		Leaderboard retrievedLeaderboard = await s_apiClient.Get<Leaderboard>(
+		LeaderboardViewModel retrievedLeaderboard = await s_apiClient.Get<LeaderboardViewModel>(
 			$"/api/leaderboards/{createdLeaderboard?.Id}",
 			new());
 
@@ -69,12 +68,12 @@ internal class Leaderboards
 	[Test]
 	public static async Task CreateLeaderboards_GetLeaderboards()
 	{
-		HashSet<Leaderboard> createdLeaderboards = new();
+		HashSet<LeaderboardViewModel> createdLeaderboards = new();
 
 		for (int i = 0; i < 5; i++)
 		{
 			createdLeaderboards.Add(
-				await s_apiClient.Post<Leaderboard>(
+				await s_apiClient.Post<LeaderboardViewModel>(
 					"/api/leaderboards",
 					new()
 					{
@@ -90,11 +89,11 @@ internal class Leaderboards
 		IEnumerable<long> leaderboardIds = createdLeaderboards.Select(l => l.Id).ToList();
 		string leaderboardIdQuery = ListToQueryString(leaderboardIds, "ids");
 
-		List<Leaderboard> leaderboards = await s_apiClient.Get<List<Leaderboard>>(
+		List<LeaderboardViewModel> leaderboards = await s_apiClient.Get<List<LeaderboardViewModel>>(
 			$"api/leaderboards?{leaderboardIdQuery}",
 			new());
 
-		foreach (Leaderboard leaderboard in leaderboards)
+		foreach (LeaderboardViewModel leaderboard in leaderboards)
 		{
 			Assert.IsTrue(createdLeaderboards.Contains(leaderboard));
 			createdLeaderboards.Remove(leaderboard);

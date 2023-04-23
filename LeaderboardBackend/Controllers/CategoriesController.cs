@@ -1,6 +1,7 @@
 using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,7 +27,7 @@ public class CategoriesController : ControllerBase
 	/// <response code="404">No `Category` with the requested ID could be found.</response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
 	[HttpGet("{id}")]
-	public async Task<ActionResult<Category>> GetCategory(long id)
+	public async Task<ActionResult<CategoryViewModel>> GetCategory(long id)
 	{
 		// NOTE: Should this use [AllowAnonymous]? - Ero
 
@@ -37,7 +38,7 @@ public class CategoriesController : ControllerBase
 			return NotFound();
 		}
 
-		return Ok(category);
+		return Ok(CategoryViewModel.MapFrom(category));
 	}
 
 	/// <summary>
@@ -54,7 +55,7 @@ public class CategoriesController : ControllerBase
 	/// </response>
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
 	[HttpPost]
-	public async Task<ActionResult<Category>> CreateCategory(
+	public async Task<ActionResult<CategoryViewModel>> CreateCategory(
 		[FromBody] CreateCategoryRequest request)
 	{
 		// FIXME: Allow only moderators to call this! - Ero
@@ -73,6 +74,6 @@ public class CategoriesController : ControllerBase
 
 		await _categoryService.CreateCategory(category);
 
-		return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
+		return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, CategoryViewModel.MapFrom(category));
 	}
 }
