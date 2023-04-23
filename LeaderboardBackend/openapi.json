@@ -854,6 +854,14 @@
                 "format": "int64"
               }
             }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The slug of the `Leaderboard` to retrieve",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {

@@ -45,6 +45,7 @@ public class LeaderboardsController : ControllerBase
 	///     Gets Leaderboards by their IDs.
 	/// </summary>
 	/// <param name="ids">The IDs of the `Leaderboard`s which should be retrieved.</param>
+	/// <param name="slug">The slug of the `Leaderboard` to retrieve</param>
 	/// <response code="200">
 	///     The list of `Leaderboard`s was retrieved successfully. The result can be an empty
 	///     collection.
@@ -53,9 +54,10 @@ public class LeaderboardsController : ControllerBase
 	[HttpGet]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	public async Task<ActionResult<List<LeaderboardViewModel>>> GetLeaderboards(
-		[FromQuery] long[] ids)
+		[FromQuery] long[] ids, [FromQuery] string? slug = null)
 	{
-		List<Leaderboard> result = await _leaderboardService.GetLeaderboards(ids);
+		GetLeaderboardsQuery query = new(ids, slug);
+		List<Leaderboard> result = await _leaderboardService.GetLeaderboards(query);
 		return Ok(result.Select(LeaderboardViewModel.MapFrom));
 	}
 

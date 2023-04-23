@@ -1,13 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
-using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 
 namespace LeaderboardBackend.Test;
 
@@ -17,6 +18,9 @@ internal class Leaderboards
 	private static TestApiClient s_apiClient = null!;
 	private static TestApiFactory s_factory = null!;
 	private static string? s_jwt;
+
+	private readonly Faker<CreateLeaderboardRequest> _createBoardReqFaker = new AutoFaker<CreateLeaderboardRequest>()
+		.RuleFor(x => x.Slug, b => string.Join('-', b.Lorem.Words(2)));
 
 	[OneTimeSetUp]
 	public async Task OneTimeSetUp()
@@ -35,7 +39,7 @@ internal class Leaderboards
 	}
 
 	[Test]
-	public static void GetLeaderboard_NotFound()
+	public void GetLeaderboard_NotFound()
 	{
 		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
 			await s_apiClient.Get<LeaderboardViewModel>($"/api/leaderboards/{long.MaxValue}", new()))!;
@@ -44,17 +48,14 @@ internal class Leaderboards
 	}
 
 	[Test]
-	public static async Task CreateLeaderboard_GetLeaderboard_OK()
+	public async Task CreateLeaderboard_GetLeaderboard_OK()
 	{
+		CreateLeaderboardRequest req = _createBoardReqFaker.Generate();
 		LeaderboardViewModel createdLeaderboard = await s_apiClient.Post<LeaderboardViewModel>(
 			"/api/leaderboards",
 			new()
 			{
-				Body = new CreateLeaderboardRequest
-				{
-					Name = Generators.GenerateRandomString(),
-					Slug = Generators.GenerateRandomString()
-				},
+				Body = req,
 				Jwt = s_jwt
 			});
 
@@ -62,29 +63,26 @@ internal class Leaderboards
 			$"/api/leaderboards/{createdLeaderboard?.Id}",
 			new());
 
-		Assert.AreEqual(createdLeaderboard, retrievedLeaderboard);
+		createdLeaderboard.Should().NotBeNull();
+		(string, string) expectedCreatedBoard = ValueTuple.Create(req.Name, req.Slug);
+		(string, string) actualCreatedBoard = ValueTuple.Create(createdLeaderboard!.Name, createdLeaderboard.Slug);
+		expectedCreatedBoard.Should().BeEquivalentTo(actualCreatedBoard);
+
+		createdLeaderboard.Should().BeEquivalentTo(retrievedLeaderboard);
 	}
 
 	[Test]
-	public static async Task CreateLeaderboards_GetLeaderboards()
+	public async Task CreateLeaderboards_GetLeaderboards()
 	{
-		HashSet<LeaderboardViewModel> createdLeaderboards = new();
-
-		for (int i = 0; i < 5; i++)
-		{
-			createdLeaderboards.Add(
-				await s_apiClient.Post<LeaderboardViewModel>(
-					"/api/leaderboards",
-					new()
-					{
-						Body = new CreateLeaderboardRequest
-						{
-							Name = Generators.GenerateRandomString(),
-							Slug = Generators.GenerateRandomString()
-						},
-						Jwt = s_jwt
-					}));
-		}
+		IEnumerable<Task<LeaderboardViewModel>> boardCreationTasks = _createBoardReqFaker.GenerateBetween(3, 10)
+			.Select(req => s_apiClient.Post<LeaderboardViewModel>(
+				"/api/leaderboards",
+				new()
+				{
+					Body = req,
+					Jwt = s_jwt
+				}));
+		LeaderboardViewModel[] createdLeaderboards = await Task.WhenAll(boardCreationTasks);
 
 		IEnumerable<long> leaderboardIds = createdLeaderboards.Select(l => l.Id).ToList();
 		string leaderboardIdQuery = ListToQueryString(leaderboardIds, "ids");
@@ -93,13 +91,62 @@ internal class Leaderboards
 			$"api/leaderboards?{leaderboardIdQuery}",
 			new());
 
-		foreach (LeaderboardViewModel leaderboard in leaderboards)
+		leaderboards.Should().BeEquivalentTo(createdLeaderboards);
+	}
+
+	[Test]
+	public async Task GetLeaderboards_BySlug_OK()
+	{
+		CreateLeaderboardRequest createReqBody = _createBoardReqFaker.Generate();
+		LeaderboardViewModel createdLeaderboard = await s_apiClient.Post<LeaderboardViewModel>(
+			"/api/leaderboards",
+			new()
+			{
+				Body = createReqBody,
+				Jwt = s_jwt
+			});
+
+		// create random unrelated boards
+		foreach (CreateLeaderboardRequest req in _createBoardReqFaker.Generate(2))
 		{
-			Assert.IsTrue(createdLeaderboards.Contains(leaderboard));
-			createdLeaderboards.Remove(leaderboard);
+			await s_apiClient.Post<LeaderboardViewModel>(
+				"/api/leaderboards",
+				new()
+				{
+					Body = req,
+					Jwt = s_jwt
+				});
 		}
 
-		Assert.AreEqual(0, createdLeaderboards.Count);
+		List<LeaderboardViewModel> leaderboards = await s_apiClient.Get<List<LeaderboardViewModel>>(
+			$"api/leaderboards?slug={createReqBody.Slug}",
+			new());
+
+		leaderboards.Should().HaveCount(1);
+		leaderboards.Single().Should().BeEquivalentTo(createdLeaderboard);
+	}
+
+	[Test]
+	public async Task GetLeaderboards_BySlug_NotFound()
+	{
+		// populate with unrelated boards
+		foreach (CreateLeaderboardRequest req in _createBoardReqFaker.Generate(2))
+		{
+			await s_apiClient.Post<LeaderboardViewModel>(
+				"/api/leaderboards",
+				new()
+				{
+					Body = req,
+					Jwt = s_jwt
+				});
+		}
+
+		CreateLeaderboardRequest reqForInexistentBoard = _createBoardReqFaker.Generate();
+		List<LeaderboardViewModel> leaderboards = await s_apiClient.Get<List<LeaderboardViewModel>>(
+			$"api/leaderboards?slug={reqForInexistentBoard.Slug}",
+			new());
+
+		leaderboards.Should().BeEmpty();
 	}
 
 	private static string ListToQueryString<T>(IEnumerable<T> list, string key)
