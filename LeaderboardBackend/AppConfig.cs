@@ -7,10 +7,7 @@ public class AppConfig
 	public string? EnvPath { get; set; } = ".env";
 	public string AllowedOrigins { get; set; } = string.Empty;
 
-	public string[] ParseAllowedOrigins()
-	{
-		return AllowedOrigins?.Split(';') ?? Array.Empty<string>();
-	}
+	public string[] ParseAllowedOrigins() => AllowedOrigins?.Split(';') ?? Array.Empty<string>();
 }
 
 public class AppConfigValidator : AbstractValidator<AppConfig>
