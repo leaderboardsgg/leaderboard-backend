@@ -1,7 +1,7 @@
 using System.Net;
 using System.Threading.Tasks;
-using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
@@ -36,7 +36,7 @@ internal class Categories
 	public static void GetCategory_Unauthorized()
 	{
 		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
-			await s_apiClient.Get<Category>($"/api/categories/1", new()))!;
+			await s_apiClient.Get<CategoryViewModel>($"/api/categories/1", new()))!;
 
 		Assert.AreEqual(HttpStatusCode.Unauthorized, e.Response.StatusCode);
 	}
@@ -45,7 +45,7 @@ internal class Categories
 	public static void GetCategory_NotFound()
 	{
 		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(async () =>
-			await s_apiClient.Get<Category>($"/api/categories/69", new() { Jwt = s_jwt }))!;
+			await s_apiClient.Get<CategoryViewModel>($"/api/categories/69", new() { Jwt = s_jwt }))!;
 
 		Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);
 	}
@@ -53,7 +53,7 @@ internal class Categories
 	[Test]
 	public static async Task CreateCategory_GetCategory_OK()
 	{
-		Leaderboard createdLeaderboard = await s_apiClient.Post<Leaderboard>(
+		LeaderboardViewModel createdLeaderboard = await s_apiClient.Post<LeaderboardViewModel>(
 			"/api/leaderboards",
 			new()
 			{
@@ -65,7 +65,7 @@ internal class Categories
 				Jwt = s_jwt
 			});
 
-		Category createdCategory = await s_apiClient.Post<Category>(
+		CategoryViewModel createdCategory = await s_apiClient.Post<CategoryViewModel>(
 			"/api/categories",
 			new()
 			{
@@ -80,7 +80,7 @@ internal class Categories
 
 		Assert.AreEqual(1, createdCategory.PlayersMax);
 
-		Category retrievedCategory = await s_apiClient.Get<Category>(
+		CategoryViewModel retrievedCategory = await s_apiClient.Get<CategoryViewModel>(
 			$"/api/categories/{createdCategory?.Id}",
 			new() { Jwt = s_jwt });
 

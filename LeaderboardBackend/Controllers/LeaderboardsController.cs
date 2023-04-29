@@ -2,6 +2,7 @@ using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,11 +25,11 @@ public class LeaderboardsController : ControllerBase
 	/// </summary>
 	/// <param name="id">The ID of the `Leaderboard` which should be retrieved.</param>
 	/// <response code="200">The `Leaderboard` was found and returned successfully.</response>
-	/// <response code="404">No `Leaderboard` with the requested ID could be found.</response>
+	/// <response code="404">No `Leaderboard` with the requested ID or slug could be found.</response>
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
-	[HttpGet("{id}")]
-	public async Task<ActionResult<Leaderboard>> GetLeaderboard(long id)
+	[HttpGet("{id:long}")]
+	public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboard(long id)
 	{
 		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(id);
 
@@ -37,7 +38,28 @@ public class LeaderboardsController : ControllerBase
 			return NotFound();
 		}
 
-		return Ok(leaderboard);
+		return Ok(LeaderboardViewModel.MapFrom(leaderboard));
+	}
+
+	/// <summary>
+	///     Gets a Leaderboard by its slug.
+	/// </summary>
+	/// <param name="slug">The slug of the `Leaderboard` which should be retrieved.</param>
+	/// <response code="200">The `Leaderboard` was found and returned successfully.</response>
+	/// <response code="404">No `Leaderboard` with the requested ID or slug could be found.</response>
+	[AllowAnonymous]
+	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
+	[HttpGet("{slug}")]
+	public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboardBySlug(string slug)
+	{
+		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboardBySlug(slug);
+
+		if (leaderboard == null)
+		{
+			return NotFound();
+		}
+
+		return Ok(LeaderboardViewModel.MapFrom(leaderboard));
 	}
 
 	/// <summary>
@@ -51,10 +73,11 @@ public class LeaderboardsController : ControllerBase
 	[AllowAnonymous]
 	[HttpGet]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	public async Task<ActionResult<List<Leaderboard>>> GetLeaderboards(
+	public async Task<ActionResult<List<LeaderboardViewModel>>> GetLeaderboards(
 		[FromQuery] long[] ids)
 	{
-		return Ok(await _leaderboardService.GetLeaderboards(ids));
+		List<Leaderboard> result = await _leaderboardService.GetLeaderboards(ids);
+		return Ok(result.Select(LeaderboardViewModel.MapFrom));
 	}
 
 	/// <summary>
@@ -72,7 +95,7 @@ public class LeaderboardsController : ControllerBase
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
 	[Authorize(Policy = UserTypes.ADMINISTRATOR)]
 	[HttpPost]
-	public async Task<ActionResult<Leaderboard>> CreateLeaderboard(
+	public async Task<ActionResult<LeaderboardViewModel>> CreateLeaderboard(
 		[FromBody] CreateLeaderboardRequest request)
 	{
 		Leaderboard leaderboard = new()
@@ -83,6 +106,6 @@ public class LeaderboardsController : ControllerBase
 
 		await _leaderboardService.CreateLeaderboard(leaderboard);
 
-		return CreatedAtAction(nameof(GetLeaderboard), new { id = leaderboard.Id }, leaderboard);
+		return CreatedAtAction(nameof(GetLeaderboard), new { id = leaderboard.Id }, LeaderboardViewModel.MapFrom(leaderboard));
 	}
 }

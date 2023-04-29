@@ -509,7 +509,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Category"
+                  "$ref": "#/components/schemas/CategoryViewModel"
                 }
               }
             }
@@ -589,7 +589,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Category"
+                  "$ref": "#/components/schemas/CategoryViewModel"
                 }
               }
             }
@@ -793,12 +793,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Leaderboard"
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Leaderboard"
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
                 }
               }
             }
@@ -819,7 +819,73 @@
             }
           },
           "404": {
-            "description": "No `Leaderboard` with the requested ID could be found.",
+            "description": "No `Leaderboard` with the requested ID or slug could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Leaderboards/{slug}": {
+      "get": {
+        "tags": [
+          "Leaderboards"
+        ],
+        "summary": "Gets a Leaderboard by its slug.",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "description": "The slug of the `Leaderboard` which should be retrieved.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The `Leaderboard` was found and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `Leaderboard` with the requested ID or slug could be found.",
             "content": {
               "application/json": {
                 "schema": {
@@ -864,7 +930,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Leaderboard"
+                    "$ref": "#/components/schemas/LeaderboardViewModel"
                   }
                 }
               },
@@ -872,7 +938,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Leaderboard"
+                    "$ref": "#/components/schemas/LeaderboardViewModel"
                   }
                 }
               }
@@ -911,12 +977,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Leaderboard"
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Leaderboard"
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
                 }
               }
             }
@@ -2297,6 +2363,46 @@
         "additionalProperties": false,
         "description": "Represents a `Category` tied to a `Leaderboard`."
       },
+      "CategoryViewModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the `Category`.<br />",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "description": "The display name of the `Category`.",
+            "nullable": true,
+            "example": "Foo Bar Baz%"
+          },
+          "slug": {
+            "type": "string",
+            "description": "The URL-scoped unique identifier of the `Category`.<br />",
+            "nullable": true,
+            "example": "foo-bar-baz"
+          },
+          "rules": {
+            "type": "string",
+            "description": "The rules of the `Category`.",
+            "nullable": true,
+            "example": "Video proof is required."
+          },
+          "playersMin": {
+            "type": "integer",
+            "description": "The minimum player count of the `Category`. The default is 1.",
+            "format": "int32"
+          },
+          "playersMax": {
+            "type": "integer",
+            "description": "The maximum player count of the `Category`. The default is `PlayersMin`.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a `Category` tied to a `Leaderboard`."
+      },
       "CreateCategoryRequest": {
         "required": [
           "leaderboardId",
@@ -2641,11 +2747,7 @@
         "additionalProperties": false,
         "description": "Represents a decision made by a *Moderator* (`User`) about a `Run`.<br />\r\nSee: LeaderboardBackend.Models.Entities.Judgement."
       },
-      "Leaderboard": {
-        "required": [
-          "name",
-          "slug"
-        ],
+      "LeaderboardViewModel": {
         "type": "object",
         "properties": {
           "id": {
@@ -2654,15 +2756,15 @@
             "format": "int64"
           },
           "name": {
-            "minLength": 1,
             "type": "string",
             "description": "The display name of the `Leaderboard` to create.",
+            "nullable": true,
             "example": "Foo Bar"
           },
           "slug": {
-            "minLength": 1,
             "type": "string",
             "description": "The URL-scoped unique identifier of the `Leaderboard`.<br />\r\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
+            "nullable": true,
             "example": "foo-bar"
           },
           "rules": {
@@ -2670,6 +2772,14 @@
             "description": "The general rules for the Leaderboard.",
             "nullable": true,
             "example": "Timer starts on selecting New Game and ends when the final boss is beaten."
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryViewModel"
+            },
+            "description": "A collection of `Category` entities for the `Leaderboard`.",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -2775,9 +2885,6 @@
             "type": "integer",
             "description": "The ID of the `Leaderboard` the `User` is a *Moderator* for.",
             "format": "int64"
-          },
-          "leaderboard": {
-            "$ref": "#/components/schemas/Leaderboard"
           }
         },
         "additionalProperties": false,
@@ -3066,6 +3173,19 @@
         "additionalProperties": false,
         "description": "Represents a user account registered on the website."
       }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "JWT Authorization using the Bearer scheme",
+        "scheme": "Bearer",
+        "bearerFormat": "JWT"
+      }
     }
-  }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
 }

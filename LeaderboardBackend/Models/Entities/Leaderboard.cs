@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -38,19 +37,16 @@ public class Leaderboard
 	/// <summary>
 	///     A collection of `Category` entities for the `Leaderboard`.
 	/// </summary>
-	[JsonIgnore]
 	public List<Category>? Categories { get; set; }
 
 	/// <summary>
 	///     A collection of *Moderator*s (`Users`) for the `Leaderboard`.
 	/// </summary>
-	[JsonIgnore]
 	public List<Modship>? Modships { get; set; }
 
 	/// <summary>
 	///     A collection of `Ban`s scoped to the `Leaderboard`.
 	/// </summary>
-	[JsonIgnore]
 	public List<Ban>? Bans { get; set; }
 
 	public override bool Equals(object? obj)

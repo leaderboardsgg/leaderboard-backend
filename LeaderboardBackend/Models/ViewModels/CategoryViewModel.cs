@@ -1,0 +1,55 @@
+using LeaderboardBackend.Models.Entities;
+
+namespace LeaderboardBackend.Models.ViewModels;
+
+/// <summary>
+///     Represents a `Category` tied to a `Leaderboard`.
+/// </summary>
+public record CategoryViewModel
+{
+	/// <summary>
+	///     The unique identifier of the `Category`.<br/>
+	/// </summary>
+	public required long Id { get; set; }
+
+	/// <summary>
+	///     The display name of the `Category`.
+	/// </summary>
+	/// <example>Foo Bar Baz%</example>
+	public required string Name { get; set; }
+
+	/// <summary>
+	///     The URL-scoped unique identifier of the `Category`.<br/>
+	/// </summary>
+	/// <example>foo-bar-baz</example>
+	public required string Slug { get; set; }
+
+	/// <summary>
+	///     The rules of the `Category`.
+	/// </summary>
+	/// <example>Video proof is required.</example>
+	public required string? Rules { get; set; }
+
+	/// <summary>
+	///     The minimum player count of the `Category`. The default is 1.
+	/// </summary>
+	public required int PlayersMin { get; set; }
+
+	/// <summary>
+	///     The maximum player count of the `Category`. The default is `PlayersMin`.
+	/// </summary>
+	public required int PlayersMax { get; set; }
+
+	public static CategoryViewModel MapFrom(Category category)
+	{
+		return new CategoryViewModel
+		{
+			Id = category.Id,
+			Name = category.Name,
+			Slug = category.Slug,
+			Rules = category.Rules,
+			PlayersMin = category.PlayersMin,
+			PlayersMax = category.PlayersMax,
+		};
+	}
+}

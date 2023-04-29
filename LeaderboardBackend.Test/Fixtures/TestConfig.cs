@@ -13,6 +13,8 @@ internal static class TestConfig
 		{
 			DatabaseBackend = dbBackend;
 		}
+
+        Bogus.Randomizer.Seed = new Random(43817269); // fixed seed for repeatable tests
 	}
 }
 

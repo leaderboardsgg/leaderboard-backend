@@ -34,6 +34,7 @@ public class Modship
 	/// <summary>
 	///     Relationship model for `LeaderboardId`.
 	/// </summary>
+	[JsonIgnore] // TODO: remove JsonIgnore attribute when adding the Modship viewmodel
 	public Leaderboard? Leaderboard { get; set; } = null!;
 
 	public override bool Equals(object? obj)

@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Npgsql;
 using BCryptNet = BCrypt.Net.BCrypt;
 
@@ -134,6 +135,30 @@ builder.Services.AddSwaggerGen(c =>
 	// Enable adding XML comments to controllers to populate Swagger UI
 	string xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
 	c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+
+	c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+	{
+		In = ParameterLocation.Header,
+		Description = "JWT Authorization using the Bearer scheme",
+		Name = "Authorization",
+		Type = SecuritySchemeType.Http,
+		BearerFormat = "JWT",
+		Scheme = JwtBearerDefaults.AuthenticationScheme
+	});
+	c.AddSecurityRequirement(new OpenApiSecurityRequirement
+	{
+		{
+			new OpenApiSecurityScheme
+			{
+				Reference = new OpenApiReference
+				{
+					Type = ReferenceType.SecurityScheme,
+					Id = JwtBearerDefaults.AuthenticationScheme
+				}
+			},
+			Array.Empty<string>()
+		}
+	});
 });
 
 // Configure JWT Authentication.

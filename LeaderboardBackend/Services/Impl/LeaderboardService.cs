@@ -18,6 +18,12 @@ public class LeaderboardService : ILeaderboardService
 			.FindAsync(id);
 	}
 
+	public Task<Leaderboard?> GetLeaderboardBySlug(string slug)
+	{
+		return _applicationContext.Leaderboards.AsNoTracking()
+			.FirstOrDefaultAsync(x => x.Slug == slug);
+	}
+
 	// FIXME: Paginate this
 	public async Task<List<Leaderboard>> GetLeaderboards(long[]? ids = null)
 	{
