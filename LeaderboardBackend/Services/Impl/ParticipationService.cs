@@ -5,42 +5,43 @@ namespace LeaderboardBackend.Services;
 
 public class ParticipationService : IParticipationService
 {
-	private readonly ApplicationContext _applicationContext;
-	public ParticipationService(ApplicationContext applicationContext)
-	{
-		_applicationContext = applicationContext;
-	}
+    private readonly ApplicationContext _applicationContext;
 
-	public async Task<Participation?> GetParticipation(long id)
-	{
-		Participation? participation = await _applicationContext.Participations
-			.FindAsync(id);
+    public ParticipationService(ApplicationContext applicationContext)
+    {
+        _applicationContext = applicationContext;
+    }
 
-		return participation;
-	}
+    public async Task<Participation?> GetParticipation(long id)
+    {
+        Participation? participation = await _applicationContext.Participations.FindAsync(id);
 
-	public async Task<Participation?> GetParticipationForUser(Guid userId)
-	{
-		return await _applicationContext.Participations
-			.SingleOrDefaultAsync(participation => participation.RunnerId == userId);
-	}
+        return participation;
+    }
 
-	public async Task CreateParticipation(Participation participation)
-	{
-		_applicationContext.Participations.Add(participation);
-		await _applicationContext.SaveChangesAsync();
-	}
+    public async Task<Participation?> GetParticipationForUser(Guid userId)
+    {
+        return await _applicationContext.Participations.SingleOrDefaultAsync(
+            participation => participation.RunnerId == userId
+        );
+    }
 
-	public async Task UpdateParticipation(Participation participation)
-	{
-		_applicationContext.Participations.Update(participation);
-		await _applicationContext.SaveChangesAsync();
-	}
+    public async Task CreateParticipation(Participation participation)
+    {
+        _applicationContext.Participations.Add(participation);
+        await _applicationContext.SaveChangesAsync();
+    }
 
-	public async Task<List<Participation>> GetParticipationsForRun(Run run)
-	{
-		return await _applicationContext.Participations
-			.Where(participation => participation.RunId == run.Id)
-			.ToListAsync();
-	}
+    public async Task UpdateParticipation(Participation participation)
+    {
+        _applicationContext.Participations.Update(participation);
+        await _applicationContext.SaveChangesAsync();
+    }
+
+    public async Task<List<Participation>> GetParticipationsForRun(Run run)
+    {
+        return await _applicationContext.Participations
+            .Where(participation => participation.RunId == run.Id)
+            .ToListAsync();
+    }
 }

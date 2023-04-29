@@ -7,17 +7,17 @@ namespace LeaderboardBackend.Models.Requests;
 /// </summary>
 public record CreateModshipRequest
 {
-	/// <summary>
-	///     The ID of the `Leaderboard` the `User` should become a *Moderator* for.
-	/// </summary>
-	[Required]
-	public long LeaderboardId { get; set; }
+    /// <summary>
+    ///     The ID of the `Leaderboard` the `User` should become a *Moderator* for.
+    /// </summary>
+    [Required]
+    public long LeaderboardId { get; set; }
 
-	/// <summary>
-	///     The ID of the `User` who should be promoted.
-	/// </summary>
-	[Required]
-	public Guid UserId { get; set; }
+    /// <summary>
+    ///     The ID of the `User` who should be promoted.
+    /// </summary>
+    [Required]
+    public Guid UserId { get; set; }
 }
 
 /// <summary>
@@ -25,15 +25,15 @@ public record CreateModshipRequest
 /// </summary>
 public record RemoveModshipRequest
 {
-	/// <summary>
-	///     The ID of the `Leaderboard` the `User` should be demoted from.
-	/// </summary>
-	[Required]
-	public long LeaderboardId { get; set; }
+    /// <summary>
+    ///     The ID of the `Leaderboard` the `User` should be demoted from.
+    /// </summary>
+    [Required]
+    public long LeaderboardId { get; set; }
 
-	/// <summary>
-	///     The ID of the `User` who should be demoted.
-	/// </summary>
-	[Required]
-	public Guid UserId { get; set; }
+    /// <summary>
+    ///     The ID of the `User` who should be demoted.
+    /// </summary>
+    [Required]
+    public Guid UserId { get; set; }
 }

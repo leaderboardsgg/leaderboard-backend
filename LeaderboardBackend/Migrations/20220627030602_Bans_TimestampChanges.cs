@@ -6,50 +6,45 @@ using NodaTime;
 
 namespace LeaderboardBackend.Migrations
 {
-	public partial class Bans_TimestampChanges : Migration
-	{
-		protected override void Up(MigrationBuilder migrationBuilder)
-		{
-			migrationBuilder.RenameColumn(
-				name: "time",
-				table: "bans",
-				newName: "created_at");
+    public partial class Bans_TimestampChanges : Migration
+    {
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.RenameColumn(name: "time", table: "bans", newName: "created_at");
 
-			migrationBuilder.AlterColumn<Instant>(
-				name: "created_at",
-				table: "bans",
-				type: "timestamp with time zone",
-				nullable: false,
-				defaultValueSql: "now()",
-				oldClrType: typeof(DateTime),
-				oldType: "timestamp with time zone");
+            migrationBuilder.AlterColumn<Instant>(
+                name: "created_at",
+                table: "bans",
+                type: "timestamp with time zone",
+                nullable: false,
+                defaultValueSql: "now()",
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp with time zone"
+            );
 
-			migrationBuilder.AddColumn<Instant>(
-				name: "deleted_at",
-				table: "bans",
-				type: "timestamp with time zone",
-				nullable: true);
-		}
+            migrationBuilder.AddColumn<Instant>(
+                name: "deleted_at",
+                table: "bans",
+                type: "timestamp with time zone",
+                nullable: true
+            );
+        }
 
-		protected override void Down(MigrationBuilder migrationBuilder)
-		{
-			migrationBuilder.DropColumn(
-				name: "deleted_at",
-				table: "bans");
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(name: "deleted_at", table: "bans");
 
-			migrationBuilder.AlterColumn<DateTime>(
-				name: "created_at",
-				table: "bans",
-				type: "timestamp with time zone",
-				nullable: false,
-				defaultValueSql: "now()",
-				oldClrType: typeof(Instant),
-				oldType: "timestamp with time zone");
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "created_at",
+                table: "bans",
+                type: "timestamp with time zone",
+                nullable: false,
+                defaultValueSql: "now()",
+                oldClrType: typeof(Instant),
+                oldType: "timestamp with time zone"
+            );
 
-			migrationBuilder.RenameColumn(
-				name: "created_at",
-				table: "bans",
-				newName: "time");
-		}
-	}
+            migrationBuilder.RenameColumn(name: "created_at", table: "bans", newName: "time");
+        }
+    }
 }

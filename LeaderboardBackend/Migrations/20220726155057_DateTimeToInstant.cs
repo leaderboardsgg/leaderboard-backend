@@ -4,16 +4,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace LeaderboardBackend.Migrations
 {
-	public partial class DateTimeToInstant : Migration
-	{
-		protected override void Up(MigrationBuilder migrationBuilder)
-		{
+    public partial class DateTimeToInstant : Migration
+    {
+        protected override void Up(MigrationBuilder migrationBuilder) { }
 
-		}
-
-		protected override void Down(MigrationBuilder migrationBuilder)
-		{
-
-		}
-	}
+        protected override void Down(MigrationBuilder migrationBuilder) { }
+    }
 }

@@ -4,7 +4,8 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- Commenting out due to dotnet format bug: https://github.com/dotnet/format/issues/1800 -->
+    <!-- <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild> -->
   </PropertyGroup>
 
   <PropertyGroup>
@@ -54,7 +55,7 @@
     <Content Remove="@(OpenApiFile)" />
     <None Include="@(OpenApiFile)" />
     <!-- required to be detected by the "fast up-to-date" feature of Visual Studio https://github.com/dotnet/project-system/blob/main/docs/up-to-date-check.md -->
-    <UpToDateCheckOutput Include="@(OpenApiFile)" /> 
+    <UpToDateCheckOutput Include="@(OpenApiFile)" />
   </ItemGroup>
 
   <Target Name="SwaggerPostBuildTarget" Condition="'$(DISABLE_OPENAPI_FILE_GEN)' != 'true'" AfterTargets="Build" Inputs="$(OutputPath)/$(AssemblyName).dll" Outputs="@(OpenApiFile)">
