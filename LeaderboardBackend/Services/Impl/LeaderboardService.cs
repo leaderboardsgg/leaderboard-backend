@@ -18,22 +18,26 @@ public class LeaderboardService : ILeaderboardService
 			.FindAsync(id);
 	}
 
-	// FIXME: Paginate this
-	public async Task<List<Leaderboard>> GetLeaderboards(GetLeaderboardsQuery query)
+	public Task<Leaderboard?> GetLeaderboardBySlug(string slug)
 	{
-		IQueryable<Leaderboard> queryable = _applicationContext.Leaderboards.AsNoTracking();
+		return _applicationContext.Leaderboards.AsNoTracking()
+			.FirstOrDefaultAsync(x => x.Slug == slug);
+	}
 
-		if (query.Ids is not null && query.Ids.Length > 0)
+	// FIXME: Paginate this
+	public async Task<List<Leaderboard>> GetLeaderboards(long[]? ids = null)
+	{
+		if (ids is null)
 		{
-			queryable = queryable.Where(leaderboard => query.Ids.Contains(leaderboard.Id));
+			return await _applicationContext.Leaderboards
+				.ToListAsync();
 		}
-
-		if (query.Slug is not null)
+		else
 		{
-			queryable = queryable.Where(leaderboard => leaderboard.Slug == query.Slug);
+			return await _applicationContext.Leaderboards
+				.Where(leaderboard => ids.Contains(leaderboard.Id))
+				.ToListAsync();
 		}
-
-		return await queryable.ToListAsync();
 	}
 
 	public async Task CreateLeaderboard(Leaderboard leaderboard)

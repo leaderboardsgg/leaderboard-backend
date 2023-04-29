@@ -25,10 +25,10 @@ public class LeaderboardsController : ControllerBase
 	/// </summary>
 	/// <param name="id">The ID of the `Leaderboard` which should be retrieved.</param>
 	/// <response code="200">The `Leaderboard` was found and returned successfully.</response>
-	/// <response code="404">No `Leaderboard` with the requested ID could be found.</response>
+	/// <response code="404">No `Leaderboard` with the requested ID or slug could be found.</response>
 	[AllowAnonymous]
 	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
-	[HttpGet("{id}")]
+	[HttpGet("{id:long}")]
 	public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboard(long id)
 	{
 		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(id);
@@ -42,10 +42,30 @@ public class LeaderboardsController : ControllerBase
 	}
 
 	/// <summary>
+	///     Gets a Leaderboard by its slug.
+	/// </summary>
+	/// <param name="slug">The slug of the `Leaderboard` which should be retrieved.</param>
+	/// <response code="200">The `Leaderboard` was found and returned successfully.</response>
+	/// <response code="404">No `Leaderboard` with the requested ID or slug could be found.</response>
+	[AllowAnonymous]
+	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
+	[HttpGet("{slug}")]
+	public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboardBySlug(string slug)
+	{
+		Leaderboard? leaderboard = await _leaderboardService.GetLeaderboardBySlug(slug);
+
+		if (leaderboard == null)
+		{
+			return NotFound();
+		}
+
+		return Ok(LeaderboardViewModel.MapFrom(leaderboard));
+	}
+
+	/// <summary>
 	///     Gets Leaderboards by their IDs.
 	/// </summary>
 	/// <param name="ids">The IDs of the `Leaderboard`s which should be retrieved.</param>
-	/// <param name="slug">The slug of the `Leaderboard` to retrieve</param>
 	/// <response code="200">
 	///     The list of `Leaderboard`s was retrieved successfully. The result can be an empty
 	///     collection.
@@ -54,10 +74,9 @@ public class LeaderboardsController : ControllerBase
 	[HttpGet]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	public async Task<ActionResult<List<LeaderboardViewModel>>> GetLeaderboards(
-		[FromQuery] long[] ids, [FromQuery] string? slug = null)
+		[FromQuery] long[] ids)
 	{
-		GetLeaderboardsQuery query = new(ids, slug);
-		List<Leaderboard> result = await _leaderboardService.GetLeaderboards(query);
+		List<Leaderboard> result = await _leaderboardService.GetLeaderboards(ids);
 		return Ok(result.Select(LeaderboardViewModel.MapFrom));
 	}
 

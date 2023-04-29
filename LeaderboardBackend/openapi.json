@@ -819,7 +819,73 @@
             }
           },
           "404": {
-            "description": "No `Leaderboard` with the requested ID could be found.",
+            "description": "No `Leaderboard` with the requested ID or slug could be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Leaderboards/{slug}": {
+      "get": {
+        "tags": [
+          "Leaderboards"
+        ],
+        "summary": "Gets a Leaderboard by its slug.",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "description": "The slug of the `Leaderboard` which should be retrieved.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The `Leaderboard` was found and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No `Leaderboard` with the requested ID or slug could be found.",
             "content": {
               "application/json": {
                 "schema": {
@@ -853,14 +919,6 @@
                 "type": "integer",
                 "format": "int64"
               }
-            }
-          },
-          {
-            "name": "slug",
-            "in": "query",
-            "description": "The slug of the `Leaderboard` to retrieve",
-            "schema": {
-              "type": "string"
             }
           }
         ],
@@ -3115,6 +3173,19 @@
         "additionalProperties": false,
         "description": "Represents a user account registered on the website."
       }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "JWT Authorization using the Bearer scheme",
+        "scheme": "Bearer",
+        "bearerFormat": "JWT"
+      }
     }
-  }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
 }

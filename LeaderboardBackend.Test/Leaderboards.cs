@@ -8,7 +8,6 @@ using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 
 namespace LeaderboardBackend.Test;
 
@@ -118,12 +117,11 @@ internal class Leaderboards
 				});
 		}
 
-		List<LeaderboardViewModel> leaderboards = await s_apiClient.Get<List<LeaderboardViewModel>>(
-			$"api/leaderboards?slug={createReqBody.Slug}",
+		LeaderboardViewModel leaderboard = await s_apiClient.Get<LeaderboardViewModel>(
+			$"api/leaderboards/{createReqBody.Slug}",
 			new());
 
-		leaderboards.Should().HaveCount(1);
-		leaderboards.Single().Should().BeEquivalentTo(createdLeaderboard);
+		leaderboard.Should().BeEquivalentTo(createdLeaderboard);
 	}
 
 	[Test]
@@ -142,11 +140,11 @@ internal class Leaderboards
 		}
 
 		CreateLeaderboardRequest reqForInexistentBoard = _createBoardReqFaker.Generate();
-		List<LeaderboardViewModel> leaderboards = await s_apiClient.Get<List<LeaderboardViewModel>>(
-			$"api/leaderboards?slug={reqForInexistentBoard.Slug}",
-			new());
 
-		leaderboards.Should().BeEmpty();
+		RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(() =>
+			s_apiClient.Get<string>($"/api/leaderboards/{reqForInexistentBoard.Slug}", new()))!;
+
+		e.Response.StatusCode.Should().Be(HttpStatusCode.NotFound);
 	}
 
 	private static string ListToQueryString<T>(IEnumerable<T> list, string key)
