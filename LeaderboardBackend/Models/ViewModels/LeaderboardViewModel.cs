@@ -3,7 +3,7 @@ using LeaderboardBackend.Models.Entities;
 namespace LeaderboardBackend.Models.ViewModels;
 
 /// <summary>
-///     Represents a collection of `Category` entities.
+///     Represents a collection of `Leaderboard` entities.
 /// </summary>
 public record LeaderboardViewModel
 {

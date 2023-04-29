@@ -2282,12 +2282,10 @@
         "properties": {
           "id": {
             "type": "string",
-            "nullable": true,
             "readOnly": true
           },
           "name": {
             "type": "string",
-            "nullable": true,
             "readOnly": true
           },
           "minYear": {
@@ -2305,7 +2303,6 @@
             "items": {
               "$ref": "#/components/schemas/Era"
             },
-            "nullable": true,
             "readOnly": true
           }
         },
@@ -2374,13 +2371,11 @@
           "name": {
             "type": "string",
             "description": "The display name of the `Category`.",
-            "nullable": true,
             "example": "Foo Bar Baz%"
           },
           "slug": {
             "type": "string",
             "description": "The URL-scoped unique identifier of the `Category`.<br />",
-            "nullable": true,
             "example": "foo-bar-baz"
           },
           "rules": {
@@ -2465,7 +2460,6 @@
           "note": {
             "type": "string",
             "description": "A comment elaborating on the `Judgement`'s decision. Must have a value when the\r\naffected `Run` is not approved (`Approved` is null or false).",
-            "nullable": true,
             "example": "The video proof is not of sufficient quality."
           },
           "approved": {
@@ -2511,13 +2505,11 @@
           "name": {
             "type": "string",
             "description": "The display name of the `Leaderboard` to create.",
-            "nullable": true,
             "example": "Foo Bar"
           },
           "slug": {
             "type": "string",
             "description": "The URL-scoped unique identifier of the `Leaderboard`.<br />\r\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
-            "nullable": true,
             "example": "foo-bar"
           }
         },
@@ -2635,7 +2627,6 @@
         "properties": {
           "name": {
             "type": "string",
-            "nullable": true,
             "readOnly": true
           }
         },
@@ -2758,13 +2749,11 @@
           "name": {
             "type": "string",
             "description": "The display name of the `Leaderboard` to create.",
-            "nullable": true,
             "example": "Foo Bar"
           },
           "slug": {
             "type": "string",
             "description": "The URL-scoped unique identifier of the `Leaderboard`.<br />\r\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
-            "nullable": true,
             "example": "foo-bar"
           },
           "rules": {
@@ -2778,12 +2767,11 @@
             "items": {
               "$ref": "#/components/schemas/CategoryViewModel"
             },
-            "description": "A collection of `Category` entities for the `Leaderboard`.",
-            "nullable": true
+            "description": "A collection of `Category` entities for the `Leaderboard`."
           }
         },
         "additionalProperties": false,
-        "description": "Represents a collection of `Category` entities."
+        "description": "Represents a collection of `Leaderboard` entities."
       },
       "LocalDate": {
         "type": "object",
@@ -3091,8 +3079,7 @@
         "properties": {
           "comment": {
             "type": "string",
-            "description": "A comment about the `Participation`.",
-            "nullable": true
+            "description": "A comment about the `Participation`."
           },
           "vod": {
             "minLength": 1,

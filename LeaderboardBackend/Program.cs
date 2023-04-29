@@ -159,6 +159,8 @@ builder.Services.AddSwaggerGen(c =>
 			Array.Empty<string>()
 		}
 	});
+
+	c.SupportNonNullableReferenceTypes();
 });
 
 // Configure JWT Authentication.
@@ -261,6 +263,7 @@ using (ApplicationContext context = scope.ServiceProvider.GetRequiredService<App
 		{
 			defaultUser.Password = BCryptNet.EnhancedHashPassword(newPassword);
 		}
+
 		context.SaveChanges();
 	}
 	else if (config.MigrateDb && app.Environment.IsDevelopment())
