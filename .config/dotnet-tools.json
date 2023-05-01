@@ -13,12 +13,6 @@
       "commands": [
         "swagger"
       ]
-    },
-    "csharpier": {
-      "version": "0.24.1",
-      "commands": [
-        "dotnet-csharpier"
-      ]
     }
   }
 }

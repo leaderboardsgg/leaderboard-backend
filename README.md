@@ -1,7 +1,7 @@
 # leaderboard-backend
 
-An open-source community-driven leaderboard backend for the upcoming leaderboards.gg.
-This repo is a proof-of-concept for switching to a C# with ASP.NET Core stack. The original backend, written in Go, can be found [here](https://github.com/leaderboardsgg/leaderboard-backend-go).
+An open-source community-driven leaderboard backend for the upcoming leaderboards.gg. Uses ASP.NET Core.
+The original backend, written in Go and inactive, can be found [here](https://github.com/leaderboardsgg/leaderboard-backend-go).
 
 ## Links
 - Website: https://leaderboards.gg
