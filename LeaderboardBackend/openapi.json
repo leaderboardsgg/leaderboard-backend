@@ -2236,6 +2236,7 @@
         "required": [
           "bannedUserId",
           "createdAt",
+          "id",
           "reason"
         ],
         "type": "object",
@@ -2278,6 +2279,13 @@
         "description": "Represents a site-scoped or `Leaderboard`-scoped `Ban` tied to a `User`."
       },
       "CalendarSystem": {
+        "required": [
+          "eras",
+          "id",
+          "maxYear",
+          "minYear",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2310,6 +2318,7 @@
       },
       "Category": {
         "required": [
+          "id",
           "leaderboardId",
           "name",
           "playersMax",
@@ -2361,6 +2370,13 @@
         "description": "Represents a `Category` tied to a `Leaderboard`."
       },
       "CategoryViewModel": {
+        "required": [
+          "id",
+          "name",
+          "playersMax",
+          "playersMin",
+          "slug"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2450,6 +2466,10 @@
         "description": "This request object is sent when creating a `Category`."
       },
       "CreateJudgementRequest": {
+        "required": [
+          "note",
+          "runId"
+        ],
         "type": "object",
         "properties": {
           "runId": {
@@ -2500,6 +2520,10 @@
         "description": "This request object is sent when banning a `User` from a `Leaderboard`."
       },
       "CreateLeaderboardRequest": {
+        "required": [
+          "name",
+          "slug"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -2623,6 +2647,9 @@
         "description": "This request object is sent when banning a `User` from the site."
       },
       "Era": {
+        "required": [
+          "name"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -2653,6 +2680,7 @@
       "Judgement": {
         "required": [
           "createdAt",
+          "id",
           "judge",
           "judgeId",
           "note",
@@ -2701,6 +2729,11 @@
         "description": "Represents a decision made by a *Moderator* (`User`) about a `Run`."
       },
       "JudgementViewModel": {
+        "required": [
+          "id",
+          "modId",
+          "runId"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2739,6 +2772,12 @@
         "description": "Represents a decision made by a *Moderator* (`User`) about a `Run`.<br />\r\nSee: LeaderboardBackend.Models.Entities.Judgement."
       },
       "LeaderboardViewModel": {
+        "required": [
+          "categories",
+          "id",
+          "name",
+          "slug"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2774,6 +2813,16 @@
         "description": "Represents a collection of `Leaderboard` entities."
       },
       "LocalDate": {
+        "required": [
+          "calendar",
+          "day",
+          "dayOfWeek",
+          "dayOfYear",
+          "era",
+          "month",
+          "year",
+          "yearOfEra"
+        ],
         "type": "object",
         "properties": {
           "calendar": {
@@ -2851,6 +2900,7 @@
       },
       "Modship": {
         "required": [
+          "id",
           "leaderboardId",
           "userId"
         ],
@@ -2880,6 +2930,7 @@
       },
       "Participation": {
         "required": [
+          "id",
           "run",
           "runId",
           "runner",
@@ -3011,6 +3062,7 @@
       "Run": {
         "required": [
           "categoryId",
+          "id",
           "participations",
           "playedOn",
           "status",
@@ -3073,6 +3125,7 @@
       },
       "UpdateParticipationRequest": {
         "required": [
+          "comment",
           "vod"
         ],
         "type": "object",
@@ -3094,6 +3147,7 @@
         "required": [
           "admin",
           "email",
+          "id",
           "username"
         ],
         "type": "object",
