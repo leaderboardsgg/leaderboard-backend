@@ -77,6 +77,7 @@ internal class PostgresDatabaseFixture
         {
             throw new InvalidOperationException("Database template has not been created.");
         }
+
         NpgsqlConnection.ClearAllPools(); // can't drop a DB if connections remain open
         using NpgsqlDataSource conn = CreateConnectionToTemplate();
         conn.CreateCommand(

@@ -15,7 +15,8 @@ public static class Conventions
         [ApiConventionTypeMatch(ApiConventionTypeMatchBehavior.Any)]
             object id,
         params object[] parameters
-    ) { }
+    )
+    { }
 
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -25,7 +26,8 @@ public static class Conventions
         [ApiConventionTypeMatch(ApiConventionTypeMatchBehavior.Any)]
             object id,
         params object[] parameters
-    ) { }
+    )
+    { }
 
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
