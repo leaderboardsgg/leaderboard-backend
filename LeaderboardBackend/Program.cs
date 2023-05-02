@@ -11,6 +11,7 @@ using LeaderboardBackend;
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
+using LeaderboardBackend.Swagger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -161,6 +162,7 @@ builder.Services.AddSwaggerGen(c =>
 	});
 
 	c.SupportNonNullableReferenceTypes();
+    c.SchemaFilter<RequiredNotNullableSchemaFilter>();
 });
 
 // Configure JWT Authentication.
