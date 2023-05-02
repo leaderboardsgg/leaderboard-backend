@@ -4,7 +4,7 @@ namespace LeaderboardBackend.Models.Entities;
 
 public class ApplicationContext : DbContext
 {
-    public static readonly Guid s_SeedAdminId = new("421bb896-1990-48c6-8b0c-d69f56d6746a");
+    public static readonly Guid s_seedAdminId = new("421bb896-1990-48c6-8b0c-d69f56d6746a");
 
     public ApplicationContext(DbContextOptions<ApplicationContext> options)
         : base(options) { }
@@ -32,7 +32,7 @@ public class ApplicationContext : DbContext
             .HasData(
                 new User
                 {
-                    Id = s_SeedAdminId,
+                    Id = s_seedAdminId,
                     Admin = true,
                     Email = "omega@star.com",
                     Password = "$2a$11$tNvA94WqpJ.O7S7D6lVMn.E/UxcFYztl3BkcnBj/hgE8PY/8nCRQe", // "3ntr0pyChaos"

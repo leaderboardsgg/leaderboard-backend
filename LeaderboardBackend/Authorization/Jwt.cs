@@ -14,24 +14,24 @@ public static class Jwt
 
     public static class ValidationParameters
     {
-        private static TokenValidationParameters? s_Instance;
+        private static TokenValidationParameters? s_instance;
 
         public static TokenValidationParameters GetInstance(JwtConfig config)
         {
-            if (s_Instance is not null)
+            if (s_instance is not null)
             {
-                return s_Instance;
+                return s_instance;
             }
 
             SymmetricSecurityKey key = new(Encoding.UTF8.GetBytes(config.Key));
-            s_Instance = new()
+            s_instance = new()
             {
                 IssuerSigningKey = key,
                 ValidAudience = config.Issuer,
                 ValidIssuer = config.Issuer
             };
 
-            return s_Instance;
+            return s_instance;
         }
     }
 }
