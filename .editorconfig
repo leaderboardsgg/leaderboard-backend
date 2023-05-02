@@ -292,7 +292,7 @@ dotnet_naming_style.underscored.capitalization = camel_case
 dotnet_naming_style.static_underscored.required_prefix = s_
 dotnet_naming_style.static_underscored.required_suffix =
 dotnet_naming_style.static_underscored.word_separator =
-dotnet_naming_style.static_underscored.capitalization = pascal_case
+dotnet_naming_style.static_underscored.capitalization = camel_case
 
 dotnet_naming_style.all_capital.required_prefix =
 dotnet_naming_style.all_capital.required_suffix =
