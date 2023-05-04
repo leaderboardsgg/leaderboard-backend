@@ -18,13 +18,6 @@ The original backend, written in Go and inactive, can be found [here](https://gi
 
 ## Setting up Environment
 
-### Windows
-
-On Windows, you will need to ensure that the `core.autocrlf` setting in your git config is set to true. Most default installations for Git on Windows set this automatically, but it may be worth making sure you have it set. You can set this field locally for this project by running the following command:  
-`git config core.autocrlf true`  
-Or, since this is a great setting for Windows in general, you can set this in your global config:  
-`git config --global core.autocrlf true`  
-
 ## Editor/IDE
 
 There are a couple options available for you to choose, depending on your OS.

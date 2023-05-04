@@ -1,1 +1,2 @@
-openapi.json eol=lf
+* text=auto eol=lf
+*.cs text diff=csharp
