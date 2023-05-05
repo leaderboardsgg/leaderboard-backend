@@ -4,7 +4,8 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- Commenting out due to dotnet format bug: https://github.com/dotnet/format/issues/1800 -->
+    <!-- <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild> -->
   </PropertyGroup>
 
   <ItemGroup>

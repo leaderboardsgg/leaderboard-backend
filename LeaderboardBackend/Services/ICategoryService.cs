@@ -4,7 +4,7 @@ namespace LeaderboardBackend.Services;
 
 public interface ICategoryService
 {
-	Task<Category?> GetCategory(long id);
-	Task CreateCategory(Category category);
-	Task<Category?> GetCategoryForRun(Run run);
+    Task<Category?> GetCategory(long id);
+    Task CreateCategory(Category category);
+    Task<Category?> GetCategoryForRun(Run run);
 }

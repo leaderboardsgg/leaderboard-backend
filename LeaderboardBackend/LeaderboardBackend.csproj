@@ -4,7 +4,8 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- Commenting out due to dotnet format bug: https://github.com/dotnet/format/issues/1800 -->
+    <!-- <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild> -->
   </PropertyGroup>
 
   <PropertyGroup>
@@ -36,7 +37,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.2" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.2" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.3" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.6" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.1" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime" Version="7.0.1" />
     <PackageReference Include="ReHackt.Extensions.Options.Validation" Version="7.0.0" />
@@ -54,12 +55,18 @@
     <Content Remove="@(OpenApiFile)" />
     <None Include="@(OpenApiFile)" />
     <!-- required to be detected by the "fast up-to-date" feature of Visual Studio https://github.com/dotnet/project-system/blob/main/docs/up-to-date-check.md -->
-    <UpToDateCheckOutput Include="@(OpenApiFile)" /> 
+    <UpToDateCheckOutput Include="@(OpenApiFile)" />
   </ItemGroup>
 
   <Target Name="SwaggerPostBuildTarget" Condition="'$(DISABLE_OPENAPI_FILE_GEN)' != 'true'" AfterTargets="Build" Inputs="$(OutputPath)/$(AssemblyName).dll" Outputs="@(OpenApiFile)">
     <Exec Command="dotnet tool restore"></Exec>
     <Exec EnvironmentVariables="EnvPath=../swagger-gen.env;ASPNETCORE_ENVIRONMENT=development" Command="dotnet tool run swagger tofile --output &quot;@(OpenApiFile)&quot; &quot;$(OutputPath)/$(AssemblyName).dll&quot; v1"></Exec>
+  </Target>
+
+  <!-- set HUSKY to 0 in CI/CD disable this -->
+  <Target Name="husky" BeforeTargets="Restore;CollectPackageReferences" Condition="'$(HUSKY)' != 0">
+    <Exec Command="dotnet tool restore" StandardOutputImportance="Low" StandardErrorImportance="High" />
+    <Exec Command="dotnet husky install" WorkingDirectory="../" StandardOutputImportance="Low" StandardErrorImportance="High" />
   </Target>
 
 </Project>

@@ -1,7 +1,7 @@
 # leaderboard-backend
 
-An open-source community-driven leaderboard backend for the upcoming leaderboards.gg.
-This repo is a proof-of-concept for switching to a C# with ASP.NET Core stack. The original backend, written in Go, can be found [here](https://github.com/leaderboardsgg/leaderboard-backend-go).
+An open-source community-driven leaderboard backend for the upcoming leaderboards.gg. Uses ASP.NET Core.
+The original backend, written in Go and inactive, can be found [here](https://github.com/leaderboardsgg/leaderboard-backend-go).
 
 ## Links
 - Website: https://leaderboards.gg
@@ -17,13 +17,6 @@ This repo is a proof-of-concept for switching to a C# with ASP.NET Core stack. T
 # Project Setup
 
 ## Setting up Environment
-
-### Windows
-
-On Windows, you will need to ensure that the `core.autocrlf` setting in your git config is set to true. Most default installations for Git on Windows set this automatically, but it may be worth making sure you have it set. You can set this field locally for this project by running the following command:  
-`git config core.autocrlf true`  
-Or, since this is a great setting for Windows in general, you can set this in your global config:  
-`git config --global core.autocrlf true`  
 
 ## Editor/IDE
 

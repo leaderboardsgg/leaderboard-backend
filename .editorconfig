@@ -7,7 +7,7 @@ root = true
 # Indentation and spacing
 charset                  = utf-8
 indent_size              = 4
-indent_style             = tab
+indent_style             = space
 tab_width                = 4
 trim_trailing_whitespace = true
 
@@ -101,13 +101,13 @@ csharp_style_var_when_type_is_apparent = false:warning
 
 # Expression-bodied members
 csharp_style_expression_bodied_accessors       = true:suggestion
-csharp_style_expression_bodied_constructors    = false:warning
-csharp_style_expression_bodied_indexers        = false:warning
+csharp_style_expression_bodied_constructors    = true:suggestion
+csharp_style_expression_bodied_indexers        = true:suggestion
 csharp_style_expression_bodied_lambdas         = true:suggestion
-csharp_style_expression_bodied_local_functions = false:warning
-csharp_style_expression_bodied_methods         = false:warning
-csharp_style_expression_bodied_operators       = false:warning
-csharp_style_expression_bodied_properties      = false:warning
+csharp_style_expression_bodied_local_functions = true:suggestion
+csharp_style_expression_bodied_methods         = true:suggestion
+csharp_style_expression_bodied_operators       = true:suggestion
+csharp_style_expression_bodied_properties      = true:suggestion
 
 # Pattern matching preferences
 csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
@@ -292,7 +292,7 @@ dotnet_naming_style.underscored.capitalization = camel_case
 dotnet_naming_style.static_underscored.required_prefix = s_
 dotnet_naming_style.static_underscored.required_suffix =
 dotnet_naming_style.static_underscored.word_separator =
-dotnet_naming_style.static_underscored.capitalization = pascal_case
+dotnet_naming_style.static_underscored.capitalization = camel_case
 
 dotnet_naming_style.all_capital.required_prefix =
 dotnet_naming_style.all_capital.required_suffix =

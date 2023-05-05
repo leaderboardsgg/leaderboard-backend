@@ -5,7 +5,7 @@ namespace LeaderboardBackend.Services;
 
 public interface IAuthService
 {
-	string GenerateJSONWebToken(User user);
-	string? GetEmailFromClaims(ClaimsPrincipal claims);
-	Guid? GetUserIdFromClaims(ClaimsPrincipal claims);
+    string GenerateJSONWebToken(User user);
+    string? GetEmailFromClaims(ClaimsPrincipal claims);
+    Guid? GetUserIdFromClaims(ClaimsPrincipal claims);
 }

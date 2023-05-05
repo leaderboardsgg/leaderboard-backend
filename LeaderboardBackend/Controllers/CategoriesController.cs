@@ -12,68 +12,74 @@ namespace LeaderboardBackend.Controllers;
 [Route("api/[controller]")]
 public class CategoriesController : ControllerBase
 {
-	private readonly ICategoryService _categoryService;
+    private readonly ICategoryService _categoryService;
 
-	public CategoriesController(ICategoryService categoryService)
-	{
-		_categoryService = categoryService;
-	}
+    public CategoriesController(ICategoryService categoryService)
+    {
+        _categoryService = categoryService;
+    }
 
-	/// <summary>
-	///     Gets a Category by its ID.
-	/// </summary>
-	/// <param name="id">The ID of the `Category` which should be retrieved.</param>
-	/// <response code="200">The `Category` was found and returned successfully.</response>
-	/// <response code="404">No `Category` with the requested ID could be found.</response>
-	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
-	[HttpGet("{id}")]
-	public async Task<ActionResult<CategoryViewModel>> GetCategory(long id)
-	{
-		// NOTE: Should this use [AllowAnonymous]? - Ero
+    /// <summary>
+    ///     Gets a Category by its ID.
+    /// </summary>
+    /// <param name="id">The ID of the `Category` which should be retrieved.</param>
+    /// <response code="200">The `Category` was found and returned successfully.</response>
+    /// <response code="404">No `Category` with the requested ID could be found.</response>
+    [ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
+    [HttpGet("{id}")]
+    public async Task<ActionResult<CategoryViewModel>> GetCategory(long id)
+    {
+        // NOTE: Should this use [AllowAnonymous]? - Ero
 
-		Category? category = await _categoryService.GetCategory(id);
+        Category? category = await _categoryService.GetCategory(id);
 
-		if (category == null)
-		{
-			return NotFound();
-		}
+        if (category == null)
+        {
+            return NotFound();
+        }
 
-		return Ok(CategoryViewModel.MapFrom(category));
-	}
+        return Ok(CategoryViewModel.MapFrom(category));
+    }
 
-	/// <summary>
-	///     Creates a new Category.
-	///     This request is restricted to Moderators.
-	/// </summary>
-	/// <param name="request">
-	///     The `CreateCategoryRequest` instance from which to create the `Category`.
-	/// </param>
-	/// <response code="201">The `Category` was created and returned successfully.</response>
-	/// <response code="400">The request was malformed.</response>
-	/// <response code="404">
-	///     The requesting `User` is unauthorized to create a `Category`.
-	/// </response>
-	[ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
-	[HttpPost]
-	public async Task<ActionResult<CategoryViewModel>> CreateCategory(
-		[FromBody] CreateCategoryRequest request)
-	{
-		// FIXME: Allow only moderators to call this! - Ero
-		// NOTE: Allow administrators to call this as well? - Ero
+    /// <summary>
+    ///     Creates a new Category.
+    ///     This request is restricted to Moderators.
+    /// </summary>
+    /// <param name="request">
+    ///     The `CreateCategoryRequest` instance from which to create the `Category`.
+    /// </param>
+    /// <response code="201">The `Category` was created and returned successfully.</response>
+    /// <response code="400">The request was malformed.</response>
+    /// <response code="404">
+    ///     The requesting `User` is unauthorized to create a `Category`.
+    /// </response>
+    [ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
+    [HttpPost]
+    public async Task<ActionResult<CategoryViewModel>> CreateCategory(
+        [FromBody] CreateCategoryRequest request
+    )
+    {
+        // FIXME: Allow only moderators to call this! - Ero
+        // NOTE: Allow administrators to call this as well? - Ero
 
-		// NOTE: Check that body.PlayersMax > body.PlayersMin? - Ero
-		Category category = new()
-		{
-			Name = request.Name,
-			Slug = request.Slug,
-			Rules = request.Rules,
-			PlayersMin = request.PlayersMin ?? 1,
-			PlayersMax = request.PlayersMax ?? request.PlayersMin ?? 1,
-			LeaderboardId = request.LeaderboardId,
-		};
+        // NOTE: Check that body.PlayersMax > body.PlayersMin? - Ero
+        Category category =
+            new()
+            {
+                Name = request.Name,
+                Slug = request.Slug,
+                Rules = request.Rules,
+                PlayersMin = request.PlayersMin ?? 1,
+                PlayersMax = request.PlayersMax ?? request.PlayersMin ?? 1,
+                LeaderboardId = request.LeaderboardId,
+            };
 
-		await _categoryService.CreateCategory(category);
+        await _categoryService.CreateCategory(category);
 
-		return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, CategoryViewModel.MapFrom(category));
-	}
+        return CreatedAtAction(
+            nameof(GetCategory),
+            new { id = category.Id },
+            CategoryViewModel.MapFrom(category)
+        );
+    }
 }

@@ -9,64 +9,64 @@ namespace LeaderboardBackend.Models.Entities;
 /// </summary>
 public class Ban
 {
-	/// <summary>
-	///     The unique identifier of the `Ban`.<br/>
-	///     Generated on creation.
-	/// </summary>
-	public long Id { get; set; }
+    /// <summary>
+    ///     The unique identifier of the `Ban`.<br/>
+    ///     Generated on creation.
+    /// </summary>
+    public long Id { get; set; }
 
-	/// <summary>
-	///     The time the `Ban` was issued.<br/>
-	///     Generated on creation.
-	/// </summary>
-	[Required]
-	public Instant CreatedAt { get; set; }
+    /// <summary>
+    ///     The time the `Ban` was issued.<br/>
+    ///     Generated on creation.
+    /// </summary>
+    [Required]
+    public Instant CreatedAt { get; set; }
 
-	/// <summary>
-	///     The time the `Ban` was lifted.
-	/// </summary>
-	public Instant? DeletedAt { get; set; }
+    /// <summary>
+    ///     The time the `Ban` was lifted.
+    /// </summary>
+    public Instant? DeletedAt { get; set; }
 
-	/// <summary>
-	///     The ID of the `User` who issued the `Ban`.<br/>
-	///     Must be a *Moderator* or *Administrator*.
-	/// </summary>
-	public Guid? BanningUserId { get; set; }
+    /// <summary>
+    ///     The ID of the `User` who issued the `Ban`.<br/>
+    ///     Must be a *Moderator* or *Administrator*.
+    /// </summary>
+    public Guid? BanningUserId { get; set; }
 
-	/// <summary>
-	///     Relationship model for `BanningUserId`.
-	/// </summary>
-	[JsonIgnore]
-	public User? BanningUser { get; set; }
+    /// <summary>
+    ///     Relationship model for `BanningUserId`.
+    /// </summary>
+    [JsonIgnore]
+    public User? BanningUser { get; set; }
 
-	/// <summary>
-	///     The ID of the `User` who received the `Ban`.
-	/// </summary>
-	[Required]
-	public Guid BannedUserId { get; set; }
+    /// <summary>
+    ///     The ID of the `User` who received the `Ban`.
+    /// </summary>
+    [Required]
+    public Guid BannedUserId { get; set; }
 
-	/// <summary>
-	///     Relationship model for `BannedUserId`.
-	/// </summary>
-	[JsonIgnore]
-	public User? BannedUser { get; set; }
+    /// <summary>
+    ///     Relationship model for `BannedUserId`.
+    /// </summary>
+    [JsonIgnore]
+    public User? BannedUser { get; set; }
 
-	/// <summary>
-	///     ID of the `Leaderboard` the `Ban` belongs to.<br/>
-	///     If this value is null, the `Ban` is site-wide.
-	/// </summary>
-	public long? LeaderboardId { get; set; }
+    /// <summary>
+    ///     ID of the `Leaderboard` the `Ban` belongs to.<br/>
+    ///     If this value is null, the `Ban` is site-wide.
+    /// </summary>
+    public long? LeaderboardId { get; set; }
 
-	/// <summary>
-	///     Relationship model for `LeaderboardId`.
-	/// </summary>
-	[JsonIgnore]
-	public Leaderboard? Leaderboard { get; set; }
+    /// <summary>
+    ///     Relationship model for `LeaderboardId`.
+    /// </summary>
+    [JsonIgnore]
+    public Leaderboard? Leaderboard { get; set; }
 
-	/// <summary>
-	///     The reason for the issued `Ban`.<br/>
-	///     Must not be null.
-	/// </summary>
-	[Required]
-	public string Reason { get; set; } = null!;
+    /// <summary>
+    ///     The reason for the issued `Ban`.<br/>
+    ///     Must not be null.
+    /// </summary>
+    [Required]
+    public string Reason { get; set; } = null!;
 }

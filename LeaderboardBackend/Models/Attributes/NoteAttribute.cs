@@ -8,19 +8,17 @@ namespace LeaderboardBackend.Models.Attributes;
 /// </summary>
 public class NoteAttribute : ValidationAttribute
 {
-	protected override ValidationResult? IsValid(
-		object? value,
-		ValidationContext validationContext)
-	{
-		string note = (string)value!;
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    {
+        string note = (string)value!;
 
-		CreateJudgementRequest request = (CreateJudgementRequest)validationContext.ObjectInstance;
+        CreateJudgementRequest request = (CreateJudgementRequest)validationContext.ObjectInstance;
 
-		if (request.Note.Length == 0 && (request.Approved is null || request.Approved is false))
-		{
-			return new ValidationResult("Notes must be provided with this judgement.");
-		}
+        if (request.Note.Length == 0 && (request.Approved is null || request.Approved is false))
+        {
+            return new ValidationResult("Notes must be provided with this judgement.");
+        }
 
-		return ValidationResult.Success;
-	}
+        return ValidationResult.Success;
+    }
 }

@@ -8,18 +8,18 @@ namespace LeaderboardBackend.Models.Requests;
 /// </summary>
 public record CreateSiteBanRequest
 {
-	/// <summary>
-	///     The ID of the `User` which is banned.
-	/// </summary>
-	[Required]
-	public Guid UserId { get; set; }
+    /// <summary>
+    ///     The ID of the `User` which is banned.
+    /// </summary>
+    [Required]
+    public Guid UserId { get; set; }
 
-	/// <summary>
-	///     The reason as to the `User`'s ban.
-	/// </summary>
-	/// <example>Abusive or hateful conduct.</example>
-	[Required]
-	public string Reason { get; set; } = null!;
+    /// <summary>
+    ///     The reason as to the `User`'s ban.
+    /// </summary>
+    /// <example>Abusive or hateful conduct.</example>
+    [Required]
+    public string Reason { get; set; } = null!;
 };
 
 /// <summary>
@@ -27,22 +27,22 @@ public record CreateSiteBanRequest
 /// </summary>
 public record CreateLeaderboardBanRequest
 {
-	/// <summary>
-	///     The ID of the `User` which is banned.
-	/// </summary>
-	[Required]
-	public Guid UserId { get; set; }
+    /// <summary>
+    ///     The ID of the `User` which is banned.
+    /// </summary>
+    [Required]
+    public Guid UserId { get; set; }
 
-	/// <summary>
-	///     The reason for the `User`'s ban.
-	/// </summary>
-	/// <example>Abusive or hateful conduct.</example>
-	[Required]
-	public string Reason { get; set; } = null!;
+    /// <summary>
+    ///     The reason for the `User`'s ban.
+    /// </summary>
+    /// <example>Abusive or hateful conduct.</example>
+    [Required]
+    public string Reason { get; set; } = null!;
 
-	/// <summary>
-	///     The ID of the `Leaderboard` from which the `User` is banned.
-	/// </summary>
-	[Required]
-	public long LeaderboardId { get; set; }
+    /// <summary>
+    ///     The ID of the `Leaderboard` from which the `User` is banned.
+    /// </summary>
+    [Required]
+    public long LeaderboardId { get; set; }
 }

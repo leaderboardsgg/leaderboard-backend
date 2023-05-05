@@ -3,6 +3,8 @@ on:
     push:
         branches: [ main ]
     pull_request:
+env:
+  HUSKY: 0
 jobs:
     backend-test:
         runs-on: ubuntu-latest
@@ -15,6 +17,10 @@ jobs:
             dotnet-version: '7.0.x'
         - name: Restore NuGet packages
           run: dotnet restore
+        - name: Restore tools
+          run: dotnet tool restore
+        - name: Lint
+          run: dotnet format --verify-no-changes --no-restore .
         - name: Backup committed openapi.json
           run: cp LeaderboardBackend/openapi.json /tmp/committed-openapi.json
         - name: Build
