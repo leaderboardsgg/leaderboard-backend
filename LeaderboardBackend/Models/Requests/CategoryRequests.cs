@@ -30,19 +30,6 @@ public record CreateCategoryRequest
     public string? Rules { get; set; }
 
     /// <summary>
-    ///     The minimum player count of the `Category`. The default is 1.
-    /// </summary>
-    [Range(1, int.MaxValue)]
-    public int? PlayersMin { get; set; }
-
-    /// <summary>
-    ///     The maximum player count of the `Category`. The default is `PlayersMin`.
-    /// </summary>
-    [Range(1, int.MaxValue)]
-    [PlayersMax]
-    public int? PlayersMax { get; set; }
-
-    /// <summary>
     ///     The ID of the `Leaderboard` the `Category` is a part of.
     /// </summary>
     [Required]

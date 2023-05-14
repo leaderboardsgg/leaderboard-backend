@@ -75,35 +75,6 @@ namespace LeaderboardBackend.Test
         }
 
         [Test]
-        public static async Task GetParticipation_OK()
-        {
-            Run createdRun = await CreateRun();
-
-            Participation createdParticipation = await s_apiClient.Post<Participation>(
-                "api/participations",
-                new()
-                {
-                    Body = new CreateParticipationRequest
-                    {
-                        Comment = "comment",
-                        Vod = "vod",
-                        RunId = createdRun.Id,
-                        RunnerId = TestInitCommonFields.Admin.Id
-                    },
-                    Jwt = s_jwt
-                }
-            );
-
-            List<Participation> retrieved = await s_apiClient.Get<List<Participation>>(
-                $"api/runs/{createdRun.Id}/participations",
-                new() { Jwt = s_jwt }
-            );
-
-            Assert.NotNull(retrieved);
-            Assert.AreEqual(createdParticipation.Id, retrieved[0].Id);
-        }
-
-        [Test]
         public static async Task GetCategory_OK()
         {
             Run createdRun = await CreateRun();

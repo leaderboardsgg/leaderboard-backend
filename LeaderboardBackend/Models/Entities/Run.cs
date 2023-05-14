@@ -50,17 +50,6 @@ public class Run
     public RunStatus Status { get; set; }
 
     /// <summary>
-    ///     A collection of `Judgement`s made about the `Run`.
-    /// </summary>
-    public List<Judgement>? Judgements { get; set; }
-
-    /// <summary>
-    ///     A collection of `Participation`s on the `Run`.
-    /// </summary>
-    [Required]
-    public List<Participation>? Participations { get; set; }
-
-    /// <summary>
     /// 	The ID of the `Category` for `Run`.
     /// </summary>
     [Required]

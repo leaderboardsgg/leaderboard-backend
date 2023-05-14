@@ -11,19 +11,16 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
 {
     private readonly IAuthService _authService;
     private readonly TokenValidationParameters _jwtValidationParams;
-    private readonly IModshipService _modshipService;
     private readonly IUserService _userService;
 
     public UserTypeAuthorizationHandler(
         IAuthService authService,
         IOptions<JwtConfig> config,
-        IModshipService modshipService,
         IUserService userService
     )
     {
         _authService = authService;
         _jwtValidationParams = Jwt.ValidationParameters.GetInstance(config.Value);
-        _modshipService = modshipService;
         _userService = userService;
     }
 
@@ -64,17 +61,10 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
         return requirement.Type switch
         {
             UserTypes.ADMINISTRATOR => user.Admin,
-            UserTypes.MODERATOR => user.Admin || IsMod(user),
             UserTypes.USER => true,
             _ => false,
         };
     }
-
-    private bool IsMod(User user)
-    {
-        return _modshipService.LoadUserModships(user.Id).Result.Count > 0;
-    }
-
     private static bool TryGetJwtFromHttpContext(
         AuthorizationHandlerContext context,
         [NotNullWhen(true)] out string? token

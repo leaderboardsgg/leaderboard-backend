@@ -30,16 +30,6 @@ public record CategoryViewModel
     /// <example>Video proof is required.</example>
     public required string? Rules { get; set; }
 
-    /// <summary>
-    ///     The minimum player count of the `Category`. The default is 1.
-    /// </summary>
-    public required int PlayersMin { get; set; }
-
-    /// <summary>
-    ///     The maximum player count of the `Category`. The default is `PlayersMin`.
-    /// </summary>
-    public required int PlayersMax { get; set; }
-
     public static CategoryViewModel MapFrom(Category category)
     {
         return new CategoryViewModel
@@ -47,9 +37,7 @@ public record CategoryViewModel
             Id = category.Id,
             Name = category.Name,
             Slug = category.Slug,
-            Rules = category.Rules,
-            PlayersMin = category.PlayersMin,
-            PlayersMax = category.PlayersMax,
+            Rules = category.Rules
         };
     }
 }
