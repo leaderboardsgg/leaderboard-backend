@@ -1,6 +1,7 @@
 using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +31,7 @@ public class UsersController : ControllerBase
     [AllowAnonymous]
     [ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<User>> GetUserById(Guid id)
+    public async Task<ActionResult<UserViewModel>> GetUserById(Guid id)
     {
         User? user = await _userService.GetUserById(id);
 
@@ -39,10 +40,7 @@ public class UsersController : ControllerBase
             return NotFound();
         }
 
-        // FIXME: Make user view model
-        user.Email = "";
-
-        return Ok(user);
+        return Ok(UserViewModel.MapFrom(user));
     }
 
     /// <summary>
@@ -63,7 +61,7 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<User>> Register([FromBody] RegisterRequest request)
+    public async Task<ActionResult<UserViewModel>> Register([FromBody] RegisterRequest request)
     {
         // FIXME: Use ApiConventionMethod here! - Ero
 
@@ -91,7 +89,7 @@ public class UsersController : ControllerBase
 
         await _userService.CreateUser(newUser);
 
-        return CreatedAtAction(nameof(GetUserById), new { id = newUser.Id }, newUser);
+        return CreatedAtAction(nameof(GetUserById), new { id = newUser.Id }, UserViewModel.MapFrom(newUser));
     }
 
     /// <summary>
@@ -146,7 +144,7 @@ public class UsersController : ControllerBase
     [HttpGet("me")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<User>> Me()
+    public async Task<ActionResult<UserViewModel>> Me()
     {
         // FIXME: Use ApiConventionMethod here! - Ero
 
@@ -165,6 +163,6 @@ public class UsersController : ControllerBase
             return Forbid();
         }
 
-        return Ok(user);
+        return Ok(UserViewModel.MapFrom(user));
     }
 }
