@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using LeaderboardBackend.Models.Attributes;
+using FluentValidation;
+using LeaderboardBackend.Models.Validation;
 
 namespace LeaderboardBackend.Models.Requests;
 
@@ -30,7 +31,6 @@ public record LoginRequest
     ///     </ul>
     /// </summary>
     /// <example>P4ssword</example>
-    [Password]
     [Required]
     public string Password { get; set; } = null!;
 }
@@ -63,25 +63,18 @@ public record RegisterRequest
     ///         <li>apostrophe</li>
     ///       </ul>
     ///     </ul>
-    ///     Usernames are saved case-sensitively, but matcehd against case-insensitively.
+    ///     Usernames are saved case-sensitively, but matched against case-insensitively.
     ///     A `User` may not register with the name 'Cool' when another `User` with the name 'cool'
     ///     exists.
     /// </summary>
     /// <example>J'on-Doe</example>
-    [RegularExpression(
-        "(?:[a-zA-Z0-9][-_']?){1,12}[a-zA-Z0-9]",
-        ErrorMessage = "Your name must be between 2 and 25 characters, made up of letters sandwiching zero or one hyphen, underscore, or apostrophe."
-    )]
-    [Required]
-    public string Username { get; set; } = null!;
+    public required string Username { get; set; }
 
     /// <summary>
     ///     The `User`'s email address.
     /// </summary>
     /// <example>john.doe@example.com</example>
-    [EmailAddress]
-    [Required]
-    public string Email { get; set; } = null!;
+    public required string Email { get; set; }
 
     /// <summary>
     ///     The `User`'s password. It:
@@ -97,14 +90,15 @@ public record RegisterRequest
     ///     </ul>
     /// </summary>
     /// <example>P4ssword</example>
-    [Password]
-    [Required]
-    public string Password { get; set; } = null!;
+    public required string Password { get; set; }
+}
 
-    /// <summary>
-    ///     The password confirmation. This value must match `Password`.
-    /// </summary>
-    [Compare("Password", ErrorMessage = "The password confirmation must match your password.")]
-    [Required]
-    public string PasswordConfirm { get; set; } = null!;
+public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
+{
+    public RegisterRequestValidator()
+    {
+        RuleFor(x => x.Username).Username();
+        RuleFor(x => x.Email).EmailAddress();
+        RuleFor(x => x.Password).UserPassword();
+    }
 }

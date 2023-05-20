@@ -12,7 +12,7 @@ using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace LeaderboardBackend.Test.TestApi;
 
-internal class TestApiFactory : WebApplicationFactory<Program>
+public class TestApiFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {

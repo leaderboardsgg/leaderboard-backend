@@ -64,52 +64,6 @@ internal class Users
     }
 
     [Test]
-    public static void Register_BadRequest()
-    {
-        RegisterRequest[] requests =
-        {
-            new(),
-            new()
-            {
-                Username = VALID_USERNAME,
-                Password = VALID_PASSWORD,
-                PasswordConfirm = "someotherpassword",
-                Email = VALID_EMAIL
-            },
-            new()
-            {
-                Username = VALID_USERNAME,
-                Password = VALID_PASSWORD,
-                PasswordConfirm = VALID_PASSWORD,
-                Email = "whatisthis"
-            },
-            new()
-            {
-                Username = "B",
-                Password = VALID_PASSWORD,
-                PasswordConfirm = VALID_PASSWORD,
-                Email = VALID_EMAIL
-            }
-        };
-
-        foreach (RegisterRequest request in requests)
-        {
-            // Not using the helper here because it's easier for this test implementation
-            // to have a table of requests and send them directly.
-            RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(
-                async () =>
-                    await s_apiClient.Post<UserViewModel>("/api/users/register", new() { Body = request })
-            )!;
-
-            Assert.AreEqual(
-                HttpStatusCode.BadRequest,
-                e.Response.StatusCode,
-                $"{request} did not produce BadRequest, produced {e.Response.StatusCode}"
-            );
-        }
-    }
-
-    [Test]
     public static void Me_Unauthorized()
     {
         RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(

@@ -1,3 +1,5 @@
+using FluentValidation;
+using FluentValidation.Results;
 using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
@@ -51,45 +53,50 @@ public class UsersController : ControllerBase
     /// </param>
     /// <response code="201">The `User` was registered and returned successfully.</response>
     /// <response code="400">
-    ///     The passwords did not match or the request was otherwise malformed.
+    ///     The request was malformed.
+    /// </response>
+    /// <response code="422">
+    ///     The request contains errors.<br/><br/>
+    ///     Validation error codes by property:
+    ///     - **Username**:
+    ///       - **UsernameFormat**: Invalid username format
+    ///     - **Password**:
+    ///       - **PasswordFormat**: Invalid password format
+    ///     - **Email**:
+    ///       - **EmailValidator**: Invalid email format
     /// </response>
     /// <response code="409">
-    ///     A `User` with the specified username or email already exists.
+    ///     A `User` with the specified username or email already exists.<br/><br/>
+    ///     Validation error codes by property:
+    ///     - **Username**:
+    ///       - **UsernameTaken**: the username is already in use
+    ///     - **Email**:
+    ///       - **EmailAlreadyUsed**: the email is already in use
     /// </response>
     [AllowAnonymous]
     [HttpPost("register")]
+    [ApiConventionMethod(typeof(Conventions), nameof(Conventions.PostAnon))]
     [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<UserViewModel>> Register([FromBody] RegisterRequest request)
     {
-        // FIXME: Use ApiConventionMethod here! - Ero
-
-        if (await _userService.GetUserByEmail(request.Email) is not null)
-        {
-            // FIXME: Do a redirect to the login page.
-            // ref: https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/actions?view=aspnetcore-6.0#1-methods-resulting-in-an-empty-response-body
-            return Conflict("A user already exists with this email.");
-        }
-
-        if (await _userService.GetUserByName(request.Username) is not null)
-        {
-            // FIXME: Do a redirect to the login page.
-            // ref: https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/actions?view=aspnetcore-6.0#1-methods-resulting-in-an-empty-response-body
-            return Conflict("A user already exists with this name.");
-        }
-
-        User newUser =
-            new()
+        CreateUserResult result = await _userService.CreateUser(request);
+        return result.Match<ActionResult<UserViewModel>>(
+            user => CreatedAtAction(nameof(GetUserById), new { id = user.Id }, UserViewModel.MapFrom(user)),
+            conflicts =>
             {
-                Username = request.Username,
-                Email = request.Email,
-                Password = BCryptNet.EnhancedHashPassword(request.Password)
-            };
+                if (conflicts.Username)
+                {
+                    ModelState.AddModelError(nameof(request.Username), "UsernameTaken");
+                }
 
-        await _userService.CreateUser(newUser);
+                if (conflicts.Email)
+                {
+                    ModelState.AddModelError(nameof(request.Email), "EmailAlreadyUsed");
+                }
 
-        return CreatedAtAction(nameof(GetUserById), new { id = newUser.Id }, UserViewModel.MapFrom(newUser));
+                return Conflict(new ValidationProblemDetails(ModelState));
+            });
     }
 
     /// <summary>

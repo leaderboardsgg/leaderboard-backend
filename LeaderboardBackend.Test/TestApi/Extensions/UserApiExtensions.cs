@@ -22,7 +22,6 @@ internal static class UserApiExtensions
                 {
                     Username = username,
                     Password = password,
-                    PasswordConfirm = password,
                     Email = email,
                 }
             }

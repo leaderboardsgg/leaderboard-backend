@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using DotNetEnv;
 using DotNetEnv.Configuration;
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using LeaderboardBackend;
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
@@ -14,6 +15,7 @@ using LeaderboardBackend.Services;
 using LeaderboardBackend.Swagger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -239,6 +241,20 @@ builder.Services.AddAuthorization(options =>
         .AddAuthenticationSchemes(new[] { JwtBearerDefaults.AuthenticationScheme })
         .RequireAuthenticatedUser()
         .Build();
+});
+
+builder.Services.AddSingleton<IValidatorInterceptor, LeaderboardBackend.Models.Validation.UseErrorCodeInterceptor>();
+builder.Services.AddFluentValidationAutoValidation(c =>
+{
+    c.DisableDataAnnotationsValidation = true;
+});
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        ValidationProblemDetails problemDetails = new(context.ModelState);
+        return new UnprocessableEntityObjectResult(problemDetails);
+    };
 });
 
 // Can't use AddSingleton here since we call the DB in the Handler
