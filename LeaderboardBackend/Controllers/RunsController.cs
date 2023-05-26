@@ -10,17 +10,14 @@ namespace LeaderboardBackend.Controllers;
 [Route("api/[controller]")]
 public class RunsController : ControllerBase
 {
-    private readonly IParticipationService _participationService;
     private readonly IRunService _runService;
     private readonly ICategoryService _categoryService;
 
     public RunsController(
-        IParticipationService participationService,
         IRunService runService,
         ICategoryService categoryService
     )
     {
-        _participationService = participationService;
         _runService = runService;
         _categoryService = categoryService;
     }
@@ -76,45 +73,6 @@ public class RunsController : ControllerBase
         await _runService.CreateRun(run);
 
         return CreatedAtAction(nameof(GetRun), new { id = run.Id }, run);
-    }
-
-    /// <summary>
-    ///     Gets all Participations associated with a Run ID.
-    /// </summary>
-    /// <param name="id">
-    ///     The ID of the `Run` whose `Participation`s should be retrieved.<br/>
-    ///     It must be possible to parse this to `long` for this request to complete.
-    /// </param>
-    /// <response code="200">The list of `Participation`s was retrieved successfully.</response>
-    /// <response code="404">
-    ///     No `Run` with the requested ID could be found or the `Run` does not contain any
-    ///     `Participation`s.
-    /// </response>
-    [ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
-    [HttpGet("{id}/participations")]
-    public async Task<ActionResult<List<Participation>>> GetParticipations(Guid id)
-    {
-        // NOTE: Should this use [AllowAnonymous]? - Ero
-
-        Run? run = await _runService.GetRun(id);
-
-        if (run is null)
-        {
-            return NotFound("Run not found");
-        }
-
-        List<Participation> participations = await _participationService.GetParticipationsForRun(
-            run
-        );
-
-        // NOTE: If a Run happens to have 0 Participations, there's something else severely wrong.
-        // Should perhaps return something much more critical. - Ero
-        if (participations.Count == 0)
-        {
-            return NotFound("No participations for this run were found");
-        }
-
-        return Ok(participations);
     }
 
     [ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]

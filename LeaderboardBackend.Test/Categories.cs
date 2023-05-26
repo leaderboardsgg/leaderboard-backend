@@ -86,8 +86,6 @@ internal class Categories
             }
         );
 
-        Assert.AreEqual(1, createdCategory.PlayersMax);
-
         CategoryViewModel retrievedCategory = await s_apiClient.Get<CategoryViewModel>(
             $"/api/categories/{createdCategory?.Id}",
             new() { Jwt = s_jwt }

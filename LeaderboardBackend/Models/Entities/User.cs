@@ -70,28 +70,6 @@ public class User
     [Required]
     public bool Admin { get; set; } = false;
 
-    /// <summary>
-    ///     The `Ban`s the `User` has issued.
-    /// </summary>
-    [InverseProperty("BanningUser")]
-    public List<Ban>? BansGiven { get; set; }
-
-    /// <summary>
-    ///     The `Ban`s the `User` has received.
-    /// </summary>
-    [InverseProperty("BannedUser")]
-    public List<Ban>? BansReceived { get; set; }
-
-    /// <summary>
-    ///     The `Modship`s associated with the `User`.
-    /// </summary>
-    public List<Modship>? Modships { get; set; }
-
-    /// <summary>
-    ///     The `Participation`s associated with the `User`.
-    /// </summary>
-    public List<Participation>? Participations { get; set; }
-
     public override bool Equals(object? obj)
     {
         return obj is User user && Id.Equals(user.Id);

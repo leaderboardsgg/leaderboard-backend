@@ -39,16 +39,6 @@ public class Leaderboard
     /// </summary>
     public List<Category>? Categories { get; set; }
 
-    /// <summary>
-    ///     A collection of *Moderator*s (`Users`) for the `Leaderboard`.
-    /// </summary>
-    public List<Modship>? Modships { get; set; }
-
-    /// <summary>
-    ///     A collection of `Ban`s scoped to the `Leaderboard`.
-    /// </summary>
-    public List<Ban>? Bans { get; set; }
-
     public override bool Equals(object? obj)
     {
         return obj is Leaderboard leaderboard

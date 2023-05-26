@@ -69,8 +69,6 @@ public class CategoriesController : ControllerBase
                 Name = request.Name,
                 Slug = request.Slug,
                 Rules = request.Rules,
-                PlayersMin = request.PlayersMin ?? 1,
-                PlayersMax = request.PlayersMax ?? request.PlayersMin ?? 1,
                 LeaderboardId = request.LeaderboardId,
             };
 

@@ -95,11 +95,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddScoped<IModshipService, ModshipService>();
-builder.Services.AddScoped<IParticipationService, ParticipationService>();
-builder.Services.AddScoped<IJudgementService, JudgementService>();
 builder.Services.AddScoped<IRunService, RunService>();
-builder.Services.AddScoped<IBanService, BanService>();
 
 AppConfig? appConfig = builder.Configuration.Get<AppConfig>();
 if (!string.IsNullOrWhiteSpace(appConfig?.AllowedOrigins))
