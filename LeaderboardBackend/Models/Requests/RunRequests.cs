@@ -22,12 +22,6 @@ public record CreateRunRequest
     public Instant SubmittedAt { get; set; }
 
     /// <summary>
-    ///     The current status of the `Run` creation.
-    /// </summary>
-    [Required]
-    public RunStatus Status { get; set; }
-
-    /// <summary>
     /// 	The ID of the `Category` for the `Run`.
     /// </summary>
     [Required]

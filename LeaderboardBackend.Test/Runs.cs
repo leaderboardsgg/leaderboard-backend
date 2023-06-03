@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.Lib;
@@ -98,7 +97,6 @@ namespace LeaderboardBackend.Test
                     {
                         PlayedOn = LocalDate.MinIsoValue,
                         SubmittedAt = Instant.MaxValue,
-                        Status = RunStatus.Created,
                         CategoryId = s_categoryId
                     },
                     Jwt = s_jwt

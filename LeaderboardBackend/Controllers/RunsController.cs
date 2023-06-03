@@ -67,7 +67,6 @@ public class RunsController : ControllerBase
             {
                 PlayedOn = request.PlayedOn,
                 SubmittedAt = request.SubmittedAt,
-                Status = request.Status,
                 CategoryId = request.CategoryId
             };
 

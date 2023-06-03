@@ -1130,7 +1130,6 @@
         "required": [
           "categoryId",
           "playedOn",
-          "status",
           "submittedAt"
         ],
         "type": "object",
@@ -1140,9 +1139,6 @@
           },
           "submittedAt": {
             "$ref": "#/components/schemas/Instant"
-          },
-          "status": {
-            "$ref": "#/components/schemas/RunStatus"
           },
           "categoryId": {
             "type": "integer",
@@ -1375,18 +1371,6 @@
         },
         "additionalProperties": false,
         "description": "This request object is sent when a `User` is attempting to register."
-      },
-      "RunStatus": {
-        "enum": [
-          0,
-          1,
-          2,
-          3,
-          4
-        ],
-        "type": "integer",
-        "description": "The status of the `Run`.<br />\r\n    - 0: Created<br />\r\n    - 1: Submitted<br />\r\n    - 2: Pending<br />\r\n    - 3: Approved<br />\r\n    - 4: Rejected",
-        "format": "int32"
       },
       "RunViewModel": {
         "required": [
