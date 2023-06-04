@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "LeaderboardBackendCsPoc": {
+    "LeaderboardBackend": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",
@@ -8,7 +8,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "https://localhost:7128;http://localhost:5240"
+      "applicationUrl": "https://localhost:8080;http://localhost:8000"
     },
     "IIS Express": {
       "commandName": "IISExpress",

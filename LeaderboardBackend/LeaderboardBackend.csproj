@@ -4,8 +4,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <!-- Commenting out due to dotnet format bug: https://github.com/dotnet/format/issues/1800 -->
-    <!-- <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild> -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <PropertyGroup>
