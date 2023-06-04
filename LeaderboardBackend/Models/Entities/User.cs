@@ -1,12 +1,14 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
 
 namespace LeaderboardBackend.Models.Entities;
 
 /// <summary>
 ///     Represents a user account registered on the website.
 /// </summary>
+[Index(nameof(Username), IsUnique = true)]
+[Index(nameof(Email), IsUnique = true)]
 public class User
 {
     /// <summary>
