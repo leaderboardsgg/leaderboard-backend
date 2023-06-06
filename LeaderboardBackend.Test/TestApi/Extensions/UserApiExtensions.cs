@@ -1,20 +1,20 @@
 using System.Threading.Tasks;
-using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.Lib;
 
 namespace LeaderboardBackend.Test.TestApi.Extensions;
 
 internal static class UserApiExtensions
 {
-    public static async Task<User> RegisterUser(
+    public static async Task<UserViewModel> RegisterUser(
         this TestApiClient client,
         string username,
         string email,
         string password
     )
     {
-        return await client.Post<User>(
+        return await client.Post<UserViewModel>(
             "/api/users/register",
             new()
             {

@@ -462,12 +462,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Run"
+                  "$ref": "#/components/schemas/RunViewModel"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Run"
+                  "$ref": "#/components/schemas/RunViewModel"
                 }
               }
             }
@@ -650,12 +650,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Category"
+                  "$ref": "#/components/schemas/CategoryViewModel"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Category"
+                  "$ref": "#/components/schemas/CategoryViewModel"
                 }
               }
             }
@@ -747,12 +747,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/UserViewModel"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/UserViewModel"
                 }
               }
             }
@@ -822,12 +822,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/UserViewModel"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/UserViewModel"
                 }
               }
             }
@@ -968,12 +968,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/UserViewModel"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/UserViewModel"
                 }
               }
             }
@@ -1036,59 +1036,6 @@
           }
         },
         "additionalProperties": false
-      },
-      "Category": {
-        "required": [
-          "id",
-          "leaderboardId",
-          "name",
-          "playersMax",
-          "playersMin",
-          "slug"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "The unique identifier of the `Category`.<br />\r\nGenerated on creation.",
-            "format": "int64"
-          },
-          "leaderboardId": {
-            "type": "integer",
-            "description": "The ID of the `Leaderboard` the `Category` is a part of.",
-            "format": "int64"
-          },
-          "name": {
-            "minLength": 1,
-            "type": "string",
-            "description": "The display name of the `Category`.",
-            "example": "Foo Bar Baz%"
-          },
-          "slug": {
-            "minLength": 1,
-            "type": "string",
-            "description": "The URL-scoped unique identifier of the `Category`.<br />\r\nMust be [2, 25] in length and consist only of alphanumeric characters and hyphens.",
-            "example": "foo-bar-baz"
-          },
-          "rules": {
-            "type": "string",
-            "description": "The rules of the `Category`.",
-            "nullable": true,
-            "example": "Video proof is required."
-          },
-          "playersMin": {
-            "type": "integer",
-            "description": "The minimum player count of the `Category`. The default is 1.",
-            "format": "int32"
-          },
-          "playersMax": {
-            "type": "integer",
-            "description": "The maximum player count of the `Category`. The default is `PlayersMin`.",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false,
-        "description": "Represents a `Category` tied to a `Leaderboard`."
       },
       "CategoryViewModel": {
         "required": [
@@ -1183,7 +1130,6 @@
         "required": [
           "categoryId",
           "playedOn",
-          "status",
           "submittedAt"
         ],
         "type": "object",
@@ -1193,9 +1139,6 @@
           },
           "submittedAt": {
             "$ref": "#/components/schemas/Instant"
-          },
-          "status": {
-            "$ref": "#/components/schemas/RunStatus"
           },
           "categoryId": {
             "type": "integer",
@@ -1429,12 +1372,10 @@
         "additionalProperties": false,
         "description": "This request object is sent when a `User` is attempting to register."
       },
-      "Run": {
+      "RunViewModel": {
         "required": [
           "categoryId",
           "id",
-          "playedOn",
-          "status",
           "submittedAt"
         ],
         "type": "object",
@@ -1444,43 +1385,19 @@
             "description": "The unique identifier of the `Run`.<br />\r\nGenerated on creation.",
             "format": "uuid"
           },
-          "playedOn": {
-            "$ref": "#/components/schemas/LocalDate"
-          },
           "submittedAt": {
             "$ref": "#/components/schemas/Instant"
-          },
-          "status": {
-            "$ref": "#/components/schemas/RunStatus"
           },
           "categoryId": {
             "type": "integer",
             "description": "The ID of the `Category` for `Run`.",
             "format": "int64"
-          },
-          "category": {
-            "$ref": "#/components/schemas/Category"
           }
         },
-        "additionalProperties": false,
-        "description": "Represents an entry on a `Category`."
+        "additionalProperties": false
       },
-      "RunStatus": {
-        "enum": [
-          0,
-          1,
-          2,
-          3,
-          4
-        ],
-        "type": "integer",
-        "description": "The status of the `Run`.<br />\r\n    - 0: Created<br />\r\n    - 1: Submitted<br />\r\n    - 2: Pending<br />\r\n    - 3: Approved<br />\r\n    - 4: Rejected",
-        "format": "int32"
-      },
-      "User": {
+      "UserViewModel": {
         "required": [
-          "admin",
-          "email",
           "id",
           "username"
         ],
@@ -1492,29 +1409,12 @@
             "format": "uuid"
           },
           "username": {
-            "minLength": 1,
             "type": "string",
             "description": "The username of the `User`. It:\r\n<ul><li>must be [2, 25] in length;</li><li>must be made up of alphanumeric characters around zero or one of:</li><ul><li>hyphen;</li><li>underscore; or</li><li>apostrophe</li></ul></ul>\r\nUsernames are saved case-sensitively, but matcehd against case-insensitively.\r\nA `User` may not register with the name 'Cool' when another `User` with the name 'cool'\r\nexists.",
             "example": "J'on-Doe"
-          },
-          "email": {
-            "minLength": 1,
-            "type": "string",
-            "description": "The `User`'s email address.",
-            "example": "john.doe@example.com"
-          },
-          "about": {
-            "type": "string",
-            "description": "The `User`'s personal description, displayed on their profile.",
-            "nullable": true
-          },
-          "admin": {
-            "type": "boolean",
-            "description": "The `User`'s administrator status."
           }
         },
-        "additionalProperties": false,
-        "description": "Represents a user account registered on the website."
+        "additionalProperties": false
       }
     },
     "securitySchemes": {

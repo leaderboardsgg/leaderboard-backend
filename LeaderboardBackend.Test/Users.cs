@@ -1,8 +1,8 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
 using NUnit.Framework;
@@ -43,7 +43,7 @@ internal class Users
     {
         Guid randomGuid = new();
         RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(
-            async () => await s_apiClient.Get<User>($"/api/users/{randomGuid}", new())
+            async () => await s_apiClient.Get<UserViewModel>($"/api/users/{randomGuid}", new())
         )!;
 
         Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);
@@ -52,13 +52,13 @@ internal class Users
     [Test]
     public static async Task GetUser_OK()
     {
-        User createdUser = await s_apiClient.RegisterUser(
+        UserViewModel createdUser = await s_apiClient.RegisterUser(
             VALID_USERNAME,
             VALID_EMAIL,
             VALID_PASSWORD
         );
 
-        User retrievedUser = await s_apiClient.Get<User>($"/api/users/{createdUser?.Id}", new());
+        UserViewModel retrievedUser = await s_apiClient.Get<UserViewModel>($"/api/users/{createdUser?.Id}", new());
 
         Assert.AreEqual(createdUser, retrievedUser);
     }
@@ -98,7 +98,7 @@ internal class Users
             // to have a table of requests and send them directly.
             RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(
                 async () =>
-                    await s_apiClient.Post<User>("/api/users/register", new() { Body = request })
+                    await s_apiClient.Post<UserViewModel>("/api/users/register", new() { Body = request })
             )!;
 
             Assert.AreEqual(
@@ -113,7 +113,7 @@ internal class Users
     public static void Me_Unauthorized()
     {
         RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(
-            async () => await s_apiClient.Get<User>($"/api/users/me", new())
+            async () => await s_apiClient.Get<UserViewModel>($"/api/users/me", new())
         )!;
 
         Assert.AreEqual(HttpStatusCode.Unauthorized, e.Response.StatusCode);
@@ -123,18 +123,18 @@ internal class Users
     public static async Task FullAuthFlow()
     {
         // Register User
-        User createdUser = await s_apiClient.RegisterUser(
+        UserViewModel createdUser = await s_apiClient.RegisterUser(
             VALID_USERNAME,
             VALID_EMAIL,
             VALID_PASSWORD
         );
 
         // Login
-        LoginResponse login = await s_apiClient.LoginUser(createdUser.Email, VALID_PASSWORD);
+        LoginResponse login = await s_apiClient.LoginUser(VALID_EMAIL, VALID_PASSWORD);
 
         // Me
-        User me = await s_apiClient.Get<User>("api/users/me", new() { Jwt = login.Token });
+        UserViewModel me = await s_apiClient.Get<UserViewModel>("api/users/me", new() { Jwt = login.Token });
 
-        Assert.AreEqual(createdUser, me);
+        createdUser.Should().BeEquivalentTo(me);
     }
 }

@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
@@ -33,7 +32,7 @@ namespace LeaderboardBackend.Test
 
             s_jwt = (await s_apiClient.LoginAdminUser()).Token;
 
-            Leaderboard createdLeaderboard = await s_apiClient.Post<Leaderboard>(
+            LeaderboardViewModel createdLeaderboard = await s_apiClient.Post<LeaderboardViewModel>(
                 "/api/leaderboards",
                 new()
                 {
@@ -46,7 +45,7 @@ namespace LeaderboardBackend.Test
                 }
             );
 
-            Category createdCategory = await s_apiClient.Post<Category>(
+            CategoryViewModel createdCategory = await s_apiClient.Post<CategoryViewModel>(
                 "/api/categories",
                 new()
                 {
@@ -66,9 +65,9 @@ namespace LeaderboardBackend.Test
         [Test]
         public static async Task CreateRun_OK()
         {
-            Run created = await CreateRun();
+            RunViewModel created = await CreateRun();
 
-            Run retrieved = await GetRun(created.Id);
+            RunViewModel retrieved = await GetRun(created.Id);
 
             Assert.NotNull(created);
             Assert.AreEqual(created.Id, retrieved.Id);
@@ -77,9 +76,9 @@ namespace LeaderboardBackend.Test
         [Test]
         public static async Task GetCategory_OK()
         {
-            Run createdRun = await CreateRun();
+            RunViewModel createdRun = await CreateRun();
 
-            Category category = await s_apiClient.Get<Category>(
+            CategoryViewModel category = await s_apiClient.Get<CategoryViewModel>(
                 $"api/runs/{createdRun.Id}/category",
                 new() { Jwt = s_jwt }
             );
@@ -88,9 +87,9 @@ namespace LeaderboardBackend.Test
             Assert.AreEqual(category.Id, s_categoryId);
         }
 
-        private static async Task<Run> CreateRun()
+        private static async Task<RunViewModel> CreateRun()
         {
-            return await s_apiClient.Post<Run>(
+            return await s_apiClient.Post<RunViewModel>(
                 "/api/runs",
                 new()
                 {
@@ -98,7 +97,6 @@ namespace LeaderboardBackend.Test
                     {
                         PlayedOn = LocalDate.MinIsoValue,
                         SubmittedAt = Instant.MaxValue,
-                        Status = RunStatus.Created,
                         CategoryId = s_categoryId
                     },
                     Jwt = s_jwt
@@ -106,9 +104,9 @@ namespace LeaderboardBackend.Test
             );
         }
 
-        private static async Task<Run> GetRun(Guid id)
+        private static async Task<RunViewModel> GetRun(Guid id)
         {
-            return await s_apiClient.Get<Run>($"/api/runs/{id}", new() { Jwt = s_jwt });
+            return await s_apiClient.Get<RunViewModel>($"/api/runs/{id}", new() { Jwt = s_jwt });
         }
     }
 }

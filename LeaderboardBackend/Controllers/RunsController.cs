@@ -1,6 +1,7 @@
 using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -33,7 +34,7 @@ public class RunsController : ControllerBase
     /// <response code="404">No `Run` with the requested ID could be found.</response>
     [ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
     [HttpGet("{id}")]
-    public async Task<ActionResult<Run>> GetRun(Guid id)
+    public async Task<ActionResult<RunViewModel>> GetRun(Guid id)
     {
         // NOTE: Should this use [AllowAnonymous]? - Ero
 
@@ -44,7 +45,7 @@ public class RunsController : ControllerBase
             return NotFound();
         }
 
-        return Ok(run);
+        return Ok(RunViewModel.MapFrom(run));
     }
 
     /// <summary>
@@ -66,18 +67,17 @@ public class RunsController : ControllerBase
             {
                 PlayedOn = request.PlayedOn,
                 SubmittedAt = request.SubmittedAt,
-                Status = request.Status,
                 CategoryId = request.CategoryId
             };
 
         await _runService.CreateRun(run);
 
-        return CreatedAtAction(nameof(GetRun), new { id = run.Id }, run);
+        return CreatedAtAction(nameof(GetRun), new { id = run.Id }, RunViewModel.MapFrom(run));
     }
 
     [ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
     [HttpGet("{id}/category")]
-    public async Task<ActionResult<Category>> GetCategoryForRun(Guid id)
+    public async Task<ActionResult<CategoryViewModel>> GetCategoryForRun(Guid id)
     {
         Run? run = await _runService.GetRun(id);
 
@@ -93,6 +93,6 @@ public class RunsController : ControllerBase
             return NotFound("Category not found");
         }
 
-        return Ok(category);
+        return Ok(CategoryViewModel.MapFrom(category));
     }
 }
