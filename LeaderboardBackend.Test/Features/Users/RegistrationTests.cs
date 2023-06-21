@@ -111,7 +111,7 @@ public class RegistrationTests : IntegrationTestsBase
     {
         RegisterRequest createExistingUserReq = s_registerReqFaker.Generate();
         await Client.PostAsJsonAsync(REGISTER_URI, createExistingUserReq);
-        RegisterRequest request = s_registerReqFaker.Generate() with { Username = createExistingUserReq.Username };
+        RegisterRequest request = s_registerReqFaker.Generate() with { Username = createExistingUserReq.Username.ToLower() };
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(REGISTER_URI, request);
 
@@ -129,7 +129,7 @@ public class RegistrationTests : IntegrationTestsBase
     {
         RegisterRequest createExistingUserReq = s_registerReqFaker.Generate();
         await Client.PostAsJsonAsync(REGISTER_URI, createExistingUserReq);
-        RegisterRequest request = s_registerReqFaker.Generate() with { Email = createExistingUserReq.Email };
+        RegisterRequest request = s_registerReqFaker.Generate() with { Email = createExistingUserReq.Email.ToLower() };
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(REGISTER_URI, request);
 
