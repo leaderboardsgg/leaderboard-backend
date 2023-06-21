@@ -59,9 +59,9 @@ public class UsersController : ControllerBase
     ///     The request contains errors.<br/><br/>
     ///     Validation error codes by property:
     ///     - **Username**:
-    ///       - **UsernameFormat**: Invalid username format
+    ///       - **USERNAME_FORMAT**: Invalid username format
     ///     - **Password**:
-    ///       - **PasswordFormat**: Invalid password format
+    ///       - **PASSWORD_FORMAT**: Invalid password format
     ///     - **Email**:
     ///       - **EmailValidator**: Invalid email format
     /// </response>

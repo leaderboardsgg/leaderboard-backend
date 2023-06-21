@@ -81,7 +81,7 @@ public class RegistrationTests : IntegrationTestsBase
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
         {
-            { nameof(RegisterRequest.Username), new[] { "UsernameFormat" } }
+            { nameof(RegisterRequest.Username), new[] { "USERNAME_FORMAT" } }
         });
     }
 
@@ -102,7 +102,7 @@ public class RegistrationTests : IntegrationTestsBase
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
         {
-            { nameof(RegisterRequest.Password), new[] { "PasswordFormat" } }
+            { nameof(RegisterRequest.Password), new[] { "PASSWORD_FORMAT" } }
         });
     }
 

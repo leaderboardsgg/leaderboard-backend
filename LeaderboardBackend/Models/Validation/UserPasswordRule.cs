@@ -4,7 +4,7 @@ namespace LeaderboardBackend.Models.Validation;
 
 public static class UserPasswordRule
 {
-    public const string NAME = "PasswordFormat";
+    public const string NAME = "PASSWORD_FORMAT";
 
     /// <summary>
     /// Validation will fail if the property does not respect the password format.
