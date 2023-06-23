@@ -32,7 +32,7 @@ public class UserPasswordTests
         TestValidationResult<ExampleObject> result = _sut.TestValidate(new ExampleObject(password));
 
         result.ShouldHaveValidationErrorFor(x => x.Password)
-            .WithErrorCode(UserPasswordRule.NAME);
+            .WithErrorCode(UserPasswordRule.PASSWORD_FORMAT);
     }
 
     private record ExampleObject(string Password);
@@ -42,4 +42,3 @@ public class UserPasswordTests
         public TestValidator() => RuleFor(x => x.Password).UserPassword();
     }
 }
-

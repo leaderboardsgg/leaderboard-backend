@@ -891,7 +891,7 @@
             "description": "The request was malformed."
           },
           "422": {
-            "description": "The request contains errors.<br /><br />\r\nValidation error codes by property:\r\n- **Username**:\r\n  - **USERNAME_FORMAT**: Invalid username format\r\n- **Password**:\r\n  - **PASSWORD_FORMAT**: Invalid password format\r\n- **Email**:\r\n  - **EmailValidator**: Invalid email format"
+            "description": "The request contains errors.<br /><br />\r\nValidation error codes by property:\r\n- **Username**:\r\n  - **UsernameFormat**: Invalid username format\r\n- **Password**:\r\n  - **PasswordFormat**: Invalid password format\r\n- **Email**:\r\n  - **EmailValidator**: Invalid email format"
           }
         }
       }

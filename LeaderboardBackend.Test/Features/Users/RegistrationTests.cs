@@ -21,7 +21,7 @@ public class RegistrationTests : IntegrationTestsBase
     private static readonly Faker<RegisterRequest> s_registerReqFaker = new AutoFaker<RegisterRequest>()
         .RuleFor(x => x.Username, b => "TestUser" + b.Random.Number(99999))
         .RuleFor(x => x.Password, b => "c00l_pAssword")
-        .RuleFor(x => x.Email, b => b.Internet.Email());
+        .RuleFor(x => x.Email, b => "TestUser" + b.Internet.Email());
 
     [Test]
     public async Task Register_ValidRequest_CreatesAndReturnsUser()
@@ -81,7 +81,7 @@ public class RegistrationTests : IntegrationTestsBase
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
         {
-            { nameof(RegisterRequest.Username), new[] { "USERNAME_FORMAT" } }
+            { nameof(RegisterRequest.Username), new[] { "UsernameFormat" } }
         });
     }
 
@@ -102,7 +102,7 @@ public class RegistrationTests : IntegrationTestsBase
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
         {
-            { nameof(RegisterRequest.Password), new[] { "PASSWORD_FORMAT" } }
+            { nameof(RegisterRequest.Password), new[] { "PasswordFormat" } }
         });
     }
 

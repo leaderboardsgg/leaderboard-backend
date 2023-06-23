@@ -4,7 +4,7 @@ namespace LeaderboardBackend.Models.Validation;
 
 public static class UsernameRule
 {
-    public const string NAME = "USERNAME_FORMAT";
+    public const string USERNAME_FORMAT = "UsernameFormat";
 
     /// <summary>
     /// Validation will fail if the property does not respect the password format.
@@ -13,9 +13,9 @@ public static class UsernameRule
     {
         return ruleBuilder
             .Length(2, 25)
-                .WithErrorCode(NAME)
+                .WithErrorCode(USERNAME_FORMAT)
             .Matches("^(?:[a-zA-Z0-9]+[-_']?[a-zA-Z0-9]+)+$")
-                .WithErrorCode(NAME)
+                .WithErrorCode(USERNAME_FORMAT)
                 .WithMessage("Invalid username format.");
     }
 }

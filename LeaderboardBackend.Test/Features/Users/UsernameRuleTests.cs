@@ -41,7 +41,7 @@ public class UsernameRuleTests
         TestValidationResult<ExampleObject> result = _sut.TestValidate(new ExampleObject(username));
 
         result.ShouldHaveValidationErrorFor(x => x.Username)
-            .WithErrorCode(UsernameRule.NAME);
+            .WithErrorCode(UsernameRule.USERNAME_FORMAT);
     }
     private record ExampleObject(string Username);
 
@@ -50,4 +50,3 @@ public class UsernameRuleTests
         public TestValidator() => RuleFor(x => x.Username).Username();
     }
 }
-
