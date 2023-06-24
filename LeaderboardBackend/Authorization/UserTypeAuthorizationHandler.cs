@@ -60,7 +60,7 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
     {
         return requirement.Type switch
         {
-            UserTypes.ADMINISTRATOR => user.Admin,
+            UserTypes.ADMINISTRATOR => user.IsAdmin,
             UserTypes.USER => true,
             _ => false,
         };

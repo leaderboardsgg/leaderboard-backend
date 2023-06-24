@@ -22,7 +22,7 @@ public class ApplicationContext : DbContext
                 new User
                 {
                     Id = s_seedAdminId,
-                    Admin = true,
+                    Role = UserRole.Administrator,
                     Email = "omega@star.com",
                     Password = "$2a$11$tNvA94WqpJ.O7S7D6lVMn.E/UxcFYztl3BkcnBj/hgE8PY/8nCRQe", // "3ntr0pyChaos"
                     Username = "Galactus"

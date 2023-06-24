@@ -4,6 +4,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LeaderboardBackend.Models.Entities;
 
+public enum UserRole : byte
+{
+    None = 0, // should not be used
+    Registered,
+    Confirmed,
+    Administrator,
+    Banned,
+}
+
 /// <summary>
 ///     Represents a user account registered on the website.
 /// </summary>
@@ -28,7 +37,7 @@ public class User
     ///         <li>apostrophe</li>
     ///       </ul>
     ///     </ul>
-    ///     Usernames are saved case-sensitively, but matcehd against case-insensitively.
+    ///     Usernames are saved case-sensitively, but matched against case-insensitively.
     ///     A `User` may not register with the name 'Cool' when another `User` with the name 'cool'
     ///     exists.
     /// </summary>
@@ -62,15 +71,12 @@ public class User
     public string Password { get; set; } = null!;
 
     /// <summary>
-    ///     The `User`'s personal description, displayed on their profile.
-    /// </summary>
-    public string? About { get; set; }
-
-    /// <summary>
-    ///     The `User`'s administrator status.
+    /// User role (site-wide)
     /// </summary>
     [Required]
-    public bool Admin { get; set; } = false;
+    public UserRole Role { get; set; } = UserRole.Registered;
+
+    public bool IsAdmin => Role == UserRole.Administrator;
 
     public override bool Equals(object? obj)
     {

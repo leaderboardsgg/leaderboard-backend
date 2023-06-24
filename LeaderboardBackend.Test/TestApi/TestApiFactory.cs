@@ -91,7 +91,7 @@ public class TestApiFactory : WebApplicationFactory<Program>
                 Username = TestInitCommonFields.Admin.Username,
                 Email = TestInitCommonFields.Admin.Email,
                 Password = BCryptNet.EnhancedHashPassword(TestInitCommonFields.Admin.Password),
-                Admin = true,
+                Role = UserRole.Administrator,
             };
 
         dbContext.Add(admin);

@@ -63,7 +63,8 @@ public class UserService : IUserService
             {
                 Username = request.Username,
                 Email = request.Email,
-                Password = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password)
+                Password = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password),
+                Role = UserRole.Registered
             };
 
         _applicationContext.Users.Add(newUser);

@@ -47,7 +47,7 @@ public class RegistrationTests : IntegrationTestsBase
             Password = createdUser!.Password,
             Username = request.Username,
             Email = request.Email,
-            Admin = false
+            Role = UserRole.Registered
         });
     }
 
