@@ -16,7 +16,7 @@ namespace LeaderboardBackend.Test.Features.Users;
 
 public class RegistrationTests : IntegrationTestsBase
 {
-    private const string REGISTER_URI = "/api/users/register";
+    private const string REGISTER_URI = "/api/account/register";
 
     private static readonly Faker<RegisterRequest> s_registerReqFaker = new AutoFaker<RegisterRequest>()
         .RuleFor(x => x.Username, b => "TestUser" + b.Random.Number(99999))
