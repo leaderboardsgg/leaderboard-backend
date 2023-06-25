@@ -18,6 +18,14 @@ The original backend, written in Go and inactive, can be found [here](https://gi
 
 ## Setting up Environment
 
+Firstly, set `core.filemode false` in your git config, either by running `git config core.filemode false` in your terminal, or
+```
+[core]
+    filemode = false
+```
+in your `~/.gitconfig` (Windows users may need to do the latter, according to a comment under [this SO answer](https://stackoverflow.com/a/2972113)). This is to prevent committing filemode changes of our pre-commit hook, `.husky/pre-commit` to your PRs.
+
+
 ## Editor/IDE
 
 There are a couple options available for you to choose, depending on your OS.
@@ -149,7 +157,7 @@ dotnet run  # or `dotnet watch` to run with hot reload
 ```
 
 #### Test the App
-Docker is required to run integration tests against a real Postgres database.
+Docker is required to run integration tests against a real Postgres database.  
 However, if you would still like to run the tests with an in-memory database, you can set the following environment variable: `INTEGRATION_TESTS_DB_BACKEND=InMemory`.
 
 To run the tests, run the following commands from the root of the repository:
