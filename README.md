@@ -145,11 +145,11 @@ To run the application from the CLI, run the following command from the root of 
 
 ```bash
 cd LeaderboardBackend
-dotnet run  # or `dotnet watch` to run with hot reload 
+dotnet run  # or `dotnet watch` to run with hot reload
 ```
 
 #### Test the App
-Docker is required to run integration tests against a real Postgres database.  
+Docker is required to run integration tests against a real Postgres database.
 However, if you would still like to run the tests with an in-memory database, you can set the following environment variable: `INTEGRATION_TESTS_DB_BACKEND=InMemory`.
 
 To run the tests, run the following commands from the root of the repository:
@@ -158,5 +158,7 @@ To run the tests, run the following commands from the root of the repository:
 cd LeaderboardBackend.Test
 dotnet test
 ```
+
+Tests may error [due to failure of the Docker container to be found](https://github.com/testcontainers/testcontainers-dotnet/issues/921). To fix, set `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock`.
 
 To debug with breakpoints, first call `export VSTEST_DEBUG=1` before running a test. Doing this allows you to attach a debug process to hit breakpoints with.
