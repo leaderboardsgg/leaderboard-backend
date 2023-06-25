@@ -3,11 +3,14 @@ using System.Net.Http;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Test.Fixtures;
 using LeaderboardBackend.Test.Lib;
+using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Moq;
 using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace LeaderboardBackend.Test.TestApi;
@@ -50,6 +53,9 @@ internal class TestApiFactory : WebApplicationFactory<Program>
                     conf.UseInMemoryDb = true;
                 });
             }
+
+            // mock SMTP client
+            services.Replace(ServiceDescriptor.Transient<ISmtpClient>(_ => new Mock<ISmtpClient>().Object));
 
             using IServiceScope scope = services.BuildServiceProvider().CreateScope();
             ApplicationContext dbContext =
