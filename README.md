@@ -18,6 +18,14 @@ The original backend, written in Go and inactive, can be found [here](https://gi
 
 ## Setting up Environment
 
+Firstly, set `core.filemode false` in your git config, either by running `git config core.filemode false` in your terminal, or
+```
+[core]
+    filemode = false
+```
+in your `~/.gitconfig` (Windows users may need to do the latter, according to a comment under [this SO answer](https://stackoverflow.com/a/2972113)). This is to prevent committing filemode changes of our pre-commit hook, `.husky/pre-commit` to your PRs.
+
+
 ## Editor/IDE
 
 There are a couple options available for you to choose, depending on your OS.
@@ -145,7 +153,7 @@ To run the application from the CLI, run the following command from the root of 
 
 ```bash
 cd LeaderboardBackend
-dotnet run  # or `dotnet watch` to run with hot reload 
+dotnet run  # or `dotnet watch` to run with hot reload
 ```
 
 #### Test the App
@@ -158,5 +166,7 @@ To run the tests, run the following commands from the root of the repository:
 cd LeaderboardBackend.Test
 dotnet test
 ```
+
+Tests may error [due to failure of the Docker container to be found](https://github.com/testcontainers/testcontainers-dotnet/issues/921). To fix, set `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock`.
 
 To debug with breakpoints, first call `export VSTEST_DEBUG=1` before running a test. Doing this allows you to attach a debug process to hit breakpoints with.
