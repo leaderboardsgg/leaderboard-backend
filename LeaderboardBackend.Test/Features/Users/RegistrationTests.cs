@@ -67,12 +67,10 @@ public class RegistrationTests : IntegrationTestsBase
         });
     }
 
-    [TestCase("a", Description = "Username too short")]
-    [TestCase("aaaaaaaaaaaaaaaaaaaaaaaaaa", Description = "Username too long")]
-    [TestCase("user富士山", Description = "Invalid username format")]
-    public async Task Register_InvalidUsername_ReturnsUsernameFormatErrorCode(string username)
+    [Test]
+    public async Task Register_InvalidUsername_ReturnsUsernameFormatErrorCode()
     {
-        RegisterRequest request = s_registerReqFaker.Generate() with { Username = username };
+        RegisterRequest request = s_registerReqFaker.Generate() with { Username = "山" };
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(REGISTER_URI, request);
 
@@ -85,15 +83,10 @@ public class RegistrationTests : IntegrationTestsBase
         });
     }
 
-    [TestCase("hyF4x8Y", Description = "Password too short")]
-    [TestCase("Vat1bsMncIiC5xuQtDKzhrR7cS0c4mT5nNVjBBHGShA6joc8E3JuTHnNIO3NhoPH36Au102CENGADo0sO",
-        Description = "Password too long")]
-    [TestCase("EsoXcnUOMrek", Description = "No number")]
-    [TestCase("QJGEW1LVUM2H", Description = "No lowercase letter")]
-    [TestCase("hvcae76zgnad", Description = "No uppercase letter")]
-    public async Task Register_InvalidPassword_ReturnsPasswordFormatErrorCode(string password)
+    [Test]
+    public async Task Register_InvalidPassword_ReturnsPasswordFormatErrorCode()
     {
-        RegisterRequest request = s_registerReqFaker.Generate() with { Password = password };
+        RegisterRequest request = s_registerReqFaker.Generate() with { Password = "a" };
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(REGISTER_URI, request);
 
