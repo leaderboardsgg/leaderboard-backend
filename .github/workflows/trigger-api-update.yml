@@ -1,0 +1,23 @@
+name: Trigger API update
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  trigger-api-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger API update
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.WORKFLOW_ACCESS_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'leaderboardsgg',
+              repo: 'leaderboard-site',
+              workflow_id: 'update-api.yml',
+              ref: 'main',
+            })
