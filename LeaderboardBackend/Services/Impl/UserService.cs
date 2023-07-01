@@ -20,40 +20,34 @@ public class UserService : IUserService
 
     public async Task<User?> GetUserByEmail(string email)
     {
-        return await _applicationContext.Users.FirstOrDefaultAsync(user => user.Email == email);
+        return await _applicationContext.Users.SingleOrDefaultAsync(user => user.Email == email);
     }
 
     public async Task<User?> GetUserByName(string name)
     {
-        string lowerName = name.ToLower();
-
-        // We save a username with casing, but match without.
-        // Effectively you can't have two separate users named e.g. "cool" and "cOoL".
-        return await _applicationContext.Users.FirstOrDefaultAsync(
-            user => user.Username != null && user.Username.ToLower() == lowerName
-        );
+        return await _applicationContext.Users.SingleOrDefaultAsync(user => user.Username == name);
     }
 
     public async Task<CreateUserResult> CreateUser(RegisterRequest request)
     {
         /* Linq query translated as:
-        SELECT count(*) FILTER (WHERE lower(t.username) = @__ToLower_0)::int > 0 AS "usernameExists",
-            count(*) FILTER (WHERE lower(t.email) = @__ToLower_1)::int > 0 AS "emailExists"
+        SELECT count(*) FILTER (WHERE t.username = @__request_Username_0)::int > 0 AS "usernameExists",
+            count(*) FILTER (WHERE t.email = @__request_Email_1)::int > 0 AS "emailExists"
         FROM (
             SELECT u.email, u.username, 1 AS "Key"
             FROM users AS u
         ) AS t
         GROUP BY t."Key"
-        LIMIT 1
+        LIMIT 2
         */
         var conflicts = await _applicationContext.Users.GroupBy(x => 1)
             .Select(users => new
             {
-                usernameExists = users.Count(x => x.Username.ToLower() == request.Username.ToLower()) > 0,
-                emailExists = users.Count(x => x.Email.ToLower() == request.Email.ToLower()) > 0
-            }).FirstOrDefaultAsync();
+                usernameExists = users.Count(x => x.Username == request.Username) > 0,
+                emailExists = users.Count(x => x.Email == request.Email) > 0
+            }).SingleAsync();
 
-        if (conflicts is not null && (conflicts.usernameExists || conflicts.emailExists))
+        if (conflicts.usernameExists || conflicts.emailExists)
         {
             return new CreateUserConflicts(Username: conflicts.usernameExists, Email: conflicts.emailExists);
         }

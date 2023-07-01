@@ -293,7 +293,7 @@ using (ApplicationContext context = scope.ServiceProvider.GetRequiredService<App
     if (config.UseInMemoryDb)
     {
         context.Database.EnsureCreated();
-        User? defaultUser = context.Find<User>(ApplicationContext.s_seedAdminId);
+        User? defaultUser = context.Find<User>(User.s_seedAdminId);
         if (defaultUser is null)
         {
             throw new InvalidOperationException("The default user was not correctly seeded.");

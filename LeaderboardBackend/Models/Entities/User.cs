@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -20,6 +21,8 @@ public enum UserRole : byte
 [Index(nameof(Email), IsUnique = true)]
 public class User
 {
+    public static readonly Guid s_seedAdminId = new("421bb896-1990-48c6-8b0c-d69f56d6746a");
+
     /// <summary>
     ///     The unique identifier of the `User`.<br/>
     ///     Generated on creation.
@@ -86,5 +89,28 @@ public class User
     public override int GetHashCode()
     {
         return HashCode.Combine(Id, Username, Email);
+    }
+}
+
+public class UserEntityTypeConfig : IEntityTypeConfiguration<User>
+{
+    public void Configure(EntityTypeBuilder<User> builder)
+    {
+        builder.Property(x => x.Username)
+            .UseCollation(ApplicationContext.CASE_INSENSITIVE_COLLATION);
+
+        builder.Property(x => x.Email)
+            .UseCollation(ApplicationContext.CASE_INSENSITIVE_COLLATION);
+
+        builder.HasData(
+            new User
+            {
+                Id = User.s_seedAdminId,
+                Role = UserRole.Administrator,
+                Email = "omega@star.com",
+                Password = "$2a$11$tNvA94WqpJ.O7S7D6lVMn.E/UxcFYztl3BkcnBj/hgE8PY/8nCRQe", // "3ntr0pyChaos"
+                Username = "Galactus"
+            }
+        );
     }
 }

@@ -1,10 +1,11 @@
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeaderboardBackend.Models.Entities;
 
 public class ApplicationContext : DbContext
 {
-    public static readonly Guid s_seedAdminId = new("421bb896-1990-48c6-8b0c-d69f56d6746a");
+    public const string CASE_INSENSITIVE_COLLATION = "case_insensitive";
 
     public ApplicationContext(DbContextOptions<ApplicationContext> options)
         : base(options) { }
@@ -16,17 +17,8 @@ public class ApplicationContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder
-            .Entity<User>()
-            .HasData(
-                new User
-                {
-                    Id = s_seedAdminId,
-                    Role = UserRole.Administrator,
-                    Email = "omega@star.com",
-                    Password = "$2a$11$tNvA94WqpJ.O7S7D6lVMn.E/UxcFYztl3BkcnBj/hgE8PY/8nCRQe", // "3ntr0pyChaos"
-                    Username = "Galactus"
-                }
-            );
+        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        modelBuilder.HasCollation(CASE_INSENSITIVE_COLLATION, "und-u-ks-level2", "icu", deterministic: false);
     }
 }
