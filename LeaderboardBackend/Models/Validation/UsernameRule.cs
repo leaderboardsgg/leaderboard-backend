@@ -7,7 +7,7 @@ public static class UsernameRule
     public const string USERNAME_FORMAT = "UsernameFormat";
 
     /// <summary>
-    /// Validation will fail if the property does not respect the password format.
+    /// Validation will fail if the property does not respect the username format.
     /// </summary>
     public static IRuleBuilderOptions<T, string> Username<T>(this IRuleBuilder<T, string> ruleBuilder)
     {
