@@ -7,8 +7,7 @@ namespace LeaderboardBackend.Models.Entities;
 
 public enum UserRole : byte
 {
-    None = 0, // should not be used
-    Registered,
+    Registered = 1,
     Confirmed,
     Administrator,
     Banned,
