@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace LeaderboardBackend.Models.Entities;
 
-public enum UserRole : byte
+public enum UserRole
 {
     Registered = 1,
     Confirmed,

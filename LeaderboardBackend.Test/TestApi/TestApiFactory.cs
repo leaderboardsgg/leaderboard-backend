@@ -58,7 +58,7 @@ public class TestApiFactory : WebApplicationFactory<Program>
             switch (TestConfig.DatabaseBackend)
             {
                 case DatabaseBackend.TestContainer when !PostgresDatabaseFixture.HasCreatedTemplate:
-                    dbContext.Database.Migrate();
+                    dbContext.MigrateDatabase();
                     Seed(dbContext);
                     PostgresDatabaseFixture.CreateTemplateFromCurrentDb();
                     break;
