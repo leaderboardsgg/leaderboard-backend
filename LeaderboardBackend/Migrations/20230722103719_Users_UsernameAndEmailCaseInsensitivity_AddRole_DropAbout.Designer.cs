@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LeaderboardBackend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20230701094150_Users_ChangeCollationOfUsernameAndEmailToCaseInsensitive")]
-    partial class UsersChangeCollationOfUsernameAndEmailToCaseInsensitive
+    [Migration("20230722103719_Users_UsernameAndEmailCaseInsensitivity_AddRole_DropAbout")]
+    partial class Users_UsernameAndEmailCaseInsensitivity_AddRole_DropAbout
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -22,9 +22,10 @@ namespace LeaderboardBackend.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Npgsql:CollationDefinition:case_insensitive", "und-u-ks-level2,und-u-ks-level2,icu,False")
-                .HasAnnotation("ProductVersion", "7.0.2")
+                .HasAnnotation("ProductVersion", "7.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "user_role", new[] { "registered", "confirmed", "administrator", "banned" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.Category", b =>
@@ -146,8 +147,8 @@ namespace LeaderboardBackend.Migrations
                         .HasColumnType("text")
                         .HasColumnName("password");
 
-                    b.Property<byte>("Role")
-                        .HasColumnType("smallint")
+                    b.Property<UserRole>("Role")
+                        .HasColumnType("user_role")
                         .HasColumnName("role");
 
                     b.Property<string>("Username")
@@ -175,7 +176,7 @@ namespace LeaderboardBackend.Migrations
                             Id = new Guid("421bb896-1990-48c6-8b0c-d69f56d6746a"),
                             Email = "omega@star.com",
                             Password = "$2a$11$tNvA94WqpJ.O7S7D6lVMn.E/UxcFYztl3BkcnBj/hgE8PY/8nCRQe",
-                            Role = (byte)3,
+                            Role = UserRole.Administrator,
                             Username = "Galactus"
                         });
                 });
