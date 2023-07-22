@@ -16,5 +16,5 @@ public interface IUserService
 [GenerateOneOf]
 public partial class CreateUserResult : OneOfBase<User, CreateUserConflicts> { }
 
-public readonly record struct CreateUserConflicts(bool Username, bool Email);
+public readonly record struct CreateUserConflicts(bool Username = false, bool Email = false);
 

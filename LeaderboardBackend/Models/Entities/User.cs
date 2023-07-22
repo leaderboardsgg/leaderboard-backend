@@ -16,8 +16,6 @@ public enum UserRole
 /// <summary>
 ///     Represents a user account registered on the website.
 /// </summary>
-[Index(nameof(Username), IsUnique = true)]
-[Index(nameof(Email), IsUnique = true)]
 public class User
 {
     public static readonly Guid s_seedAdminId = new("421bb896-1990-48c6-8b0c-d69f56d6746a");
@@ -93,6 +91,9 @@ public class User
 
 public class UserEntityTypeConfig : IEntityTypeConfiguration<User>
 {
+    public const string USERNAME_UNIQUE_INDEX = "ix_users_username";
+    public const string EMAIL_UNIQUE_INDEX = "ix_users_email";
+
     public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.Property(x => x.Username)
@@ -100,6 +101,14 @@ public class UserEntityTypeConfig : IEntityTypeConfiguration<User>
 
         builder.Property(x => x.Email)
             .UseCollation(ApplicationContext.CASE_INSENSITIVE_COLLATION);
+
+        builder.HasIndex(x => x.Username)
+            .IsUnique()
+            .HasDatabaseName(USERNAME_UNIQUE_INDEX);
+
+        builder.HasIndex(x => x.Email)
+            .IsUnique()
+            .HasDatabaseName(EMAIL_UNIQUE_INDEX);
 
         builder.HasData(
             new User
