@@ -15,7 +15,7 @@ internal static class UserApiExtensions
     )
     {
         return await client.Post<UserViewModel>(
-            "/api/account/register",
+            "/account/register",
             new()
             {
                 Body = new RegisterRequest()

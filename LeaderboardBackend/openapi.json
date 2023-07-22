@@ -5,7 +5,7 @@
     "version": "v1"
   },
   "paths": {
-    "/api/Account/register": {
+    "/Account/register": {
       "post": {
         "tags": [
           "Account"

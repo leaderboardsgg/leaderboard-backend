@@ -10,7 +10,7 @@ using BCryptNet = BCrypt.Net.BCrypt;
 namespace LeaderboardBackend.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class AccountController : ControllerBase
 {
     private readonly IUserService _userService;
