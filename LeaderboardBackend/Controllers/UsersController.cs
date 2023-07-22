@@ -1,9 +1,11 @@
 using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace LeaderboardBackend.Controllers;
 
@@ -39,6 +41,45 @@ public class UsersController : ControllerBase
         }
 
         return Ok(UserViewModel.MapFrom(user));
+    }
+
+    /// <summary>
+    ///     Logs a User in.
+    /// </summary>
+    /// <param name="request">
+    ///     The `LoginRequest` instance from which to perform the login.
+    /// </param>
+    /// <response code="200">
+    ///     The `User` was logged in successfully. A `LoginResponse` is returned.
+    /// </response>
+    /// <response code="400">The request was malformed.</response>
+    /// <response code="401">The password passed was incorrect.</response>
+    /// <response code="404">No `User` with the requested details could be found.</response>
+    [AllowAnonymous]
+    [HttpPost("login")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
+    {
+        // FIXME: Use ApiConventionMethod here! - Ero
+
+        User? user = await _userService.GetUserByEmail(request.Email);
+
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (!BCryptNet.EnhancedVerify(request.Password, user.Password))
+        {
+            return Unauthorized();
+        }
+
+        string token = _authService.GenerateJSONWebToken(user);
+
+        return Ok(new LoginResponse { Token = token });
     }
 
     /// <summary>

@@ -74,46 +74,4 @@ public class AccountController : ControllerBase
                 return Conflict(new ValidationProblemDetails(ModelState));
             });
     }
-
-    /// <summary>
-    ///     Logs a User in.
-    /// </summary>
-    /// <param name="authService"></param>
-    /// <param name="request">
-    ///     The `LoginRequest` instance from which to perform the login.
-    /// </param>
-    /// <response code="200">
-    ///     The `User` was logged in successfully. A `LoginResponse` is returned.
-    /// </response>
-    /// <response code="400">The request was malformed.</response>
-    /// <response code="401">The password passed was incorrect.</response>
-    /// <response code="404">No `User` with the requested details could be found.</response>
-    [AllowAnonymous]
-    [HttpPost("login")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<LoginResponse>> Login(
-        [FromServices] IAuthService authService,
-        [FromBody] LoginRequest request)
-    {
-        // FIXME: Use ApiConventionMethod here! - Ero
-
-        User? user = await _userService.GetUserByEmail(request.Email);
-
-        if (user is null)
-        {
-            return NotFound();
-        }
-
-        if (!BCryptNet.EnhancedVerify(request.Password, user.Password))
-        {
-            return Unauthorized();
-        }
-
-        string token = authService.GenerateJSONWebToken(user);
-
-        return Ok(new LoginResponse { Token = token });
-    }
 }

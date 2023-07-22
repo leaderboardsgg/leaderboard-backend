@@ -35,7 +35,7 @@ internal static class UserApiExtensions
     )
     {
         return await apiClient.Post<LoginResponse>(
-            "/api/account/login",
+            "/api/users/login",
             new()
             {
                 Body = new LoginRequest() { Email = email, Password = password, }
@@ -46,7 +46,7 @@ internal static class UserApiExtensions
     public static async Task<LoginResponse> LoginAdminUser(this TestApiClient apiClient)
     {
         return await apiClient.Post<LoginResponse>(
-            "/api/account/login",
+            "/api/users/login",
             new()
             {
                 Body = new LoginRequest()
