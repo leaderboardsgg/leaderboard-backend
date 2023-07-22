@@ -45,6 +45,7 @@ public class EmailSender : IEmailSender
         catch (Exception exception)
         {
             _logger.LogError(exception, "Caught exception when sending email (subject: \"{EmailSubject}\")", subject);
+            throw;
         }
         finally
         {
