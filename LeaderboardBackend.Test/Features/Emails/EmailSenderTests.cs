@@ -33,7 +33,7 @@ public class EmailSenderTests
     }
 
     [Test]
-    public async Task SendEmailAsync_ShouldSendEmail()
+    public async Task EnqueueEmailAsync_ShouldSendEmail()
     {
         string expectedRecipientAddress = new Bogus.DataSets.Internet().Email();
         const string EXPECTED_SUBJECT = "Account recovery";
@@ -44,7 +44,7 @@ public class EmailSenderTests
                 It.IsAny<CancellationToken>(), It.IsAny<ITransferProgress>()))
             .Callback((MimeMessage m, CancellationToken _, ITransferProgress _) => sentMessage = m);
 
-        await _sut.SendEmailAsync(expectedRecipientAddress, EXPECTED_SUBJECT, EXPECTED_MESSAGE);
+        await _sut.EnqueueEmailAsync(expectedRecipientAddress, EXPECTED_SUBJECT, EXPECTED_MESSAGE);
 
         _smtpClientMock.Verify(x => x.SendAsync(It.IsAny<MimeMessage>(),
                 It.IsAny<CancellationToken>(), It.IsAny<ITransferProgress>()), Times.Once());
@@ -68,9 +68,9 @@ public class EmailSenderTests
     }
 
     [Test]
-    public async Task SendEmailAsync_ShouldConnectUsingConfig()
+    public async Task EnqueueEmailAsync_ShouldConnectUsingConfig()
     {
-        await SendEmailAsync(_sut);
+        await EnqueueEmailAsync(_sut);
 
         _smtpClientMock.Verify(x =>
             x.ConnectAsync(_config.Smtp!.Host, _config.Smtp.Port, _config.Smtp.UseSsl, It.IsAny<CancellationToken>()),
@@ -78,12 +78,12 @@ public class EmailSenderTests
     }
 
     [Test]
-    public async Task SendEmailAsync_ConfigWithCredentials_ShouldAuthenticate()
+    public async Task EnqueueEmailAsync_ConfigWithCredentials_ShouldAuthenticate()
     {
         _config.Smtp!.Username = "username";
         _config.Smtp.Password = "password";
 
-        await SendEmailAsync(_sut);
+        await EnqueueEmailAsync(_sut);
 
         _smtpClientMock.Verify(x =>
             x.AuthenticateAsync(_config.Smtp!.Username, _config.Smtp.Password, It.IsAny<CancellationToken>()),
@@ -91,12 +91,12 @@ public class EmailSenderTests
     }
 
     [Test]
-    public async Task SendEmailAsync_ConfigWithoutCredentials_ShouldNotAuthenticate()
+    public async Task EnqueueEmailAsync_ConfigWithoutCredentials_ShouldNotAuthenticate()
     {
         _config.Smtp!.Username = null;
         _config.Smtp.Password = null;
 
-        await SendEmailAsync(_sut);
+        await EnqueueEmailAsync(_sut);
 
         _smtpClientMock.Verify(x =>
             x.AuthenticateAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
@@ -104,33 +104,21 @@ public class EmailSenderTests
     }
 
     [Test]
-    public async Task SendEmailAsync_SmtpConfigIsNull_ShouldNotThrow()
+    public async Task EnqueueEmailAsync_SmtpConfigIsNull_ShouldNotThrow()
     {
         _config.Smtp = null;
 
-        Func<Task> action = () => SendEmailAsync(_sut);
+        Func<Task> action = () => EnqueueEmailAsync(_sut);
 
         await action.Should().NotThrowAsync();
     }
 
-    [Test]
-    public async Task SendEmailAsync_SmtpClientThrows_ShouldNotThrow()
-    {
-        _smtpClientMock.Setup(x => x.SendAsync(It.IsAny<MimeMessage>(),
-                It.IsAny<CancellationToken>(), It.IsAny<ITransferProgress>()))
-            .ThrowsAsync(new Exception("test"));
-
-        Func<Task> action = () => SendEmailAsync(_sut);
-
-        await action.Should().NotThrowAsync();
-    }
-
-    private static async Task SendEmailAsync(IEmailSender sender)
+    private static async Task EnqueueEmailAsync(IEmailSender sender)
     {
         string address = new Bogus.DataSets.Internet().Email();
         const string SUBJECT = "Account recovery";
         const string MESSAGE = "Click <a href=\"https://youtu.be/kpk2tdsPh0A?t=638\">here</a> to recover your account.";
 
-        await sender.SendEmailAsync(address, SUBJECT, MESSAGE);
+        await sender.EnqueueEmailAsync(address, SUBJECT, MESSAGE);
     }
 }

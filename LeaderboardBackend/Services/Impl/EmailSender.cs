@@ -21,7 +21,7 @@ public class EmailSender : IEmailSender
         _semaphore = new SemaphoreSlim(1);
     }
 
-    public async Task SendEmailAsync(string recipientAddress, string subject, string htmlMessage)
+    public async Task EnqueueEmailAsync(string recipientAddress, string subject, string htmlMessage)
     {
         if (_config.Smtp is null)
         {
