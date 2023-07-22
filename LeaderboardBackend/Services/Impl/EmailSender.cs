@@ -42,11 +42,6 @@ public class EmailSender : IEmailSender
         {
             await SendEmail(message);
         }
-        catch (Exception exception)
-        {
-            _logger.LogError(exception, "Caught exception when sending email (subject: \"{EmailSubject}\")", subject);
-            throw;
-        }
         finally
         {
             _semaphore.Release();
