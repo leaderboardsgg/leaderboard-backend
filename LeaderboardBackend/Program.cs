@@ -12,6 +12,7 @@ using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Swagger;
+using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -40,6 +41,12 @@ builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 builder.Services
     .AddOptions<AppConfig>()
     .Bind(builder.Configuration)
+    .ValidateFluentValidation()
+    .ValidateOnStart();
+
+builder.Services
+    .AddOptions<EmailSenderConfig>()
+    .BindConfiguration(EmailSenderConfig.KEY)
     .ValidateFluentValidation()
     .ValidateOnStart();
 
@@ -96,6 +103,8 @@ builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IRunService, RunService>();
+builder.Services.AddSingleton<IEmailSender, EmailSender>();
+builder.Services.AddSingleton<ISmtpClient>(_ => new SmtpClient() { Timeout = 3000 });
 
 AppConfig? appConfig = builder.Configuration.Get<AppConfig>();
 if (!string.IsNullOrWhiteSpace(appConfig?.AllowedOrigins))
