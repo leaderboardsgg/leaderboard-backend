@@ -15,7 +15,7 @@ using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace LeaderboardBackend.Test.TestApi;
 
-internal class TestApiFactory : WebApplicationFactory<Program>
+public class TestApiFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -64,7 +64,7 @@ internal class TestApiFactory : WebApplicationFactory<Program>
             switch (TestConfig.DatabaseBackend)
             {
                 case DatabaseBackend.TestContainer when !PostgresDatabaseFixture.HasCreatedTemplate:
-                    dbContext.Database.Migrate();
+                    dbContext.MigrateDatabase();
                     Seed(dbContext);
                     PostgresDatabaseFixture.CreateTemplateFromCurrentDb();
                     break;
@@ -97,7 +97,7 @@ internal class TestApiFactory : WebApplicationFactory<Program>
                 Username = TestInitCommonFields.Admin.Username,
                 Email = TestInitCommonFields.Admin.Email,
                 Password = BCryptNet.EnhancedHashPassword(TestInitCommonFields.Admin.Password),
-                Admin = true,
+                Role = UserRole.Administrator,
             };
 
         dbContext.Add(admin);

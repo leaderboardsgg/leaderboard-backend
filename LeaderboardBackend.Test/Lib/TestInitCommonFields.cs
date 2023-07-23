@@ -20,6 +20,6 @@ internal record TestInitCommonFields
             Username = "AyyLmaoGaming",
             Email = "ayylmaogaming@alg.gg",
             Password = "P4ssword",
-            Admin = true,
+            Role = UserRole.Administrator,
         };
 }

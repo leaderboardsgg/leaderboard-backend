@@ -9,7 +9,7 @@ using NUnit.Framework;
 
 namespace LeaderboardBackend.Test.TestApi;
 
-internal record HttpRequestInit
+public record HttpRequestInit
 {
     public object? Body { get; init; }
     public string? Jwt { get; init; }
@@ -27,7 +27,7 @@ internal sealed class RequestFailureException : Exception
     }
 }
 
-internal class TestApiClient
+public class TestApiClient
 {
     private readonly HttpClient _client;
 

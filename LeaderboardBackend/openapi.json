@@ -5,6 +5,72 @@
     "version": "v1"
   },
   "paths": {
+    "/Account/register": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Registers a new User.",
+        "requestBody": {
+          "description": "The `RegisterRequest` instance from which register the `User`.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The `User` was registered and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserViewModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserViewModel"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A `User` with the specified username or email already exists.<br /><br />\r\nValidation error codes by property:\r\n- **Username**:\r\n  - **UsernameTaken**: the username is already in use\r\n- **Email**:\r\n  - **EmailAlreadyUsed**: the email is already in use",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed."
+          },
+          "422": {
+            "description": "The request contains errors.<br /><br />\r\nValidation error codes by property:\r\n- **Username**:\r\n  - **UsernameFormat**: Invalid username format\r\n- **Password**:\r\n  - **PasswordFormat**: Invalid password format\r\n- **Email**:\r\n  - **EmailValidator**: Invalid email format"
+          }
+        }
+      }
+    },
     "/api/Categories/{id}": {
       "get": {
         "tags": [
@@ -150,6 +216,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -434,6 +510,21 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
           }
         }
       }
@@ -624,6 +715,21 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
           }
         }
       }
@@ -774,81 +880,6 @@
           },
           "404": {
             "description": "No `User` with the requested ID could be found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Users/register": {
-      "post": {
-        "tags": [
-          "Users"
-        ],
-        "summary": "Registers a new User.",
-        "requestBody": {
-          "description": "The `RegisterRequest` instance from which register the `User`.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "The `User` was registered and returned successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserViewModel"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserViewModel"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "The passwords did not match or the request was otherwise malformed.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "A `User` with the specified username or email already exists.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1338,35 +1369,24 @@
         "required": [
           "email",
           "password",
-          "passwordConfirm",
           "username"
         ],
         "type": "object",
         "properties": {
           "username": {
-            "minLength": 1,
-            "pattern": "(?:[a-zA-Z0-9][-_']?){1,12}[a-zA-Z0-9]",
             "type": "string",
-            "description": "The username of the `User`. It:\r\n<ul><li>must be [2, 25] in length;</li><li>must be made up of letters sandwiching zero or one of:</li><ul><li>hyphen;</li><li>underscore; or</li><li>apostrophe</li></ul></ul>\r\nUsernames are saved case-sensitively, but matcehd against case-insensitively.\r\nA `User` may not register with the name 'Cool' when another `User` with the name 'cool'\r\nexists.",
+            "description": "The username of the `User`. It:\r\n<ul><li>must be [2, 25] in length;</li><li>must be made up of letters sandwiching zero or one of:</li><ul><li>hyphen;</li><li>underscore; or</li><li>apostrophe</li></ul></ul>\r\nUsernames are saved case-sensitively, but matched against case-insensitively.\r\nA `User` may not register with the name 'Cool' when another `User` with the name 'cool'\r\nexists.",
             "example": "J'on-Doe"
           },
           "email": {
-            "minLength": 1,
             "type": "string",
             "description": "The `User`'s email address.",
-            "format": "email",
             "example": "john.doe@example.com"
           },
           "password": {
-            "minLength": 1,
             "type": "string",
             "description": "The `User`'s password. It:\r\n<ul><li>supports Unicode;</li><li>must be [8, 80] in length;</li><li>must have at least:</li><ul><li>one uppercase letter;</li><li>one lowercase letter; and</li><li>one number.</li></ul></ul>",
             "example": "P4ssword"
-          },
-          "passwordConfirm": {
-            "minLength": 1,
-            "type": "string",
-            "description": "The password confirmation. This value must match `Password`."
           }
         },
         "additionalProperties": false,
@@ -1415,6 +1435,46 @@
           }
         },
         "additionalProperties": false
+      },
+      "ValidationProblemDetails": {
+        "required": [
+          "errors"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "readOnly": true
+          }
+        },
+        "additionalProperties": { }
       }
     },
     "securitySchemes": {

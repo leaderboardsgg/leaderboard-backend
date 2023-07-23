@@ -1,7 +1,7 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Requests;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace LeaderboardBackend.Services;
 
@@ -21,23 +21,42 @@ public class UserService : IUserService
 
     public async Task<User?> GetUserByEmail(string email)
     {
-        return await _applicationContext.Users.FirstOrDefaultAsync(user => user.Email == email);
+        return await _applicationContext.Users.SingleOrDefaultAsync(user => user.Email == email);
     }
 
     public async Task<User?> GetUserByName(string name)
     {
-        string lowerName = name.ToLower();
-
-        // We save a username with casing, but match without.
-        // Effectively you can't have two separate users named e.g. "cool" and "cOoL".
-        return await _applicationContext.Users.FirstOrDefaultAsync(
-            user => user.Username != null && user.Username.ToLower() == lowerName
-        );
+        return await _applicationContext.Users.SingleOrDefaultAsync(user => user.Username == name);
     }
 
-    public async Task CreateUser(User user)
+    public async Task<CreateUserResult> CreateUser(RegisterRequest request)
     {
-        _applicationContext.Users.Add(user);
-        await _applicationContext.SaveChangesAsync();
+        User newUser =
+            new()
+            {
+                Username = request.Username,
+                Email = request.Email,
+                Password = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password),
+                Role = UserRole.Registered
+            };
+
+        _applicationContext.Users.Add(newUser);
+
+        try
+        {
+            await _applicationContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException e)
+            when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } pgEx)
+        {
+            return pgEx.ConstraintName switch
+            {
+                UserEntityTypeConfig.USERNAME_UNIQUE_INDEX => new CreateUserConflicts(Username: true),
+                UserEntityTypeConfig.EMAIL_UNIQUE_INDEX => new CreateUserConflicts(Email: true),
+                _ => throw new NotImplementedException($"Violation of {pgEx.ConstraintName} constraint is not handled", pgEx)
+            };
+        }
+
+        return newUser;
     }
 }

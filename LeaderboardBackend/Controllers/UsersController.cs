@@ -44,55 +44,6 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    ///     Registers a new User.
-    /// </summary>
-    /// <param name="request">
-    ///     The `RegisterRequest` instance from which register the `User`.
-    /// </param>
-    /// <response code="201">The `User` was registered and returned successfully.</response>
-    /// <response code="400">
-    ///     The passwords did not match or the request was otherwise malformed.
-    /// </response>
-    /// <response code="409">
-    ///     A `User` with the specified username or email already exists.
-    /// </response>
-    [AllowAnonymous]
-    [HttpPost("register")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<UserViewModel>> Register([FromBody] RegisterRequest request)
-    {
-        // FIXME: Use ApiConventionMethod here! - Ero
-
-        if (await _userService.GetUserByEmail(request.Email) is not null)
-        {
-            // FIXME: Do a redirect to the login page.
-            // ref: https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/actions?view=aspnetcore-6.0#1-methods-resulting-in-an-empty-response-body
-            return Conflict("A user already exists with this email.");
-        }
-
-        if (await _userService.GetUserByName(request.Username) is not null)
-        {
-            // FIXME: Do a redirect to the login page.
-            // ref: https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/actions?view=aspnetcore-6.0#1-methods-resulting-in-an-empty-response-body
-            return Conflict("A user already exists with this name.");
-        }
-
-        User newUser =
-            new()
-            {
-                Username = request.Username,
-                Email = request.Email,
-                Password = BCryptNet.EnhancedHashPassword(request.Password)
-            };
-
-        await _userService.CreateUser(newUser);
-
-        return CreatedAtAction(nameof(GetUserById), new { id = newUser.Id }, UserViewModel.MapFrom(newUser));
-    }
-
-    /// <summary>
     ///     Logs a User in.
     /// </summary>
     /// <param name="request">

@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using DotNetEnv;
 using DotNetEnv.Configuration;
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using LeaderboardBackend;
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
@@ -15,6 +16,7 @@ using LeaderboardBackend.Swagger;
 using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -250,6 +252,20 @@ builder.Services.AddAuthorization(options =>
         .Build();
 });
 
+builder.Services.AddSingleton<IValidatorInterceptor, LeaderboardBackend.Models.Validation.UseErrorCodeInterceptor>();
+builder.Services.AddFluentValidationAutoValidation(c =>
+{
+    c.DisableDataAnnotationsValidation = true;
+});
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        ValidationProblemDetails problemDetails = new(context.ModelState);
+        return new UnprocessableEntityObjectResult(problemDetails);
+    };
+});
+
 // Can't use AddSingleton here since we call the DB in the Handler
 builder.Services.AddScoped<IAuthorizationHandler, UserTypeAuthorizationHandler>();
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, MiddlewareResultHandler>();
@@ -286,7 +302,7 @@ using (ApplicationContext context = scope.ServiceProvider.GetRequiredService<App
     if (config.UseInMemoryDb)
     {
         context.Database.EnsureCreated();
-        User? defaultUser = context.Find<User>(ApplicationContext.s_seedAdminId);
+        User? defaultUser = context.Find<User>(User.s_seedAdminId);
         if (defaultUser is null)
         {
             throw new InvalidOperationException("The default user was not correctly seeded.");
@@ -307,7 +323,7 @@ using (ApplicationContext context = scope.ServiceProvider.GetRequiredService<App
     else if (config.MigrateDb && app.Environment.IsDevelopment())
     {
         // migration as part of the startup phase (dev env only)
-        context.Database.Migrate();
+        context.MigrateDatabase();
     }
 }
 

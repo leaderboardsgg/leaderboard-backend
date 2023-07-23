@@ -3,6 +3,7 @@ using System;
 using LeaderboardBackend.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,17 +13,17 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LeaderboardBackend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20230604095631_AddUsernameAndEmailUniqueIndexes")]
+    partial class AddUsernameAndEmailUniqueIndexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("Npgsql:CollationDefinition:case_insensitive", "und-u-ks-level2,und-u-ks-level2,icu,False")
-                .HasAnnotation("ProductVersion", "7.0.9")
+                .HasAnnotation("ProductVersion", "7.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "user_role", new[] { "registered", "confirmed", "administrator", "banned" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.Category", b =>
@@ -133,26 +134,28 @@ namespace LeaderboardBackend.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("About")
+                        .HasColumnType("text")
+                        .HasColumnName("about");
+
+                    b.Property<bool>("Admin")
+                        .HasColumnType("boolean")
+                        .HasColumnName("admin");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("email")
-                        .UseCollation("case_insensitive");
+                        .HasColumnName("email");
 
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("password");
 
-                    b.Property<UserRole>("Role")
-                        .HasColumnType("user_role")
-                        .HasColumnName("role");
-
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("username")
-                        .UseCollation("case_insensitive");
+                        .HasColumnName("username");
 
                     b.HasKey("Id")
                         .HasName("pk_users");
@@ -171,9 +174,9 @@ namespace LeaderboardBackend.Migrations
                         new
                         {
                             Id = new Guid("421bb896-1990-48c6-8b0c-d69f56d6746a"),
+                            Admin = true,
                             Email = "omega@star.com",
                             Password = "$2a$11$tNvA94WqpJ.O7S7D6lVMn.E/UxcFYztl3BkcnBj/hgE8PY/8nCRQe",
-                            Role = UserRole.Administrator,
                             Username = "Galactus"
                         });
                 });

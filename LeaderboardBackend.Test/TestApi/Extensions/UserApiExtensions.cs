@@ -15,14 +15,13 @@ internal static class UserApiExtensions
     )
     {
         return await client.Post<UserViewModel>(
-            "/api/users/register",
+            "/account/register",
             new()
             {
                 Body = new RegisterRequest()
                 {
                     Username = username,
                     Password = password,
-                    PasswordConfirm = password,
                     Email = email,
                 }
             }
