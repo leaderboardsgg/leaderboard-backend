@@ -13,10 +13,12 @@ namespace LeaderboardBackend.Controllers;
 [Route("[controller]")]
 public class AccountController : ControllerBase
 {
+    private readonly IAuthService _authService;
     private readonly IUserService _userService;
 
-    public AccountController(IUserService userService)
+    public AccountController(IAuthService authService, IUserService userService)
     {
+        _authService = authService;
         _userService = userService;
     }
 
@@ -30,6 +32,14 @@ public class AccountController : ControllerBase
     /// <response code="400">
     ///     The request was malformed.
     /// </response>
+    /// <response code="409">
+    ///     A `User` with the specified username or email already exists.<br/><br/>
+    ///     Validation error codes by property:
+    ///     - **Username**:
+    ///       - **UsernameTaken**: the username is already in use
+    ///     - **Email**:
+    ///       - **EmailAlreadyUsed**: the email is already in use
+    /// </response>
     /// <response code="422">
     ///     The request contains errors.<br/><br/>
     ///     Validation error codes by property:
@@ -39,14 +49,6 @@ public class AccountController : ControllerBase
     ///       - **PasswordFormat**: Invalid password format
     ///     - **Email**:
     ///       - **EmailValidator**: Invalid email format
-    /// </response>
-    /// <response code="409">
-    ///     A `User` with the specified username or email already exists.<br/><br/>
-    ///     Validation error codes by property:
-    ///     - **Username**:
-    ///       - **UsernameTaken**: the username is already in use
-    ///     - **Email**:
-    ///       - **EmailAlreadyUsed**: the email is already in use
     /// </response>
     [AllowAnonymous]
     [HttpPost("register")]
@@ -73,5 +75,53 @@ public class AccountController : ControllerBase
 
                 return Conflict(new ValidationProblemDetails(ModelState));
             });
+    }
+
+
+    /// <summary>
+    ///     Logs a User in.
+    /// </summary>
+    /// <param name="request">
+    ///     The `LoginRequest` instance from which to perform the login.
+    /// </param>
+    /// <response code="200">
+    ///     The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.
+    /// </response>
+    /// <response code="400">The request was malformed.</response>
+    /// <response code="401">The password given was incorrect.</response>
+    /// <response code="404">No `User` with the requested details could be found.</response>
+    /// <response code="422">
+    ///     The request contains errors.<br/><br/>
+    ///     Validation error codes by property:
+    ///     - **Password**:
+    ///       - **NotNullValidator**: No password was passed
+    ///       - **PasswordFormat**: Invalid password format
+    ///     - **Email**:
+    ///       - **NotNullValidator**: No email was passed
+    ///       - **EmailValidator**: Invalid email format
+    /// </response>
+    [AllowAnonymous]
+    [HttpPost("/login")]
+    [ApiConventionMethod(typeof(Conventions), nameof(Conventions.PostAnon))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
+    {
+        User? user = await _userService.GetUserByEmail(request.Email);
+
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (!BCryptNet.EnhancedVerify(request.Password, user.Password))
+        {
+            return Unauthorized();
+        }
+
+        string token = _authService.GenerateJSONWebToken(user);
+
+        return Ok(new LoginResponse { Token = token });
     }
 }
