@@ -100,7 +100,6 @@ public record RegisterRequest
     public required string Password { get; set; }
 }
 
-
 public class LoginRequestValidator : AbstractValidator<LoginRequest>
 {
     public LoginRequestValidator()

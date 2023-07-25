@@ -75,7 +75,6 @@ public class AccountController : ControllerBase
             });
     }
 
-
     /// <summary>
     ///     Logs a User in.
     /// </summary>
@@ -104,7 +103,7 @@ public class AccountController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    #pragma warning disable CS1573 // Hides warning for not having authService in the XML comment above
+#pragma warning disable CS1573 // Hides warning for not having authService in the XML comment above
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request, [FromServices] IAuthService authService)
     {
         User? user = await _userService.GetUserByEmail(request.Email);
@@ -123,5 +122,5 @@ public class AccountController : ControllerBase
 
         return Ok(new LoginResponse { Token = token });
     }
-    #pragma warning restore CS1573
+#pragma warning restore CS1573
 }

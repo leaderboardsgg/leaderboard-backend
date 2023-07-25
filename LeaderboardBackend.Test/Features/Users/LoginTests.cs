@@ -6,10 +6,10 @@ using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.Validation;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Fixtures;
+using LeaderboardBackend.Test.Lib;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using LeaderboardBackend.Test.Lib;
 
 namespace LeaderboardBackend.Test.Features.Users;
 
@@ -78,6 +78,7 @@ public class LoginTests : IntegrationTestsBase
         {
             content!.Errors[nameof(LoginRequest.Email)].Should().Equal(emailErrorCode);
         }
+
         if (passwordErrorCode is not null)
         {
             content!.Errors[nameof(LoginRequest.Password)].Should().Equal(passwordErrorCode);
