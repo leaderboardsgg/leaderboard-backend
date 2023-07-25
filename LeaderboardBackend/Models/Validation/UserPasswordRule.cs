@@ -9,7 +9,7 @@ public static class UserPasswordRule
     /// <summary>
     /// Validation will fail if the property does not respect the password format.
     /// </summary>
-    public static IRuleBuilderOptions<T, string> UserPassword<T>(this IRuleBuilderInitial<T, string> ruleBuilder)
+    public static IRuleBuilderOptions<T, string> UserPassword<T>(this IRuleBuilderInitial<T, string?> ruleBuilder)
     {
         return ruleBuilder
             .Cascade(CascadeMode.Stop)
