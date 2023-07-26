@@ -86,6 +86,7 @@ public class AccountController : ControllerBase
     /// </response>
     /// <response code="400">The request was malformed.</response>
     /// <response code="401">The password given was incorrect.</response>
+    /// <response code="403">The associated `User` is banned.</response>
     /// <response code="404">No `User` with the requested details could be found.</response>
     /// <response code="422">
     ///     The request contains errors.<br/><br/>
@@ -102,6 +103,7 @@ public class AccountController : ControllerBase
     [ApiConventionMethod(typeof(Conventions), nameof(Conventions.PostAnon))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
 #pragma warning disable CS1573 // Hides warning for not having authService in the XML comment above
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request, [FromServices] IAuthService authService)
@@ -111,6 +113,11 @@ public class AccountController : ControllerBase
         if (user is null)
         {
             return NotFound();
+        }
+
+        if (user.Role is UserRole.Banned)
+        {
+            return Forbid();
         }
 
         if (!BCryptNet.EnhancedVerify(request.Password, user.Password))

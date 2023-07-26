@@ -128,6 +128,21 @@
               }
             }
           },
+          "403": {
+            "description": "The associated `User` is banned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "404": {
             "description": "No `User` with the requested details could be found.",
             "content": {

@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.Validation;
 using LeaderboardBackend.Services;
@@ -17,21 +18,33 @@ public class LoginTests : IntegrationTestsBase
 {
     private const string LOGIN_URI = "/login";
     private const string VALID_EMAIL = "valid@user.com";
+    private const string BANNED_EMAIL = "banned@user.com";
     private const string VALID_PASSWORD = "P4ssword";
-    private IUserService _userService = null!;
 
     [OneTimeSetUp]
-    public async Task Init()
+    public void Init()
     {
         s_factory.ResetDatabase();
-        using IServiceScope scope = s_factory.Services.CreateScope();
-        _userService = scope.ServiceProvider.GetService<IUserService>()!;
-        await _userService.CreateUser(new()
+
+        // Swap to creating users via the UserService instead of calling the DB, once
+        // it has the ability to change a user's roles.
+        using IServiceScope s = s_factory.Services.CreateScope();
+        ApplicationContext dbContext = s.ServiceProvider.GetRequiredService<ApplicationContext>();
+        dbContext.Users.AddRange(new[]
         {
-            Email = VALID_EMAIL,
-            Password = VALID_PASSWORD,
-            Username = "Test User",
+            new User{
+                Email = VALID_EMAIL,
+                Password = BCrypt.Net.BCrypt.EnhancedHashPassword(VALID_PASSWORD),
+                Username = "Test User",
+            },
+            new User{
+                Email = BANNED_EMAIL,
+                Password = BCrypt.Net.BCrypt.EnhancedHashPassword(VALID_PASSWORD),
+                Role = UserRole.Banned,
+                Username = "Banned User",
+            },
         });
+        dbContext.SaveChanges();
     }
 
     [Test]
@@ -85,8 +98,9 @@ public class LoginTests : IntegrationTestsBase
         }
     }
 
-    [TestCase(VALID_EMAIL, "Inc0rrectPassword", HttpStatusCode.Unauthorized)]
-    [TestCase("unknown@user.com", "Inc0rrectPassword", HttpStatusCode.NotFound)]
+    [TestCase(VALID_EMAIL, "Inc0rrectPassword", HttpStatusCode.Unauthorized, Description = "Wrong password")]
+    [TestCase(BANNED_EMAIL, "Inc0rrectPassword", HttpStatusCode.Forbidden, Description = "Banned user")]
+    [TestCase("unknown@user.com", "Inc0rrectPassword", HttpStatusCode.NotFound, Description = "Wrong email")]
     public async Task Login_InvalidRequest_OtherErrors(string email, string password, HttpStatusCode statusCode)
     {
         LoginRequest request = new()
