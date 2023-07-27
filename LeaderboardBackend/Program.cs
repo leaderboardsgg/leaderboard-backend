@@ -262,6 +262,11 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     options.InvalidModelStateResponseFactory = context =>
     {
         ValidationProblemDetails problemDetails = new(context.ModelState);
+        if (problemDetails.Errors.ContainsKey("$"))
+        {
+            return new BadRequestObjectResult(problemDetails);
+        }
+
         return new UnprocessableEntityObjectResult(problemDetails);
     };
 });

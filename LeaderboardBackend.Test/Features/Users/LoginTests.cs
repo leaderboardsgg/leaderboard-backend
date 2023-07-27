@@ -1,11 +1,11 @@
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.Validation;
-using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Fixtures;
 using LeaderboardBackend.Test.Lib;
 using Microsoft.AspNetCore.Mvc;
@@ -96,6 +96,16 @@ public class LoginTests : IntegrationTestsBase
         {
             content!.Errors[nameof(LoginRequest.Password)].Should().Equal(passwordErrorCode);
         }
+    }
+
+    [Test]
+    public async Task Login_InvalidRequest_400Error()
+    {
+        HttpResponseMessage res = await Client.PostAsync(
+            LOGIN_URI,
+            new StringContent("\"", new MediaTypeHeaderValue("application/json"))
+        );
+        res.Should().HaveStatusCode(HttpStatusCode.BadRequest);
     }
 
     [TestCase(VALID_EMAIL, "Inc0rrectPassword", HttpStatusCode.Unauthorized, Description = "Wrong password")]
