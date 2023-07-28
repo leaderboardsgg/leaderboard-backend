@@ -1,4 +1,5 @@
 using LeaderboardBackend.Controllers.Annotations;
+using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
@@ -12,6 +13,8 @@ namespace LeaderboardBackend.Controllers;
 public class AccountController : ControllerBase
 {
     private readonly IUserService _userService;
+    // TODO: Finalise the title
+    private const string ACCOUNT_CONFIRMATION_EMAIL_TITLE = "Confirmation";
 
     public AccountController(IUserService userService)
     {
@@ -114,4 +117,74 @@ public class AccountController : ControllerBase
             badCredentials => Unauthorized()
         );
     }
+#pragma warning restore CS1573
+
+    /// <summary>
+    ///     Resends the account confirmation link.
+    /// </summary>
+    /// <param name="authService">IAuthService dependency.</param>
+    /// <param name="emailSender">EmailSender dependency.</param>
+    /// <response code="200">The request was sent successfully.</response>
+    /// <response code="400">
+    ///     The request was malformed.
+    /// </response>
+    /// <response code="401">
+    ///     The request doesn't contain a valid session token.
+    /// </response>
+    /// <response code="409">
+    ///     A `User` with the specified username or email already exists.<br/><br/>
+    ///     Validation error codes by property:
+    ///     - **Username**:
+    ///       - **UsernameTaken**: the username is already in use
+    ///     - **Email**:
+    ///       - **EmailAlreadyUsed**: the email is already in use
+    /// </response>
+    [HttpPost("confirm")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult> ResendConfirmation(
+        [FromServices] AuthService authService,
+        [FromServices] EmailSender emailSender
+    )
+    {
+        // TODO: Handle rate limiting (429 case) - zysim
+
+        string? email = authService.GetEmailFromClaims(HttpContext.User);
+
+        if (email is null)
+        {
+            return Unauthorized();
+        }
+
+        User? user = await _userService.GetUserByEmail(email);
+
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (user.Role is not UserRole.Registered)
+        {
+            return Conflict();
+        }
+
+        // TODO: Create Confirmation model, and add record to it, before proceeding with below.
+        // TODO: Also; figure out what to even put in the mail.
+#pragma warning disable CS4014 // Suppress no 'await' call
+        emailSender.EnqueueEmailAsync(
+            email,
+            ACCOUNT_CONFIRMATION_EMAIL_TITLE,
+            // TODO: Generate confirmation link
+            $@"Hi {user.Username},<br/><br/>Click <a href=""{GenerateAccountConfirmationLink()}"">here</a> to confirm your account."
+        );
+#pragma warning restore CS4014
+
+        return Ok();
+    }
+
+    private string GenerateAccountConfirmationLink() => "";
 }
