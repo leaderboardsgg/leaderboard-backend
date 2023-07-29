@@ -10,7 +10,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v3
+
+      - name: OpenAPI JSON changed?
+        id: openapi-check
+        run: |
+          if git diff origin/main --name-only | grep -q openapi.json; then
+            echo "found=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes to the `openapi.json` file detected"
+            exit 0
+          fi
+
       - name: Trigger API update
+        if: steps.openapi-check.outputs.found == 'true'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.WORKFLOW_ACCESS_TOKEN }}
