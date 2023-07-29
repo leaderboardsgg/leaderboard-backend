@@ -3,6 +3,7 @@ using System;
 using LeaderboardBackend.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LeaderboardBackend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20230729052638_AddConfirmation")]
+    partial class AddConfirmation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,38 +27,6 @@ namespace LeaderboardBackend.Migrations
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "user_role", new[] { "registered", "confirmed", "administrator", "banned" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("LeaderboardBackend.Models.Entities.AccountRecovery", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Instant>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Instant>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expires_at");
-
-                    b.Property<Instant?>("UsedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("used_at");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_account_recoveries");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_account_recoveries_user_id");
-
-                    b.ToTable("account_recoveries", (string)null);
-                });
 
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.Category", b =>
                 {
@@ -242,18 +213,6 @@ namespace LeaderboardBackend.Migrations
                         });
                 });
 
-            modelBuilder.Entity("LeaderboardBackend.Models.Entities.AccountRecovery", b =>
-                {
-                    b.HasOne("LeaderboardBackend.Models.Entities.User", "User")
-                        .WithMany("AccountRecoveries")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_account_recoveries_users_user_id");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.Category", b =>
                 {
                     b.HasOne("LeaderboardBackend.Models.Entities.Leaderboard", "Leaderboard")
@@ -293,11 +252,6 @@ namespace LeaderboardBackend.Migrations
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.Leaderboard", b =>
                 {
                     b.Navigation("Categories");
-                });
-
-            modelBuilder.Entity("LeaderboardBackend.Models.Entities.User", b =>
-                {
-                    b.Navigation("AccountRecoveries");
                 });
 
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.User", b =>

@@ -74,6 +74,11 @@ public class User
     [Required]
     public UserRole Role { get; set; } = UserRole.Registered;
 
+    /// <summary>
+    ///     A collection of `Confirmation` entities for the `User`.
+    /// </summary>
+    public List<Confirmation>? Confirmations { get; set; }
+
     public bool IsAdmin => Role == UserRole.Administrator;
 
     public override bool Equals(object? obj)

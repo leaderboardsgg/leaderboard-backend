@@ -172,19 +172,21 @@ public class AccountController : ControllerBase
             return Conflict();
         }
 
-        // TODO: Create Confirmation model, and add record to it, before proceeding with below.
-        // TODO: Also; figure out what to even put in the mail.
+        // TODO: Create Confirmation model via service.
+        Confirmation confirmation = new();
 #pragma warning disable CS4014 // Suppress no 'await' call
         emailSender.EnqueueEmailAsync(
             email,
             ACCOUNT_CONFIRMATION_EMAIL_TITLE,
             // TODO: Generate confirmation link
-            $@"Hi {user.Username},<br/><br/>Click <a href=""{GenerateAccountConfirmationLink()}"">here</a> to confirm your account."
+            GenerateAccountConfirmationEmailBody(user, confirmation)
         );
 #pragma warning restore CS4014
 
         return Ok();
     }
 
-    private string GenerateAccountConfirmationLink() => "";
+    // TODO: Finalise message contents
+    private string GenerateAccountConfirmationEmailBody(User user, Confirmation confirmation) =>
+        $@"Hi {user.Username},<br/><br/>Click <a href=""/confirm-account?code={Convert.ToBase64String(confirmation.Id.ToByteArray())}"">here</a> to confirm your account.";
 }
