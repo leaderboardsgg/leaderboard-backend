@@ -148,6 +148,7 @@ public class AccountController : ControllerBase
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult> ResendConfirmation(
         [FromServices] AuthService authService,
+        [FromServices] ConfirmationService confirmationService,
         [FromServices] EmailSender emailSender
     )
     {
@@ -172,8 +173,8 @@ public class AccountController : ControllerBase
             return Conflict();
         }
 
-        // TODO: Create Confirmation model via service.
-        Confirmation confirmation = new();
+        Confirmation confirmation = await confirmationService.CreateConfirmation(user);
+
 #pragma warning disable CS4014 // Suppress no 'await' call
         emailSender.EnqueueEmailAsync(
             email,
