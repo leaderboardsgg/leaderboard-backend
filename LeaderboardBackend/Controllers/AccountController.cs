@@ -147,9 +147,9 @@ public class AccountController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult> ResendConfirmation(
-        [FromServices] AuthService authService,
-        [FromServices] ConfirmationService confirmationService,
-        [FromServices] EmailSender emailSender
+        [FromServices] IAuthService authService,
+        [FromServices] IConfirmationService confirmationService,
+        [FromServices] IEmailSender emailSender
     )
     {
         // TODO: Handle rate limiting (429 case) - zysim
