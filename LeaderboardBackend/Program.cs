@@ -262,6 +262,11 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     options.InvalidModelStateResponseFactory = context =>
     {
         ValidationProblemDetails problemDetails = new(context.ModelState);
+
+        // As of this writing, we want our custom user registration validation rules to
+        // return with a 429, with 400 for the rest. This is a hack that leverages
+        // FluentValidation's default error object shape to achieve that effect.
+        // If anyone knows of a better solution, please update this, thanks. - zysim
         if (problemDetails.Errors.ContainsKey("$"))
         {
             return new BadRequestObjectResult(problemDetails);

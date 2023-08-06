@@ -26,7 +26,7 @@ public class LoginTests : IntegrationTestsBase
     {
         s_factory.ResetDatabase();
 
-        // Swap to creating users via the UserService instead of calling the DB, once
+        // TODO: Swap to creating users via the UserService instead of calling the DB, once
         // it has the ability to change a user's roles.
         using IServiceScope s = s_factory.Services.CreateScope();
         ApplicationContext dbContext = s.ServiceProvider.GetRequiredService<ApplicationContext>();
@@ -35,13 +35,13 @@ public class LoginTests : IntegrationTestsBase
             new User{
                 Email = VALID_EMAIL,
                 Password = BCrypt.Net.BCrypt.EnhancedHashPassword(VALID_PASSWORD),
-                Username = "Test User",
+                Username = "Test_User",
             },
             new User{
                 Email = BANNED_EMAIL,
                 Password = BCrypt.Net.BCrypt.EnhancedHashPassword(VALID_PASSWORD),
                 Role = UserRole.Banned,
-                Username = "Banned User",
+                Username = "Banned_User",
             },
         });
         dbContext.SaveChanges();
