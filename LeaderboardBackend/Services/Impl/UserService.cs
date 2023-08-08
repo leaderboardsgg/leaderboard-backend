@@ -2,6 +2,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace LeaderboardBackend.Services;
 
@@ -14,16 +15,41 @@ public class UserService : IUserService
         _applicationContext = applicationContext;
     }
 
+    // TODO: Convert return sig to Task<GetUserResult>
     public async Task<User?> GetUserById(Guid id)
     {
         return await _applicationContext.Users.FindAsync(id);
     }
 
+    // TODO: Convert return sig to Task<GetUserResult>
     public async Task<User?> GetUserByEmail(string email)
     {
         return await _applicationContext.Users.SingleOrDefaultAsync(user => user.Email == email);
     }
 
+    public async Task<GetUserResult> GetUserByEmailAndPassword(string email, string password)
+    {
+        User? user = await _applicationContext.Users.SingleOrDefaultAsync(user => user.Email == email);
+
+        if (user is null)
+        {
+            return new GetUserErrors(NotFound: true);
+        }
+
+        if (user.Role is UserRole.Banned)
+        {
+            return new GetUserErrors(Banned: true);
+        }
+
+        if (!BCryptNet.EnhancedVerify(password, user.Password))
+        {
+            return new GetUserErrors(Unauthorised: true);
+        }
+
+        return user;
+    }
+
+    // TODO: Convert return sig to Task<GetUserResult>
     public async Task<User?> GetUserByName(string name)
     {
         return await _applicationContext.Users.SingleOrDefaultAsync(user => user.Username == name);

@@ -104,9 +104,9 @@ public class LoginRequestValidator : AbstractValidator<LoginRequest>
 {
     public LoginRequestValidator()
     {
-        // NotNull() call needed to get the error message that NotNull creates
-        RuleFor(x => x.Email).Cascade(CascadeMode.Stop).NotNull().EmailAddress();
-        RuleFor(x => x.Password).UserPassword();
+        // NotNull() needed because EmailAddress() does not fail null input
+        RuleFor(x => x.Email).NotNull().EmailAddress();
+        RuleFor(x => x.Password).NotEmpty();
     }
 }
 

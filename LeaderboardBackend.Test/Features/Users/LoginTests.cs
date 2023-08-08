@@ -2,21 +2,24 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
-using LeaderboardBackend.Models.Validation;
 using LeaderboardBackend.Test.Fixtures;
 using LeaderboardBackend.Test.Lib;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using NUnit.Framework;
 
 namespace LeaderboardBackend.Test.Features.Users;
 
 public class LoginTests : IntegrationTestsBase
 {
-    private const string LOGIN_URI = "/login";
+    private const string LOGIN_URI = Routes.LOGIN;
     private const string VALID_EMAIL = "valid@user.com";
     private const string BANNED_EMAIL = "banned@user.com";
     private const string VALID_PASSWORD = "P4ssword";
@@ -61,21 +64,23 @@ public class LoginTests : IntegrationTestsBase
         res.Should().HaveStatusCode(HttpStatusCode.OK);
         LoginResponse? content = await res.Content.ReadFromJsonAsync<LoginResponse>();
         content.Should().NotBeNull();
-        content!.Token.Should().MatchRegex(@"^[A-Za-z0-9-_=]{36}\.[A-Za-z0-9-_=]{190}\.[A-Za-z0-9-_=]{43}$");
+
+        using IServiceScope s = s_factory.Services.CreateScope();
+        JwtConfig jwtConfig = s.ServiceProvider.GetRequiredService<IOptions<JwtConfig>>().Value;
+        TokenValidationParameters parameters = Jwt.ValidationParameters.GetInstance(jwtConfig);
+
+        Jwt.SecurityTokenHandler.ValidateToken(content!.Token, parameters, out _).Should().BeOfType<ClaimsPrincipal>();
     }
 
-    [TestCase(null, null, "NotNullValidator", "NotNullValidator", Description = "Null email + password")]
-    [TestCase("ee", "ff", "EmailValidator", UserPasswordRule.PASSWORD_FORMAT, Description = "Invalid email + password")]
+    [TestCase(null, null, "NotNullValidator", "NotEmptyValidator", Description = "Null email + password")]
+    [TestCase("ee", "ff", "EmailValidator", null, Description = "Invalid email + password")]
     [TestCase("ee", VALID_PASSWORD, "EmailValidator", null, Description = "Null email + valid password")]
-    [TestCase(VALID_EMAIL, "ff", null, UserPasswordRule.PASSWORD_FORMAT, Description = "Valid email + null password")]
-    public async Task Login_InvalidRequest_Returns422UnprocessableEntity(
+    public async Task Login_InvalidRequest_Returns422(
         string? email,
         string? password,
         string? emailErrorCode,
         string? passwordErrorCode)
     {
-        // We should figure out how to have an UnvalidatedLoginRequest w/ null fields and a
-        // LoginRequest with non-null fields, so we don't have to force null coalescence - zysim
         LoginRequest request = new()
         {
             Email = email!,
@@ -99,7 +104,7 @@ public class LoginTests : IntegrationTestsBase
     }
 
     [Test]
-    public async Task Login_InvalidRequest_400Error()
+    public async Task Login_InvalidRequest_Returns400()
     {
         HttpResponseMessage res = await Client.PostAsync(
             LOGIN_URI,

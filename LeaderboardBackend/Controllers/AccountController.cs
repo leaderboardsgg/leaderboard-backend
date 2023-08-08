@@ -81,6 +81,7 @@ public class AccountController : ControllerBase
     /// <param name="request">
     ///     The `LoginRequest` instance from which to perform the login.
     /// </param>
+    /// <param name="authService">IAuthService injection.</param>
     /// <response code="200">
     ///     The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.
     /// </response>
@@ -92,7 +93,7 @@ public class AccountController : ControllerBase
     ///     The request contains errors.<br/><br/>
     ///     Validation error codes by property:
     ///     - **Password**:
-    ///       - **NotNullValidator**: No password was passed
+    ///       - **NotEmptyValidator**: No password was passed
     ///       - **PasswordFormat**: Invalid password format
     ///     - **Email**:
     ///       - **NotNullValidator**: No email was passed
@@ -105,29 +106,29 @@ public class AccountController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-#pragma warning disable CS1573 // Hides warning for not having authService in the XML comment above
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request, [FromServices] IAuthService authService)
     {
-        User? user = await _userService.GetUserByEmail(request.Email);
+        GetUserResult result = await _userService.GetUserByEmailAndPassword(request.Email, request.Password);
 
-        if (user is null)
+        if (result.IsT1)
         {
-            return NotFound();
+            if (result.AsT1.NotFound)
+            {
+                return NotFound();
+            }
+
+            if (result.AsT1.Banned)
+            {
+                return Forbid();
+            }
+
+            if (result.AsT1.Unauthorised)
+            {
+                return Unauthorized();
+            }
         }
 
-        if (user.Role is UserRole.Banned)
-        {
-            return Forbid();
-        }
-
-        if (!BCryptNet.EnhancedVerify(request.Password, user.Password))
-        {
-            return Unauthorized();
-        }
-
-        string token = authService.GenerateJSONWebToken(user);
-
+        string token = authService.GenerateJSONWebToken(result.AsT0);
         return Ok(new LoginResponse { Token = token });
     }
-#pragma warning restore CS1573
 }

@@ -162,7 +162,7 @@
             "description": "The request was malformed."
           },
           "422": {
-            "description": "The request contains errors.<br /><br />\r\nValidation error codes by property:\r\n- **Password**:\r\n  - **NotNullValidator**: No password was passed\r\n  - **PasswordFormat**: Invalid password format\r\n- **Email**:\r\n  - **NotNullValidator**: No email was passed\r\n  - **EmailValidator**: Invalid email format"
+            "description": "The request contains errors.<br /><br />\r\nValidation error codes by property:\r\n- **Password**:\r\n  - **NotEmptyValidator**: No password was passed\r\n  - **PasswordFormat**: Invalid password format\r\n- **Email**:\r\n  - **NotNullValidator**: No email was passed\r\n  - **EmailValidator**: Invalid email format"
           }
         }
       }
