@@ -19,7 +19,6 @@ namespace LeaderboardBackend.Test.Features.Users;
 
 public class LoginTests : IntegrationTestsBase
 {
-    private const string LOGIN_URI = Routes.LOGIN;
     private const string VALID_EMAIL = "valid@user.com";
     private const string BANNED_EMAIL = "banned@user.com";
     private const string VALID_PASSWORD = "P4ssword";
@@ -59,7 +58,7 @@ public class LoginTests : IntegrationTestsBase
             Password = TestInitCommonFields.Admin.Password,
         };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(LOGIN_URI, request);
+        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.LOGIN, request);
 
         res.Should().HaveStatusCode(HttpStatusCode.OK);
         LoginResponse? content = await res.Content.ReadFromJsonAsync<LoginResponse>();
@@ -87,7 +86,7 @@ public class LoginTests : IntegrationTestsBase
             Password = password!,
         };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(LOGIN_URI, request);
+        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.LOGIN, request);
 
         res.Should().HaveStatusCode(HttpStatusCode.UnprocessableEntity);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -107,7 +106,7 @@ public class LoginTests : IntegrationTestsBase
     public async Task Login_InvalidRequest_Returns400()
     {
         HttpResponseMessage res = await Client.PostAsync(
-            LOGIN_URI,
+            Routes.LOGIN,
             new StringContent("\"", new MediaTypeHeaderValue("application/json"))
         );
         res.Should().HaveStatusCode(HttpStatusCode.BadRequest);
@@ -124,7 +123,7 @@ public class LoginTests : IntegrationTestsBase
             Password = password,
         };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(LOGIN_URI, request);
+        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.LOGIN, request);
 
         res.Should().HaveStatusCode(statusCode);
     }
