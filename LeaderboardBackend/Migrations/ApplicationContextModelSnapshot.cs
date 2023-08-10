@@ -125,12 +125,12 @@ namespace LeaderboardBackend.Migrations
                         .HasColumnName("user_id");
 
                     b.HasKey("Id")
-                        .HasName("pk_confirmations");
+                        .HasName("pk_user_confirmations");
 
                     b.HasIndex("UserId")
-                        .HasDatabaseName("ix_confirmations_user_id");
+                        .HasDatabaseName("ix_user_confirmations_user_id");
 
-                    b.ToTable("confirmations", (string)null);
+                    b.ToTable("user_confirmations", (string)null);
                 });
 
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.Leaderboard", b =>
@@ -269,11 +269,11 @@ namespace LeaderboardBackend.Migrations
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.Confirmation", b =>
                 {
                     b.HasOne("LeaderboardBackend.Models.Entities.User", "User")
-                        .WithMany("Confirmations")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_confirmations_users_user_id");
+                        .HasConstraintName("fk_user_confirmations_users_user_id");
 
                     b.Navigation("User");
                 });

@@ -208,7 +208,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The `User` the request is for wasn't found.",
             "content": {
               "application/json": {
                 "schema": {

@@ -14,7 +14,7 @@ public class AccountController : ControllerBase
 {
     private readonly IUserService _userService;
     // TODO: Finalise the title
-    private const string ACCOUNT_CONFIRMATION_EMAIL_TITLE = "Confirmation";
+    public const string ACCOUNT_CONFIRMATION_EMAIL_TITLE = "Confirmation";
 
     public AccountController(IUserService userService)
     {
@@ -131,6 +131,9 @@ public class AccountController : ControllerBase
     /// <response code="401">
     ///     The request doesn't contain a valid session token.
     /// </response>
+    /// <response code="404">
+    ///     The `User` the request is for wasn't found.
+    /// </response>
     /// <response code="409">
     ///     A `User` with the specified username or email already exists.<br/><br/>
     ///     Validation error codes by property:
@@ -154,14 +157,14 @@ public class AccountController : ControllerBase
     {
         // TODO: Handle rate limiting (429 case) - zysim
 
-        string? email = authService.GetEmailFromClaims(HttpContext.User);
+        Guid? userId = authService.GetUserIdFromClaims(HttpContext.User);
 
-        if (email is null)
+        if (userId is null)
         {
             return Unauthorized();
         }
 
-        User? user = await _userService.GetUserByEmail(email);
+        User? user = await _userService.GetUserById(userId ?? Guid.Empty);
 
         if (user is null)
         {
@@ -173,11 +176,11 @@ public class AccountController : ControllerBase
             return Conflict();
         }
 
-        Confirmation confirmation = await confirmationService.CreateConfirmation(user);
+        UserConfirmation confirmation = await confirmationService.CreateConfirmation(user);
 
 #pragma warning disable CS4014 // Suppress no 'await' call
         emailSender.EnqueueEmailAsync(
-            email,
+            user.Email,
             ACCOUNT_CONFIRMATION_EMAIL_TITLE,
             // TODO: Generate confirmation link
             GenerateAccountConfirmationEmailBody(user, confirmation)
@@ -188,6 +191,6 @@ public class AccountController : ControllerBase
     }
 
     // TODO: Finalise message contents
-    private string GenerateAccountConfirmationEmailBody(User user, Confirmation confirmation) =>
+    private string GenerateAccountConfirmationEmailBody(User user, UserConfirmation confirmation) =>
         $@"Hi {user.Username},<br/><br/>Click <a href=""/confirm-account?code={Convert.ToBase64String(confirmation.Id.ToByteArray())}"">here</a> to confirm your account.";
 }

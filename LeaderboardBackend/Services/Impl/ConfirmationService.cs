@@ -11,20 +11,20 @@ public class ConfirmationService : IConfirmationService
         _applicationContext = applicationContext;
     }
 
-    public async Task<Confirmation?> GetConfirmationById(Guid id)
+    public async Task<UserConfirmation?> GetConfirmationById(Guid id)
     {
-        return await _applicationContext.Confirmations.FindAsync(id);
+        return await _applicationContext.UserConfirmations.FindAsync(id);
     }
 
-    public async Task<Confirmation> CreateConfirmation(User user)
+    public async Task<UserConfirmation> CreateConfirmation(User user)
     {
-        Confirmation newConfirmation =
+        UserConfirmation newConfirmation =
             new()
             {
                 UserId = user.Id,
             };
 
-        _applicationContext.Confirmations.Add(newConfirmation);
+        _applicationContext.UserConfirmations.Add(newConfirmation);
 
         await _applicationContext.SaveChangesAsync();
 

@@ -1,7 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
@@ -9,7 +6,7 @@ namespace LeaderboardBackend.Models.Entities;
 /// <summary>
 ///     Represents a user account confirmation.
 /// </summary>
-public class Confirmation
+public class UserConfirmation
 {
     /// <summary>
     ///     The unique identifier of the `Confirmation`.<br/>

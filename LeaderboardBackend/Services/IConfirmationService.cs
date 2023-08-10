@@ -4,6 +4,6 @@ namespace LeaderboardBackend.Services;
 
 public interface IConfirmationService
 {
-    Task<Confirmation?> GetConfirmationById(Guid id);
-    Task<Confirmation> CreateConfirmation(User user);
+    Task<UserConfirmation?> GetConfirmationById(Guid id);
+    Task<UserConfirmation> CreateConfirmation(User user);
 }

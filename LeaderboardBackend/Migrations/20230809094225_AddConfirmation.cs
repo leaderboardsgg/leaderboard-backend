@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using NodaTime;
 
@@ -13,7 +13,7 @@ namespace LeaderboardBackend.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "confirmations",
+                name: "user_confirmations",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -24,9 +24,9 @@ namespace LeaderboardBackend.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_confirmations", x => x.id);
+                    table.PrimaryKey("pk_user_confirmations", x => x.id);
                     table.ForeignKey(
-                        name: "fk_confirmations_users_user_id",
+                        name: "fk_user_confirmations_users_user_id",
                         column: x => x.user_id,
                         principalTable: "users",
                         principalColumn: "id",
@@ -34,8 +34,8 @@ namespace LeaderboardBackend.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_confirmations_user_id",
-                table: "confirmations",
+                name: "ix_user_confirmations_user_id",
+                table: "user_confirmations",
                 column: "user_id");
         }
 
@@ -43,7 +43,7 @@ namespace LeaderboardBackend.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "confirmations");
+                name: "user_confirmations");
         }
     }
 }
