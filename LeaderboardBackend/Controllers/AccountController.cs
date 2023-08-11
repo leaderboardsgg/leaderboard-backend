@@ -1,11 +1,9 @@
 using LeaderboardBackend.Controllers.Annotations;
-using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace LeaderboardBackend.Controllers;
 
@@ -108,27 +106,25 @@ public class AccountController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request, [FromServices] IAuthService authService)
     {
-        GetUserResult result = await _userService.GetUserByEmailAndPassword(request.Email, request.Password);
+        LoginResult result = await _userService.LoginByEmailAndPassword(request.Email, request.Password);
 
-        if (result.IsT1)
-        {
-            if (result.AsT1.NotFound)
+        return result.Match<ActionResult<LoginResponse>>(
+            loginToken => Ok(new LoginResponse { Token = loginToken }),
+            errors =>
             {
-                return NotFound();
-            }
+                if (errors.NotFound)
+                {
+                    return NotFound();
+                }
 
-            if (result.AsT1.Banned)
-            {
-                return Forbid();
-            }
+                if (errors.Banned)
+                {
+                    return Forbid();
+                }
 
-            if (result.AsT1.Unauthorised)
-            {
+                // errors.WrongPassword implicitly true
                 return Unauthorized();
             }
-        }
-
-        string token = authService.GenerateJSONWebToken(result.AsT0);
-        return Ok(new LoginResponse { Token = token });
+        );
     }
 }

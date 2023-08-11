@@ -9,10 +9,12 @@ namespace LeaderboardBackend.Services;
 public class UserService : IUserService
 {
     private readonly ApplicationContext _applicationContext;
+    private readonly IAuthService _authService;
 
-    public UserService(ApplicationContext applicationContext)
+    public UserService(ApplicationContext applicationContext, IAuthService authService)
     {
         _applicationContext = applicationContext;
+        _authService = authService;
     }
 
     // TODO: Convert return sig to Task<GetUserResult>
@@ -27,26 +29,26 @@ public class UserService : IUserService
         return await _applicationContext.Users.SingleOrDefaultAsync(user => user.Email == email);
     }
 
-    public async Task<GetUserResult> GetUserByEmailAndPassword(string email, string password)
+    public async Task<LoginResult> LoginByEmailAndPassword(string email, string password)
     {
         User? user = await _applicationContext.Users.SingleOrDefaultAsync(user => user.Email == email);
 
         if (user is null)
         {
-            return new GetUserErrors(NotFound: true);
+            return new LoginErrors(NotFound: true);
         }
 
         if (user.Role is UserRole.Banned)
         {
-            return new GetUserErrors(Banned: true);
+            return new LoginErrors(Banned: true);
         }
 
         if (!BCryptNet.EnhancedVerify(password, user.Password))
         {
-            return new GetUserErrors(Unauthorised: true);
+            return new LoginErrors(WrongPassword: true);
         }
 
-        return user;
+        return _authService.GenerateJSONWebToken(user);
     }
 
     // TODO: Convert return sig to Task<GetUserResult>
