@@ -264,10 +264,10 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
         ValidationProblemDetails problemDetails = new(context.ModelState);
 
         // As of this writing, we want our custom validation rules to return with
-        // a 422, while keeping 400 for any other unexpected input.
-        // This is a hack that leverages ASP's default error object shape to achieve
-        // that effect.
-        // If anyone knows of a better solution, please update this, thanks. - zysim
+        // a 422, while keeping 400 for all other input syntax errors.
+        // For JSON syntax errors that we don't override, their keys will be the field
+        // path that has the error, which always starts with "$", denoting the object
+        // root. We check for that, and return the error code accordingly. - zysim
         if (problemDetails.Errors.Keys.Any(x => x.StartsWith("$")))
         {
             return new BadRequestObjectResult(problemDetails);

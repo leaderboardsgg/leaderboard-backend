@@ -19,10 +19,6 @@ namespace LeaderboardBackend.Test.Features.Users;
 
 public class LoginTests : IntegrationTestsBase
 {
-    private const string VALID_EMAIL = "valid@user.com";
-    private const string BANNED_EMAIL = "banned@user.com";
-    private const string VALID_PASSWORD = "P4ssword";
-
     [OneTimeSetUp]
     public void Init()
     {
@@ -35,13 +31,13 @@ public class LoginTests : IntegrationTestsBase
         dbContext.Users.AddRange(new[]
         {
             new User{
-                Email = VALID_EMAIL,
-                Password = BCrypt.Net.BCrypt.EnhancedHashPassword(VALID_PASSWORD),
+                Email = "valid@user.com",
+                Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
                 Username = "Test_User",
             },
             new User{
-                Email = BANNED_EMAIL,
-                Password = BCrypt.Net.BCrypt.EnhancedHashPassword(VALID_PASSWORD),
+                Email = "banned@user.com",
+                Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
                 Role = UserRole.Banned,
                 Username = "Banned_User",
             },
@@ -58,7 +54,7 @@ public class LoginTests : IntegrationTestsBase
             Password = TestInitCommonFields.Admin.Password,
         };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.LOGIN, request);
+        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.s_login, request);
 
         res.Should().HaveStatusCode(HttpStatusCode.OK);
         LoginResponse? content = await res.Content.ReadFromJsonAsync<LoginResponse>();
@@ -73,7 +69,7 @@ public class LoginTests : IntegrationTestsBase
 
     [TestCase(null, null, "NotNullValidator", "NotEmptyValidator", Description = "Null email + password")]
     [TestCase("ee", "ff", "EmailValidator", null, Description = "Invalid email + password")]
-    [TestCase("ee", VALID_PASSWORD, "EmailValidator", null, Description = "Null email + valid password")]
+    [TestCase("ee", "P4ssword", "EmailValidator", null, Description = "Null email + valid password")]
     public async Task Login_InvalidRequest_Returns422(
         string? email,
         string? password,
@@ -86,7 +82,7 @@ public class LoginTests : IntegrationTestsBase
             Password = password!,
         };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.LOGIN, request);
+        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.s_login, request);
 
         res.Should().HaveStatusCode(HttpStatusCode.UnprocessableEntity);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -106,14 +102,14 @@ public class LoginTests : IntegrationTestsBase
     public async Task Login_InvalidRequest_Returns400()
     {
         HttpResponseMessage res = await Client.PostAsync(
-            Routes.LOGIN,
+            Routes.s_login,
             new StringContent("\"", new MediaTypeHeaderValue("application/json"))
         );
         res.Should().HaveStatusCode(HttpStatusCode.BadRequest);
     }
 
-    [TestCase(VALID_EMAIL, "Inc0rrectPassword", HttpStatusCode.Unauthorized, Description = "Wrong password")]
-    [TestCase(BANNED_EMAIL, "Inc0rrectPassword", HttpStatusCode.Forbidden, Description = "Banned user")]
+    [TestCase("valid@user.com", "Inc0rrectPassword", HttpStatusCode.Unauthorized, Description = "Wrong password")]
+    [TestCase("banned@user.com", "Inc0rrectPassword", HttpStatusCode.Forbidden, Description = "Banned user")]
     [TestCase("unknown@user.com", "Inc0rrectPassword", HttpStatusCode.NotFound, Description = "Wrong email")]
     public async Task Login_InvalidRequest_OtherErrors(string email, string password, HttpStatusCode statusCode)
     {
@@ -123,7 +119,7 @@ public class LoginTests : IntegrationTestsBase
             Password = password,
         };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.LOGIN, request);
+        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.s_login, request);
 
         res.Should().HaveStatusCode(statusCode);
     }
