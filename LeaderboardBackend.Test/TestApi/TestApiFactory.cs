@@ -6,7 +6,6 @@ using LeaderboardBackend.Test.Lib;
 using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -60,22 +59,7 @@ public class TestApiFactory : WebApplicationFactory<Program>
             using IServiceScope scope = services.BuildServiceProvider().CreateScope();
             ApplicationContext dbContext =
                 scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-
-            switch (TestConfig.DatabaseBackend)
-            {
-                case DatabaseBackend.TestContainer when !PostgresDatabaseFixture.HasCreatedTemplate:
-                    dbContext.MigrateDatabase();
-                    Seed(dbContext);
-                    PostgresDatabaseFixture.CreateTemplateFromCurrentDb();
-                    break;
-                case DatabaseBackend.InMemory:
-                    if (dbContext.Database.EnsureCreated())
-                    {
-                        Seed(dbContext);
-                    }
-
-                    break;
-            }
+            InitializeDatabase(dbContext);
         });
     }
 
@@ -83,6 +67,38 @@ public class TestApiFactory : WebApplicationFactory<Program>
     {
         HttpClient client = CreateClient();
         return new TestApiClient(client);
+    }
+
+    public void InitializeDatabase()
+    {
+        using IServiceScope scope = Services.CreateScope();
+        ApplicationContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+        InitializeDatabase(dbContext);
+    }
+
+    private static void InitializeDatabase(ApplicationContext dbContext)
+    {
+        switch (TestConfig.DatabaseBackend)
+        {
+            case DatabaseBackend.TestContainer:
+                if (!PostgresDatabaseFixture.HasCreatedTemplate)
+                {
+                    dbContext.MigrateDatabase();
+                    Seed(dbContext);
+                    PostgresDatabaseFixture.CreateTemplateFromCurrentDb();
+                }
+
+                break;
+            case DatabaseBackend.InMemory:
+                if (dbContext.Database.EnsureCreated())
+                {
+                    Seed(dbContext);
+                }
+
+                break;
+            default:
+                throw new NotImplementedException("Database initialization is not implemented");
+        }
     }
 
     private static void Seed(ApplicationContext dbContext)

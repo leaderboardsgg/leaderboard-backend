@@ -8,7 +8,13 @@ public abstract class IntegrationTestsBase
 {
     protected HttpClient Client { get; private set; } = null!;
 
-    protected readonly static TestApiFactory s_factory = new();
+    protected static readonly TestApiFactory s_factory = new();
+
+    [OneTimeSetUp]
+    public void OneTimeSetup()
+    {
+        s_factory.InitializeDatabase();
+    }
 
     [SetUp]
     public void SetUp()
