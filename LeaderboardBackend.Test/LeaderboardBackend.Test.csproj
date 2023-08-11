@@ -24,8 +24,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Testcontainers" Version="3.2.0" />
-    <PackageReference Include="Testcontainers.PostgreSql" Version="3.2.0" />
+    <PackageReference Include="Testcontainers" Version="3.4.0" />
+    <PackageReference Include="Testcontainers.PostgreSql" Version="3.4.0" />
   </ItemGroup>
 
   <ItemGroup>
