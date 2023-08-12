@@ -110,21 +110,9 @@ public class AccountController : ControllerBase
 
         return result.Match<ActionResult<LoginResponse>>(
             loginToken => Ok(new LoginResponse { Token = loginToken }),
-            errors =>
-            {
-                if (errors.NotFound)
-                {
-                    return NotFound();
-                }
-
-                if (errors.Banned)
-                {
-                    return Forbid();
-                }
-
-                // errors.WrongPassword implicitly true
-                return Unauthorized();
-            }
+            notFound => NotFound(),
+            banned => Forbid(),
+            badCredentials => Unauthorized()
         );
     }
 }

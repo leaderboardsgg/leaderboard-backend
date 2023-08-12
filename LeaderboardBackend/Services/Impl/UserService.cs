@@ -35,20 +35,20 @@ public class UserService : IUserService
 
         if (user is null)
         {
-            return new LoginErrors(NotFound: true);
+            return new UserNotFound();
         }
 
         if (user.Role is UserRole.Banned)
         {
-            return new LoginErrors(Banned: true);
+            return new UserBanned();
         }
 
         if (!BCryptNet.EnhancedVerify(password, user.Password))
         {
-            return new LoginErrors(WrongPassword: true);
+            return new BadCredentials();
         }
 
-        return _authService.GenerateJSONWebToken(user);
+        return new LoginToken(_authService.GenerateJSONWebToken(user));
     }
 
     // TODO: Convert return sig to Task<GetUserResult>

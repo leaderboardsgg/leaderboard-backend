@@ -21,7 +21,14 @@ public interface IUserService
 public partial class CreateUserResult : OneOfBase<User, CreateUserConflicts> { }
 
 [GenerateOneOf]
-public partial class LoginResult : OneOfBase<string, LoginErrors> { }
+public partial class LoginResult : OneOfBase<LoginToken, UserNotFound, UserBanned, BadCredentials> { }
+
+public readonly record struct LoginToken(string Token)
+{
+    public static implicit operator string(LoginToken t) => t.Token;
+};
+public readonly record struct UserNotFound();
+public readonly record struct UserBanned();
+public readonly record struct BadCredentials();
 
 public readonly record struct CreateUserConflicts(bool Username = false, bool Email = false);
-public readonly record struct LoginErrors(bool NotFound = false, bool Banned = false, bool WrongPassword = false);
