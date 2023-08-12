@@ -15,7 +15,7 @@ internal static class UserApiExtensions
     )
     {
         return await client.Post<UserViewModel>(
-            Routes.s_register,
+            Routes.REGISTER,
             new()
             {
                 Body = new RegisterRequest()
@@ -35,7 +35,7 @@ internal static class UserApiExtensions
     )
     {
         return await apiClient.Post<LoginResponse>(
-            Routes.s_login,
+            Routes.LOGIN,
             new()
             {
                 Body = new LoginRequest() { Email = email, Password = password, }
@@ -46,7 +46,7 @@ internal static class UserApiExtensions
     public static async Task<LoginResponse> LoginAdminUser(this TestApiClient apiClient)
     {
         return await apiClient.Post<LoginResponse>(
-            Routes.s_login,
+            Routes.LOGIN,
             new()
             {
                 Body = new LoginRequest()
