@@ -48,7 +48,7 @@ public class UserService : IUserService
             return new BadCredentials();
         }
 
-        return new LoginToken(_authService.GenerateJSONWebToken(user));
+        return _authService.GenerateJSONWebToken(user);
     }
 
     // TODO: Convert return sig to Task<GetUserResult>
