@@ -79,7 +79,6 @@ public class AccountController : ControllerBase
     /// <param name="request">
     ///     The `LoginRequest` instance from which to perform the login.
     /// </param>
-    /// <param name="authService">IAuthService injection.</param>
     /// <response code="200">
     ///     The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.
     /// </response>
@@ -104,7 +103,7 @@ public class AccountController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request, [FromServices] IAuthService authService)
+    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
         LoginResult result = await _userService.LoginByEmailAndPassword(request.Email, request.Password);
 
