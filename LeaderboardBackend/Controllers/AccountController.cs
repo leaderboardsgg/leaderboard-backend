@@ -5,6 +5,7 @@ using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OneOf;
 
 namespace LeaderboardBackend.Controllers;
 
@@ -13,8 +14,6 @@ namespace LeaderboardBackend.Controllers;
 public class AccountController : ControllerBase
 {
     private readonly IUserService _userService;
-    // TODO: Finalise the title
-    public const string ACCOUNT_CONFIRMATION_EMAIL_TITLE = "Confirmation";
 
     public AccountController(IUserService userService)
     {
@@ -123,6 +122,7 @@ public class AccountController : ControllerBase
     ///     Resends the account confirmation link.
     /// </summary>
     /// <param name="authService">IAuthService dependency.</param>
+    /// <param name="confirmationService">IConfirmationService dependency.</param>
     /// <param name="emailSender">EmailSender dependency.</param>
     /// <response code="200">The request was sent successfully.</response>
     /// <response code="400">
@@ -130,9 +130,6 @@ public class AccountController : ControllerBase
     /// </response>
     /// <response code="401">
     ///     The request doesn't contain a valid session token.
-    /// </response>
-    /// <response code="404">
-    ///     The `User` the request is for wasn't found.
     /// </response>
     /// <response code="409">
     ///     A `User` with the specified username or email already exists.<br/><br/>
@@ -142,13 +139,16 @@ public class AccountController : ControllerBase
     ///     - **Email**:
     ///       - **EmailAlreadyUsed**: the email is already in use
     /// </response>
+    /// <response code="500">
+    ///     Internal server error.
+    /// </response>
     [HttpPost("confirm")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> ResendConfirmation(
         [FromServices] IAuthService authService,
         [FromServices] IConfirmationService confirmationService,
@@ -157,40 +157,23 @@ public class AccountController : ControllerBase
     {
         // TODO: Handle rate limiting (429 case) - zysim
 
-        Guid? userId = authService.GetUserIdFromClaims(HttpContext.User);
+        GetUserResult result = await _userService.GetRegisteredUserFromClaims(HttpContext.User);
 
-        if (userId is null)
+        if (result.TryPickT0(out User user, out OneOf<BadCredentials, UserNotFound, BadRole> errors))
         {
-            return Unauthorized();
+            CreateUserConfirmationResult confirmationResult = await confirmationService.CreateConfirmation(user);
+            return confirmationResult.Match(
+                confirmation => Ok(),
+                dbCreateFailed => StatusCode(StatusCodes.Status500InternalServerError),
+                dbTimedOut => StatusCode(StatusCodes.Status500InternalServerError)
+            );
         }
 
-        User? user = await _userService.GetUserById(userId ?? Guid.Empty);
-
-        if (user is null)
-        {
-            return NotFound();
-        }
-
-        if (user.Role is not UserRole.Registered)
-        {
-            return Conflict();
-        }
-
-        UserConfirmation confirmation = await confirmationService.CreateConfirmation(user);
-
-#pragma warning disable CS4014 // Suppress no 'await' call
-        emailSender.EnqueueEmailAsync(
-            user.Email,
-            ACCOUNT_CONFIRMATION_EMAIL_TITLE,
-            // TODO: Generate confirmation link
-            GenerateAccountConfirmationEmailBody(user, confirmation)
+        return errors.Match(
+            badCredentials => Unauthorized(),
+            // Shouldn't be possible; throw 500
+            notFound => StatusCode(StatusCodes.Status500InternalServerError),
+            badRole => Conflict()
         );
-#pragma warning restore CS4014
-
-        return Ok();
     }
-
-    // TODO: Finalise message contents
-    private string GenerateAccountConfirmationEmailBody(User user, UserConfirmation confirmation) =>
-        $@"Hi {user.Username},<br/><br/>Click <a href=""/confirm-account?code={Convert.ToBase64String(confirmation.Id.ToByteArray())}"">here</a> to confirm your account.";
 }

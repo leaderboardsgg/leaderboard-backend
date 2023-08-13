@@ -107,7 +107,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
         emailSenderMock.Verify(x =>
             x.EnqueueEmailAsync(
                 "email1",
-                AccountController.ACCOUNT_CONFIRMATION_EMAIL_TITLE,
+                "Confirmation",
                 It.IsAny<string>()
             ),
             Times.Once()
