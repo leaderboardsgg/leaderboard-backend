@@ -9,6 +9,13 @@ namespace LeaderboardBackend.Models.Requests;
 /// </summary>
 public record LoginRequest
 {
+    // We use the null coalescing operators in both properties to achieve two things:
+    // 1. Allow null-validation to be done in LoginRequestValidator below, to get the
+    //    error format we want
+    // 2. Prevent warning hints in code anywhere else of potentially-null values (we've
+    //    verified that they won't be in LoginRequestValidator)
+    // - zysim
+
     /// <summary>
     ///     The `User`'s email address.
     /// </summary>
@@ -91,6 +98,16 @@ public record RegisterRequest
     /// </summary>
     /// <example>P4ssword</example>
     public required string Password { get; set; }
+}
+
+public class LoginRequestValidator : AbstractValidator<LoginRequest>
+{
+    public LoginRequestValidator()
+    {
+        // NotNull() needed because EmailAddress() does not fail null input
+        RuleFor(x => x.Email).NotNull().EmailAddress();
+        RuleFor(x => x.Password).NotEmpty();
+    }
 }
 
 public class RegisterRequestValidator : AbstractValidator<RegisterRequest>

@@ -35,7 +35,16 @@ public class UserPasswordTests
             .WithErrorCode(UserPasswordRule.PASSWORD_FORMAT);
     }
 
-    private record ExampleObject(string Password);
+    [Test]
+    public void NullPassword()
+    {
+        TestValidationResult<ExampleObject> result = _sut.TestValidate(new ExampleObject());
+
+        result.ShouldHaveValidationErrorFor(x => x.Password)
+            .WithErrorCode("NotNullValidator");
+    }
+
+    private record ExampleObject(string? Password = null);
 
     private class TestValidator : AbstractValidator<ExampleObject>
     {

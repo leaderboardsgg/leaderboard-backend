@@ -262,6 +262,17 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     options.InvalidModelStateResponseFactory = context =>
     {
         ValidationProblemDetails problemDetails = new(context.ModelState);
+
+        // As of this writing, we want our custom validation rules to return with
+        // a 422, while keeping 400 for all other input syntax errors.
+        // For JSON syntax errors that we don't override, their keys will be the field
+        // path that has the error, which always starts with "$", denoting the object
+        // root. We check for that, and return the error code accordingly. - zysim
+        if (problemDetails.Errors.Keys.Any(x => x.StartsWith("$")))
+        {
+            return new BadRequestObjectResult(problemDetails);
+        }
+
         return new UnprocessableEntityObjectResult(problemDetails);
     };
 });
