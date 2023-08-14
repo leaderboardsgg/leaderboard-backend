@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using LeaderboardBackend.Controllers;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Fixtures;
@@ -18,8 +17,8 @@ namespace LeaderboardBackend.Test.Features.Users;
 public class AccountConfirmationTests : IntegrationTestsBase
 {
     private const string RESEND_CONFIRMATION_URI = "/account/confirm";
-    private readonly IServiceScope _scope = null!;
-    private readonly IAuthService _authService = null!;
+    private IServiceScope _scope = null!;
+    private IAuthService _authService = null!;
 
     [SetUp]
     public void Init()
