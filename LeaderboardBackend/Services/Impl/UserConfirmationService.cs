@@ -2,12 +2,12 @@ using LeaderboardBackend.Models.Entities;
 
 namespace LeaderboardBackend.Services;
 
-public class ConfirmationService : IConfirmationService
+public class UserConfirmationService : IUserConfirmationService
 {
     private readonly ApplicationContext _applicationContext;
     private readonly IEmailSender _emailSender;
 
-    public ConfirmationService(ApplicationContext applicationContext, IEmailSender emailSender)
+    public UserConfirmationService(ApplicationContext applicationContext, IEmailSender emailSender)
     {
         _applicationContext = applicationContext;
         _emailSender = emailSender;
