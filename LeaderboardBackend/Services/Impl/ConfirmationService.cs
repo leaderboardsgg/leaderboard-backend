@@ -1,5 +1,4 @@
 using LeaderboardBackend.Models.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace LeaderboardBackend.Services;
 
@@ -19,7 +18,7 @@ public class ConfirmationService : IConfirmationService
         return await _applicationContext.UserConfirmations.FindAsync(id);
     }
 
-    public async Task<CreateUserConfirmationResult> CreateConfirmation(User user, CancellationToken token = default)
+    public async Task<UserConfirmation> CreateConfirmation(User user, CancellationToken token = default)
     {
         UserConfirmation newConfirmation =
             new()
@@ -29,25 +28,13 @@ public class ConfirmationService : IConfirmationService
 
         _applicationContext.UserConfirmations.Add(newConfirmation);
 
-        try
-        {
-            await _applicationContext.SaveChangesAsync(token);
-        }
-        catch (DbUpdateException)
-        {
-            return new DbCreateFailed();
-        }
-        catch (OperationCanceledException)
-        {
-            return new DbCreateTimedOut();
-        }
+        await _applicationContext.SaveChangesAsync(token);
 
 #pragma warning disable CS4014 // Suppress no 'await' call
         _emailSender.EnqueueEmailAsync(
             user.Email,
             // TODO: Finalise the title
             "Confirmation",
-            // TODO: Generate confirmation link
             GenerateAccountConfirmationEmailBody(user, newConfirmation)
         );
 #pragma warning restore CS4014

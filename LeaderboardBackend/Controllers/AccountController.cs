@@ -161,12 +161,8 @@ public class AccountController : ControllerBase
 
         if (result.TryPickT0(out User user, out OneOf<BadCredentials, UserNotFound, BadRole> errors))
         {
-            CreateUserConfirmationResult confirmationResult = await confirmationService.CreateConfirmation(user);
-            return confirmationResult.Match(
-                confirmation => Ok(),
-                dbCreateFailed => StatusCode(StatusCodes.Status500InternalServerError),
-                dbTimedOut => StatusCode(StatusCodes.Status500InternalServerError)
-            );
+            await confirmationService.CreateConfirmation(user);
+            return Ok();
         }
 
         return errors.Match(
