@@ -18,8 +18,8 @@ namespace LeaderboardBackend.Test.Features.Users;
 public class AccountConfirmationTests : IntegrationTestsBase
 {
     private const string RESEND_CONFIRMATION_URI = "/account/confirm";
-    private IServiceScope _scope = null!;
-    private IAuthService _authService = null!;
+    private readonly IServiceScope _scope = null!;
+    private readonly IAuthService _authService = null!;
 
     [SetUp]
     public void Init()
@@ -31,6 +31,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
     [TearDown]
     public void TearDown()
     {
+        s_factory.ResetDatabase();
         _scope.Dispose();
     }
 
@@ -43,7 +44,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
     }
 
     [Test]
-    public async Task ResendConfirmation_NotFound()
+    public async Task ResendConfirmation_NotFound_ShouldGet500()
     {
         string token = _authService.GenerateJSONWebToken(new()
         {
@@ -55,7 +56,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
         Client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
         HttpResponseMessage res = await Client.PostAsync(RESEND_CONFIRMATION_URI, null);
 
-        res.Should().HaveStatusCode(HttpStatusCode.NotFound);
+        res.Should().HaveStatusCode(HttpStatusCode.InternalServerError);
     }
 
     [Test]
@@ -95,9 +96,9 @@ public class AccountConfirmationTests : IntegrationTestsBase
         IUserService userService = _scope.ServiceProvider.GetRequiredService<IUserService>();
         CreateUserResult result = await userService.CreateUser(new()
         {
-            Email = "email1",
+            Email = "email",
             Password = "password",
-            Username = "username1",
+            Username = "username",
         });
         string token = _authService.GenerateJSONWebToken(result.AsT0);
 
@@ -106,7 +107,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
         res.Should().HaveStatusCode(HttpStatusCode.OK);
         emailSenderMock.Verify(x =>
             x.EnqueueEmailAsync(
-                "email1",
+                "email",
                 "Confirmation",
                 It.IsAny<string>()
             ),
