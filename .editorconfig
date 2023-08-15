@@ -222,7 +222,7 @@ dotnet_naming_rule.const_field_should_be_all_capital.severity = warning
 dotnet_naming_rule.const_field_should_be_all_capital.symbols = const_field
 dotnet_naming_rule.const_field_should_be_all_capital.style = all_capital
 
-dotnet_naming_rule.static_field_should_be_s_underscored.severity = warning
+dotnet_naming_rule.static_field_should_be_s_underscored.severity = none
 dotnet_naming_rule.static_field_should_be_s_underscored.symbols = static_field
 dotnet_naming_rule.static_field_should_be_s_underscored.style = static_underscored
 
