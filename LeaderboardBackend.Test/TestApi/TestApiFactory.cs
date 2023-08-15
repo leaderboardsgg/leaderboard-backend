@@ -1,7 +1,6 @@
 using System;
 using System.Net.Http;
 using LeaderboardBackend.Models.Entities;
-using LeaderboardBackend.Test.Fixtures;
 using LeaderboardBackend.Test.Lib;
 using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Hosting;
@@ -25,33 +24,22 @@ public class TestApiFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            if (TestConfig.DatabaseBackend == DatabaseBackend.TestContainer)
+            if (PostgresDatabaseFixture.PostgresContainer is null)
             {
-                if (PostgresDatabaseFixture.PostgresContainer is null)
-                {
-                    throw new InvalidOperationException("Postgres container is not initialized.");
-                }
+                throw new InvalidOperationException("Postgres container is not initialized.");
+            }
 
-                services.Configure<ApplicationContextConfig>(conf =>
-                {
-                    conf.UseInMemoryDb = false;
-                    conf.Pg = new PostgresConfig
-                    {
-                        Db = PostgresDatabaseFixture.Database!,
-                        Port = (ushort)PostgresDatabaseFixture.Port,
-                        Host = PostgresDatabaseFixture.PostgresContainer.Hostname,
-                        User = PostgresDatabaseFixture.Username!,
-                        Password = PostgresDatabaseFixture.Password!
-                    };
-                });
-            }
-            else
+            services.Configure<ApplicationContextConfig>(conf =>
             {
-                services.Configure<ApplicationContextConfig>(conf =>
+                conf.Pg = new PostgresConfig
                 {
-                    conf.UseInMemoryDb = true;
-                });
-            }
+                    Db = PostgresDatabaseFixture.Database!,
+                    Port = (ushort)PostgresDatabaseFixture.Port,
+                    Host = PostgresDatabaseFixture.PostgresContainer.Hostname,
+                    User = PostgresDatabaseFixture.Username!,
+                    Password = PostgresDatabaseFixture.Password!
+                };
+            });
 
             // mock SMTP client
             services.Replace(ServiceDescriptor.Transient<ISmtpClient>(_ => new Mock<ISmtpClient>().Object));
@@ -78,26 +66,11 @@ public class TestApiFactory : WebApplicationFactory<Program>
 
     private static void InitializeDatabase(ApplicationContext dbContext)
     {
-        switch (TestConfig.DatabaseBackend)
+        if (!PostgresDatabaseFixture.HasCreatedTemplate)
         {
-            case DatabaseBackend.TestContainer:
-                if (!PostgresDatabaseFixture.HasCreatedTemplate)
-                {
-                    dbContext.MigrateDatabase();
-                    Seed(dbContext);
-                    PostgresDatabaseFixture.CreateTemplateFromCurrentDb();
-                }
-
-                break;
-            case DatabaseBackend.InMemory:
-                if (dbContext.Database.EnsureCreated())
-                {
-                    Seed(dbContext);
-                }
-
-                break;
-            default:
-                throw new NotImplementedException("Database initialization is not implemented");
+            dbContext.MigrateDatabase();
+            Seed(dbContext);
+            PostgresDatabaseFixture.CreateTemplateFromCurrentDb();
         }
     }
 
@@ -127,27 +100,6 @@ public class TestApiFactory : WebApplicationFactory<Program>
     /// </summary>
     public void ResetDatabase()
     {
-        switch (TestConfig.DatabaseBackend)
-        {
-            case DatabaseBackend.InMemory:
-                ResetInMemoryDb();
-                break;
-            case DatabaseBackend.TestContainer:
-                PostgresDatabaseFixture.ResetDatabaseToTemplate();
-                break;
-            default:
-                throw new NotImplementedException("Database reset is not implemented.");
-        }
-    }
-
-    private void ResetInMemoryDb()
-    {
-        using IServiceScope scope = Services.CreateScope();
-        ApplicationContext dbContext =
-            scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        dbContext.Database.EnsureDeleted();
-        dbContext.Database.EnsureCreated();
-
-        Seed(dbContext);
+        PostgresDatabaseFixture.ResetDatabaseToTemplate();
     }
 }

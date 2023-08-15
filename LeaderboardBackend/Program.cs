@@ -65,11 +65,7 @@ builder.Services.AddDbContext<ApplicationContext>(
         ApplicationContextConfig appConfig = services
             .GetRequiredService<IOptions<ApplicationContextConfig>>()
             .Value;
-        if (appConfig.UseInMemoryDb)
-        {
-            opt.UseInMemoryDatabase("LeaderboardBackend");
-        }
-        else if (appConfig.Pg is not null)
+        if (appConfig.Pg is not null)
         {
             PostgresConfig db = appConfig.Pg;
             NpgsqlConnectionStringBuilder connectionBuilder =
@@ -302,36 +298,11 @@ using (ApplicationContext context = scope.ServiceProvider.GetRequiredService<App
 
     if (args.Contains("--migrate-db")) // the only way to migrate a production database
     {
-        if (!config.UseInMemoryDb)
-        {
-            context.Database.Migrate();
-        }
-
+        context.Database.Migrate();
         return;
     }
 
-    if (config.UseInMemoryDb)
-    {
-        context.Database.EnsureCreated();
-        User? defaultUser = context.Find<User>(User.s_seedAdminId);
-        if (defaultUser is null)
-        {
-            throw new InvalidOperationException("The default user was not correctly seeded.");
-        }
-
-        defaultUser.Username =
-            Environment.GetEnvironmentVariable("LGG_ADMIN_USERNAME") ?? defaultUser.Username;
-        defaultUser.Email =
-            Environment.GetEnvironmentVariable("LGG_ADMIN_EMAIL") ?? defaultUser.Email;
-        string? newPassword = Environment.GetEnvironmentVariable("LGG_ADMIN_PASSWORD");
-        if (newPassword is not null)
-        {
-            defaultUser.Password = BCryptNet.EnhancedHashPassword(newPassword);
-        }
-
-        context.SaveChanges();
-    }
-    else if (config.MigrateDb && app.Environment.IsDevelopment())
+    if (config.MigrateDb && app.Environment.IsDevelopment())
     {
         // migration as part of the startup phase (dev env only)
         context.MigrateDatabase();

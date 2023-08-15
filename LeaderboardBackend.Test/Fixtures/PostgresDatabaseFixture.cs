@@ -22,11 +22,6 @@ internal class PostgresDatabaseFixture
     [OneTimeSetUp]
     public static async Task OneTimeSetup()
     {
-        if (TestConfig.DatabaseBackend != DatabaseBackend.TestContainer)
-        {
-            return;
-        }
-
         PostgresContainer = new PostgreSqlBuilder()
             .WithTmpfsMount("/var/lib/postgresql/data") // db files in-memory
             .Build();
