@@ -313,23 +313,6 @@ using (ApplicationContext context = scope.ServiceProvider.GetRequiredService<App
     if (config.UseInMemoryDb)
     {
         context.Database.EnsureCreated();
-        User? defaultUser = context.Find<User>(User.s_seedAdminId);
-        if (defaultUser is null)
-        {
-            throw new InvalidOperationException("The default user was not correctly seeded.");
-        }
-
-        defaultUser.Username =
-            Environment.GetEnvironmentVariable("LGG_ADMIN_USERNAME") ?? defaultUser.Username;
-        defaultUser.Email =
-            Environment.GetEnvironmentVariable("LGG_ADMIN_EMAIL") ?? defaultUser.Email;
-        string? newPassword = Environment.GetEnvironmentVariable("LGG_ADMIN_PASSWORD");
-        if (newPassword is not null)
-        {
-            defaultUser.Password = BCryptNet.EnhancedHashPassword(newPassword);
-        }
-
-        context.SaveChanges();
     }
     else if (config.MigrateDb && app.Environment.IsDevelopment())
     {
