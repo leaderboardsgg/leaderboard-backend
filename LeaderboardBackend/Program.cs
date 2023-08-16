@@ -65,11 +65,7 @@ builder.Services.AddDbContext<ApplicationContext>(
         ApplicationContextConfig appConfig = services
             .GetRequiredService<IOptions<ApplicationContextConfig>>()
             .Value;
-        if (appConfig.UseInMemoryDb)
-        {
-            opt.UseInMemoryDatabase("LeaderboardBackend");
-        }
-        else if (appConfig.Pg is not null)
+        if (appConfig.Pg is not null)
         {
             PostgresConfig db = appConfig.Pg;
             NpgsqlConnectionStringBuilder connectionBuilder =
@@ -302,19 +298,11 @@ using (ApplicationContext context = scope.ServiceProvider.GetRequiredService<App
 
     if (args.Contains("--migrate-db")) // the only way to migrate a production database
     {
-        if (!config.UseInMemoryDb)
-        {
-            context.Database.Migrate();
-        }
-
+        context.Database.Migrate();
         return;
     }
 
-    if (config.UseInMemoryDb)
-    {
-        context.Database.EnsureCreated();
-    }
-    else if (config.MigrateDb && app.Environment.IsDevelopment())
+    if (config.MigrateDb && app.Environment.IsDevelopment())
     {
         // migration as part of the startup phase (dev env only)
         context.MigrateDatabase();

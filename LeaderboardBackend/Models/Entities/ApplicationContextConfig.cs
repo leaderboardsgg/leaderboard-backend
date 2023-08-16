@@ -7,16 +7,15 @@ public class ApplicationContextConfig : IValidatableObject
     public const string KEY = "ApplicationContext";
 
     public bool MigrateDb { get; set; } = false;
-    public bool UseInMemoryDb { get; set; } = false;
     public PostgresConfig? Pg { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext context)
     {
-        if (!UseInMemoryDb && Pg == null)
+        if (Pg == null)
         {
             yield return new ValidationResult(
                 "Missing database configuration.",
-                new[] { nameof(UseInMemoryDb), nameof(Pg) }
+                new[] { nameof(Pg) }
             );
         }
     }

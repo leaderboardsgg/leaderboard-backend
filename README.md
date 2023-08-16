@@ -74,10 +74,6 @@ cp example.env .env
 ```
 
 ### Running the Database(s)
-We use Postgres, but have the ability to run Entity Framework's in-memory DB as well instead, which allows quicker debugging.
-
-**Running with Postgres is highly encouraged**, as the in-memory DB will not behave the same as Postgres,
-and [some features will not work at all](https://learn.microsoft.com/en-us/ef/core/testing/choosing-a-testing-strategy#in-memory-as-a-database-fake) (for example: transactions and constraints).
 
 #### Postgres with Docker compose
 As mentioned above, we run Docker containers for the DB. After [installing Docker Compose](https://docs.docker.com/compose/install/), run this command in the project root:
@@ -100,9 +96,6 @@ If you're using the default values provided in `example.env`, input these values
 | Username | `admin`            | Corresponds to the `ApplicationContext__PG__USER` config
 | Password | `example`          | Corresponds to `ApplicationContext__PG__PASSWORD`
 | Database | `leaderboardsmain` | Corresponds to `ApplicationContext__PG__DB`
-
-#### In-memory database
-To use the in-memory database, set `ApplicationContext__UseInMemoryDb` in your `.env` file to `true`.
 
 ### Visual Studio
 
@@ -158,8 +151,6 @@ dotnet run  # or `dotnet watch` to run with hot reload
 
 #### Test the App
 Docker is required to run integration tests against a real Postgres database.  
-However, if you would still like to run the tests with an in-memory database, you can set the following environment variable: `INTEGRATION_TESTS_DB_BACKEND=InMemory`.
-
 To run the tests, run the following commands from the root of the repository:
 
 ```bash
