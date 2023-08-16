@@ -208,7 +208,7 @@
             }
           },
           "409": {
-            "description": "A `User` with the specified username or email already exists.<br /><br />\r\nValidation error codes by property:\r\n- **Username**:\r\n  - **UsernameTaken**: the username is already in use\r\n- **Email**:\r\n  - **EmailAlreadyUsed**: the email is already in use",
+            "description": "The `User`'s account has already been confirmed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -236,9 +236,6 @@
                 }
               }
             }
-          },
-          "500": {
-            "description": "Internal server error."
           }
         }
       }

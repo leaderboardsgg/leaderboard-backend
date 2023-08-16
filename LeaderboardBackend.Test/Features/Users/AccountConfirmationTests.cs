@@ -43,7 +43,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
     }
 
     [Test]
-    public async Task ResendConfirmation_NotFound_ShouldGet500()
+    public async Task ResendConfirmation_NotFound_ShouldGet401()
     {
         string token = _authService.GenerateJSONWebToken(new()
         {
@@ -55,7 +55,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
         Client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
         HttpResponseMessage res = await Client.PostAsync(RESEND_CONFIRMATION_URI, null);
 
-        res.Should().HaveStatusCode(HttpStatusCode.InternalServerError);
+        res.Should().HaveStatusCode(HttpStatusCode.Unauthorized);
     }
 
     [Test]

@@ -132,15 +132,7 @@ public class AccountController : ControllerBase
     ///     The request doesn't contain a valid session token.
     /// </response>
     /// <response code="409">
-    ///     A `User` with the specified username or email already exists.<br/><br/>
-    ///     Validation error codes by property:
-    ///     - **Username**:
-    ///       - **UsernameTaken**: the username is already in use
-    ///     - **Email**:
-    ///       - **EmailAlreadyUsed**: the email is already in use
-    /// </response>
-    /// <response code="500">
-    ///     Internal server error.
+    ///     The `User`'s account has already been confirmed.
     /// </response>
     [HttpPost("confirm")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -148,7 +140,6 @@ public class AccountController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> ResendConfirmation(
         [FromServices] IAuthService authService,
         [FromServices] IAccountConfirmationService confirmationService,
@@ -165,10 +156,10 @@ public class AccountController : ControllerBase
             return Ok();
         }
 
-        return errors.Match(
+        return errors.Match<ActionResult>(
             badCredentials => Unauthorized(),
-            // Shouldn't be possible; throw 500
-            notFound => StatusCode(StatusCodes.Status500InternalServerError),
+            // Shouldn't be possible; throw 401
+            notFound => Unauthorized(),
             badRole => Conflict()
         );
     }
