@@ -6,16 +6,16 @@ namespace LeaderboardBackend.Models.Entities;
 /// <summary>
 ///     Represents a user account confirmation.
 /// </summary>
-public class UserConfirmation
+public class AccountConfirmation
 {
     /// <summary>
-    ///     The unique identifier of the `Confirmation`.<br/>
+    ///     The unique identifier of the `AccountConfirmation`.<br/>
     ///     Generated on creation.
     /// </summary>
     public Guid Id { get; set; }
 
     /// <summary>
-    ///     The ID of the `User` the `Confirmation` is a part of.
+    ///     The ID of the `User` the `AccountConfirmation` is a part of.
     /// </summary>
     [Required]
     public Guid UserId { get; set; }
@@ -26,17 +26,17 @@ public class UserConfirmation
     public User User { get; set; } = null!;
 
     /// <summary>
-    ///     The time this `Confirmation` is created.
+    ///     The time this `AccountConfirmation` is created.
     /// </summary>
     public Instant CreatedAt { get; set; } = SystemClock.Instance.GetCurrentInstant();
 
     /// <summary>
-    ///     The time this `Confirmation` is used.
+    ///     The time this `AccountConfirmation` is used.
     /// </summary>
     public Instant? UsedAt { get; set; }
 
     /// <summary>
-    ///     The time this `Confirmation` expires, after which the associated `User` must
+    ///     The time this `AccountConfirmation` expires, after which the associated `User` must
     ///     request for another confirmation email.
     /// </summary>
     public Instant ExpiresAt { get; set; } = SystemClock.Instance.GetCurrentInstant() + Duration.FromHours(1);

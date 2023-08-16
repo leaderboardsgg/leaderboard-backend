@@ -2,31 +2,31 @@ using LeaderboardBackend.Models.Entities;
 
 namespace LeaderboardBackend.Services;
 
-public class UserConfirmationService : IUserConfirmationService
+public class AccountConfirmationService : IAccountConfirmationService
 {
     private readonly ApplicationContext _applicationContext;
     private readonly IEmailSender _emailSender;
 
-    public UserConfirmationService(ApplicationContext applicationContext, IEmailSender emailSender)
+    public AccountConfirmationService(ApplicationContext applicationContext, IEmailSender emailSender)
     {
         _applicationContext = applicationContext;
         _emailSender = emailSender;
     }
 
-    public async Task<UserConfirmation?> GetConfirmationById(Guid id)
+    public async Task<AccountConfirmation?> GetConfirmationById(Guid id)
     {
-        return await _applicationContext.UserConfirmations.FindAsync(id);
+        return await _applicationContext.AccountConfirmations.FindAsync(id);
     }
 
-    public async Task<UserConfirmation> CreateConfirmation(User user, CancellationToken token = default)
+    public async Task<AccountConfirmation> CreateConfirmation(User user, CancellationToken token = default)
     {
-        UserConfirmation newConfirmation =
+        AccountConfirmation newConfirmation =
             new()
             {
                 UserId = user.Id,
             };
 
-        _applicationContext.UserConfirmations.Add(newConfirmation);
+        _applicationContext.AccountConfirmations.Add(newConfirmation);
 
         await _applicationContext.SaveChangesAsync(token);
 
@@ -43,6 +43,6 @@ public class UserConfirmationService : IUserConfirmationService
     }
 
     // TODO: Finalise message contents
-    private string GenerateAccountConfirmationEmailBody(User user, UserConfirmation confirmation) =>
+    private string GenerateAccountConfirmationEmailBody(User user, AccountConfirmation confirmation) =>
         $@"Hi {user.Username},<br/><br/>Click <a href=""/confirm-account?code={Convert.ToBase64String(confirmation.Id.ToByteArray())}"">here</a> to confirm your account.";
 }

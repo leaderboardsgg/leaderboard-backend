@@ -113,7 +113,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
             Times.Once()
         );
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        context.UserConfirmations.FirstOrDefault(c => c.UserId == result.AsT0.Id)
+        context.AccountConfirmations.FirstOrDefault(c => c.UserId == result.AsT0.Id)
             .Should().NotBeNull();
     }
 }

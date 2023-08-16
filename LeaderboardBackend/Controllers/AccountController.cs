@@ -122,7 +122,7 @@ public class AccountController : ControllerBase
     ///     Resends the account confirmation link.
     /// </summary>
     /// <param name="authService">IAuthService dependency.</param>
-    /// <param name="confirmationService">IUserConfirmationService dependency.</param>
+    /// <param name="confirmationService">IAccountConfirmationService dependency.</param>
     /// <param name="emailSender">EmailSender dependency.</param>
     /// <response code="200">The request was sent successfully.</response>
     /// <response code="400">
@@ -151,7 +151,7 @@ public class AccountController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> ResendConfirmation(
         [FromServices] IAuthService authService,
-        [FromServices] IUserConfirmationService confirmationService,
+        [FromServices] IAccountConfirmationService confirmationService,
         [FromServices] IEmailSender emailSender
     )
     {

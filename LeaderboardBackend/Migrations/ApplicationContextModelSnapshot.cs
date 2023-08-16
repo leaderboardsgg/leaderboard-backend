@@ -57,6 +57,38 @@ namespace LeaderboardBackend.Migrations
                     b.ToTable("account_recoveries", (string)null);
                 });
 
+            modelBuilder.Entity("LeaderboardBackend.Models.Entities.AccountConfirmation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Instant>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Instant>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Instant?>("UsedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("used_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_account_confirmations");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_account_confirmations_user_id");
+
+                    b.ToTable("account_confirmations", (string)null);
+                });
+
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.Category", b =>
                 {
                     b.Property<long>("Id")
@@ -99,38 +131,6 @@ namespace LeaderboardBackend.Migrations
                         .HasDatabaseName("ix_categories_leaderboard_id");
 
                     b.ToTable("categories", (string)null);
-                });
-
-            modelBuilder.Entity("LeaderboardBackend.Models.Entities.Confirmation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Instant>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Instant>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expires_at");
-
-                    b.Property<Instant?>("UsedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("used_at");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_user_confirmations");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_user_confirmations_user_id");
-
-                    b.ToTable("user_confirmations", (string)null);
                 });
 
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.Leaderboard", b =>
@@ -230,16 +230,30 @@ namespace LeaderboardBackend.Migrations
                         .HasDatabaseName("ix_users_username");
 
                     b.ToTable("users", (string)null);
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("421bb896-1990-48c6-8b0c-d69f56d6746a"),
-                            Email = "omega@star.com",
-                            Password = "$2a$11$tNvA94WqpJ.O7S7D6lVMn.E/UxcFYztl3BkcnBj/hgE8PY/8nCRQe",
-                            Role = UserRole.Administrator,
-                            Username = "Galactus"
-                        });
+            modelBuilder.Entity("LeaderboardBackend.Models.Entities.AccountConfirmation", b =>
+                {
+                    b.HasOne("LeaderboardBackend.Models.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_account_confirmations_users_user_id");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LeaderboardBackend.Models.Entities.AccountRecovery", b =>
+                {
+                    b.HasOne("LeaderboardBackend.Models.Entities.User", "User")
+                        .WithMany("AccountRecoveries")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_account_recoveries_users_user_id");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.AccountRecovery", b =>
@@ -264,18 +278,6 @@ namespace LeaderboardBackend.Migrations
                         .HasConstraintName("fk_categories_leaderboards_leaderboard_id");
 
                     b.Navigation("Leaderboard");
-                });
-
-            modelBuilder.Entity("LeaderboardBackend.Models.Entities.Confirmation", b =>
-                {
-                    b.HasOne("LeaderboardBackend.Models.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_user_confirmations_users_user_id");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.Run", b =>
