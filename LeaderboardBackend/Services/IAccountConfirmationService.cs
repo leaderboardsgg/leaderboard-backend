@@ -5,5 +5,7 @@ namespace LeaderboardBackend.Services;
 public interface IAccountConfirmationService
 {
     Task<AccountConfirmation?> GetConfirmationById(Guid id);
-    Task<AccountConfirmation> CreateConfirmation(User user, CancellationToken token = default);
+    Task<BadRole?> CreateConfirmationAndSendEmail(User user, CancellationToken token = default);
 }
+
+public readonly record struct BadRole();

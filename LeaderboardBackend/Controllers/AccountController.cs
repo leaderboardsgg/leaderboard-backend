@@ -124,7 +124,7 @@ public class AccountController : ControllerBase
     /// <param name="authService">IAuthService dependency.</param>
     /// <param name="confirmationService">IAccountConfirmationService dependency.</param>
     /// <param name="emailSender">EmailSender dependency.</param>
-    /// <response code="200">The request was sent successfully.</response>
+    /// <response code="200">A new confirmation link was generated.</response>
     /// <response code="400">
     ///     The request was malformed.
     /// </response>
@@ -148,19 +148,21 @@ public class AccountController : ControllerBase
     {
         // TODO: Handle rate limiting (429 case) - zysim
 
-        GetUserResult result = await _userService.GetRegisteredUserFromClaims(HttpContext.User);
+        GetUserResult result = await _userService.GetUserFromClaims(HttpContext.User);
 
-        if (result.TryPickT0(out User user, out OneOf<BadCredentials, UserNotFound, BadRole> errors))
+        if (result.TryPickT0(out User user, out OneOf<BadCredentials, UserNotFound> errors))
         {
-            await confirmationService.CreateConfirmation(user);
+            if (await confirmationService.CreateConfirmationAndSendEmail(user) is not null)
+            {
+                return Conflict();
+            };
             return Ok();
         }
 
         return errors.Match<ActionResult>(
             badCredentials => Unauthorized(),
             // Shouldn't be possible; throw 401
-            notFound => Unauthorized(),
-            badRole => Conflict()
+            notFound => Unauthorized()
         );
     }
 }

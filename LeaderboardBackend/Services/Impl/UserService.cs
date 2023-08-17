@@ -24,7 +24,7 @@ public class UserService : IUserService
         return await _applicationContext.Users.FindAsync(id);
     }
 
-    public async Task<GetUserResult> GetRegisteredUserFromClaims(ClaimsPrincipal claims)
+    public async Task<GetUserResult> GetUserFromClaims(ClaimsPrincipal claims)
     {
         Guid? id = _authService.GetUserIdFromClaims(claims);
 
@@ -38,11 +38,6 @@ public class UserService : IUserService
         if (user is null)
         {
             return new UserNotFound();
-        }
-
-        if (user.Role is not UserRole.Registered)
-        {
-            return new BadRole();
         }
 
         return user;

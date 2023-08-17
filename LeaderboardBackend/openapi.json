@@ -175,7 +175,7 @@
         "summary": "Resends the account confirmation link.",
         "responses": {
           "200": {
-            "description": "The request was sent successfully."
+            "description": "A new confirmation link was generated."
           },
           "400": {
             "description": "The request was malformed.",

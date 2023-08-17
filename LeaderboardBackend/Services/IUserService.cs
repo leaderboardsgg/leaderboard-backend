@@ -11,7 +11,7 @@ public interface IUserService
     Task<User?> GetUserById(Guid id);
     // TODO: Convert return sig to Task<GetUserResult>
     Task<User?> GetUserByEmail(string email);
-    Task<GetUserResult> GetRegisteredUserFromClaims(ClaimsPrincipal claims);
+    Task<GetUserResult> GetUserFromClaims(ClaimsPrincipal claims);
     Task<LoginResult> LoginByEmailAndPassword(string email, string password);
     // TODO: Convert return sig to Task<GetUserResult>
     Task<User?> GetUserByName(string name);
@@ -32,6 +32,4 @@ public readonly record struct UserBanned();
 public readonly record struct BadCredentials();
 
 [GenerateOneOf]
-public partial class GetUserResult : OneOfBase<User, BadCredentials, UserNotFound, BadRole> { }
-
-public readonly record struct BadRole();
+public partial class GetUserResult : OneOfBase<User, BadCredentials, UserNotFound> { }

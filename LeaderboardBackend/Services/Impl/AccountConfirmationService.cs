@@ -19,8 +19,13 @@ public class AccountConfirmationService : IAccountConfirmationService
         return await _applicationContext.AccountConfirmations.FindAsync(id);
     }
 
-    public async Task<AccountConfirmation> CreateConfirmation(User user, CancellationToken token = default)
+    public async Task<BadRole?> CreateConfirmationAndSendEmail(User user, CancellationToken token = default)
     {
+        if (user.Role is not UserRole.Registered)
+        {
+            return new BadRole();
+        }
+
         AccountConfirmation newConfirmation =
             new()
             {
@@ -42,7 +47,7 @@ public class AccountConfirmationService : IAccountConfirmationService
         );
 #pragma warning restore CS4014
 
-        return newConfirmation;
+        return null;
     }
 
     // TODO: Finalise message contents
