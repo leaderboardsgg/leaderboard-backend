@@ -28,7 +28,7 @@ public class AccountConfirmation
     /// <summary>
     ///     The time this `AccountConfirmation` is created.
     /// </summary>
-    public Instant CreatedAt { get; set; } = SystemClock.Instance.GetCurrentInstant();
+    public Instant CreatedAt { get; set; }
 
     /// <summary>
     ///     The time this `AccountConfirmation` is used.
@@ -39,5 +39,5 @@ public class AccountConfirmation
     ///     The time this `AccountConfirmation` expires, after which the associated `User` must
     ///     request for another confirmation email.
     /// </summary>
-    public Instant ExpiresAt { get; set; } = SystemClock.Instance.GetCurrentInstant() + Duration.FromHours(1);
+    public Instant ExpiresAt { get; set; }
 }

@@ -1,4 +1,5 @@
 using LeaderboardBackend.Models.Entities;
+using NodaTime;
 
 namespace LeaderboardBackend.Services;
 
@@ -23,6 +24,8 @@ public class AccountConfirmationService : IAccountConfirmationService
         AccountConfirmation newConfirmation =
             new()
             {
+                CreatedAt = SystemClock.Instance.GetCurrentInstant(),
+                ExpiresAt = SystemClock.Instance.GetCurrentInstant() + Duration.FromHours(1),
                 UserId = user.Id,
             };
 
