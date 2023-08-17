@@ -16,7 +16,6 @@ namespace LeaderboardBackend.Test.Features.Users;
 [TestFixture]
 public class AccountConfirmationTests : IntegrationTestsBase
 {
-    private const string RESEND_CONFIRMATION_URI = "/account/confirm";
     private IServiceScope _scope = null!;
     private IAuthService _authService = null!;
 
@@ -38,7 +37,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
     public async Task ResendConfirmation_Unauthorised()
     {
 
-        HttpResponseMessage res = await Client.PostAsync(RESEND_CONFIRMATION_URI, null);
+        HttpResponseMessage res = await Client.PostAsync(Routes.RESEND_CONFIRMATION, null);
         res.Should().HaveStatusCode(HttpStatusCode.Unauthorized);
     }
 
@@ -53,7 +52,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
         });
 
         Client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
-        HttpResponseMessage res = await Client.PostAsync(RESEND_CONFIRMATION_URI, null);
+        HttpResponseMessage res = await Client.PostAsync(Routes.RESEND_CONFIRMATION, null);
 
         res.Should().HaveStatusCode(HttpStatusCode.Unauthorized);
     }
@@ -75,7 +74,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
         string token = _authService.GenerateJSONWebToken(user);
 
         Client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
-        HttpResponseMessage res = await Client.PostAsync(RESEND_CONFIRMATION_URI, null);
+        HttpResponseMessage res = await Client.PostAsync(Routes.RESEND_CONFIRMATION, null);
 
         res.Should().HaveStatusCode(HttpStatusCode.Conflict);
     }
@@ -102,7 +101,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
         string token = _authService.GenerateJSONWebToken(result.AsT0);
 
         client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
-        HttpResponseMessage res = await client.PostAsync(RESEND_CONFIRMATION_URI, null);
+        HttpResponseMessage res = await client.PostAsync(Routes.RESEND_CONFIRMATION, null);
         res.Should().HaveStatusCode(HttpStatusCode.OK);
         emailSenderMock.Verify(x =>
             x.EnqueueEmailAsync(
