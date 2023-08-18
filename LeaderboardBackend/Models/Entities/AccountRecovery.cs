@@ -9,8 +9,6 @@ namespace LeaderboardBackend.Models.Entities;
 /// </summary>
 public class AccountRecovery
 {
-    public static readonly Guid s_seedAdminId = new("421bb896-1990-48c6-8b0c-d69f56d6746a");
-
     /// <summary>
     ///     The unique identifier of the `AccountRecovery`.<br/>
     ///     Generated on creation.
@@ -34,7 +32,7 @@ public class AccountRecovery
     ///     requested an account recovery.
     /// </summary>
     [Required]
-    public Instant CreatedAt { get; set; } = SystemClock.Instance.GetCurrentInstant();
+    public Instant CreatedAt { get; set; }
 
     /// <summary>
     ///     The time this `AccountRecovery` was used.
@@ -47,5 +45,5 @@ public class AccountRecovery
     /// </summary>
     /// <example>john.doe@example.com</example>
     [Required]
-    public Instant ExpiresAt { get; set; } = SystemClock.Instance.GetCurrentInstant() + Duration.FromHours(1);
+    public Instant ExpiresAt { get; set; }
 }

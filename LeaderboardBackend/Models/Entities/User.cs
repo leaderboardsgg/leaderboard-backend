@@ -76,11 +76,6 @@ public class User
     [Required]
     public UserRole Role { get; set; } = UserRole.Registered;
 
-    /// <summary>
-    ///      The list of account recoveries this user has attempted.
-    /// </summary>
-    public List<AccountRecovery>? AccountRecoveries { get; set; }
-
     public bool IsAdmin => Role == UserRole.Administrator;
 
     public override bool Equals(object? obj)
