@@ -19,7 +19,7 @@ public class AccountConfirmationService : IAccountConfirmationService
         return await _applicationContext.AccountConfirmations.FindAsync(id);
     }
 
-    public async Task<BadRole?> CreateConfirmationAndSendEmail(User user, CancellationToken token = default)
+    public async Task<CreateConfirmationResult> CreateConfirmationAndSendEmail(User user, CancellationToken token = default)
     {
         if (user.Role is not UserRole.Registered)
         {
@@ -38,16 +38,21 @@ public class AccountConfirmationService : IAccountConfirmationService
 
         await _applicationContext.SaveChangesAsync(token);
 
-#pragma warning disable CS4014 // Suppress no 'await' call
-        _emailSender.EnqueueEmailAsync(
-            user.Email,
-            // TODO: Finalise the title
-            "Confirmation",
-            GenerateAccountConfirmationEmailBody(user, newConfirmation)
-        );
-#pragma warning restore CS4014
+        try
+        {
+            await _emailSender.EnqueueEmailAsync(
+                user.Email,
+                // TODO: Finalise the title
+                "Confirmation",
+                GenerateAccountConfirmationEmailBody(user, newConfirmation)
+            );
+        }
+        catch
+        {
+            return new EmailFailed();
+        }
 
-        return null;
+        return newConfirmation;
     }
 
     // TODO: Finalise message contents

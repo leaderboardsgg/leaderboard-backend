@@ -152,11 +152,13 @@ public class AccountController : ControllerBase
 
         if (result.TryPickT0(out User user, out OneOf<BadCredentials, UserNotFound> errors))
         {
-            if (await confirmationService.CreateConfirmationAndSendEmail(user) is not null)
-            {
-                return Conflict();
-            };
-            return Ok();
+            CreateConfirmationResult r = await confirmationService.CreateConfirmationAndSendEmail(user);
+
+            return r.Match<ActionResult>(
+                confirmation => Ok(),
+                badRole => Conflict(),
+                emailFailed => Conflict()
+            );
         }
 
         return errors.Match<ActionResult>(

@@ -80,6 +80,36 @@ public class AccountConfirmationTests : IntegrationTestsBase
     }
 
     [Test]
+    public async Task ResendConfirmation_EmailFailedToSend()
+    {
+        Mock<IEmailSender> emailSenderMock = new();
+        emailSenderMock.Setup(e =>
+            e.EnqueueEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())
+        ).Throws(new System.Exception());
+        HttpClient client = s_factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddScoped<IEmailSender>(_ => emailSenderMock.Object);
+            });
+        })
+        .CreateClient();
+
+        IUserService userService = _scope.ServiceProvider.GetRequiredService<IUserService>();
+        CreateUserResult result = await userService.CreateUser(new()
+        {
+            Email = "email",
+            Password = "password",
+            Username = "username",
+        });
+        string token = _authService.GenerateJSONWebToken(result.AsT0);
+
+        client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
+        HttpResponseMessage res = await client.PostAsync(Routes.RESEND_CONFIRMATION, null);
+        res.Should().HaveStatusCode(HttpStatusCode.Conflict);
+    }
+
+    [Test]
     public async Task ResendConfirmation_Success()
     {
         Mock<IEmailSender> emailSenderMock = new();
