@@ -222,10 +222,6 @@ dotnet_naming_rule.const_field_should_be_all_capital.severity = warning
 dotnet_naming_rule.const_field_should_be_all_capital.symbols = const_field
 dotnet_naming_rule.const_field_should_be_all_capital.style = all_capital
 
-dotnet_naming_rule.static_field_should_be_s_underscored.severity = none
-dotnet_naming_rule.static_field_should_be_s_underscored.symbols = static_field
-dotnet_naming_rule.static_field_should_be_s_underscored.style = static_underscored
-
 dotnet_naming_rule.field_should_be_underscored.severity = warning
 dotnet_naming_rule.field_should_be_underscored.symbols = field
 dotnet_naming_rule.field_should_be_underscored.style = underscored
@@ -288,11 +284,6 @@ dotnet_naming_style.underscored.required_prefix = _
 dotnet_naming_style.underscored.required_suffix =
 dotnet_naming_style.underscored.word_separator =
 dotnet_naming_style.underscored.capitalization = camel_case
-
-dotnet_naming_style.static_underscored.required_prefix = s_
-dotnet_naming_style.static_underscored.required_suffix =
-dotnet_naming_style.static_underscored.word_separator =
-dotnet_naming_style.static_underscored.capitalization = camel_case
 
 dotnet_naming_style.all_capital.required_prefix =
 dotnet_naming_style.all_capital.required_suffix =
