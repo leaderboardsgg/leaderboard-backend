@@ -18,7 +18,7 @@ public class RegistrationTests : IntegrationTestsBase
 {
     private const string REGISTER_URI = "/account/register";
 
-    private static readonly Faker<RegisterRequest> s_registerReqFaker = new AutoFaker<RegisterRequest>()
+    private static readonly Faker<RegisterRequest> _registerReqFaker = new AutoFaker<RegisterRequest>()
         .RuleFor(x => x.Username, b => "TestUser" + b.Random.Number(99999))
         .RuleFor(x => x.Password, b => "c00l_pAssword")
         .RuleFor(x => x.Email, b => "TestUser" + b.Internet.Email());
@@ -26,7 +26,7 @@ public class RegistrationTests : IntegrationTestsBase
     [Test]
     public async Task Register_ValidRequest_CreatesAndReturnsUser()
     {
-        RegisterRequest request = s_registerReqFaker.Generate();
+        RegisterRequest request = _registerReqFaker.Generate();
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(REGISTER_URI, request);
 
@@ -38,7 +38,7 @@ public class RegistrationTests : IntegrationTestsBase
             Username = request.Username
         });
 
-        using IServiceScope scope = s_factory.Services.CreateScope();
+        using IServiceScope scope = _factory.Services.CreateScope();
         using ApplicationContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         User? createdUser = dbContext.Users.FirstOrDefault(u => u.Id == content.Id);
         createdUser.Should().NotBeNull().And.BeEquivalentTo(new User
@@ -54,7 +54,7 @@ public class RegistrationTests : IntegrationTestsBase
     [Test]
     public async Task Register_InvalidEmailFormat_ReturnsErrorCode()
     {
-        RegisterRequest request = s_registerReqFaker.Generate() with { Email = "not_an_email" };
+        RegisterRequest request = _registerReqFaker.Generate() with { Email = "not_an_email" };
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(REGISTER_URI, request);
 
@@ -70,7 +70,7 @@ public class RegistrationTests : IntegrationTestsBase
     [Test]
     public async Task Register_InvalidUsername_ReturnsUsernameFormatErrorCode()
     {
-        RegisterRequest request = s_registerReqFaker.Generate() with { Username = "山" };
+        RegisterRequest request = _registerReqFaker.Generate() with { Username = "山" };
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(REGISTER_URI, request);
 
@@ -86,7 +86,7 @@ public class RegistrationTests : IntegrationTestsBase
     [Test]
     public async Task Register_InvalidPassword_ReturnsPasswordFormatErrorCode()
     {
-        RegisterRequest request = s_registerReqFaker.Generate() with { Password = "a" };
+        RegisterRequest request = _registerReqFaker.Generate() with { Password = "a" };
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(REGISTER_URI, request);
 
@@ -102,9 +102,9 @@ public class RegistrationTests : IntegrationTestsBase
     [Test]
     public async Task Register_UsernameAlreadyTaken_ReturnsConflictAndErrorCode()
     {
-        RegisterRequest createExistingUserReq = s_registerReqFaker.Generate();
+        RegisterRequest createExistingUserReq = _registerReqFaker.Generate();
         await Client.PostAsJsonAsync(REGISTER_URI, createExistingUserReq);
-        RegisterRequest request = s_registerReqFaker.Generate() with { Username = createExistingUserReq.Username.ToLower() };
+        RegisterRequest request = _registerReqFaker.Generate() with { Username = createExistingUserReq.Username.ToLower() };
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(REGISTER_URI, request);
 
@@ -120,9 +120,9 @@ public class RegistrationTests : IntegrationTestsBase
     [Test]
     public async Task Register_EmailAlreadyUsed_ReturnsConflictAndErrorCode()
     {
-        RegisterRequest createExistingUserReq = s_registerReqFaker.Generate();
+        RegisterRequest createExistingUserReq = _registerReqFaker.Generate();
         await Client.PostAsJsonAsync(REGISTER_URI, createExistingUserReq);
-        RegisterRequest request = s_registerReqFaker.Generate() with { Email = createExistingUserReq.Email.ToLower() };
+        RegisterRequest request = _registerReqFaker.Generate() with { Email = createExistingUserReq.Email.ToLower() };
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(REGISTER_URI, request);
 

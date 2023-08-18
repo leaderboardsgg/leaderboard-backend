@@ -12,31 +12,31 @@ namespace LeaderboardBackend.Test;
 [TestFixture]
 internal class Categories
 {
-    private static TestApiClient s_apiClient = null!;
-    private static TestApiFactory s_factory = null!;
-    private static string? s_jwt;
+    private static TestApiClient _apiClient = null!;
+    private static TestApiFactory _factory = null!;
+    private static string? _jwt;
 
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        s_factory = new TestApiFactory();
-        s_apiClient = s_factory.CreateTestApiClient();
+        _factory = new TestApiFactory();
+        _apiClient = _factory.CreateTestApiClient();
 
-        s_factory.ResetDatabase();
-        s_jwt = (await s_apiClient.LoginAdminUser()).Token;
+        _factory.ResetDatabase();
+        _jwt = (await _apiClient.LoginAdminUser()).Token;
     }
 
     [OneTimeTearDown]
     public void OneTimeTearDown()
     {
-        s_factory.Dispose();
+        _factory.Dispose();
     }
 
     [Test]
     public static void GetCategory_Unauthorized()
     {
         RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(
-            async () => await s_apiClient.Get<CategoryViewModel>($"/api/categories/1", new())
+            async () => await _apiClient.Get<CategoryViewModel>($"/api/categories/1", new())
         )!;
 
         Assert.AreEqual(HttpStatusCode.Unauthorized, e.Response.StatusCode);
@@ -47,9 +47,9 @@ internal class Categories
     {
         RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(
             async () =>
-                await s_apiClient.Get<CategoryViewModel>(
+                await _apiClient.Get<CategoryViewModel>(
                     $"/api/categories/69",
-                    new() { Jwt = s_jwt }
+                    new() { Jwt = _jwt }
                 )
         )!;
 
@@ -59,7 +59,7 @@ internal class Categories
     [Test]
     public static async Task CreateCategory_GetCategory_OK()
     {
-        LeaderboardViewModel createdLeaderboard = await s_apiClient.Post<LeaderboardViewModel>(
+        LeaderboardViewModel createdLeaderboard = await _apiClient.Post<LeaderboardViewModel>(
             "/api/leaderboards",
             new()
             {
@@ -68,11 +68,11 @@ internal class Categories
                     Name = Generators.GenerateRandomString(),
                     Slug = Generators.GenerateRandomString()
                 },
-                Jwt = s_jwt
+                Jwt = _jwt
             }
         );
 
-        CategoryViewModel createdCategory = await s_apiClient.Post<CategoryViewModel>(
+        CategoryViewModel createdCategory = await _apiClient.Post<CategoryViewModel>(
             "/api/categories",
             new()
             {
@@ -82,13 +82,13 @@ internal class Categories
                     Slug = Generators.GenerateRandomString(),
                     LeaderboardId = createdLeaderboard.Id
                 },
-                Jwt = s_jwt
+                Jwt = _jwt
             }
         );
 
-        CategoryViewModel retrievedCategory = await s_apiClient.Get<CategoryViewModel>(
+        CategoryViewModel retrievedCategory = await _apiClient.Get<CategoryViewModel>(
             $"/api/categories/{createdCategory?.Id}",
-            new() { Jwt = s_jwt }
+            new() { Jwt = _jwt }
         );
 
         Assert.AreEqual(createdCategory, retrievedCategory);

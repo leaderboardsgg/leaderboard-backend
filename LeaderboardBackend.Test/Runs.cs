@@ -13,26 +13,26 @@ namespace LeaderboardBackend.Test
     [TestFixture]
     internal class Runs
     {
-        private static TestApiClient s_apiClient = null!;
-        private static TestApiFactory s_factory = null!;
-        private static string s_jwt = null!;
-        private static long s_categoryId;
+        private static TestApiClient _apiClient = null!;
+        private static TestApiFactory _factory = null!;
+        private static string _jwt = null!;
+        private static long _categoryId;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            s_factory = new TestApiFactory();
-            s_apiClient = s_factory.CreateTestApiClient();
+            _factory = new TestApiFactory();
+            _apiClient = _factory.CreateTestApiClient();
         }
 
         [SetUp]
         public async Task SetUp()
         {
-            s_factory.ResetDatabase();
+            _factory.ResetDatabase();
 
-            s_jwt = (await s_apiClient.LoginAdminUser()).Token;
+            _jwt = (await _apiClient.LoginAdminUser()).Token;
 
-            LeaderboardViewModel createdLeaderboard = await s_apiClient.Post<LeaderboardViewModel>(
+            LeaderboardViewModel createdLeaderboard = await _apiClient.Post<LeaderboardViewModel>(
                 "/api/leaderboards",
                 new()
                 {
@@ -41,11 +41,11 @@ namespace LeaderboardBackend.Test
                         Name = Generators.GenerateRandomString(),
                         Slug = Generators.GenerateRandomString(),
                     },
-                    Jwt = s_jwt,
+                    Jwt = _jwt,
                 }
             );
 
-            CategoryViewModel createdCategory = await s_apiClient.Post<CategoryViewModel>(
+            CategoryViewModel createdCategory = await _apiClient.Post<CategoryViewModel>(
                 "/api/categories",
                 new()
                 {
@@ -55,11 +55,11 @@ namespace LeaderboardBackend.Test
                         Slug = Generators.GenerateRandomString(),
                         LeaderboardId = createdLeaderboard.Id,
                     },
-                    Jwt = s_jwt,
+                    Jwt = _jwt,
                 }
             );
 
-            s_categoryId = createdCategory.Id;
+            _categoryId = createdCategory.Id;
         }
 
         [Test]
@@ -78,18 +78,18 @@ namespace LeaderboardBackend.Test
         {
             RunViewModel createdRun = await CreateRun();
 
-            CategoryViewModel category = await s_apiClient.Get<CategoryViewModel>(
+            CategoryViewModel category = await _apiClient.Get<CategoryViewModel>(
                 $"api/runs/{createdRun.Id}/category",
-                new() { Jwt = s_jwt }
+                new() { Jwt = _jwt }
             );
 
             Assert.NotNull(category);
-            Assert.AreEqual(category.Id, s_categoryId);
+            Assert.AreEqual(category.Id, _categoryId);
         }
 
         private static async Task<RunViewModel> CreateRun()
         {
-            return await s_apiClient.Post<RunViewModel>(
+            return await _apiClient.Post<RunViewModel>(
                 "/api/runs",
                 new()
                 {
@@ -97,16 +97,16 @@ namespace LeaderboardBackend.Test
                     {
                         PlayedOn = LocalDate.MinIsoValue,
                         SubmittedAt = Instant.MaxValue,
-                        CategoryId = s_categoryId
+                        CategoryId = _categoryId
                     },
-                    Jwt = s_jwt
+                    Jwt = _jwt
                 }
             );
         }
 
         private static async Task<RunViewModel> GetRun(Guid id)
         {
-            return await s_apiClient.Get<RunViewModel>($"/api/runs/{id}", new() { Jwt = s_jwt });
+            return await _apiClient.Get<RunViewModel>($"/api/runs/{id}", new() { Jwt = _jwt });
         }
     }
 }
