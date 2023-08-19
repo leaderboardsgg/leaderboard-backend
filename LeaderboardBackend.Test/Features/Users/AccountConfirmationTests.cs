@@ -106,7 +106,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
 
         client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
         HttpResponseMessage res = await client.PostAsync(Routes.RESEND_CONFIRMATION, null);
-        res.Should().HaveStatusCode(HttpStatusCode.Conflict);
+        res.Should().HaveStatusCode(HttpStatusCode.InternalServerError);
     }
 
     [Test]
@@ -136,7 +136,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
         emailSenderMock.Verify(x =>
             x.EnqueueEmailAsync(
                 "email",
-                "Confirmation",
+                "Confirm Your Account",
                 It.IsAny<string>()
             ),
             Times.Once()

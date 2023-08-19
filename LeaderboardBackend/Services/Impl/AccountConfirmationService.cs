@@ -42,13 +42,13 @@ public class AccountConfirmationService : IAccountConfirmationService
         {
             await _emailSender.EnqueueEmailAsync(
                 user.Email,
-                // TODO: Finalise the title
-                "Confirmation",
+                "Confirm Your Account",
                 GenerateAccountConfirmationEmailBody(user, newConfirmation)
             );
         }
         catch
         {
+            // TODO: Log/otherwise handle the fact that the email failed to be queued - zysim
             return new EmailFailed();
         }
 

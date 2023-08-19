@@ -134,12 +134,17 @@ public class AccountController : ControllerBase
     /// <response code="409">
     ///     The `User`'s account has already been confirmed.
     /// </response>
+    /// <response code="500">
+    ///     The account recovery email failed to be created.
+    /// </response>
     [HttpPost("confirm")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> ResendConfirmation(
         [FromServices] IAuthService authService,
         [FromServices] IAccountConfirmationService confirmationService,
@@ -157,7 +162,7 @@ public class AccountController : ControllerBase
             return r.Match<ActionResult>(
                 confirmation => Ok(),
                 badRole => Conflict(),
-                emailFailed => Conflict()
+                emailFailed => StatusCode(StatusCodes.Status500InternalServerError)
             );
         }
 

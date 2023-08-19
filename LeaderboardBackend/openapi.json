@@ -236,6 +236,9 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "The account recovery email failed to be created."
           }
         }
       }
