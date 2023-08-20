@@ -282,11 +282,8 @@ builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, MiddlewareR
 WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "LeaderboardBackend v1"));
-}
+app.UseSwagger();
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "LeaderboardBackend v1"));
 
 // Database creation / migration
 using (IServiceScope scope = app.Services.CreateScope())
