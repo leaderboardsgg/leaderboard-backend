@@ -26,11 +26,13 @@ public class AccountConfirmationService : IAccountConfirmationService
             return new BadRole();
         }
 
+        Instant now = SystemClock.Instance.GetCurrentInstant();
+
         AccountConfirmation newConfirmation =
             new()
             {
-                CreatedAt = SystemClock.Instance.GetCurrentInstant(),
-                ExpiresAt = SystemClock.Instance.GetCurrentInstant() + Duration.FromHours(1),
+                CreatedAt = now,
+                ExpiresAt = now + Duration.FromHours(1),
                 UserId = user.Id,
             };
 
