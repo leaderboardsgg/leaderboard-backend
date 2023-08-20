@@ -22,11 +22,11 @@ public class LoginTests : IntegrationTestsBase
     [OneTimeSetUp]
     public void Init()
     {
-        s_factory.ResetDatabase();
+        _factory.ResetDatabase();
 
         // TODO: Swap to creating users via the UserService instead of calling the DB, once
         // it has the ability to change a user's roles.
-        using IServiceScope s = s_factory.Services.CreateScope();
+        using IServiceScope s = _factory.Services.CreateScope();
         ApplicationContext dbContext = s.ServiceProvider.GetRequiredService<ApplicationContext>();
         dbContext.Users.AddRange(new[]
         {
@@ -60,7 +60,7 @@ public class LoginTests : IntegrationTestsBase
         LoginResponse? content = await res.Content.ReadFromJsonAsync<LoginResponse>();
         content.Should().NotBeNull();
 
-        using IServiceScope s = s_factory.Services.CreateScope();
+        using IServiceScope s = _factory.Services.CreateScope();
         JwtConfig jwtConfig = s.ServiceProvider.GetRequiredService<IOptions<JwtConfig>>().Value;
         TokenValidationParameters parameters = Jwt.ValidationParameters.GetInstance(jwtConfig);
 

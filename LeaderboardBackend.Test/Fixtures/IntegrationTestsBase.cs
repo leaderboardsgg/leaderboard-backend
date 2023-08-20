@@ -8,18 +8,18 @@ public abstract class IntegrationTestsBase
 {
     protected HttpClient Client { get; private set; } = null!;
 
-    protected static readonly TestApiFactory s_factory = new();
+    protected static readonly TestApiFactory _factory = new();
 
     [OneTimeSetUp]
     public void OneTimeSetup()
     {
-        s_factory.InitializeDatabase();
+        _factory.InitializeDatabase();
     }
 
     [SetUp]
     public void SetUp()
     {
-        Client = s_factory.CreateClient();
+        Client = _factory.CreateClient();
     }
 
     protected void SetClientBearer(string token)

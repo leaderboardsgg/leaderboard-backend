@@ -14,9 +14,9 @@ namespace LeaderboardBackend.Test;
 [TestFixture]
 internal class Leaderboards
 {
-    private static TestApiClient s_apiClient = null!;
-    private static TestApiFactory s_factory = null!;
-    private static string? s_jwt;
+    private static TestApiClient _apiClient = null!;
+    private static TestApiFactory _factory = null!;
+    private static string? _jwt;
 
     private readonly Faker<CreateLeaderboardRequest> _createBoardReqFaker =
         new AutoFaker<CreateLeaderboardRequest>().RuleFor(
@@ -27,17 +27,17 @@ internal class Leaderboards
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        s_factory = new TestApiFactory();
-        s_apiClient = s_factory.CreateTestApiClient();
+        _factory = new TestApiFactory();
+        _apiClient = _factory.CreateTestApiClient();
 
-        s_factory.ResetDatabase();
-        s_jwt = (await s_apiClient.LoginAdminUser()).Token;
+        _factory.ResetDatabase();
+        _jwt = (await _apiClient.LoginAdminUser()).Token;
     }
 
     [OneTimeTearDown]
     public void OneTimeTearDown()
     {
-        s_factory.Dispose();
+        _factory.Dispose();
     }
 
     [Test]
@@ -45,7 +45,7 @@ internal class Leaderboards
     {
         RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(
             async () =>
-                await s_apiClient.Get<LeaderboardViewModel>(
+                await _apiClient.Get<LeaderboardViewModel>(
                     $"/api/leaderboards/{long.MaxValue}",
                     new()
                 )
@@ -58,12 +58,12 @@ internal class Leaderboards
     public async Task CreateLeaderboard_GetLeaderboard_OK()
     {
         CreateLeaderboardRequest req = _createBoardReqFaker.Generate();
-        LeaderboardViewModel createdLeaderboard = await s_apiClient.Post<LeaderboardViewModel>(
+        LeaderboardViewModel createdLeaderboard = await _apiClient.Post<LeaderboardViewModel>(
             "/api/leaderboards",
-            new() { Body = req, Jwt = s_jwt }
+            new() { Body = req, Jwt = _jwt }
         );
 
-        LeaderboardViewModel retrievedLeaderboard = await s_apiClient.Get<LeaderboardViewModel>(
+        LeaderboardViewModel retrievedLeaderboard = await _apiClient.Get<LeaderboardViewModel>(
             $"/api/leaderboards/{createdLeaderboard?.Id}",
             new()
         );
@@ -86,9 +86,9 @@ internal class Leaderboards
             .GenerateBetween(3, 10)
             .Select(
                 req =>
-                    s_apiClient.Post<LeaderboardViewModel>(
+                    _apiClient.Post<LeaderboardViewModel>(
                         "/api/leaderboards",
-                        new() { Body = req, Jwt = s_jwt }
+                        new() { Body = req, Jwt = _jwt }
                     )
             );
         LeaderboardViewModel[] createdLeaderboards = await Task.WhenAll(boardCreationTasks);
@@ -96,7 +96,7 @@ internal class Leaderboards
         IEnumerable<long> leaderboardIds = createdLeaderboards.Select(l => l.Id).ToList();
         string leaderboardIdQuery = ListToQueryString(leaderboardIds, "ids");
 
-        List<LeaderboardViewModel> leaderboards = await s_apiClient.Get<List<LeaderboardViewModel>>(
+        List<LeaderboardViewModel> leaderboards = await _apiClient.Get<List<LeaderboardViewModel>>(
             $"api/leaderboards?{leaderboardIdQuery}",
             new()
         );
@@ -108,21 +108,21 @@ internal class Leaderboards
     public async Task GetLeaderboards_BySlug_OK()
     {
         CreateLeaderboardRequest createReqBody = _createBoardReqFaker.Generate();
-        LeaderboardViewModel createdLeaderboard = await s_apiClient.Post<LeaderboardViewModel>(
+        LeaderboardViewModel createdLeaderboard = await _apiClient.Post<LeaderboardViewModel>(
             "/api/leaderboards",
-            new() { Body = createReqBody, Jwt = s_jwt }
+            new() { Body = createReqBody, Jwt = _jwt }
         );
 
         // create random unrelated boards
         foreach (CreateLeaderboardRequest req in _createBoardReqFaker.Generate(2))
         {
-            await s_apiClient.Post<LeaderboardViewModel>(
+            await _apiClient.Post<LeaderboardViewModel>(
                 "/api/leaderboards",
-                new() { Body = req, Jwt = s_jwt }
+                new() { Body = req, Jwt = _jwt }
             );
         }
 
-        LeaderboardViewModel leaderboard = await s_apiClient.Get<LeaderboardViewModel>(
+        LeaderboardViewModel leaderboard = await _apiClient.Get<LeaderboardViewModel>(
             $"api/leaderboards/{createReqBody.Slug}",
             new()
         );
@@ -136,16 +136,16 @@ internal class Leaderboards
         // populate with unrelated boards
         foreach (CreateLeaderboardRequest req in _createBoardReqFaker.Generate(2))
         {
-            await s_apiClient.Post<LeaderboardViewModel>(
+            await _apiClient.Post<LeaderboardViewModel>(
                 "/api/leaderboards",
-                new() { Body = req, Jwt = s_jwt }
+                new() { Body = req, Jwt = _jwt }
             );
         }
 
         CreateLeaderboardRequest reqForInexistentBoard = _createBoardReqFaker.Generate();
 
         RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(
-            () => s_apiClient.Get<string>($"/api/leaderboards/{reqForInexistentBoard.Slug}", new())
+            () => _apiClient.Get<string>($"/api/leaderboards/{reqForInexistentBoard.Slug}", new())
         )!;
 
         e.Response.StatusCode.Should().Be(HttpStatusCode.NotFound);
