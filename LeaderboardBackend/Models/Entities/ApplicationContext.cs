@@ -18,6 +18,7 @@ public class ApplicationContext : DbContext
     public ApplicationContext(DbContextOptions<ApplicationContext> options)
         : base(options) { }
 
+    public DbSet<AccountRecovery> AccountRecoveries { get; set; } = null!;
     public DbSet<Category> Categories { get; set; } = null!;
     public DbSet<Leaderboard> Leaderboards { get; set; } = null!;
     public DbSet<Run> Runs { get; set; } = null!;
