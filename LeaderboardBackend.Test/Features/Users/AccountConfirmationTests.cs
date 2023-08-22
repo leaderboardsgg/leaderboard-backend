@@ -9,6 +9,7 @@ using LeaderboardBackend.Test.Fixtures;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using NodaTime;
 using NUnit.Framework;
 
 namespace LeaderboardBackend.Test.Features.Users;
@@ -36,7 +37,6 @@ public class AccountConfirmationTests : IntegrationTestsBase
     [Test]
     public async Task ResendConfirmation_Unauthorised()
     {
-
         HttpResponseMessage res = await Client.PostAsync(Routes.RESEND_CONFIRMATION, null);
         res.Should().HaveStatusCode(HttpStatusCode.Unauthorized);
     }
@@ -142,7 +142,8 @@ public class AccountConfirmationTests : IntegrationTestsBase
             Times.Once()
         );
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        context.AccountConfirmations.FirstOrDefault(c => c.UserId == result.AsT0.Id)
-            .Should().NotBeNull();
+        AccountConfirmation confirmation = context.AccountConfirmations.First(c => c.UserId == result.AsT0.Id);
+        confirmation.Should().NotBeNull();
+        Instant.Subtract(confirmation.ExpiresAt, confirmation.CreatedAt).Should().Be(Duration.FromHours(1));
     }
 }
