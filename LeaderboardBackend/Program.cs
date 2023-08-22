@@ -22,8 +22,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NodaTime;
 using Npgsql;
-using BCryptNet = BCrypt.Net.BCrypt;
 
 #region WebApplicationBuilder
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -104,6 +104,7 @@ builder.Services.AddScoped<IAccountConfirmationService, AccountConfirmationServi
 builder.Services.AddScoped<IRunService, RunService>();
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
 builder.Services.AddSingleton<ISmtpClient>(_ => new SmtpClient() { Timeout = 3000 });
+builder.Services.AddSingleton<IClock>(_ => SystemClock.Instance);
 
 AppConfig? appConfig = builder.Configuration.Get<AppConfig>();
 if (!string.IsNullOrWhiteSpace(appConfig?.AllowedOrigins))

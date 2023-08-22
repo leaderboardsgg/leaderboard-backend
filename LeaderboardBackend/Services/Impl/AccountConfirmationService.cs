@@ -7,11 +7,13 @@ public class AccountConfirmationService : IAccountConfirmationService
 {
     private readonly ApplicationContext _applicationContext;
     private readonly IEmailSender _emailSender;
+    private readonly IClock _clock;
 
-    public AccountConfirmationService(ApplicationContext applicationContext, IEmailSender emailSender)
+    public AccountConfirmationService(ApplicationContext applicationContext, IEmailSender emailSender, IClock clock)
     {
         _applicationContext = applicationContext;
         _emailSender = emailSender;
+        _clock = clock;
     }
 
     public async Task<AccountConfirmation?> GetConfirmationById(Guid id)
@@ -26,7 +28,7 @@ public class AccountConfirmationService : IAccountConfirmationService
             return new BadRole();
         }
 
-        Instant now = SystemClock.Instance.GetCurrentInstant();
+        Instant now = _clock.GetCurrentInstant();
 
         AccountConfirmation newConfirmation =
             new()

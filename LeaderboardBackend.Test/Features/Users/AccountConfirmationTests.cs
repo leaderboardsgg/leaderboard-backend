@@ -23,14 +23,14 @@ public class AccountConfirmationTests : IntegrationTestsBase
     [SetUp]
     public void Init()
     {
-        _scope = s_factory.Services.CreateScope();
+        _scope = _factory.Services.CreateScope();
         _authService = _scope.ServiceProvider.GetRequiredService<IAuthService>();
     }
 
     [TearDown]
     public void TearDown()
     {
-        s_factory.ResetDatabase();
+        _factory.ResetDatabase();
         _scope.Dispose();
     }
 
@@ -86,7 +86,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
         emailSenderMock.Setup(e =>
             e.EnqueueEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())
         ).Throws(new System.Exception());
-        HttpClient client = s_factory.WithWebHostBuilder(builder =>
+        HttpClient client = _factory.WithWebHostBuilder(builder =>
         {
             builder.ConfigureTestServices(services =>
             {
@@ -113,7 +113,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
     public async Task ResendConfirmation_Success()
     {
         Mock<IEmailSender> emailSenderMock = new();
-        HttpClient client = s_factory.WithWebHostBuilder(builder =>
+        HttpClient client = _factory.WithWebHostBuilder(builder =>
         {
             builder.ConfigureTestServices(services =>
             {
