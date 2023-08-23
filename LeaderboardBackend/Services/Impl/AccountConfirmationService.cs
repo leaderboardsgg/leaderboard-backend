@@ -59,7 +59,13 @@ public class AccountConfirmationService : IAccountConfirmationService
         return newConfirmation;
     }
 
-    // TODO: Finalise message contents
     private string GenerateAccountConfirmationEmailBody(User user, AccountConfirmation confirmation) =>
-        $@"Hi {user.Username},<br/><br/>Click <a href=""/confirm-account?code={Convert.ToBase64String(confirmation.Id.ToByteArray())}"">here</a> to confirm your account.";
+        $@"Hi {user.Username},<br/><br/>Click <a href=""https://leaderboards.gg/confirm-account?code={EncodeIdForEmail(confirmation)}""here</a> to confirm your account.";
+
+    // Copy of https://datatracker.ietf.org/doc/html/rfc7515#page-55
+    private string EncodeIdForEmail(AccountConfirmation confirmation)
+        => Convert.ToBase64String(confirmation.Id.ToByteArray())
+            .Split('=')[0]
+            .Replace('+', '-')
+            .Replace('/', '_');
 }
