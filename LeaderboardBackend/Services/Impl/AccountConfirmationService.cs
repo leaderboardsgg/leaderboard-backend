@@ -64,7 +64,7 @@ public class AccountConfirmationService : IAccountConfirmationService
     {
         // Copy of https://datatracker.ietf.org/doc/html/rfc7515#page-55
         string encodedConfirmationId = Convert.ToBase64String(confirmation.Id.ToByteArray())
-            .Split('=')[0]
+            .TrimEnd('=')
             .Replace('+', '-')
             .Replace('/', '_');
         Uri link = new(AppConfig.BASE_PATH, $"confirm-account?code={encodedConfirmationId}");
