@@ -21,7 +21,7 @@ public class AccountConfirmationService : IAccountConfirmationService
         return await _applicationContext.AccountConfirmations.FindAsync(id);
     }
 
-    public async Task<CreateConfirmationResult> CreateConfirmationAndSendEmail(User user, CancellationToken token = default)
+    public async Task<CreateConfirmationResult> CreateConfirmationAndSendEmail(User user)
     {
         if (user.Role is not UserRole.Registered)
         {
@@ -40,7 +40,7 @@ public class AccountConfirmationService : IAccountConfirmationService
 
         _applicationContext.AccountConfirmations.Add(newConfirmation);
 
-        await _applicationContext.SaveChangesAsync(token);
+        await _applicationContext.SaveChangesAsync();
 
         try
         {
