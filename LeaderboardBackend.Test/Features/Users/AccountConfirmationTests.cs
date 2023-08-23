@@ -65,7 +65,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         User user = new()
         {
-            Email = "email",
+            Email = "test@email.com",
             Password = "password",
             Username = "username",
             Role = UserRole.Confirmed,
@@ -99,7 +99,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
         IUserService userService = _scope.ServiceProvider.GetRequiredService<IUserService>();
         CreateUserResult result = await userService.CreateUser(new()
         {
-            Email = "email",
+            Email = "test@email.com",
             Password = "password",
             Username = "username",
         });
@@ -126,7 +126,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
         IUserService userService = _scope.ServiceProvider.GetRequiredService<IUserService>();
         CreateUserResult result = await userService.CreateUser(new()
         {
-            Email = "email",
+            Email = "test@email.com",
             Password = "password",
             Username = "username",
         });
@@ -137,7 +137,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
         res.Should().HaveStatusCode(HttpStatusCode.OK);
         emailSenderMock.Verify(x =>
             x.EnqueueEmailAsync(
-                "email",
+                "test@email.com",
                 "Confirm Your Account",
                 It.IsAny<string>()
             ),
