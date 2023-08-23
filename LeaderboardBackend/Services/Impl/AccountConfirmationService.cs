@@ -1,3 +1,4 @@
+using System;
 using LeaderboardBackend.Models.Entities;
 using NodaTime;
 
@@ -59,13 +60,14 @@ public class AccountConfirmationService : IAccountConfirmationService
         return newConfirmation;
     }
 
-    private string GenerateAccountConfirmationEmailBody(User user, AccountConfirmation confirmation) =>
-        $@"Hi {user.Username},<br/><br/>Click <a href=""https://leaderboards.gg/confirm-account?code={EncodeIdForEmail(confirmation)}""here</a> to confirm your account.";
-
-    // Copy of https://datatracker.ietf.org/doc/html/rfc7515#page-55
-    private string EncodeIdForEmail(AccountConfirmation confirmation)
-        => Convert.ToBase64String(confirmation.Id.ToByteArray())
+    private string GenerateAccountConfirmationEmailBody(User user, AccountConfirmation confirmation)
+    {
+        // Copy of https://datatracker.ietf.org/doc/html/rfc7515#page-55
+        string encodedConfirmationId = Convert.ToBase64String(confirmation.Id.ToByteArray())
             .Split('=')[0]
             .Replace('+', '-')
             .Replace('/', '_');
+        Uri link = new(AppConfig.BASE_PATH, $"confirm-account?code={encodedConfirmationId}");
+        return $@"Hi {user.Username},<br/><br/>Click <a href=""{link.ToString()}""here</a> to confirm your account.";
+    }
 }
