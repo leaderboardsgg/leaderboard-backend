@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NodaTime;
+using NodaTime.Testing;
 using NUnit.Framework;
 
 namespace LeaderboardBackend.Test.Features.Users;
@@ -118,6 +119,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
             builder.ConfigureTestServices(services =>
             {
                 services.AddScoped<IEmailSender>(_ => emailSenderMock.Object);
+                services.AddSingleton<IClock, FakeClock>(_ => new(Instant.FromUnixTimeSeconds(1)));
             });
         })
         .CreateClient();
@@ -141,9 +143,12 @@ public class AccountConfirmationTests : IntegrationTestsBase
             ),
             Times.Once()
         );
+
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         AccountConfirmation confirmation = context.AccountConfirmations.First(c => c.UserId == result.AsT0.Id);
         confirmation.Should().NotBeNull();
+        confirmation.CreatedAt.ToUnixTimeSeconds().Should().Be(1);
+        confirmation.UsedAt.Should().BeNull();
         Instant.Subtract(confirmation.ExpiresAt, confirmation.CreatedAt).Should().Be(Duration.FromHours(1));
     }
 }
