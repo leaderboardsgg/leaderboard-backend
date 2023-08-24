@@ -9,7 +9,7 @@ public class AccountConfirmationService : IAccountConfirmationService
     private readonly ApplicationContext _applicationContext;
     private readonly IEmailSender _emailSender;
     private readonly IClock _clock;
-    private readonly IOptions<AppConfig> _appConfig;
+    private readonly AppConfig _appConfig;
 
     public AccountConfirmationService(
         ApplicationContext applicationContext,
@@ -21,7 +21,7 @@ public class AccountConfirmationService : IAccountConfirmationService
         _applicationContext = applicationContext;
         _emailSender = emailSender;
         _clock = clock;
-        _appConfig = appConfig;
+        _appConfig = appConfig.Value;
     }
 
     public async Task<AccountConfirmation?> GetConfirmationById(Guid id)
@@ -74,7 +74,7 @@ public class AccountConfirmationService : IAccountConfirmationService
             .TrimEnd('=')
             .Replace('+', '-')
             .Replace('/', '_');
-        UriBuilder builder = new(_appConfig.Value.WebsiteUrl!);
+        UriBuilder builder = new(_appConfig.WebsiteUrl);
         builder.Path = "confirm-account";
         builder.Query = $"code={encodedConfirmationId}";
         return $@"Hi {user.Username},<br/><br/>Click <a href=""{builder.Uri.ToString()}""here</a> to confirm your account.";
