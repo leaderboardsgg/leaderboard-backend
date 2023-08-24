@@ -1,5 +1,5 @@
-using System;
 using LeaderboardBackend.Models.Entities;
+using Microsoft.Extensions.Options;
 using NodaTime;
 
 namespace LeaderboardBackend.Services;
@@ -9,12 +9,19 @@ public class AccountConfirmationService : IAccountConfirmationService
     private readonly ApplicationContext _applicationContext;
     private readonly IEmailSender _emailSender;
     private readonly IClock _clock;
+    private readonly IOptions<AppConfig> _appConfig;
 
-    public AccountConfirmationService(ApplicationContext applicationContext, IEmailSender emailSender, IClock clock)
+    public AccountConfirmationService(
+        ApplicationContext applicationContext,
+        IEmailSender emailSender,
+        IClock clock,
+        IOptions<AppConfig> appConfig
+    )
     {
         _applicationContext = applicationContext;
         _emailSender = emailSender;
         _clock = clock;
+        _appConfig = appConfig;
     }
 
     public async Task<AccountConfirmation?> GetConfirmationById(Guid id)
@@ -67,7 +74,9 @@ public class AccountConfirmationService : IAccountConfirmationService
             .TrimEnd('=')
             .Replace('+', '-')
             .Replace('/', '_');
-        Uri link = new(AppConfig.BASE_PATH, $"confirm-account?code={encodedConfirmationId}");
-        return $@"Hi {user.Username},<br/><br/>Click <a href=""{link.ToString()}""here</a> to confirm your account.";
+        UriBuilder builder = new(_appConfig.Value.WebsiteUrl!);
+        builder.Path = "confirm-account";
+        builder.Query = $"code={encodedConfirmationId}";
+        return $@"Hi {user.Username},<br/><br/>Click <a href=""{builder.Uri.ToString()}""here</a> to confirm your account.";
     }
 }
