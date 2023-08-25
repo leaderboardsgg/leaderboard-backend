@@ -77,6 +77,6 @@ public class AccountConfirmationService : IAccountConfirmationService
         UriBuilder builder = new(_appConfig.WebsiteUrl);
         builder.Path = "confirm-account";
         builder.Query = $"code={encodedConfirmationId}";
-        return $@"Hi {user.Username},<br/><br/>Click <a href=""{builder.Uri.ToString()}""here</a> to confirm your account.";
+        return $@"Hi {user.Username},<br/><br/>Click <a href=""{builder.Uri.ToString()}"">here</a> to confirm your account.";
     }
 }
