@@ -5,7 +5,7 @@ app = "lbgg-backend-dev"
 
 [env]
   AllowedOrigins = "*"
-  WebsiteUrl = "https://leaderboards.gg"
+  WebsiteUrl = "https://lbgg.netlify.app"
 
 [deploy]
   strategy = "rolling"
