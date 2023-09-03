@@ -79,7 +79,7 @@ namespace LeaderboardBackend.Test
             RunViewModel createdRun = await CreateRun();
 
             CategoryViewModel category = await _apiClient.Get<CategoryViewModel>(
-                $"api/runs/{createdRun.Id}/category",
+                $"api/runs/{createdRun.Id.ToUrlSafeBase64String()}/category",
                 new() { Jwt = _jwt }
             );
 
@@ -106,7 +106,7 @@ namespace LeaderboardBackend.Test
 
         private static async Task<RunViewModel> GetRun(Guid id)
         {
-            return await _apiClient.Get<RunViewModel>($"/api/runs/{id}", new() { Jwt = _jwt });
+            return await _apiClient.Get<RunViewModel>($"/api/runs/{id.ToUrlSafeBase64String()}", new() { Jwt = _jwt });
         }
     }
 }
