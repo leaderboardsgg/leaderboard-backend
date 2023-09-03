@@ -184,6 +184,7 @@ builder.Services.AddSwaggerGen(c =>
 
     c.SupportNonNullableReferenceTypes();
     c.SchemaFilter<RequiredNotNullableSchemaFilter>();
+    c.MapType<Guid>(() => new OpenApiSchema { Type = "string", Pattern = "^[a-zA-Z0-9-_]{22}$" });
 });
 
 // Configure JWT Authentication.
