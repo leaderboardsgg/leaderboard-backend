@@ -135,6 +135,7 @@ builder.Services
     {
         // Enforces JSON output and causes OpenAPI UI to correctly show that we return JSON.
         opt.OutputFormatters.RemoveType<StringOutputFormatter>();
+        opt.ModelBinderProviders.Insert(0, new UrlSafeBase64GuidBinderProvider());
     })
     .AddJsonOptions(opt =>
     {
