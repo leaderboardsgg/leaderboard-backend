@@ -31,8 +31,7 @@ public class UrlSafeBase64GuidBinder : IModelBinder
             Guid guid = GuidExtensions.FromUrlSafeBase64String(value);
             bindingContext.Result = ModelBindingResult.Success(guid);
         }
-        catch (Exception e) when (e is ArgumentException || e is ArgumentNullException || e is FormatException) { }
-        finally
+        catch (Exception e) when (e is ArgumentException || e is ArgumentNullException || e is FormatException)
         {
             // Failure is already the default so no need to report it here.
         }
