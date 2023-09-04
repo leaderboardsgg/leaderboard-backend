@@ -135,6 +135,7 @@ builder.Services
     {
         // Enforces JSON output and causes OpenAPI UI to correctly show that we return JSON.
         opt.OutputFormatters.RemoveType<StringOutputFormatter>();
+        opt.ModelBinderProviders.Insert(0, new UrlSafeBase64GuidBinderProvider());
     })
     .AddJsonOptions(opt =>
     {
@@ -183,6 +184,7 @@ builder.Services.AddSwaggerGen(c =>
 
     c.SupportNonNullableReferenceTypes();
     c.SchemaFilter<RequiredNotNullableSchemaFilter>();
+    c.MapType<Guid>(() => new OpenApiSchema { Type = "string", Pattern = "^[a-zA-Z0-9-_]{22}$" });
 });
 
 // Configure JWT Authentication.
