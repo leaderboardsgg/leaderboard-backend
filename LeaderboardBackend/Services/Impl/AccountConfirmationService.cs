@@ -70,13 +70,9 @@ public class AccountConfirmationService : IAccountConfirmationService
     private string GenerateAccountConfirmationEmailBody(User user, AccountConfirmation confirmation)
     {
         // Copy of https://datatracker.ietf.org/doc/html/rfc7515#page-55
-        string encodedConfirmationId = Convert.ToBase64String(confirmation.Id.ToByteArray())
-            .TrimEnd('=')
-            .Replace('+', '-')
-            .Replace('/', '_');
         UriBuilder builder = new(_appConfig.WebsiteUrl);
         builder.Path = "confirm-account";
-        builder.Query = $"code={encodedConfirmationId}";
+        builder.Query = $"code={confirmation.Id.ToUrlSafeBase64String()}";
         return $@"Hi {user.Username},<br/><br/>Click <a href=""{builder.Uri.ToString()}"">here</a> to confirm your account.";
     }
 }
