@@ -5,6 +5,8 @@ on:
     pull_request:
 env:
   HUSKY: 0
+  FEATURE__ACCOUNTREGISTRATION: true
+  FEATURE__LOGIN: true
 jobs:
     backend-test:
         runs-on: ubuntu-latest
