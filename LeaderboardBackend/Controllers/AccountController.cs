@@ -6,8 +6,8 @@ using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OneOf;
 using Microsoft.FeatureManagement.Mvc;
+using OneOf;
 
 namespace LeaderboardBackend.Controllers;
 
