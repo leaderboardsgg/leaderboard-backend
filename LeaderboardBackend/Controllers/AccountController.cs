@@ -116,7 +116,6 @@ public class AccountController : ControllerBase
             badCredentials => Unauthorized()
         );
     }
-#pragma warning restore CS1573
 
     /// <summary>
     ///     Resends the account confirmation link.
