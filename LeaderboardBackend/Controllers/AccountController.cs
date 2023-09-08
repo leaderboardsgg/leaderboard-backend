@@ -121,9 +121,7 @@ public class AccountController : ControllerBase
     /// <summary>
     ///     Resends the account confirmation link.
     /// </summary>
-    /// <param name="authService">IAuthService dependency.</param>
     /// <param name="confirmationService">IAccountConfirmationService dependency.</param>
-    /// <param name="emailSender">EmailSender dependency.</param>
     /// <response code="200">A new confirmation link was generated.</response>
     /// <response code="400">
     ///     The request was malformed.
@@ -146,9 +144,7 @@ public class AccountController : ControllerBase
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> ResendConfirmation(
-        [FromServices] IAuthService authService,
-        [FromServices] IAccountConfirmationService confirmationService,
-        [FromServices] IEmailSender emailSender
+        [FromServices] IAccountConfirmationService confirmationService
     )
     {
         // TODO: Handle rate limiting (429 case) - zysim
