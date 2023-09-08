@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using OneOf;
@@ -10,6 +11,7 @@ public interface IUserService
     Task<User?> GetUserById(Guid id);
     // TODO: Convert return sig to Task<GetUserResult>
     Task<User?> GetUserByEmail(string email);
+    Task<GetUserResult> GetUserFromClaims(ClaimsPrincipal claims);
     Task<LoginResult> LoginByEmailAndPassword(string email, string password);
     // TODO: Convert return sig to Task<GetUserResult>
     Task<User?> GetUserByName(string name);
@@ -28,3 +30,6 @@ public partial class LoginResult : OneOfBase<string, UserNotFound, UserBanned, B
 public readonly record struct UserNotFound();
 public readonly record struct UserBanned();
 public readonly record struct BadCredentials();
+
+[GenerateOneOf]
+public partial class GetUserResult : OneOfBase<User, BadCredentials, UserNotFound> { }

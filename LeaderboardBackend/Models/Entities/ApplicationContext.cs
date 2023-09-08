@@ -20,6 +20,7 @@ public class ApplicationContext : DbContext
 
     public DbSet<AccountRecovery> AccountRecoveries { get; set; } = null!;
     public DbSet<Category> Categories { get; set; } = null!;
+    public DbSet<AccountConfirmation> AccountConfirmations { get; set; } = null!;
     public DbSet<Leaderboard> Leaderboards { get; set; } = null!;
     public DbSet<Run> Runs { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,25 @@ public class UserService : IUserService
     public async Task<User?> GetUserById(Guid id)
     {
         return await _applicationContext.Users.FindAsync(id);
+    }
+
+    public async Task<GetUserResult> GetUserFromClaims(ClaimsPrincipal claims)
+    {
+        Guid? id = _authService.GetUserIdFromClaims(claims);
+
+        if (id is null)
+        {
+            return new BadCredentials();
+        }
+
+        User? user = await _applicationContext.Users.FindAsync(id);
+
+        if (user is null)
+        {
+            return new UserNotFound();
+        }
+
+        return user;
     }
 
     // TODO: Convert return sig to Task<GetUserResult>

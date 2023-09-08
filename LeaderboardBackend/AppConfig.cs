@@ -4,6 +4,7 @@ namespace LeaderboardBackend;
 
 public class AppConfig
 {
+    public Uri WebsiteUrl { get; set; } = null!;
     public string? EnvPath { get; set; } = ".env";
     public string AllowedOrigins { get; set; } = string.Empty;
 
@@ -15,5 +16,6 @@ public class AppConfigValidator : AbstractValidator<AppConfig>
     public AppConfigValidator(IWebHostEnvironment env)
     {
         RuleFor(x => x.AllowedOrigins).NotEmpty().When(x => env.IsProduction());
+        RuleFor(x => x.WebsiteUrl).NotNull().Must(u => u.IsAbsoluteUri);
     }
 }

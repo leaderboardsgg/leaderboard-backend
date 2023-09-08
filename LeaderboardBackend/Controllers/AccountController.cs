@@ -1,9 +1,11 @@
 using LeaderboardBackend.Controllers.Annotations;
+using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OneOf;
 
 namespace LeaderboardBackend.Controllers;
 
@@ -112,6 +114,62 @@ public class AccountController : ControllerBase
             notFound => NotFound(),
             banned => Forbid(),
             badCredentials => Unauthorized()
+        );
+    }
+#pragma warning restore CS1573
+
+    /// <summary>
+    ///     Resends the account confirmation link.
+    /// </summary>
+    /// <param name="authService">IAuthService dependency.</param>
+    /// <param name="confirmationService">IAccountConfirmationService dependency.</param>
+    /// <param name="emailSender">EmailSender dependency.</param>
+    /// <response code="200">A new confirmation link was generated.</response>
+    /// <response code="400">
+    ///     The request was malformed.
+    /// </response>
+    /// <response code="401">
+    ///     The request doesn't contain a valid session token.
+    /// </response>
+    /// <response code="409">
+    ///     The `User`'s account has already been confirmed.
+    /// </response>
+    /// <response code="500">
+    ///     The account recovery email failed to be created.
+    /// </response>
+    [HttpPost("confirm")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> ResendConfirmation(
+        [FromServices] IAuthService authService,
+        [FromServices] IAccountConfirmationService confirmationService,
+        [FromServices] IEmailSender emailSender
+    )
+    {
+        // TODO: Handle rate limiting (429 case) - zysim
+
+        GetUserResult result = await _userService.GetUserFromClaims(HttpContext.User);
+
+        if (result.TryPickT0(out User user, out OneOf<BadCredentials, UserNotFound> errors))
+        {
+            CreateConfirmationResult r = await confirmationService.CreateConfirmationAndSendEmail(user);
+
+            return r.Match<ActionResult>(
+                confirmation => Ok(),
+                badRole => Conflict(),
+                emailFailed => StatusCode(StatusCodes.Status500InternalServerError)
+            );
+        }
+
+        return errors.Match<ActionResult>(
+            badCredentials => Unauthorized(),
+            // Shouldn't be possible; throw 401
+            notFound => Unauthorized()
         );
     }
 }
