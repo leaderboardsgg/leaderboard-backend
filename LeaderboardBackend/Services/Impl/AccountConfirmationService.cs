@@ -50,8 +50,6 @@ public class AccountConfirmationService : IAccountConfirmationService
 
         _applicationContext.AccountConfirmations.Add(newConfirmation);
 
-        await _applicationContext.SaveChangesAsync();
-
         try
         {
             await _emailSender.EnqueueEmailAsync(
@@ -59,9 +57,11 @@ public class AccountConfirmationService : IAccountConfirmationService
                 "Confirm Your Account",
                 GenerateAccountConfirmationEmailBody(user, newConfirmation)
             );
+            await _applicationContext.SaveChangesAsync();
         }
         catch
         {
+            _applicationContext.AccountConfirmations.Entry(newConfirmation).State = EntityState.Detached;
             // TODO: Log/otherwise handle the fact that the email failed to be queued - zysim
             return new EmailFailed();
         }
