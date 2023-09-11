@@ -143,7 +143,6 @@ public class AccountController : ApiController
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> ResendConfirmation(
         [FromServices] IAccountConfirmationService confirmationService
