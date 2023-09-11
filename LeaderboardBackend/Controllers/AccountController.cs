@@ -195,4 +195,22 @@ public class AccountController : ApiController
 
         return Ok();
     }
+
+    [AllowAnonymous]
+    [HttpPut("confirm/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult> ConfirmAccount(Guid id, [FromServices] IAccountConfirmationService confirmationService) {
+        ConfirmAccountResult result = await confirmationService.ConfirmAccount(id);
+
+        return result.Match<ActionResult>(
+            confirmed => Ok(),
+            alreadyUsed => NotFound(),
+            badRole => Conflict(),
+            notFound => NotFound(),
+            expired => NotFound()
+        );
+    }
 }
