@@ -1,5 +1,4 @@
 using LeaderboardBackend.Controllers.Annotations;
-using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;

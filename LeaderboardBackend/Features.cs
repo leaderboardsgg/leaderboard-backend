@@ -1,4 +1,4 @@
-namespace LeaderboardBackend.Models;
+namespace LeaderboardBackend;
 
 public static class Features
 {
