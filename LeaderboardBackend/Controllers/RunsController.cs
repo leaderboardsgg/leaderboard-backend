@@ -7,9 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LeaderboardBackend.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class RunsController : ControllerBase
+public class RunsController : ApiController
 {
     private readonly IRunService _runService;
     private readonly ICategoryService _categoryService;
