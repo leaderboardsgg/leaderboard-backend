@@ -8,6 +8,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Fixtures;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NodaTime;
@@ -164,30 +165,26 @@ public class AccountConfirmationTests : IntegrationTestsBase
             });
         }).CreateClient();
 
-        IUserService userService = _scope.ServiceProvider.GetRequiredService<IUserService>();
-
-        CreateUserResult result = await userService.CreateUser(new()
-        {
-            Email = "test@email.com",
-            Password = "password",
-            Username = "username",
-        });
-
-        User user = result.AsT0;
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-
-        await context.AccountConfirmations.AddAsync(new AccountConfirmation()
+        AccountConfirmation confirmation = new()
         {
             CreatedAt = Instant.FromUnixTimeSeconds(0),
             ExpiresAt = Instant.FromUnixTimeSeconds(0).Plus(Duration.FromHours(1)),
-            UserId = user.Id
-        });
+            User = new()
+            {
+                Email = "test@email.com",
+                Password = "password",
+                Username = "username",
+            }
+        };
 
+        await context.AccountConfirmations.AddAsync(confirmation);
         await context.SaveChangesAsync();
-
         HttpResponseMessage res = await client.PutAsync(Routes.ConfirmAccount(Guid.NewGuid()), null);
         res.StatusCode.Should().Be(HttpStatusCode.NotFound);
-        user.Role.Should().Be(UserRole.Registered);
+        context.ChangeTracker.Clear();
+        User? user = await context.Users.FindAsync(confirmation.UserId);
+        user!.Role.Should().Be(UserRole.Registered);
     }
 
     [Test]
@@ -201,24 +198,19 @@ public class AccountConfirmationTests : IntegrationTestsBase
             });
         }).CreateClient();
 
-        IUserService userService = _scope.ServiceProvider.GetRequiredService<IUserService>();
-
-        CreateUserResult result = await userService.CreateUser(new()
-        {
-            Email = "test@email.com",
-            Password = "password",
-            Username = "username",
-        });
-
-        User user = result.AsT0;
-        user.Role = UserRole.Confirmed;
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
         AccountConfirmation confirmation = new()
         {
             CreatedAt = Instant.FromUnixTimeSeconds(0),
             ExpiresAt = Instant.FromUnixTimeSeconds(0).Plus(Duration.FromHours(1)),
-            UserId = user.Id
+            User = new()
+            {
+                Email = "test@email.com",
+                Password = "password",
+                Username = "username",
+                Role = UserRole.Confirmed
+            }
         };
 
         await context.AccountConfirmations.AddAsync(confirmation);
@@ -226,6 +218,9 @@ public class AccountConfirmationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
         res.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        context.ChangeTracker.Clear();
+        AccountConfirmation? conf = await context.AccountConfirmations.FindAsync(confirmation.Id);
+        conf!.UsedAt.Should().BeNull();
     }
 
     [Test]
@@ -239,31 +234,28 @@ public class AccountConfirmationTests : IntegrationTestsBase
             });
         }).CreateClient();
 
-        IUserService userService = _scope.ServiceProvider.GetRequiredService<IUserService>();
-
-        CreateUserResult result = await userService.CreateUser(new()
-        {
-            Email = "test@email.com",
-            Password = "password",
-            Username = "username",
-        });
-
-        User user = result.AsT0;
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
         AccountConfirmation confirmation = new()
         {
             CreatedAt = Instant.FromUnixTimeSeconds(0),
             ExpiresAt = Instant.FromUnixTimeSeconds(0).Plus(Duration.FromHours(1)),
-            UserId = user.Id
+            User = new()
+            {
+                Email = "test@email.com",
+                Password = "password",
+                Username = "username",
+            }
         };
 
         await context.AccountConfirmations.AddAsync(confirmation);
         await context.SaveChangesAsync();
-
         HttpResponseMessage res = await client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
         res.StatusCode.Should().Be(HttpStatusCode.NotFound);
-        user.Role.Should().Be(UserRole.Registered);
+        context.ChangeTracker.Clear();
+        AccountConfirmation? conf = await context.AccountConfirmations.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == confirmation.Id);
+        conf!.UsedAt.Should().BeNull();
+        conf!.User.Role.Should().Be(UserRole.Registered);
     }
 
     [Test]
@@ -277,32 +269,27 @@ public class AccountConfirmationTests : IntegrationTestsBase
             });
         }).CreateClient();
 
-        IUserService userService = _scope.ServiceProvider.GetRequiredService<IUserService>();
-
-        CreateUserResult result = await userService.CreateUser(new()
-        {
-            Email = "test@email.com",
-            Password = "password",
-            Username = "username",
-        });
-
-        User user = result.AsT0;
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-
         AccountConfirmation confirmation = new()
         {
             CreatedAt = Instant.FromUnixTimeSeconds(0),
             ExpiresAt = Instant.FromUnixTimeSeconds(0).Plus(Duration.FromHours(1)),
             UsedAt = Instant.FromUnixTimeSeconds(5),
-            UserId = user.Id
+            User = new()
+            {
+                Email = "test@email.com",
+                Password = "password",
+                Username = "username",
+            }
         };
 
         await context.AccountConfirmations.AddAsync(confirmation);
         await context.SaveChangesAsync();
-
         HttpResponseMessage res = await client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
         res.StatusCode.Should().Be(HttpStatusCode.NotFound);
-        user.Role.Should().Be(UserRole.Registered);
+        context.ChangeTracker.Clear();
+        User? user = await context.Users.FindAsync(confirmation.UserId);
+        user!.Role.Should().Be(UserRole.Registered);
     }
 
     [Test]
@@ -333,10 +320,9 @@ public class AccountConfirmationTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         HttpResponseMessage res = await client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
         res.Should().HaveStatusCode(HttpStatusCode.OK);
-        // AccountConfirmation? conf = await context.AccountConfirmations.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == confirmation.Id);
-        // conf!.User.Role.Should().Be(UserRole.Confirmed);
-        // conf!.UsedAt.Should().NotBeNull();
-        confirmation.UsedAt.Should().NotBeNull();
-        confirmation.User.Role.Should().Be(UserRole.Confirmed);
+        context.ChangeTracker.Clear();
+        AccountConfirmation? conf = await context.AccountConfirmations.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == confirmation.Id);
+        conf!.UsedAt.Should().NotBeNull();
+        conf!.User.Role.Should().Be(UserRole.Confirmed);
     }
 }
