@@ -5,6 +5,7 @@ using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement.Mvc;
 using OneOf;
 
 namespace LeaderboardBackend.Controllers;
@@ -53,6 +54,7 @@ public class AccountController : ControllerBase
     [ApiConventionMethod(typeof(Conventions), nameof(Conventions.PostAnon))]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ValidationProblemDetails))]
+    [FeatureGate(Features.ACCOUNT_REGISTRATION)]
     public async Task<ActionResult<UserViewModel>> Register([FromBody] RegisterRequest request)
     {
         CreateUserResult result = await _userService.CreateUser(request);
@@ -105,6 +107,7 @@ public class AccountController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [FeatureGate(Features.LOGIN)]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
         LoginResult result = await _userService.LoginByEmailAndPassword(request.Email, request.Password);

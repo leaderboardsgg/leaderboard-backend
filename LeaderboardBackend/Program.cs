@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NodaTime;
@@ -280,6 +281,9 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 // Can't use AddSingleton here since we call the DB in the Handler
 builder.Services.AddScoped<IAuthorizationHandler, UserTypeAuthorizationHandler>();
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, MiddlewareResultHandler>();
+
+// Enable feature management.
+builder.Services.AddFeatureManagement(builder.Configuration.GetSection("Feature"));
 #endregion
 
 #region WebApplication
