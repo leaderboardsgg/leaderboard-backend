@@ -14,6 +14,6 @@ public interface IAccountConfirmationService
 [GenerateOneOf]
 public partial class CreateConfirmationResult : OneOfBase<AccountConfirmation, BadRole, EmailFailed> { };
 
-[GenerateOneof]
-public partial class ConfirmAccountResult : OneOfBase<AccountConfirmed, AlreadyUsed, BadRole, ConfirmationNotFound, Expired> {};
+[GenerateOneOf]
+public partial class ConfirmAccountResult : OneOfBase<AccountConfirmed, AlreadyUsed, BadRole, ConfirmationNotFound, Expired> { };
 
