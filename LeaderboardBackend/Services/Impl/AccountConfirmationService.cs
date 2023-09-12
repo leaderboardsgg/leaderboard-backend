@@ -90,7 +90,7 @@ public class AccountConfirmationService : IAccountConfirmationService
 
         Instant now = _clock.GetCurrentInstant();
 
-        if (confirmation.ExpiresAt < now)
+        if (confirmation.ExpiresAt <= now)
         {
             return new Expired();
         }
