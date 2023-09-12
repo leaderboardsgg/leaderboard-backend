@@ -39,11 +39,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/UserViewModel"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserViewModel"
-                }
               }
             }
           },
@@ -51,11 +46,6 @@
             "description": "A `User` with the specified username or email already exists.<br /><br />\r\nValidation error codes by property:\r\n- **Username**:\r\n  - **UsernameTaken**: the username is already in use\r\n- **Email**:\r\n  - **EmailAlreadyUsed**: the email is already in use",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
@@ -105,11 +95,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/LoginResponse"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LoginResponse"
-                }
               }
             }
           },
@@ -117,11 +102,6 @@
             "description": "The password given was incorrect.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -135,11 +115,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
               }
             }
           },
@@ -147,11 +122,6 @@
             "description": "No `User` with the requested details could be found.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -184,11 +154,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
               }
             }
           },
@@ -196,11 +161,6 @@
             "description": "The request doesn't contain a valid session token.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -214,11 +174,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
               }
             }
           },
@@ -226,11 +181,6 @@
             "description": "Too Many Requests",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -431,11 +381,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/LeaderboardViewModel"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LeaderboardViewModel"
-                }
               }
             }
           },
@@ -446,11 +391,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
               }
             }
           },
@@ -458,11 +398,6 @@
             "description": "No `Leaderboard` with the requested ID or slug could be found.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -497,11 +432,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/LeaderboardViewModel"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LeaderboardViewModel"
-                }
               }
             }
           },
@@ -512,11 +442,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
               }
             }
           },
@@ -524,11 +449,6 @@
             "description": "No `Leaderboard` with the requested ID or slug could be found.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -563,14 +483,6 @@
             "description": "The list of `Leaderboard`s was retrieved successfully. The result can be an empty\r\ncollection.",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/LeaderboardViewModel"
-                  }
-                }
-              },
-              "text/json": {
                 "schema": {
                   "type": "array",
                   "items": {
@@ -615,11 +527,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/LeaderboardViewModel"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LeaderboardViewModel"
-                }
               }
             }
           },
@@ -627,11 +534,6 @@
             "description": "The request was malformed.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -645,11 +547,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
               }
             }
           },
@@ -657,11 +554,6 @@
             "description": "Forbidden",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -675,11 +567,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
               }
             }
           },
@@ -687,11 +574,6 @@
             "description": "Client Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
@@ -727,11 +609,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/RunViewModel"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RunViewModel"
-                }
               }
             }
           },
@@ -739,11 +616,6 @@
             "description": "Bad Request",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -757,11 +629,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
               }
             }
           },
@@ -772,11 +639,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
               }
             }
           },
@@ -784,11 +646,6 @@
             "description": "No `Run` with the requested ID could be found.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -835,11 +692,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
               }
             }
           },
@@ -847,11 +699,6 @@
             "description": "Unauthorized",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -865,11 +712,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
               }
             }
           },
@@ -880,11 +722,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
               }
             }
           },
@@ -892,11 +729,6 @@
             "description": "Client Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
@@ -930,11 +762,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/CategoryViewModel"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoryViewModel"
-                }
               }
             }
           },
@@ -942,11 +769,6 @@
             "description": "Bad Request",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -960,11 +782,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
               }
             }
           },
@@ -975,11 +792,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
               }
             }
           },
@@ -987,11 +799,6 @@
             "description": "Not Found",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1027,11 +834,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/UserViewModel"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserViewModel"
-                }
               }
             }
           },
@@ -1042,11 +844,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
               }
             }
           },
@@ -1054,11 +851,6 @@
             "description": "No `User` with the requested ID could be found.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1083,11 +875,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/UserViewModel"
                 }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserViewModel"
-                }
               }
             }
           },
@@ -1095,11 +882,6 @@
             "description": "An invalid JWT was passed in.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
