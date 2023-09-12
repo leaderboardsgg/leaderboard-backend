@@ -202,7 +202,8 @@ public class AccountController : ApiController
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult> ConfirmAccount(Guid id, [FromServices] IAccountConfirmationService confirmationService) {
+    public async Task<ActionResult> ConfirmAccount(Guid id, [FromServices] IAccountConfirmationService confirmationService)
+    {
         ConfirmAccountResult result = await confirmationService.ConfirmAccount(id);
 
         return result.Match<ActionResult>(
