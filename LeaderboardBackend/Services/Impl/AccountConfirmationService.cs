@@ -1,5 +1,6 @@
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Result;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NodaTime;
 
@@ -70,14 +71,15 @@ public class AccountConfirmationService : IAccountConfirmationService
 
     public async Task<ConfirmAccountResult> ConfirmAccount(Guid id)
     {
-        AccountConfirmation? confirmation = await _applicationContext.AccountConfirmations.FindAsync(id);
+        AccountConfirmation? confirmation = await _applicationContext.AccountConfirmations.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == id);
 
         if (confirmation is null)
         {
             return new ConfirmationNotFound();
         }
 
-        if (confirmation.User.Role is not UserRole.Registered) {
+        if (confirmation.User.Role is not UserRole.Registered)
+        {
             return new BadRole();
         }
 
