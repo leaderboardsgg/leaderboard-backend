@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -150,5 +151,192 @@ public class AccountConfirmationTests : IntegrationTestsBase
         confirmation.CreatedAt.ToUnixTimeSeconds().Should().Be(1);
         confirmation.UsedAt.Should().BeNull();
         Instant.Subtract(confirmation.ExpiresAt, confirmation.CreatedAt).Should().Be(Duration.FromHours(1));
+    }
+
+    [Test]
+    public async Task ConfirmAccount_BadConfirmationId()
+    {
+        HttpClient client = _factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton<IClock, FakeClock>(_ => new(Instant.FromUnixTimeSeconds(1)));
+            });
+        }).CreateClient();
+
+        IUserService userService = _scope.ServiceProvider.GetRequiredService<IUserService>();
+
+        CreateUserResult result = await userService.CreateUser(new()
+        {
+            Email = "test@email.com",
+            Password = "password",
+            Username = "username",
+        });
+
+        User user = result.AsT0;
+        ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        await context.AccountConfirmations.AddAsync(new AccountConfirmation()
+        {
+            CreatedAt = Instant.FromUnixTimeSeconds(0),
+            ExpiresAt = Instant.FromUnixTimeSeconds(0).Plus(Duration.FromHours(1)),
+            UserId = user.Id
+        });
+
+        await context.SaveChangesAsync();
+
+        HttpResponseMessage res = await client.PutAsync(Routes.ConfirmAccount(Guid.NewGuid()), null);
+        res.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        user.Role.Should().Be(UserRole.Registered);
+    }
+
+    [Test]
+    public async Task ConfirmAccount_BadRole()
+    {
+        HttpClient client = _factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton<IClock, FakeClock>(_ => new(Instant.FromUnixTimeSeconds(1)));
+            });
+        }).CreateClient();
+
+        IUserService userService = _scope.ServiceProvider.GetRequiredService<IUserService>();
+
+        CreateUserResult result = await userService.CreateUser(new()
+        {
+            Email = "test@email.com",
+            Password = "password",
+            Username = "username",
+        });
+
+        User user = result.AsT0;
+        user.Role = UserRole.Confirmed;
+        ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        AccountConfirmation confirmation = new()
+        {
+            CreatedAt = Instant.FromUnixTimeSeconds(0),
+            ExpiresAt = Instant.FromUnixTimeSeconds(0).Plus(Duration.FromHours(1)),
+            UserId = user.Id
+        };
+
+        await context.AccountConfirmations.AddAsync(confirmation);
+        await context.SaveChangesAsync();
+
+        HttpResponseMessage res = await client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
+        res.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Test]
+    public async Task ConfirmAccount_Expired()
+    {
+        HttpClient client = _factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton<IClock, FakeClock>(_ => new(Instant.FromUnixTimeSeconds(1).Plus(Duration.FromHours(2))));
+            });
+        }).CreateClient();
+
+        IUserService userService = _scope.ServiceProvider.GetRequiredService<IUserService>();
+
+        CreateUserResult result = await userService.CreateUser(new()
+        {
+            Email = "test@email.com",
+            Password = "password",
+            Username = "username",
+        });
+
+        User user = result.AsT0;
+        ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        AccountConfirmation confirmation = new()
+        {
+            CreatedAt = Instant.FromUnixTimeSeconds(0),
+            ExpiresAt = Instant.FromUnixTimeSeconds(0).Plus(Duration.FromHours(1)),
+            UserId = user.Id
+        };
+
+        await context.AccountConfirmations.AddAsync(confirmation);
+        await context.SaveChangesAsync();
+
+        HttpResponseMessage res = await client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
+        res.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        user.Role.Should().Be(UserRole.Registered);
+    }
+
+    [Test]
+    public async Task ConfirmAccount_AlreadyUsed()
+    {
+        HttpClient client = _factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton<IClock, FakeClock>(_ => new(Instant.FromUnixTimeSeconds(1)));
+            });
+        }).CreateClient();
+
+        IUserService userService = _scope.ServiceProvider.GetRequiredService<IUserService>();
+
+        CreateUserResult result = await userService.CreateUser(new()
+        {
+            Email = "test@email.com",
+            Password = "password",
+            Username = "username",
+        });
+
+        User user = result.AsT0;
+        ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        AccountConfirmation confirmation = new()
+        {
+            CreatedAt = Instant.FromUnixTimeSeconds(0),
+            ExpiresAt = Instant.FromUnixTimeSeconds(0).Plus(Duration.FromHours(1)),
+            UsedAt = Instant.FromUnixTimeSeconds(5),
+            UserId = user.Id
+        };
+
+        await context.AccountConfirmations.AddAsync(confirmation);
+        await context.SaveChangesAsync();
+
+        HttpResponseMessage res = await client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
+        res.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        user.Role.Should().Be(UserRole.Registered);
+    }
+
+    [Test]
+    public async Task ConfirmAccount_Success()
+    {
+        HttpClient client = _factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton<IClock, FakeClock>(_ => new(Instant.FromUnixTimeSeconds(1)));
+            });
+        }).CreateClient();
+
+        AccountConfirmation confirmation = new()
+        {
+            CreatedAt = Instant.FromUnixTimeSeconds(0),
+            ExpiresAt = Instant.FromUnixTimeSeconds(0).Plus(Duration.FromHours(1)),
+            User = new()
+            {
+                Email = "test@email.com",
+                Password = "password",
+                Username = "username",
+            }
+        };
+
+        ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+        await context.AccountConfirmations.AddAsync(confirmation);
+        await context.SaveChangesAsync();
+        HttpResponseMessage res = await client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
+        res.Should().HaveStatusCode(HttpStatusCode.OK);
+        // AccountConfirmation? conf = await context.AccountConfirmations.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == confirmation.Id);
+        // conf!.User.Role.Should().Be(UserRole.Confirmed);
+        // conf!.UsedAt.Should().NotBeNull();
+        confirmation.UsedAt.Should().NotBeNull();
+        confirmation.User.Role.Should().Be(UserRole.Confirmed);
     }
 }
