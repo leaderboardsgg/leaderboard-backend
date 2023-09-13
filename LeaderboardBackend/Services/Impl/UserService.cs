@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using BCryptNet = BCrypt.Net.BCrypt;

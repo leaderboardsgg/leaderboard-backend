@@ -1,4 +1,5 @@
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Result;
 using Microsoft.Extensions.Options;
 using NodaTime;
 
