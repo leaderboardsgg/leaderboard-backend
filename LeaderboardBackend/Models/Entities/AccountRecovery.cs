@@ -24,7 +24,6 @@ public class AccountRecovery
     /// <summary>
     ///     The `User` relationship model.
     /// </summary>
-    [Required]
     public User User { get; set; } = null!;
 
     /// <summary>
