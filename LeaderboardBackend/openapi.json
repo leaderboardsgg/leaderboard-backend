@@ -193,6 +193,39 @@
         }
       }
     },
+    "/Account/recover": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Sends an account recovery email.",
+        "requestBody": {
+          "description": "The account recovery request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoverAccountRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoverAccountRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoverAccountRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "This endpoint returns 200 OK regardless of whether the email was sent successfully or not."
+          }
+        }
+      }
+    },
     "/api/Categories/{id}": {
       "get": {
         "tags": [
@@ -1228,6 +1261,24 @@
           }
         },
         "additionalProperties": { }
+      },
+      "RecoverAccountRequest": {
+        "required": [
+          "email",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The user's name."
+          },
+          "email": {
+            "type": "string",
+            "description": "The user's email address."
+          }
+        },
+        "additionalProperties": false
       },
       "RegisterRequest": {
         "required": [
