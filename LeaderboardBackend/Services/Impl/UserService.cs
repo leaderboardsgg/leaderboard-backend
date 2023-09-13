@@ -78,6 +78,19 @@ public class UserService : IUserService
         return await _applicationContext.Users.SingleOrDefaultAsync(user => user.Username == name);
     }
 
+    public async Task<User?> GetUserByNameAndEmail(string name, string email)
+    {
+        return await _applicationContext.Users.SingleOrDefaultAsync(
+            user => user.Username.Equals(
+                name,
+                StringComparison.OrdinalIgnoreCase
+            ) && user.Email.Equals(
+                email,
+                StringComparison.OrdinalIgnoreCase
+            )
+        );
+    }
+
     public async Task<CreateUserResult> CreateUser(RegisterRequest request)
     {
         User newUser =
@@ -108,4 +121,6 @@ public class UserService : IUserService
 
         return newUser;
     }
+
+
 }

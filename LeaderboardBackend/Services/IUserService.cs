@@ -16,6 +16,7 @@ public interface IUserService
     Task<LoginResult> LoginByEmailAndPassword(string email, string password);
     // TODO: Convert return sig to Task<GetUserResult>
     Task<User?> GetUserByName(string name);
+    Task<User?> GetUserByNameAndEmail(string name, string email);
     Task<CreateUserResult> CreateUser(RegisterRequest request);
 
 }
