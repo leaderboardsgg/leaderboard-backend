@@ -100,6 +100,19 @@ public record RegisterRequest
     public required string Password { get; set; }
 }
 
+public record RecoverAccountRequest
+{
+    /// <summary>
+    /// The user's name.
+    /// </summary>
+    public required string Username {get; set;}
+
+    /// <summary>
+    /// The user's email address.
+    /// </summary>
+    public required string Email {get; set;}
+}
+
 public class LoginRequestValidator : AbstractValidator<LoginRequest>
 {
     public LoginRequestValidator()
@@ -117,5 +130,14 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
         RuleFor(x => x.Username).Username();
         RuleFor(x => x.Email).EmailAddress();
         RuleFor(x => x.Password).UserPassword();
+    }
+}
+
+public class RecoverAccountRequestValidator : AbstractValidator<RecoverAccountRequest>
+{
+    public RecoverAccountRequestValidator()
+    {
+        RuleFor(x => x.Username).NotEmpty();
+        RuleFor(x => x.Email).NotNull().EmailAddress();
     }
 }
