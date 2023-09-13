@@ -10,9 +10,8 @@ using OneOf;
 
 namespace LeaderboardBackend.Controllers;
 
-[ApiController]
 [Route("[controller]")]
-public class AccountController : ControllerBase
+public class AccountController : ApiController
 {
     private readonly IUserService _userService;
 

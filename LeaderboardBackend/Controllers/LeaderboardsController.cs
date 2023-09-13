@@ -9,9 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LeaderboardBackend.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class LeaderboardsController : ControllerBase
+public class LeaderboardsController : ApiController
 {
     private readonly ILeaderboardService _leaderboardService;
 
