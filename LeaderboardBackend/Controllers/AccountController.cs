@@ -170,4 +170,28 @@ public class AccountController : ApiController
             notFound => Unauthorized()
         );
     }
+
+    /// <summary>
+    ///     Sends an account recovery email.
+    /// </summary>
+    /// <param name="recoveryService">IAccountRecoveryService dependency.</param>
+    /// <param name="request">The account recovery request.</param>
+    /// <response code="200">This endpoint returns 200 OK regardless of whether the email was sent successfully or not.</response>
+    [AllowAnonymous]
+    [HttpPost("recover")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult> RecoverAccount(
+        [FromServices] IAccountRecoveryService recoveryService,
+        [FromBody] RecoverAccountRequest request
+    )
+    {
+        User? user = await _userService.GetUserByNameAndEmail(request.Username, request.Email);
+
+        if (user is not null)
+        {
+            await recoveryService.CreateRecoveryAndSendEmail(user);
+        }
+
+        return Ok();
+    }
 }
