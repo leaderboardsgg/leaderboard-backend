@@ -222,6 +222,16 @@
         "responses": {
           "200": {
             "description": "This endpoint returns 200 OK regardless of whether the email was sent successfully or not."
+          },
+          "400": {
+            "description": "The request object was malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       }
@@ -1270,12 +1280,15 @@
         "type": "object",
         "properties": {
           "username": {
+            "minLength": 1,
             "type": "string",
             "description": "The user's name."
           },
           "email": {
+            "minLength": 1,
             "type": "string",
-            "description": "The user's email address."
+            "description": "The user's email address.",
+            "format": "email"
           }
         },
         "additionalProperties": false
