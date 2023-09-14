@@ -105,12 +105,15 @@ public record RecoverAccountRequest
     /// <summary>
     /// The user's name.
     /// </summary>
-    public required string Username {get; set;}
+    [Required]
+    public required string Username { get; set; }
 
     /// <summary>
     /// The user's email address.
     /// </summary>
-    public required string Email {get; set;}
+    [EmailAddress]
+    [Required]
+    public required string Email { get; set; }
 }
 
 public class LoginRequestValidator : AbstractValidator<LoginRequest>
