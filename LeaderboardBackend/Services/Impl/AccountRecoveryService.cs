@@ -60,7 +60,8 @@ public class AccountRecoveryService : IAccountRecoveryService
         return recovery;
     }
 
-    private string GenerateAccountRecoveryEamilBody(User user, AccountRecovery recovery) {
+    private string GenerateAccountRecoveryEamilBody(User user, AccountRecovery recovery)
+    {
         UriBuilder builder = new(_appConfig.WebsiteUrl)
         {
             Path = "reset-password",

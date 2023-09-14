@@ -10,4 +10,4 @@ public interface IAccountRecoveryService
 }
 
 [GenerateOneOf]
-public partial class CreateRecoveryResult : OneOfBase<AccountRecovery, BadRole, EmailFailed> {};
+public partial class CreateRecoveryResult : OneOfBase<AccountRecovery, BadRole, EmailFailed> { };
