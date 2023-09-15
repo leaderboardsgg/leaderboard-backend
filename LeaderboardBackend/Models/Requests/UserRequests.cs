@@ -135,12 +135,3 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
         RuleFor(x => x.Password).UserPassword();
     }
 }
-
-public class RecoverAccountRequestValidator : AbstractValidator<RecoverAccountRequest>
-{
-    public RecoverAccountRequestValidator()
-    {
-        RuleFor(x => x.Username).NotEmpty();
-        RuleFor(x => x.Email).NotNull().EmailAddress();
-    }
-}
