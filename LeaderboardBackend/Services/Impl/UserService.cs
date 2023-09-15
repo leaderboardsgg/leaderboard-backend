@@ -81,13 +81,7 @@ public class UserService : IUserService
     public async Task<User?> GetUserByNameAndEmail(string name, string email)
     {
         return await _applicationContext.Users.SingleOrDefaultAsync(
-            user => user.Username.Equals(
-                name,
-                StringComparison.OrdinalIgnoreCase
-            ) && user.Email.Equals(
-                email,
-                StringComparison.OrdinalIgnoreCase
-            )
+            user => user.Username == name && user.Email == email
         );
     }
 
