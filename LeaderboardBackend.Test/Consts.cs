@@ -5,4 +5,5 @@ internal static class Routes
     public const string LOGIN = "/login";
     public const string REGISTER = "/account/register";
     public const string RESEND_CONFIRMATION = "/account/confirm";
+    public const string RECOVER_ACCOUNT = "/account/recover";
 }
