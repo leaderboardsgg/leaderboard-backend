@@ -49,7 +49,7 @@ public class AccountRecoveryService : IAccountRecoveryService
             await _emailSender.EnqueueEmailAsync(
                 user.Email,
                 "Recover Your Account",
-                GenerateAccountRecoveryEamilBody(user, recovery)
+                GenerateAccountRecoveryEmailBody(user, recovery)
             );
         }
         catch
@@ -60,7 +60,7 @@ public class AccountRecoveryService : IAccountRecoveryService
         return recovery;
     }
 
-    private string GenerateAccountRecoveryEamilBody(User user, AccountRecovery recovery)
+    private string GenerateAccountRecoveryEmailBody(User user, AccountRecovery recovery)
     {
         UriBuilder builder = new(_appConfig.WebsiteUrl)
         {
