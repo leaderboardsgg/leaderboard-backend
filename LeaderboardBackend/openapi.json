@@ -18,16 +18,6 @@
               "schema": {
                 "$ref": "#/components/schemas/RegisterRequest"
               }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterRequest"
-              }
             }
           }
         },
@@ -71,16 +61,6 @@
           "description": "The `LoginRequest` instance from which to perform the login.",
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
-              }
-            },
-            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/LoginRequest"
               }
@@ -193,6 +173,39 @@
         }
       }
     },
+    "/Account/recover": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Sends an account recovery email.",
+        "requestBody": {
+          "description": "The account recovery request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoverAccountRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "This endpoint returns 200 OK regardless of whether the email was sent successfully or not."
+          },
+          "400": {
+            "description": "The request object was malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Categories/{id}": {
       "get": {
         "tags": [
@@ -275,16 +288,6 @@
           "description": "The `CreateCategoryRequest` instance from which to create the `Category`.",
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCategoryRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCategoryRequest"
-              }
-            },
-            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateCategoryRequest"
               }
@@ -506,16 +509,6 @@
               "schema": {
                 "$ref": "#/components/schemas/CreateLeaderboardRequest"
               }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateLeaderboardRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateLeaderboardRequest"
-              }
             }
           }
         },
@@ -665,16 +658,6 @@
           "description": "The `CreateRunRequest` instance from which to create the `Run`.",
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateRunRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateRunRequest"
-              }
-            },
-            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateRunRequest"
               }
@@ -1228,6 +1211,27 @@
           }
         },
         "additionalProperties": { }
+      },
+      "RecoverAccountRequest": {
+        "required": [
+          "email",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The user's name."
+          },
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The user's email address.",
+            "format": "email"
+          }
+        },
+        "additionalProperties": false
       },
       "RegisterRequest": {
         "required": [

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Result;
 using OneOf;
 
 namespace LeaderboardBackend.Services;
@@ -15,6 +16,7 @@ public interface IUserService
     Task<LoginResult> LoginByEmailAndPassword(string email, string password);
     // TODO: Convert return sig to Task<GetUserResult>
     Task<User?> GetUserByName(string name);
+    Task<User?> GetUserByNameAndEmail(string name, string email);
     Task<CreateUserResult> CreateUser(RegisterRequest request);
 
 }
@@ -26,10 +28,6 @@ public readonly record struct CreateUserConflicts(bool Username = false, bool Em
 
 [GenerateOneOf]
 public partial class LoginResult : OneOfBase<string, UserNotFound, UserBanned, BadCredentials> { }
-
-public readonly record struct UserNotFound();
-public readonly record struct UserBanned();
-public readonly record struct BadCredentials();
 
 [GenerateOneOf]
 public partial class GetUserResult : OneOfBase<User, BadCredentials, UserNotFound> { }

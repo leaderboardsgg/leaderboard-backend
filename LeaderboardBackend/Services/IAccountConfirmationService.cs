@@ -1,4 +1,5 @@
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Result;
 using OneOf;
 
 namespace LeaderboardBackend.Services;
@@ -11,6 +12,3 @@ public interface IAccountConfirmationService
 
 [GenerateOneOf]
 public partial class CreateConfirmationResult : OneOfBase<AccountConfirmation, BadRole, EmailFailed> { };
-
-public readonly record struct BadRole();
-public readonly record struct EmailFailed();

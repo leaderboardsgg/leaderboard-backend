@@ -2,6 +2,7 @@ using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
+using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -168,5 +169,31 @@ public class AccountController : ApiController
             // Shouldn't be possible; throw 401
             notFound => Unauthorized()
         );
+    }
+
+    /// <summary>
+    ///     Sends an account recovery email.
+    /// </summary>
+    /// <param name="recoveryService">IAccountRecoveryService dependency.</param>
+    /// <param name="request">The account recovery request.</param>
+    /// <response code="200">This endpoint returns 200 OK regardless of whether the email was sent successfully or not.</response>
+    /// <response code="400">The request object was malformed.</response>
+    [AllowAnonymous]
+    [HttpPost("recover")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> RecoverAccount(
+        [FromServices] IAccountRecoveryService recoveryService,
+        [FromBody] RecoverAccountRequest request
+    )
+    {
+        User? user = await _userService.GetUserByNameAndEmail(request.Username, request.Email);
+
+        if (user is not null)
+        {
+            await recoveryService.CreateRecoveryAndSendEmail(user);
+        }
+
+        return Ok();
     }
 }

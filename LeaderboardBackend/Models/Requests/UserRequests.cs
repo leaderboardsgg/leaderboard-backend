@@ -100,6 +100,22 @@ public record RegisterRequest
     public required string Password { get; set; }
 }
 
+public record RecoverAccountRequest
+{
+    /// <summary>
+    /// The user's name.
+    /// </summary>
+    [Required]
+    public required string Username { get; set; }
+
+    /// <summary>
+    /// The user's email address.
+    /// </summary>
+    [EmailAddress]
+    [Required]
+    public required string Email { get; set; }
+}
+
 public class LoginRequestValidator : AbstractValidator<LoginRequest>
 {
     public LoginRequestValidator()

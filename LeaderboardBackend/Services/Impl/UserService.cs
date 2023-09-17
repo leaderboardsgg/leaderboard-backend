@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using BCryptNet = BCrypt.Net.BCrypt;
@@ -75,6 +76,13 @@ public class UserService : IUserService
     public async Task<User?> GetUserByName(string name)
     {
         return await _applicationContext.Users.SingleOrDefaultAsync(user => user.Username == name);
+    }
+
+    public async Task<User?> GetUserByNameAndEmail(string name, string email)
+    {
+        return await _applicationContext.Users.SingleOrDefaultAsync(
+            user => user.Username == name && user.Email == email
+        );
     }
 
     public async Task<CreateUserResult> CreateUser(RegisterRequest request)
