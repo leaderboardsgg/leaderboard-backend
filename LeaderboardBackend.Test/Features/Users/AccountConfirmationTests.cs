@@ -188,6 +188,21 @@ public class AccountConfirmationTests : IntegrationTestsBase
     }
 
     [Test]
+    public async Task ConfirmAccount_MalformedConfirmationId()
+    {
+        HttpClient client = _factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton<IClock, FakeClock>(_ => new(Instant.FromUnixTimeSeconds(1)));
+            });
+        }).CreateClient();
+
+        HttpResponseMessage res = await client.PutAsync("/account/confirm/not_a_guid", null);
+        res.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Test]
     public async Task ConfirmAccount_BadRole()
     {
         HttpClient client = _factory.WithWebHostBuilder(builder =>

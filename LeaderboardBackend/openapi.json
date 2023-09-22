@@ -229,7 +229,7 @@
             "description": "The account was confirmed successfully."
           },
           "400": {
-            "description": "The token was malformed.",
+            "description": "Bad Request",
             "content": {
               "application/json": {
                 "schema": {

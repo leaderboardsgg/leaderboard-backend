@@ -202,7 +202,6 @@ public class AccountController : ApiController
     /// <param name="id">The confirmation token.</param>
     /// <param name="confirmationService">IAccountConfirmationService dependency.</param>
     /// <response code="200">The account was confirmed successfully.</response>
-    /// <response code="400">The token was malformed.</response>
     /// <response code="404">The token provided was invalid or expired.</response>
     /// <response code="409">The user's account was either already confirmed or banned.</response>
     [AllowAnonymous]
