@@ -206,6 +206,61 @@
         }
       }
     },
+    "/Account/confirm/{id}": {
+      "put": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Confirms a user account.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The confirmation token.",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-zA-Z0-9-_]{22}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The account was confirmed successfully."
+          },
+          "400": {
+            "description": "The token was malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The token provided was invalid or expired.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The user's account was either already confirmed or banned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Categories/{id}": {
       "get": {
         "tags": [
