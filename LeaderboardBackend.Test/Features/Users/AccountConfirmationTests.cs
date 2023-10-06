@@ -88,12 +88,12 @@ public class AccountConfirmationTests : IntegrationTestsBase
         Mock<IEmailSender> emailSenderMock = new();
         emailSenderMock.Setup(e =>
             e.EnqueueEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())
-        ).Throws(new System.Exception());
+        ).Throws(new Exception());
         HttpClient client = _factory.WithWebHostBuilder(builder =>
         {
             builder.ConfigureTestServices(services =>
             {
-                services.AddScoped<IEmailSender>(_ => emailSenderMock.Object);
+                services.AddScoped(_ => emailSenderMock.Object);
             });
         })
         .CreateClient();
