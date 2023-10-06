@@ -72,7 +72,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
             Username = "username",
             Role = UserRole.Confirmed,
         };
-        context.Add<User>(user);
+        context.Add(user);
         context.SaveChanges();
         string token = _authService.GenerateJSONWebToken(user);
 
