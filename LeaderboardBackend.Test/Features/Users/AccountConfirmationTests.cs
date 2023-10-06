@@ -337,7 +337,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
         res.Should().HaveStatusCode(HttpStatusCode.OK);
         context.ChangeTracker.Clear();
         AccountConfirmation? conf = await context.AccountConfirmations.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == confirmation.Id);
-        conf!.UsedAt.Should().NotBeNull();
+        conf!.UsedAt.Should().Be(Instant.FromUnixTimeSeconds(1));
         conf!.User.Role.Should().Be(UserRole.Confirmed);
     }
 }
