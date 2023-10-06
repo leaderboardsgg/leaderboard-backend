@@ -24,6 +24,7 @@ public class ConfirmAccountTests : IntegrationTestsBase
     public void Init()
     {
         _scope = _factory.Services.CreateScope();
+
         _client = _factory.WithWebHostBuilder(builder =>
         {
             builder.ConfigureTestServices(services =>
@@ -135,8 +136,8 @@ public class ConfirmAccountTests : IntegrationTestsBase
     public async Task ConfirmAccount_AlreadyUsed()
     {
         _clock.Reset(Instant.FromUnixTimeSeconds(1));
-
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
         AccountConfirmation confirmation = new()
         {
             CreatedAt = Instant.FromUnixTimeSeconds(0),
