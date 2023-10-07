@@ -1,5 +1,6 @@
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Result;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NodaTime;
 
@@ -66,6 +67,38 @@ public class AccountConfirmationService : IAccountConfirmationService
         }
 
         return newConfirmation;
+    }
+
+    public async Task<ConfirmAccountResult> ConfirmAccount(Guid id)
+    {
+        AccountConfirmation? confirmation = await _applicationContext.AccountConfirmations.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == id);
+
+        if (confirmation is null)
+        {
+            return new ConfirmationNotFound();
+        }
+
+        if (confirmation.User.Role is not UserRole.Registered)
+        {
+            return new BadRole();
+        }
+
+        if (confirmation.UsedAt is not null)
+        {
+            return new AlreadyUsed();
+        }
+
+        Instant now = _clock.GetCurrentInstant();
+
+        if (confirmation.ExpiresAt <= now)
+        {
+            return new Expired();
+        }
+
+        confirmation.User.Role = UserRole.Confirmed;
+        confirmation.UsedAt = now;
+        await _applicationContext.SaveChangesAsync();
+        return new AccountConfirmed();
     }
 
     private string GenerateAccountConfirmationEmailBody(User user, AccountConfirmation confirmation)

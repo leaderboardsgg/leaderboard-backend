@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -15,8 +16,7 @@ using NUnit.Framework;
 
 namespace LeaderboardBackend.Test.Features.Users;
 
-[TestFixture]
-public class AccountConfirmationTests : IntegrationTestsBase
+public class SendConfirmationTests : IntegrationTestsBase
 {
     private IServiceScope _scope = null!;
     private IAuthService _authService = null!;
@@ -70,7 +70,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
             Username = "username",
             Role = UserRole.Confirmed,
         };
-        context.Add<User>(user);
+        context.Add(user);
         context.SaveChanges();
         string token = _authService.GenerateJSONWebToken(user);
 
@@ -86,12 +86,12 @@ public class AccountConfirmationTests : IntegrationTestsBase
         Mock<IEmailSender> emailSenderMock = new();
         emailSenderMock.Setup(e =>
             e.EnqueueEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())
-        ).Throws(new System.Exception());
+        ).Throws(new Exception());
         HttpClient client = _factory.WithWebHostBuilder(builder =>
         {
             builder.ConfigureTestServices(services =>
             {
-                services.AddScoped<IEmailSender>(_ => emailSenderMock.Object);
+                services.AddScoped(_ => emailSenderMock.Object);
             });
         })
         .CreateClient();
@@ -118,7 +118,7 @@ public class AccountConfirmationTests : IntegrationTestsBase
         {
             builder.ConfigureTestServices(services =>
             {
-                services.AddScoped<IEmailSender>(_ => emailSenderMock.Object);
+                services.AddScoped(_ => emailSenderMock.Object);
                 services.AddSingleton<IClock, FakeClock>(_ => new(Instant.FromUnixTimeSeconds(1)));
             });
         })

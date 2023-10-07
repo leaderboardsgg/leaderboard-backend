@@ -143,7 +143,6 @@ public class AccountController : ApiController
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> ResendConfirmation(
         [FromServices] IAccountConfirmationService confirmationService
@@ -195,5 +194,32 @@ public class AccountController : ApiController
         }
 
         return Ok();
+    }
+
+    /// <summary>
+    ///     Confirms a user account.
+    /// </summary>
+    /// <param name="id">The confirmation token.</param>
+    /// <param name="confirmationService">IAccountConfirmationService dependency.</param>
+    /// <response code="200">The account was confirmed successfully.</response>
+    /// <response code="404">The token provided was invalid or expired.</response>
+    /// <response code="409">The user's account was either already confirmed or banned.</response>
+    [AllowAnonymous]
+    [HttpPut("confirm/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult> ConfirmAccount(Guid id, [FromServices] IAccountConfirmationService confirmationService)
+    {
+        ConfirmAccountResult result = await confirmationService.ConfirmAccount(id);
+
+        return result.Match<ActionResult>(
+            confirmed => Ok(),
+            alreadyUsed => NotFound(),
+            badRole => Conflict(),
+            notFound => NotFound(),
+            expired => NotFound()
+        );
     }
 }
