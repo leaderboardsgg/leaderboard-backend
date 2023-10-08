@@ -222,4 +222,30 @@ public class AccountController : ApiController
             expired => NotFound()
         );
     }
+
+    /// <summary>
+    /// Tests an account recovery token for validity.
+    /// </summary>
+    /// <param name="id">The recovery token.</param>
+    /// <param name="recoveryService">IAccountRecoveryService dependency.</param>
+    /// <response code="200">The token provided is valid.</response>
+    /// <response code="404">The token provided is invalid or expired, or the user is banned.</response>
+    [AllowAnonymous]
+    [HttpGet("recover/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> TestRecovery(Guid id, [FromServices] IAccountRecoveryService recoveryService)
+    {
+        RecoverAccountResult result = await recoveryService.TestRecovery(id);
+
+        return result.Match<ActionResult>(
+            alreadyUsed => NotFound(),
+            badRole => NotFound(),
+            expired => NotFound(),
+            notFound => NotFound(),
+            old => NotFound(),
+            success => Ok()
+        );
+    }
 }
