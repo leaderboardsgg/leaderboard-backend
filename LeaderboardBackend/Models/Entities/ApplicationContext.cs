@@ -7,14 +7,6 @@ namespace LeaderboardBackend.Models.Entities;
 public class ApplicationContext : DbContext
 {
     public const string CASE_INSENSITIVE_COLLATION = "case_insensitive";
-
-    [Obsolete]
-    static ApplicationContext()
-    {
-        // GlobalTypeMapper is obsolete but the new way (DataSource) is a pain to work with
-        NpgsqlConnection.GlobalTypeMapper.MapEnum<UserRole>();
-    }
-
     public ApplicationContext(DbContextOptions<ApplicationContext> options)
         : base(options) { }
 
