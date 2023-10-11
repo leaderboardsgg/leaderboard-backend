@@ -20,14 +20,22 @@ public class ApplicationContext : DbContext
     /// <summary>
     /// Migrates the database and reloads Npgsql types
     /// </summary>
-    public void MigrateDatabase()
+    public async Task MigrateDatabase()
     {
-        Database.Migrate();
+        await Database.MigrateAsync();
 
         // when new extensions have been enabled by migrations, Npgsql's type cache must be refreshed
-        Database.OpenConnection();
-        ((NpgsqlConnection)Database.GetDbConnection()).ReloadTypes();
-        Database.CloseConnection();
+        NpgsqlConnection connection = (NpgsqlConnection)Database.GetDbConnection();
+        await connection.OpenAsync();
+
+        try
+        {
+            await connection.ReloadTypesAsync();
+        }
+        finally
+        {
+            await connection.CloseAsync();
+        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
