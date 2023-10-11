@@ -111,8 +111,9 @@ public class TestApiFactory : WebApplicationFactory<Program>
         {
             dbContext.MigrateDatabase();
             _migrated = true;
-            Seed(dbContext);
         }
+
+        Seed(dbContext);
     }
     private static void Seed(ApplicationContext dbContext)
     {
@@ -157,5 +158,6 @@ public class TestApiFactory : WebApplicationFactory<Program>
         });
 
         await respawner.ResetAsync(conn);
+        InitializeDatabase();
     }
 }
