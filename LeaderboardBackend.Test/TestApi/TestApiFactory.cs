@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -12,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Moq;
 using Npgsql;
 using Respawn;
@@ -24,7 +22,8 @@ namespace LeaderboardBackend.Test.TestApi;
 public class TestApiFactory : WebApplicationFactory<Program>
 {
     private static bool _migrated = false;
-
+    private static bool _seeded = false;
+    private readonly Mock<ISmtpClient> _mock = new();
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         // Set the environment for the run to Staging
@@ -58,46 +57,13 @@ public class TestApiFactory : WebApplicationFactory<Program>
                     Password = PostgresDatabaseFixture.Password!
                 });
 
-            services.AddSingleton(container =>
+            services.AddDbContext<ApplicationContext>(options =>
             {
-                ApplicationContextConfig appConfig = container
-                    .GetRequiredService<IOptions<ApplicationContextConfig>>()
-                    .Value;
-
-                if (appConfig.Pg is null)
-                {
-                    throw new UnreachableException(
-                        "The database configuration is invalid but it was not caught by validation!"
-                    );
-                }
-
-                NpgsqlConnectionStringBuilder connectionBuilder = new()
-                {
-                    Host = appConfig.Pg.Host,
-                    Username = appConfig.Pg.User,
-                    Password = appConfig.Pg.Password,
-                    Database = appConfig.Pg.Db,
-                    IncludeErrorDetail = true,
-                };
-
-                if (appConfig.Pg.Port is not null)
-                {
-                    connectionBuilder.Port = appConfig.Pg.Port.Value;
-                }
-
-                NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionBuilder.ConnectionString);
-                dataSourceBuilder.UseNodaTime().MapEnum<UserRole>();
-                return dataSourceBuilder.Build();
-            });
-
-            services.AddDbContext<ApplicationContext>((container, options) =>
-            {
-                NpgsqlDataSource dataSource = container.GetRequiredService<NpgsqlDataSource>();
-                options.UseNpgsql(dataSource, o => o.UseNodaTime()).UseSnakeCaseNamingConvention();
+                options.UseNpgsql(PostgresDatabaseFixture.DataSource!, o => o.UseNodaTime()).UseSnakeCaseNamingConvention();
             });
 
             // mock SMTP client
-            services.Replace(ServiceDescriptor.Transient<ISmtpClient>(_ => new Mock<ISmtpClient>().Object));
+            services.Replace(ServiceDescriptor.Transient(_ => _mock.Object));
 
             using IServiceScope scope = services.BuildServiceProvider().CreateScope();
             ApplicationContext dbContext =
@@ -131,23 +97,27 @@ public class TestApiFactory : WebApplicationFactory<Program>
     }
     private static void Seed(ApplicationContext dbContext)
     {
-        Leaderboard leaderboard =
-            new() { Name = "Mario Goes to Jail", Slug = "mario-goes-to-jail" };
+        if (!_seeded)
+        {
+            Leaderboard leaderboard =
+                new() { Name = "Mario Goes to Jail", Slug = "mario-goes-to-jail" };
 
-        User admin =
-            new()
-            {
-                Id = TestInitCommonFields.Admin.Id,
-                Username = TestInitCommonFields.Admin.Username,
-                Email = TestInitCommonFields.Admin.Email,
-                Password = BCryptNet.EnhancedHashPassword(TestInitCommonFields.Admin.Password),
-                Role = UserRole.Administrator,
-            };
+            User admin =
+                new()
+                {
+                    Id = TestInitCommonFields.Admin.Id,
+                    Username = TestInitCommonFields.Admin.Username,
+                    Email = TestInitCommonFields.Admin.Email,
+                    Password = BCryptNet.EnhancedHashPassword(TestInitCommonFields.Admin.Password),
+                    Role = UserRole.Administrator,
+                };
 
-        dbContext.Add(admin);
-        dbContext.Add(leaderboard);
+            dbContext.Add(admin);
+            dbContext.Add(leaderboard);
 
-        dbContext.SaveChanges();
+            dbContext.SaveChanges();
+            _seeded = true;
+        }
     }
     /// <summary>
     /// Deletes and recreates the database
@@ -172,6 +142,7 @@ public class TestApiFactory : WebApplicationFactory<Program>
         });
 
         await respawner.ResetAsync(conn);
+        _seeded = false;
         InitializeDatabase();
     }
 }

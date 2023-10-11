@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using LeaderboardBackend.Models.Entities;
 using Npgsql;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
@@ -14,6 +15,7 @@ public class PostgresDatabaseFixture
     public static string? Database { get; private set; }
     public static string? Username { get; private set; }
     public static string? Password { get; private set; }
+    public static NpgsqlDataSource? DataSource { get; private set; }
     public static int Port { get; private set; }
 
     [OneTimeSetUp]
@@ -29,6 +31,9 @@ public class PostgresDatabaseFixture
         Password = connStrBuilder.Password!;
         Database = connStrBuilder.Database!;
         Port = connStrBuilder.Port;
+        NpgsqlDataSourceBuilder dataSourceBuilder = new(connStrBuilder.ConnectionString);
+        dataSourceBuilder.UseNodaTime().MapEnum<UserRole>();
+        DataSource = dataSourceBuilder.Build();
     }
 
     [OneTimeTearDown]
