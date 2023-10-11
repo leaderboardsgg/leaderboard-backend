@@ -12,10 +12,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Moq;
-using BCryptNet = BCrypt.Net.BCrypt;
 using Npgsql;
 using Respawn;
 using Respawn.Graph;
+using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace LeaderboardBackend.Test.TestApi;
 
@@ -29,6 +29,7 @@ public class TestApiFactory : WebApplicationFactory<Program>
         builder.UseEnvironment(Environments.Staging);
 
         base.ConfigureWebHost(builder);
+
         builder.ConfigureServices(services =>
         {
             if (PostgresDatabaseFixture.PostgresContainer is null)
@@ -75,7 +76,8 @@ public class TestApiFactory : WebApplicationFactory<Program>
                 return dataSourceBuilder.Build();
             });
 
-            services.AddDbContext<ApplicationContext>((container, options) => {
+            services.AddDbContext<ApplicationContext>((container, options) =>
+            {
                 NpgsqlDataSource dataSource = container.GetRequiredService<NpgsqlDataSource>();
                 options.UseNpgsql(dataSource, o => o.UseNodaTime()).UseSnakeCaseNamingConvention();
             });
