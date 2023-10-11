@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Moq;
 using Npgsql;
 using Respawn;
@@ -46,31 +48,43 @@ public class TestApiFactory : WebApplicationFactory<Program>
                 services.Remove(dbContextDescriptor);
             }
 
-            PostgresConfig db = new()
-            {
-                Db = PostgresDatabaseFixture.Database!,
-                Port = (ushort)PostgresDatabaseFixture.Port,
-                Host = PostgresDatabaseFixture.PostgresContainer.Hostname,
-                User = PostgresDatabaseFixture.Username!,
-                Password = PostgresDatabaseFixture.Password!,
-            };
-
-            NpgsqlConnectionStringBuilder connectionBuilder = new()
-            {
-                Host = db.Host,
-                Username = db.User,
-                Password = db.Password,
-                Database = db.Db,
-                IncludeErrorDetail = true,
-            };
-
-            if (db.Port is not null)
-            {
-                connectionBuilder.Port = db.Port.Value;
-            }
+            services.Configure<ApplicationContextConfig>(conf =>
+                conf.Pg = new PostgresConfig
+                {
+                    Db = PostgresDatabaseFixture.Database!,
+                    Port = (ushort)PostgresDatabaseFixture.Port,
+                    Host = PostgresDatabaseFixture.PostgresContainer.Hostname,
+                    User = PostgresDatabaseFixture.Username!,
+                    Password = PostgresDatabaseFixture.Password!
+                });
 
             services.AddSingleton(container =>
             {
+                ApplicationContextConfig appConfig = container
+                    .GetRequiredService<IOptions<ApplicationContextConfig>>()
+                    .Value;
+
+                if (appConfig.Pg is null)
+                {
+                    throw new UnreachableException(
+                        "The database configuration is invalid but it was not caught by validation!"
+                    );
+                }
+
+                NpgsqlConnectionStringBuilder connectionBuilder = new()
+                {
+                    Host = appConfig.Pg.Host,
+                    Username = appConfig.Pg.User,
+                    Password = appConfig.Pg.Password,
+                    Database = appConfig.Pg.Db,
+                    IncludeErrorDetail = true,
+                };
+
+                if (appConfig.Pg.Port is not null)
+                {
+                    connectionBuilder.Port = appConfig.Pg.Port.Value;
+                }
+
                 NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionBuilder.ConnectionString);
                 dataSourceBuilder.UseNodaTime().MapEnum<UserRole>();
                 return dataSourceBuilder.Build();
