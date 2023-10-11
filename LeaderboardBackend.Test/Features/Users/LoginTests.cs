@@ -20,9 +20,9 @@ namespace LeaderboardBackend.Test.Features.Users;
 public class LoginTests : IntegrationTestsBase
 {
     [OneTimeSetUp]
-    public void Init()
+    public async Task Init()
     {
-        _factory.ResetDatabase();
+        await _factory.ResetDatabase();
 
         // TODO: Swap to creating users via the UserService instead of calling the DB, once
         // it has the ability to change a user's roles.
