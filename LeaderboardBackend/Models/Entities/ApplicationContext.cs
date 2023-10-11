@@ -17,10 +17,26 @@ public class ApplicationContext : DbContext
     public DbSet<Run> Runs { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;
 
+    public void MigrateDatabase()
+    {
+        Database.Migrate();
+        NpgsqlConnection connection = (NpgsqlConnection)Database.GetDbConnection();
+        connection.Open();
+
+        try
+        {
+            connection.ReloadTypes();
+        }
+        finally
+        {
+            connection.Close();
+        }
+    }
+
     /// <summary>
     /// Migrates the database and reloads Npgsql types
     /// </summary>
-    public async Task MigrateDatabase()
+    public async Task MigrateDatabaseAsync()
     {
         await Database.MigrateAsync();
 
