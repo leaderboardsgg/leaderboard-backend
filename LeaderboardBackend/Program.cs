@@ -60,39 +60,35 @@ builder.Services
     .ValidateDataAnnotationsRecursively()
     .ValidateOnStart();
 
-ApplicationContextConfig? appContextConfig = builder.Configuration.GetRequiredSection(ApplicationContextConfig.KEY).Get<ApplicationContextConfig>();
+ApplicationContextConfig? appContextConfig = builder.Configuration.GetSection(ApplicationContextConfig.KEY).Get<ApplicationContextConfig>();
 
-if (appContextConfig is null || appContextConfig.Pg is null)
+if (appContextConfig is not null && appContextConfig.Pg is not null)
 {
-    throw new UnreachableException(
-        "The database configuration is invalid but it was not caught by validation!"
-    );
+    PostgresConfig db = appContextConfig.Pg;
+    NpgsqlConnectionStringBuilder connectionBuilder = new()
+    {
+        Host = db.Host,
+        Username = db.User,
+        Password = db.Password,
+        Database = db.Db,
+        IncludeErrorDetail = true,
+    };
+
+    if (db.Port is not null)
+    {
+        connectionBuilder.Port = db.Port.Value;
+    }
+
+    NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionBuilder.ConnectionString);
+    dataSourceBuilder.UseNodaTime().MapEnum<UserRole>();
+    NpgsqlDataSource dataSource = dataSourceBuilder.Build();
+
+    builder.Services.AddDbContext<ApplicationContext>(opt =>
+    {
+        opt.UseNpgsql(dataSource, o => o.UseNodaTime());
+        opt.UseSnakeCaseNamingConvention();
+    });
 }
-
-PostgresConfig db = appContextConfig.Pg;
-NpgsqlConnectionStringBuilder connectionBuilder = new()
-{
-    Host = db.Host,
-    Username = db.User,
-    Password = db.Password,
-    Database = db.Db,
-    IncludeErrorDetail = true,
-};
-
-if (db.Port is not null)
-{
-    connectionBuilder.Port = db.Port.Value;
-}
-
-NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionBuilder.ConnectionString);
-dataSourceBuilder.UseNodaTime().MapEnum<UserRole>();
-NpgsqlDataSource dataSource = dataSourceBuilder.Build();
-
-builder.Services.AddDbContext<ApplicationContext>(opt =>
-{
-    opt.UseNpgsql(dataSource, o => o.UseNodaTime());
-    opt.UseSnakeCaseNamingConvention();
-});
 
 // Add services to the container.
 builder.Services.AddScoped<IUserService, UserService>();
