@@ -14,27 +14,28 @@ namespace LeaderboardBackend.Test.Features.Users;
 public class TestRecoveryTests : IntegrationTestsBase
 {
     private IServiceScope _scope = null!;
-    private HttpClient _client = null!;
+    private readonly HttpClient _client;
     private readonly FakeClock _clock = new(Instant.FromUnixTimeSeconds(1));
+
+    public TestRecoveryTests()
+    {
+        _client = _factory.WithWebHostBuilder(builder =>
+            builder.ConfigureTestServices(services =>
+                services.AddSingleton<IClock, FakeClock>(_ => _clock)
+            )
+        ).CreateClient();
+    }
 
     [SetUp]
     public void Init()
     {
+        _factory.ResetDatabase();
         _scope = _factory.Services.CreateScope();
-
-        _client = _factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureTestServices(services =>
-            {
-                services.AddSingleton<IClock, FakeClock>(_ => _clock);
-            });
-        }).CreateClient();
     }
 
     [TearDown]
     public void TearDown()
     {
-        _factory.ResetDatabase();
         _scope.Dispose();
     }
 
