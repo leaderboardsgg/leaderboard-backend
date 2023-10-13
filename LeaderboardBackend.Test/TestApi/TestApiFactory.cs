@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
@@ -7,7 +6,6 @@ using LeaderboardBackend.Test.Lib;
 using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -65,7 +63,7 @@ public class TestApiFactory : WebApplicationFactory<Program>
         InitializeDatabase(dbContext);
     }
 
-    private static void InitializeDatabase(ApplicationContext dbContext)
+    private void InitializeDatabase(ApplicationContext dbContext)
     {
         if (!_migrated)
         {
@@ -75,7 +73,7 @@ public class TestApiFactory : WebApplicationFactory<Program>
 
         Seed(dbContext);
     }
-    private static void Seed(ApplicationContext dbContext)
+    private void Seed(ApplicationContext dbContext)
     {
         if (!_seeded)
         {
