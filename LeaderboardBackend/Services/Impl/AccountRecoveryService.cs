@@ -82,7 +82,7 @@ public class AccountRecoveryService : IAccountRecoveryService
             return new NotFound();
         }
 
-        if (recovery.User.Role is not UserRole.Confirmed and not UserRole.Administrator)
+        if (recovery.User.Role is UserRole.Banned)
         {
             return new BadRole();
         }

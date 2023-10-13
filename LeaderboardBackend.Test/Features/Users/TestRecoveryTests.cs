@@ -64,6 +64,7 @@ public class TestRecoveryTests : IntegrationTestsBase
         };
 
         await context.AccountRecoveries.AddAsync(recovery);
+        await context.SaveChangesAsync();
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery.Id));
         res.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -132,7 +133,7 @@ public class TestRecoveryTests : IntegrationTestsBase
     [TestCase(UserRole.Administrator, HttpStatusCode.OK)]
     [TestCase(UserRole.Banned, HttpStatusCode.NotFound)]
     [TestCase(UserRole.Confirmed, HttpStatusCode.OK)]
-    [TestCase(UserRole.Registered, HttpStatusCode.NotFound)]
+    [TestCase(UserRole.Registered, HttpStatusCode.OK)]
     public async Task TestRecovery_Roles(UserRole role, HttpStatusCode expected)
     {
         _clock.Reset(Instant.FromUnixTimeSeconds(1));
