@@ -15,4 +15,4 @@ public interface IAccountRecoveryService
 public partial class CreateRecoveryResult : OneOfBase<AccountRecovery, BadRole, EmailFailed> { };
 
 [GenerateOneOf]
-public partial class RecoverAccountResult : OneOfBase<AlreadyUsed, BadRole, Expired, NotFound, Old, Success> { };
+public partial class RecoverAccountResult : OneOfBase<AlreadyUsed, BadRole, Expired, NotFound, Success> { };

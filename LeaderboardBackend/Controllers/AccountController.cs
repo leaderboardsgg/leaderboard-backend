@@ -244,7 +244,6 @@ public class AccountController : ApiController
             badRole => NotFound(),
             expired => NotFound(),
             notFound => NotFound(),
-            old => NotFound(),
             success => Ok()
         );
     }

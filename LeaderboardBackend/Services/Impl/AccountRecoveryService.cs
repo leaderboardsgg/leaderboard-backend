@@ -92,6 +92,13 @@ public class AccountRecoveryService : IAccountRecoveryService
             return new AlreadyUsed();
         }
 
+        Instant now = _clock.GetCurrentInstant();
+
+        if (recovery.ExpiresAt <= now)
+        {
+            return new Expired();
+        }
+
         IQueryable<Guid> latest =
             from rec in _applicationContext.AccountRecoveries
             where rec.UserId == recovery.UserId
@@ -101,13 +108,6 @@ public class AccountRecoveryService : IAccountRecoveryService
         Guid latestId = await latest.FirstAsync();
 
         if (latestId != id)
-        {
-            return new Old();
-        }
-
-        Instant now = _clock.GetCurrentInstant();
-
-        if (recovery.ExpiresAt <= now)
         {
             return new Expired();
         }
