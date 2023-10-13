@@ -82,7 +82,7 @@ public class AccountRecoveryService : IAccountRecoveryService
             return new NotFound();
         }
 
-        if (recovery.User.Role is not UserRole.Registered)
+        if (recovery.User.Role is not UserRole.Confirmed)
         {
             return new BadRole();
         }
