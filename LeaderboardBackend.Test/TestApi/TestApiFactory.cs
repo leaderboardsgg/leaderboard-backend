@@ -119,6 +119,7 @@ public class TestApiFactory : WebApplicationFactory<Program>
             _seeded = true;
         }
     }
+
     /// <summary>
     /// Deletes and recreates the database
     /// </summary>
