@@ -34,16 +34,13 @@ public class TestRecoveryTests : IntegrationTestsBase
     }
 
     [TearDown]
-    public void TearDown()
-    {
-        _scope.Dispose();
-    }
+    public void TearDown() => _scope.Dispose();
 
     [TestCase("not_a_guid")]
     [TestCase("L8msfy9wd0qWbDJMZwwgQg")]
     public async Task TestRecovery_BadRecoveryId(string id)
     {
-        HttpResponseMessage res = await _client.GetAsync($"/account/recover/${id}");
+        HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(id));
         res.Should().HaveStatusCode(HttpStatusCode.NotFound);
     }
 
