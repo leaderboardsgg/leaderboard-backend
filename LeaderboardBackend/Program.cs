@@ -60,35 +60,31 @@ builder.Services
     .ValidateDataAnnotationsRecursively()
     .ValidateOnStart();
 
-ApplicationContextConfig? appContextConfig = builder.Configuration.GetSection(ApplicationContextConfig.KEY).Get<ApplicationContextConfig>();
+PostgresConfig db = builder.Configuration.GetSection(ApplicationContextConfig.KEY).Get<ApplicationContextConfig>()!.Pg!;
 
-if (appContextConfig is not null && appContextConfig.Pg is not null)
+NpgsqlConnectionStringBuilder connectionBuilder = new()
 {
-    PostgresConfig db = appContextConfig.Pg;
-    NpgsqlConnectionStringBuilder connectionBuilder = new()
-    {
-        Host = db.Host,
-        Username = db.User,
-        Password = db.Password,
-        Database = db.Db,
-        IncludeErrorDetail = true,
-    };
+    Host = db.Host,
+    Username = db.User,
+    Password = db.Password,
+    Database = db.Db,
+    IncludeErrorDetail = true,
+};
 
-    if (db.Port is not null)
-    {
-        connectionBuilder.Port = db.Port.Value;
-    }
-
-    NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionBuilder.ConnectionString);
-    dataSourceBuilder.UseNodaTime().MapEnum<UserRole>();
-    NpgsqlDataSource dataSource = dataSourceBuilder.Build();
-
-    builder.Services.AddDbContext<ApplicationContext>(opt =>
-    {
-        opt.UseNpgsql(dataSource, o => o.UseNodaTime());
-        opt.UseSnakeCaseNamingConvention();
-    });
+if (db.Port is not null)
+{
+    connectionBuilder.Port = db.Port.Value;
 }
+
+NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionBuilder.ConnectionString);
+dataSourceBuilder.UseNodaTime().MapEnum<UserRole>();
+NpgsqlDataSource dataSource = dataSourceBuilder.Build();
+
+builder.Services.AddDbContext<ApplicationContext>(opt =>
+{
+    opt.UseNpgsql(dataSource, o => o.UseNodaTime());
+    opt.UseSnakeCaseNamingConvention();
+});
 
 // Add services to the container.
 builder.Services.AddScoped<IUserService, UserService>();
