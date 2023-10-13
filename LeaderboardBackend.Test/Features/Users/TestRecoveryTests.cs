@@ -11,7 +11,7 @@ using NUnit.Framework;
 
 namespace LeaderboardBackend.Test.Features.Users;
 
-public class RecoverAccountTests : IntegrationTestsBase
+public class TestRecoveryTests : IntegrationTestsBase
 {
     private IServiceScope _scope = null!;
     private HttpClient _client = null!;
