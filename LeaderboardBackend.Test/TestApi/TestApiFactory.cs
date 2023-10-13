@@ -29,39 +29,19 @@ public class TestApiFactory : WebApplicationFactory<Program>
         // Set the environment for the run to Staging
         builder.UseEnvironment(Environments.Staging);
 
-        base.ConfigureWebHost(builder);
+        if (PostgresDatabaseFixture.PostgresContainer is null)
+        {
+            throw new InvalidOperationException("Postgres container is not initialized.");
+        }
+
+        Environment.SetEnvironmentVariable("ApplicationContext__PG__DB", PostgresDatabaseFixture.Database);
+        Environment.SetEnvironmentVariable("ApplicationContext__PG__PORT", PostgresDatabaseFixture.Port.ToString());
+        Environment.SetEnvironmentVariable("ApplicationContext__PG__HOST", PostgresDatabaseFixture.PostgresContainer!.Hostname);
+        Environment.SetEnvironmentVariable("ApplicationContext__PG__USER", PostgresDatabaseFixture.Username);
+        Environment.SetEnvironmentVariable("ApplicationContext__PG__PASSWORD", PostgresDatabaseFixture.Password);
 
         builder.ConfigureServices(services =>
         {
-            if (PostgresDatabaseFixture.PostgresContainer is null)
-            {
-                throw new InvalidOperationException("Postgres container is not initialized.");
-            }
-
-            ServiceDescriptor? dbContextDescriptor = services.SingleOrDefault(
-                d => d.ServiceType ==
-                    typeof(DbContextOptions<ApplicationContext>));
-
-            if (dbContextDescriptor is not null)
-            {
-                services.Remove(dbContextDescriptor);
-            }
-
-            services.Configure<ApplicationContextConfig>(conf =>
-                conf.Pg = new PostgresConfig
-                {
-                    Db = PostgresDatabaseFixture.Database!,
-                    Port = (ushort)PostgresDatabaseFixture.Port,
-                    Host = PostgresDatabaseFixture.PostgresContainer.Hostname,
-                    User = PostgresDatabaseFixture.Username!,
-                    Password = PostgresDatabaseFixture.Password!
-                });
-
-            services.AddDbContext<ApplicationContext>(options =>
-            {
-                options.UseNpgsql(PostgresDatabaseFixture.DataSource!, o => o.UseNodaTime()).UseSnakeCaseNamingConvention();
-            });
-
             // mock SMTP client
             services.Replace(ServiceDescriptor.Transient(_ => _mock.Object));
 
