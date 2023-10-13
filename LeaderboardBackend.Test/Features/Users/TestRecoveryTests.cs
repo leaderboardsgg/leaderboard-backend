@@ -129,8 +129,11 @@ public class TestRecoveryTests : IntegrationTestsBase
         res.Should().HaveStatusCode(HttpStatusCode.NotFound);
     }
 
-    [Test]
-    public async Task TestRecovery_BannedUser()
+    [TestCase(UserRole.Administrator, HttpStatusCode.OK)]
+    [TestCase(UserRole.Banned, HttpStatusCode.NotFound)]
+    [TestCase(UserRole.Confirmed, HttpStatusCode.OK)]
+    [TestCase(UserRole.Registered, HttpStatusCode.NotFound)]
+    public async Task TestRecovery_Roles(UserRole role, HttpStatusCode expected)
     {
         _clock.Reset(Instant.FromUnixTimeSeconds(1));
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
@@ -144,38 +147,13 @@ public class TestRecoveryTests : IntegrationTestsBase
                 Email = "test@email.com",
                 Password = "password",
                 Username = "username",
-                Role = UserRole.Banned
+                Role = role
             }
         };
 
         await context.AccountRecoveries.AddAsync(recovery);
         await context.SaveChangesAsync();
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery.Id));
-        res.Should().HaveStatusCode(HttpStatusCode.NotFound);
-    }
-
-    [Test]
-    public async Task TestRecovery_Success()
-    {
-        _clock.Reset(Instant.FromUnixTimeSeconds(1));
-        ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-
-        AccountRecovery recovery = new()
-        {
-            CreatedAt = Instant.FromUnixTimeSeconds(0),
-            ExpiresAt = Instant.FromUnixTimeSeconds(0).Plus(Duration.FromHours(1)),
-            User = new()
-            {
-                Email = "test@email.com",
-                Password = "password",
-                Username = "username",
-                Role = UserRole.Confirmed
-            }
-        };
-
-        await context.AccountRecoveries.AddAsync(recovery);
-        await context.SaveChangesAsync();
-        HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery.Id));
-        res.Should().HaveStatusCode(HttpStatusCode.OK);
+        res.Should().HaveStatusCode(expected);
     }
 }
