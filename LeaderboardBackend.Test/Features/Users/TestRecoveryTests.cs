@@ -46,6 +46,7 @@ public class TestRecoveryTests : IntegrationTestsBase
         res.Should().HaveStatusCode(HttpStatusCode.NotFound);
     }
 
+    [Test]
     public async Task TestRecovery_Expired()
     {
         _clock.Reset(Instant.FromUnixTimeSeconds(1) + Duration.FromHours(2));
@@ -69,6 +70,7 @@ public class TestRecoveryTests : IntegrationTestsBase
         res.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    [Test]
     public async Task TestRecovery_Old()
     {
         _clock.Reset(Instant.FromUnixTimeSeconds(10));
@@ -103,6 +105,7 @@ public class TestRecoveryTests : IntegrationTestsBase
         res.Should().HaveStatusCode(HttpStatusCode.NotFound);
     }
 
+    [Test]
     public async Task TestRecovery_Used()
     {
         _clock.Reset(Instant.FromUnixTimeSeconds(10));
@@ -128,6 +131,7 @@ public class TestRecoveryTests : IntegrationTestsBase
         res.Should().HaveStatusCode(HttpStatusCode.NotFound);
     }
 
+    [Test]
     public async Task TestRecovery_BannedUser()
     {
         _clock.Reset(Instant.FromUnixTimeSeconds(1));
@@ -152,6 +156,7 @@ public class TestRecoveryTests : IntegrationTestsBase
         res.Should().HaveStatusCode(HttpStatusCode.NotFound);
     }
 
+    [Test]
     public async Task TestRecovery_Success()
     {
         _clock.Reset(Instant.FromUnixTimeSeconds(1));
