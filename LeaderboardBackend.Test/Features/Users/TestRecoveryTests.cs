@@ -14,10 +14,11 @@ namespace LeaderboardBackend.Test.Features.Users;
 public class TestRecoveryTests : IntegrationTestsBase
 {
     private IServiceScope _scope = null!;
-    private readonly HttpClient _client;
+    private HttpClient _client = null!;
     private readonly FakeClock _clock = new(Instant.FromUnixTimeSeconds(1));
 
-    public TestRecoveryTests()
+    [OneTimeSetUp]
+    public void OneTimeSetUp()
     {
         _client = _factory.WithWebHostBuilder(builder =>
             builder.ConfigureTestServices(services =>
