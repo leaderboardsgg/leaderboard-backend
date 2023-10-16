@@ -15,7 +15,7 @@ using BCryptNet = BCrypt.Net.BCrypt;
 namespace LeaderboardBackend.Test.Features.Users;
 
 [TestFixture]
-public class ResetPassworTests : IntegrationTestsBase
+public class ResetPasswordTests : IntegrationTestsBase
 {
     private AsyncServiceScope _scope;
     private readonly FakeClock _clock = new(Instant.FromUnixTimeSeconds(1));
