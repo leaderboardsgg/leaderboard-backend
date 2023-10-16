@@ -17,7 +17,7 @@ using NUnit.Framework;
 namespace LeaderboardBackend.Test.Features.Users;
 
 [TestFixture]
-public class AccountRecoveryTests : IntegrationTestsBase
+public class SendRecoveryTests : IntegrationTestsBase
 {
     private IServiceScope _scope = null!;
 

@@ -261,6 +261,51 @@
         }
       }
     },
+    "/Account/recover/{id}": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Tests an account recovery token for validity.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The recovery token.",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-zA-Z0-9-_]{22}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The token provided is valid."
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The token provided is invalid or expired, or the user is banned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Categories/{id}": {
       "get": {
         "tags": [
