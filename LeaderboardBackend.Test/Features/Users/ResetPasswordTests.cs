@@ -17,8 +17,8 @@ namespace LeaderboardBackend.Test.Features.Users;
 [TestFixture]
 public class ResetPasswordTests : IntegrationTestsBase
 {
-    private AsyncServiceScope _scope;
-    private readonly FakeClock _clock = new(Instant.FromUnixTimeSeconds(10) + Duration.FromHours(1));
+    private IServiceScope _scope = null!;
+    private FakeClock _clock = null!;
     private HttpClient _client = null!;
     private int _userNumber;
 
@@ -26,6 +26,13 @@ public class ResetPasswordTests : IntegrationTestsBase
     public void OneTimeSetUp()
     {
         _userNumber = 0;
+        _clock = new(Instant.FromUnixTimeSeconds(10) + Duration.FromHours(1));
+    }
+
+    [SetUp]
+    public void Init()
+    {
+        _scope = _factory.Services.CreateScope();
 
         _client = _factory.WithWebHostBuilder(
             builder => builder.ConfigureTestServices(
@@ -34,17 +41,12 @@ public class ResetPasswordTests : IntegrationTestsBase
         ).CreateClient();
     }
 
-    [OneTimeTearDown]
-    public void OneTimeTearDown() => _client.Dispose();
-
-    [SetUp]
-    public void Init()
-    {
-        _scope = _factory.Services.CreateAsyncScope();
-    }
-
     [TearDown]
-    public async Task TearDown() => await _scope.DisposeAsync();
+    public void TearDown()
+    {
+        _client.Dispose();
+        _scope.Dispose();
+    }
 
     [TestCase("not_an_id")]
     [TestCase("4BZgqaqRPEC7CKykWc0b2g")]
