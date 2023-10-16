@@ -52,7 +52,7 @@ public class ResetPasswordTests : IntegrationTestsBase
     {
         HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.RecoverAccount(id), new ChangePasswordRequest
         {
-            Password = "AValidPassword"
+            Password = "AValidP4ssword"
         });
 
         res.Should().HaveStatusCode(System.Net.HttpStatusCode.NotFound);
@@ -72,7 +72,7 @@ public class ResetPasswordTests : IntegrationTestsBase
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
-                Password = BCryptNet.EnhancedHashPassword("password"),
+                Password = BCryptNet.EnhancedHashPassword("P4ssword"),
                 Username = $"pwdresettestuser{userNumber}",
                 Role = UserRole.Confirmed
             }
@@ -83,15 +83,14 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
         {
-            Password = "AValidPassword"
+            Password = "AValidP4ssword"
         });
 
         res.Should().HaveStatusCode(System.Net.HttpStatusCode.NotFound);
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().BeNull();
-        BCryptNet.EnhancedVerify("password", recovery.User.Password).Should().BeTrue();
-        recovery.User.Password.Should().Be(BCryptNet.EnhancedHashPassword("password"));
+        BCryptNet.EnhancedVerify("P4ssword", recovery.User.Password).Should().BeTrue();
     }
 
     [Test]
@@ -104,7 +103,7 @@ public class ResetPasswordTests : IntegrationTestsBase
         User user = new()
         {
             Email = $"pwdresettestuser{userNumber}@email.com",
-            Password = BCryptNet.EnhancedHashPassword("password"),
+            Password = BCryptNet.EnhancedHashPassword("P4ssword"),
             Username = $"pwdresettestuser{userNumber}",
             Role = UserRole.Confirmed
         };
@@ -128,14 +127,14 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.RecoverAccount(recovery1.Id), new ChangePasswordRequest
         {
-            Password = "AValidPassword"
+            Password = "AValidP4ssword"
         });
 
         res.Should().HaveStatusCode(System.Net.HttpStatusCode.NotFound);
         context.ChangeTracker.Clear();
         recovery1 = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery1.Id);
         recovery1.UsedAt.Should().BeNull();
-        BCryptNet.EnhancedVerify("password", recovery1.User.Password).Should().BeTrue();
+        BCryptNet.EnhancedVerify("P4ssword", recovery1.User.Password).Should().BeTrue();
     }
 
     [Test]
@@ -153,7 +152,7 @@ public class ResetPasswordTests : IntegrationTestsBase
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
-                Password = BCryptNet.EnhancedHashPassword("password"),
+                Password = BCryptNet.EnhancedHashPassword("P4ssword"),
                 Username = $"pwdresettestuser{userNumber}",
                 Role = UserRole.Confirmed
             }
@@ -164,14 +163,14 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
         {
-            Password = "AValidPassword"
+            Password = "AValidP4ssword"
         });
 
         res.Should().HaveStatusCode(System.Net.HttpStatusCode.NotFound);
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().Be(Instant.FromUnixTimeSeconds(5));
-        BCryptNet.EnhancedVerify("password", recovery.User.Password).Should().BeTrue();
+        BCryptNet.EnhancedVerify("P4ssword", recovery.User.Password).Should().BeTrue();
     }
 
     [Test]
@@ -188,7 +187,7 @@ public class ResetPasswordTests : IntegrationTestsBase
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
-                Password = BCryptNet.EnhancedHashPassword("password"),
+                Password = BCryptNet.EnhancedHashPassword("P4ssword"),
                 Username = $"pwdresettestuser{userNumber}",
                 Role = UserRole.Confirmed
             }
@@ -199,14 +198,14 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
         {
-            Password = "AValidPassword"
+            Password = "AValidP4ssword"
         });
 
         res.Should().HaveStatusCode(System.Net.HttpStatusCode.NotFound);
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().BeNull();
-        BCryptNet.EnhancedVerify("password", recovery.User.Password).Should().BeTrue();
+        BCryptNet.EnhancedVerify("P4ssword", recovery.User.Password).Should().BeTrue();
     }
 
     [TestCase("OuxNzURtWdXWd", Description = "No number")]
@@ -228,7 +227,7 @@ public class ResetPasswordTests : IntegrationTestsBase
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
-                Password = BCryptNet.EnhancedHashPassword("password"),
+                Password = BCryptNet.EnhancedHashPassword("P4ssword"),
                 Username = $"pwdresettestuser{userNumber}",
                 Role = UserRole.Confirmed
             }
@@ -246,7 +245,7 @@ public class ResetPasswordTests : IntegrationTestsBase
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().BeNull();
-        BCryptNet.EnhancedVerify("password", recovery.User.Password).Should().BeTrue();
+        BCryptNet.EnhancedVerify("P4ssword", recovery.User.Password).Should().BeTrue();
     }
 
     [Test]
@@ -263,7 +262,7 @@ public class ResetPasswordTests : IntegrationTestsBase
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
-                Password = BCryptNet.EnhancedHashPassword("password"),
+                Password = BCryptNet.EnhancedHashPassword("P4ssword"),
                 Username = $"pwdresettestuser{userNumber}",
                 Role = UserRole.Confirmed
             }
@@ -274,7 +273,7 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
         {
-            Password = "password"
+            Password = "P4ssword"
         });
 
         res.Should().HaveStatusCode(System.Net.HttpStatusCode.Conflict);
@@ -299,7 +298,7 @@ public class ResetPasswordTests : IntegrationTestsBase
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
-                Password = BCryptNet.EnhancedHashPassword("password"),
+                Password = BCryptNet.EnhancedHashPassword("P4ssword"),
                 Username = $"pwdresettestuser{userNumber}",
                 Role = role
             }
@@ -310,13 +309,13 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
         {
-            Password = "AValidPassword"
+            Password = "AValidP4ssword"
         });
 
         res.Should().HaveStatusCode(System.Net.HttpStatusCode.OK);
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().Be(Instant.FromUnixTimeSeconds(10));
-        BCryptNet.EnhancedVerify("AValidPassword", recovery.User.Password).Should().BeTrue();
+        BCryptNet.EnhancedVerify("AValidP4ssword", recovery.User.Password).Should().BeTrue();
     }
 }
