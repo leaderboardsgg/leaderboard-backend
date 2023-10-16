@@ -237,7 +237,7 @@ public class AccountController : ApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> TestRecovery(Guid id, [FromServices] IAccountRecoveryService recoveryService)
     {
-        RecoverAccountResult result = await recoveryService.TestRecovery(id);
+        TestRecoveryResult result = await recoveryService.TestRecovery(id);
 
         return result.Match<ActionResult>(
             alreadyUsed => NotFound(),

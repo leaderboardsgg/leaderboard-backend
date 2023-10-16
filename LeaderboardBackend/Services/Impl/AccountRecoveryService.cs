@@ -73,7 +73,7 @@ public class AccountRecoveryService : IAccountRecoveryService
         return $@"Hi {user.Username},<br/><br/>Click <a href=""{builder.Uri}"">here</a> to reset your password.";
     }
 
-    public async Task<RecoverAccountResult> TestRecovery(Guid id)
+    public async Task<TestRecoveryResult> TestRecovery(Guid id)
     {
         AccountRecovery? recovery = await _applicationContext.AccountRecoveries.Include(ar => ar.User).SingleOrDefaultAsync(ar => ar.Id == id);
 
