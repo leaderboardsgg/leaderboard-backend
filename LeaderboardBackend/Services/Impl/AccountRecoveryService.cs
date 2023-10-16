@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NodaTime;
 using OneOf.Types;
+using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace LeaderboardBackend.Services;
 
@@ -111,6 +112,57 @@ public class AccountRecoveryService : IAccountRecoveryService
         {
             return new Expired();
         }
+
+        return new Success();
+    }
+
+    public async Task<ResetPasswordResult> ResetPassword(Guid id, string password)
+    {
+        AccountRecovery? recovery = await _applicationContext.AccountRecoveries.Include(ar => ar.User).SingleOrDefaultAsync(ar => ar.Id == id);
+
+        if (recovery is null)
+        {
+            return new NotFound();
+        }
+
+        if (recovery.User.Role is UserRole.Banned)
+        {
+            return new BadRole();
+        }
+
+        if (recovery.UsedAt is not null)
+        {
+            return new AlreadyUsed();
+        }
+
+        Instant now = _clock.GetCurrentInstant();
+
+        if (recovery.ExpiresAt <= now)
+        {
+            return new Expired();
+        }
+
+        IQueryable<Guid> latest =
+            from rec in _applicationContext.AccountRecoveries
+            where rec.UserId == recovery.UserId
+            orderby rec.CreatedAt descending
+            select rec.Id;
+
+        Guid latestId = await latest.FirstAsync();
+
+        if (latestId != id)
+        {
+            return new Expired();
+        }
+
+        if (BCryptNet.EnhancedVerify(password, recovery.User.Password))
+        {
+            return new SamePassword();
+        }
+
+        recovery.User.Password = BCryptNet.EnhancedHashPassword(password);
+        recovery.UsedAt = now;
+        await _applicationContext.SaveChangesAsync();
 
         return new Success();
     }
