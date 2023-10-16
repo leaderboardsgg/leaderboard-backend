@@ -18,7 +18,7 @@ namespace LeaderboardBackend.Test.Features.Users;
 public class ResetPasswordTests : IntegrationTestsBase
 {
     private AsyncServiceScope _scope;
-    private readonly FakeClock _clock = new(Instant.FromUnixTimeSeconds(1));
+    private readonly FakeClock _clock = new(Instant.FromUnixTimeSeconds(10) + Duration.FromHours(1));
     private HttpClient _client = null!;
     private int _userNumber;
 
@@ -61,7 +61,6 @@ public class ResetPasswordTests : IntegrationTestsBase
     [Test]
     public async Task ResetPassword_Expired()
     {
-        _clock.Reset(Instant.FromUnixTimeSeconds(0) + Duration.FromHours(2));
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         int userNumber = _userNumber++;
 
@@ -96,7 +95,6 @@ public class ResetPasswordTests : IntegrationTestsBase
     [Test]
     public async Task ResetPassword_NotMostRecent()
     {
-        _clock.Reset(Instant.FromUnixTimeSeconds(10));
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         int userNumber = _userNumber++;
 
@@ -110,15 +108,15 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         AccountRecovery recovery1 = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(0),
-            ExpiresAt = Instant.FromUnixTimeSeconds(0) + Duration.FromHours(1),
+            CreatedAt = Instant.FromUnixTimeSeconds(20),
+            ExpiresAt = Instant.FromUnixTimeSeconds(20) + Duration.FromHours(1),
             User = user
         };
 
         AccountRecovery recovery2 = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(5),
-            ExpiresAt = Instant.FromUnixTimeSeconds(5) + Duration.FromHours(1),
+            CreatedAt = Instant.FromUnixTimeSeconds(30),
+            ExpiresAt = Instant.FromUnixTimeSeconds(30) + Duration.FromHours(1),
             User = user
         };
 
@@ -140,15 +138,14 @@ public class ResetPasswordTests : IntegrationTestsBase
     [Test]
     public async Task ResetPassword_AlreadyUsed()
     {
-        _clock.Reset(Instant.FromUnixTimeSeconds(10));
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         int userNumber = _userNumber++;
 
         AccountRecovery recovery = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(0),
-            ExpiresAt = Instant.FromUnixTimeSeconds(0) + Duration.FromHours(1),
-            UsedAt = Instant.FromUnixTimeSeconds(5),
+            CreatedAt = Instant.FromUnixTimeSeconds(20),
+            ExpiresAt = Instant.FromUnixTimeSeconds(20) + Duration.FromHours(1),
+            UsedAt = Instant.FromUnixTimeSeconds(30),
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
@@ -169,21 +166,20 @@ public class ResetPasswordTests : IntegrationTestsBase
         res.Should().HaveStatusCode(System.Net.HttpStatusCode.NotFound);
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
-        recovery.UsedAt.Should().Be(Instant.FromUnixTimeSeconds(5));
+        recovery.UsedAt.Should().Be(Instant.FromUnixTimeSeconds(30));
         BCryptNet.EnhancedVerify("P4ssword", recovery.User.Password).Should().BeTrue();
     }
 
     [Test]
     public async Task ResetPassword_Banned()
     {
-        _clock.Reset(Instant.FromUnixTimeSeconds(10));
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         int userNumber = _userNumber++;
 
         AccountRecovery recovery = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(0),
-            ExpiresAt = Instant.FromUnixTimeSeconds(0) + Duration.FromHours(1),
+            CreatedAt = Instant.FromUnixTimeSeconds(20),
+            ExpiresAt = Instant.FromUnixTimeSeconds(20) + Duration.FromHours(1),
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
@@ -216,14 +212,13 @@ public class ResetPasswordTests : IntegrationTestsBase
         Description = "81 characters")]
     public async Task ResetPassword_BadPassword(string pwd)
     {
-        _clock.Reset(Instant.FromUnixTimeSeconds(10));
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         int userNumber = _userNumber++;
 
         AccountRecovery recovery = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(0),
-            ExpiresAt = Instant.FromUnixTimeSeconds(0) + Duration.FromHours(1),
+            CreatedAt = Instant.FromUnixTimeSeconds(20),
+            ExpiresAt = Instant.FromUnixTimeSeconds(20) + Duration.FromHours(1),
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
@@ -251,14 +246,13 @@ public class ResetPasswordTests : IntegrationTestsBase
     [Test]
     public async Task ResetPassword_SamePassword()
     {
-        _clock.Reset(Instant.FromUnixTimeSeconds(10));
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         int userNumber = _userNumber++;
 
         AccountRecovery recovery = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(0),
-            ExpiresAt = Instant.FromUnixTimeSeconds(0) + Duration.FromHours(1),
+            CreatedAt = Instant.FromUnixTimeSeconds(20),
+            ExpiresAt = Instant.FromUnixTimeSeconds(20) + Duration.FromHours(1),
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
@@ -287,14 +281,13 @@ public class ResetPasswordTests : IntegrationTestsBase
     [TestCase(UserRole.Registered)]
     public async Task ResetPassword_Success(UserRole role)
     {
-        _clock.Reset(Instant.FromUnixTimeSeconds(10));
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         int userNumber = _userNumber++;
 
         AccountRecovery recovery = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(0),
-            ExpiresAt = Instant.FromUnixTimeSeconds(0) + Duration.FromHours(1),
+            CreatedAt = Instant.FromUnixTimeSeconds(20),
+            ExpiresAt = Instant.FromUnixTimeSeconds(20) + Duration.FromHours(1),
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
