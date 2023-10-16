@@ -9,7 +9,7 @@ public interface IAccountRecoveryService
 {
     Task<CreateRecoveryResult> CreateRecoveryAndSendEmail(User user);
     Task<TestRecoveryResult> TestRecovery(Guid id);
-    Task<ResetPasswordResult> ResetPassword(Guid id, string pwd);
+    Task<ResetPasswordResult> ResetPassword(Guid id, string password);
 }
 
 public readonly record struct SamePassword { }
