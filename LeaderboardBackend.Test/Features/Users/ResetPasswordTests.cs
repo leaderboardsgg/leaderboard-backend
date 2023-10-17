@@ -27,12 +27,6 @@ public class ResetPasswordTests : IntegrationTestsBase
     {
         _userNumber = 0;
         _clock = new(Instant.FromUnixTimeSeconds(10) + Duration.FromHours(1));
-    }
-
-    [SetUp]
-    public void Init()
-    {
-        _scope = _factory.Services.CreateScope();
 
         _client = _factory.WithWebHostBuilder(
             builder => builder.ConfigureTestServices(
@@ -41,18 +35,29 @@ public class ResetPasswordTests : IntegrationTestsBase
         ).CreateClient();
     }
 
+    [SetUp]
+    public void Init()
+    {
+        _scope = _factory.Services.CreateScope();
+    }
+
     [TearDown]
     public void TearDown()
     {
-        _client.Dispose();
         _scope.Dispose();
+    }
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
+        _client.Dispose();
     }
 
     [TestCase("not_an_id")]
     [TestCase("4BZgqaqRPEC7CKykWc0b2g")]
     public async Task ResetPassword_BadId(string id)
     {
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.RecoverAccount(id), new ChangePasswordRequest
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(id), new ChangePasswordRequest
         {
             Password = "AValidP4ssword"
         });
@@ -82,7 +87,7 @@ public class ResetPasswordTests : IntegrationTestsBase
         context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
         {
             Password = "AValidP4ssword"
         });
@@ -125,7 +130,7 @@ public class ResetPasswordTests : IntegrationTestsBase
         context.AccountRecoveries.AddRange(recovery1, recovery2);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.RecoverAccount(recovery1.Id), new ChangePasswordRequest
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery1.Id), new ChangePasswordRequest
         {
             Password = "AValidP4ssword"
         });
@@ -160,7 +165,7 @@ public class ResetPasswordTests : IntegrationTestsBase
         context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
         {
             Password = "AValidP4ssword"
         });
@@ -187,19 +192,19 @@ public class ResetPasswordTests : IntegrationTestsBase
                 Email = $"pwdresettestuser{userNumber}@email.com",
                 Password = BCryptNet.EnhancedHashPassword("P4ssword"),
                 Username = $"pwdresettestuser{userNumber}",
-                Role = UserRole.Confirmed
+                Role = UserRole.Banned
             }
         };
 
         context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
         {
             Password = "AValidP4ssword"
         });
 
-        res.Should().HaveStatusCode(System.Net.HttpStatusCode.NotFound);
+        res.Should().HaveStatusCode(System.Net.HttpStatusCode.Forbidden);
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().BeNull();
@@ -233,7 +238,7 @@ public class ResetPasswordTests : IntegrationTestsBase
         context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
         {
             Password = pwd
         });
@@ -267,7 +272,7 @@ public class ResetPasswordTests : IntegrationTestsBase
         context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
         {
             Password = "P4ssword"
         });
@@ -302,7 +307,7 @@ public class ResetPasswordTests : IntegrationTestsBase
         context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
         {
             Password = "AValidP4ssword"
         });
@@ -310,7 +315,7 @@ public class ResetPasswordTests : IntegrationTestsBase
         res.Should().HaveStatusCode(System.Net.HttpStatusCode.OK);
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
-        recovery.UsedAt.Should().Be(Instant.FromUnixTimeSeconds(10));
+        recovery.UsedAt.Should().Be(Instant.FromUnixTimeSeconds(10) + Duration.FromHours(1));
         BCryptNet.EnhancedVerify("AValidP4ssword", recovery.User.Password).Should().BeTrue();
     }
 }
