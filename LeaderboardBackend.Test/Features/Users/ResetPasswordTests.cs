@@ -248,12 +248,12 @@ public class ResetPasswordTests : IntegrationTestsBase
         res.Should().HaveStatusCode(System.Net.HttpStatusCode.UnprocessableEntity);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         content.Should().NotBeNull();
-        
+
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
         {
             { nameof(RegisterRequest.Password), new[] { "PasswordFormat" } }
         });
-        
+
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().BeNull();
