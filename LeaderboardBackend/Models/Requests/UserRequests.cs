@@ -118,7 +118,6 @@ public record RecoverAccountRequest
 
 public record ChangePasswordRequest
 {
-    [Required]
     public required string Password { get; set; }
 }
 
