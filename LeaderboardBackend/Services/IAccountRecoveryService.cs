@@ -8,11 +8,17 @@ namespace LeaderboardBackend.Services;
 public interface IAccountRecoveryService
 {
     Task<CreateRecoveryResult> CreateRecoveryAndSendEmail(User user);
-    Task<RecoverAccountResult> TestRecovery(Guid id);
+    Task<TestRecoveryResult> TestRecovery(Guid id);
+    Task<ResetPasswordResult> ResetPassword(Guid id, string password);
 }
+
+public readonly record struct SamePassword { }
 
 [GenerateOneOf]
 public partial class CreateRecoveryResult : OneOfBase<AccountRecovery, BadRole, EmailFailed> { };
 
 [GenerateOneOf]
-public partial class RecoverAccountResult : OneOfBase<AlreadyUsed, BadRole, Expired, NotFound, Success> { };
+public partial class TestRecoveryResult : OneOfBase<AlreadyUsed, BadRole, Expired, NotFound, Success> { };
+
+[GenerateOneOf]
+public partial class ResetPasswordResult : OneOfBase<AlreadyUsed, BadRole, Expired, NotFound, SamePassword, Success> { }

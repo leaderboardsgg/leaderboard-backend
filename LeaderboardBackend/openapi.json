@@ -304,6 +304,89 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Recover the user's account by resetting their password to a new value.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The recovery token.",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-zA-Z0-9-_]{22}$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The password recovery request object.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The user's password was reset successfully."
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The user is banned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The token provided is invalid or expired.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The new password is the same as the user's existing password.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request body contains errors.<br />\r\nA **PasswordFormat** Validation error on the Password field indicates that the password format is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/Categories/{id}": {
@@ -1047,6 +1130,18 @@
         },
         "additionalProperties": false,
         "description": "Represents a `Category` tied to a `Leaderboard`."
+      },
+      "ChangePasswordRequest": {
+        "required": [
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
       },
       "CreateCategoryRequest": {
         "required": [

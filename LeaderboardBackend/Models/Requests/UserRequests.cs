@@ -116,6 +116,11 @@ public record RecoverAccountRequest
     public required string Email { get; set; }
 }
 
+public record ChangePasswordRequest
+{
+    public required string Password { get; set; }
+}
+
 public class LoginRequestValidator : AbstractValidator<LoginRequest>
 {
     public LoginRequestValidator()
@@ -134,4 +139,9 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
         RuleFor(x => x.Email).EmailAddress();
         RuleFor(x => x.Password).UserPassword();
     }
+}
+
+public class ChangePasswordValidator : AbstractValidator<ChangePasswordRequest>
+{
+    public ChangePasswordValidator() => RuleFor(x => x.Password).UserPassword();
 }

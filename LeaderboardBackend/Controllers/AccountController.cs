@@ -237,13 +237,53 @@ public class AccountController : ApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> TestRecovery(Guid id, [FromServices] IAccountRecoveryService recoveryService)
     {
-        RecoverAccountResult result = await recoveryService.TestRecovery(id);
+        TestRecoveryResult result = await recoveryService.TestRecovery(id);
 
         return result.Match<ActionResult>(
             alreadyUsed => NotFound(),
             badRole => NotFound(),
             expired => NotFound(),
             notFound => NotFound(),
+            success => Ok()
+        );
+    }
+
+    /// <summary>
+    /// Recover the user's account by resetting their password to a new value.
+    /// </summary>
+    /// <param name="id">The recovery token.</param>
+    /// <param name="request">The password recovery request object.</param>
+    /// <param name="recoveryService">IAccountRecoveryService dependency</param>
+    /// <response code="200">The user's password was reset successfully.</response>
+    /// <response code="403">The user is banned.</response>
+    /// <response code="404">The token provided is invalid or expired.</response>
+    /// <response code="409">The new password is the same as the user's existing password.</response>
+    /// <response code="422">
+    ///     The request body contains errors.<br/>
+    ///     A **PasswordFormat** Validation error on the Password field indicates that the password format is invalid.
+    /// </response>
+    [AllowAnonymous]
+    [HttpPost("recover/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ValidationProblemDetails))]
+    public async Task<ActionResult> ResetPassword(
+        Guid id,
+        [FromBody] ChangePasswordRequest request,
+        [FromServices] IAccountRecoveryService recoveryService
+    )
+    {
+        ResetPasswordResult result = await recoveryService.ResetPassword(id, request.Password);
+
+        return result.Match<ActionResult>(
+            alreadyUsed => NotFound(),
+            badRole => Forbid(),
+            expired => NotFound(),
+            notFound => NotFound(),
+            samePassword => Conflict(),
             success => Ok()
         );
     }
