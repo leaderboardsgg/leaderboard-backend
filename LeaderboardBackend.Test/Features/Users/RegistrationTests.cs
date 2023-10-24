@@ -16,8 +16,6 @@ namespace LeaderboardBackend.Test.Features.Users;
 
 public class RegistrationTests : IntegrationTestsBase
 {
-    private const string REGISTER_URI = "/account/register";
-
     private static readonly Faker<RegisterRequest> _registerReqFaker = new AutoFaker<RegisterRequest>()
         .RuleFor(x => x.Username, b => "TestUser" + b.Random.Number(99999))
         .RuleFor(x => x.Password, b => "c00l_pAssword")
@@ -28,7 +26,7 @@ public class RegistrationTests : IntegrationTestsBase
     {
         RegisterRequest request = _registerReqFaker.Generate();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(REGISTER_URI, request);
+        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
 
         res.Should().HaveStatusCode(HttpStatusCode.Created);
         UserViewModel? content = await res.Content.ReadFromJsonAsync<UserViewModel>();
@@ -56,7 +54,7 @@ public class RegistrationTests : IntegrationTestsBase
     {
         RegisterRequest request = _registerReqFaker.Generate() with { Email = "not_an_email" };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(REGISTER_URI, request);
+        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
 
         res.Should().HaveStatusCode(HttpStatusCode.UnprocessableEntity);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -72,7 +70,7 @@ public class RegistrationTests : IntegrationTestsBase
     {
         RegisterRequest request = _registerReqFaker.Generate() with { Username = "山" };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(REGISTER_URI, request);
+        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
 
         res.Should().HaveStatusCode(HttpStatusCode.UnprocessableEntity);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -88,7 +86,7 @@ public class RegistrationTests : IntegrationTestsBase
     {
         RegisterRequest request = _registerReqFaker.Generate() with { Password = "a" };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(REGISTER_URI, request);
+        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
 
         res.Should().HaveStatusCode(HttpStatusCode.UnprocessableEntity);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -103,10 +101,10 @@ public class RegistrationTests : IntegrationTestsBase
     public async Task Register_UsernameAlreadyTaken_ReturnsConflictAndErrorCode()
     {
         RegisterRequest createExistingUserReq = _registerReqFaker.Generate();
-        await Client.PostAsJsonAsync(REGISTER_URI, createExistingUserReq);
+        await Client.PostAsJsonAsync(Routes.REGISTER, createExistingUserReq);
         RegisterRequest request = _registerReqFaker.Generate() with { Username = createExistingUserReq.Username.ToLower() };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(REGISTER_URI, request);
+        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
 
         res.Should().HaveStatusCode(HttpStatusCode.Conflict);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -121,10 +119,10 @@ public class RegistrationTests : IntegrationTestsBase
     public async Task Register_EmailAlreadyUsed_ReturnsConflictAndErrorCode()
     {
         RegisterRequest createExistingUserReq = _registerReqFaker.Generate();
-        await Client.PostAsJsonAsync(REGISTER_URI, createExistingUserReq);
+        await Client.PostAsJsonAsync(Routes.REGISTER, createExistingUserReq);
         RegisterRequest request = _registerReqFaker.Generate() with { Email = createExistingUserReq.Email.ToLower() };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(REGISTER_URI, request);
+        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
 
         res.Should().HaveStatusCode(HttpStatusCode.Conflict);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
