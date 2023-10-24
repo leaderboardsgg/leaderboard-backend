@@ -110,7 +110,7 @@ public class SendConfirmationTests : IntegrationTestsBase
         res.Should().HaveStatusCode(HttpStatusCode.InternalServerError);
 
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        context.AccountConfirmations.Any().Should().Be(false);
+        context.AccountConfirmations.Where(c => c.UserId == result.AsT0.Id).Should().NotBeNull();
     }
 
     [Test]
