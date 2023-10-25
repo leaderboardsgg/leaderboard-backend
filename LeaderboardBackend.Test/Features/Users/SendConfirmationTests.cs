@@ -92,6 +92,7 @@ public class SendConfirmationTests : IntegrationTestsBase
             builder.ConfigureTestServices(services =>
             {
                 services.AddScoped(_ => emailSenderMock.Object);
+                services.AddSingleton<IClock, FakeClock>(_ => new(Instant.FromUnixTimeSeconds(1)));
             });
         })
         .CreateClient();
@@ -110,7 +111,11 @@ public class SendConfirmationTests : IntegrationTestsBase
         res.Should().HaveStatusCode(HttpStatusCode.InternalServerError);
 
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        context.AccountConfirmations.Where(c => c.UserId == result.AsT0.Id).Should().NotBeNull();
+        context.AccountConfirmations.Where(c =>
+            c.UserId == result.AsT0.Id &&
+            c.CreatedAt == Instant.FromUnixTimeSeconds(1) &&
+            c.ExpiresAt == Instant.FromUnixTimeSeconds(1) + Duration.FromHours(1)
+        ).Should().NotBeEmpty();
     }
 
     [Test]
