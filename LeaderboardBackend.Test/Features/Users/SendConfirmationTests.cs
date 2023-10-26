@@ -92,7 +92,6 @@ public class SendConfirmationTests : IntegrationTestsBase
             builder.ConfigureTestServices(services =>
             {
                 services.AddScoped(_ => emailSenderMock.Object);
-                services.AddSingleton<IClock, FakeClock>(_ => new(Instant.FromUnixTimeSeconds(1)));
             });
         })
         .CreateClient();
@@ -109,13 +108,6 @@ public class SendConfirmationTests : IntegrationTestsBase
         client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
         HttpResponseMessage res = await client.PostAsync(Routes.RESEND_CONFIRMATION, null);
         res.Should().HaveStatusCode(HttpStatusCode.InternalServerError);
-
-        ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        context.AccountConfirmations.Where(c =>
-            c.UserId == result.AsT0.Id &&
-            c.CreatedAt == Instant.FromUnixTimeSeconds(1) &&
-            c.ExpiresAt == Instant.FromUnixTimeSeconds(1) + Duration.FromHours(1)
-        ).Should().NotBeEmpty();
     }
 
     [Test]

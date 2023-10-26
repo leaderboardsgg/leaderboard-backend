@@ -48,7 +48,7 @@ public class AccountConfirmationService : IAccountConfirmationService
                 UserId = user.Id,
             };
 
-        await _applicationContext.AccountConfirmations.AddAsync(newConfirmation);
+        _applicationContext.AccountConfirmations.Add(newConfirmation);
         await _applicationContext.SaveChangesAsync();
 
         try

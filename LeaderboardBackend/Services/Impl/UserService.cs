@@ -92,7 +92,7 @@ public class UserService : IUserService
             {
                 Username = request.Username,
                 Email = request.Email,
-                Password = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password),
+                Password = BCryptNet.EnhancedHashPassword(request.Password),
                 Role = UserRole.Registered
             };
 
