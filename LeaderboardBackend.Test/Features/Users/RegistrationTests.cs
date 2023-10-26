@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -7,9 +8,12 @@ using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
+using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Fixtures;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using NUnit.Framework;
 
 namespace LeaderboardBackend.Test.Features.Users;
@@ -63,6 +67,26 @@ public class RegistrationTests : IntegrationTestsBase
         {
             { nameof(RegisterRequest.Email), new[] { "EmailValidator" } }
         });
+    }
+
+    [Test]
+    public async Task Register_EmailFailedToSend_ReturnsErrorCode()
+    {
+        Mock<IEmailSender> emailSenderMock = new();
+        emailSenderMock.Setup(x =>
+            x.EnqueueEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())
+        ).Throws(new Exception());
+
+        HttpClient client = _factory.WithWebHostBuilder(builder =>
+            builder.ConfigureTestServices(services =>
+                services.AddScoped(_ => emailSenderMock.Object)
+            )
+        ).CreateClient();
+        RegisterRequest request = _registerReqFaker.Generate();
+
+        HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
+
+        res.Should().HaveStatusCode(HttpStatusCode.InternalServerError);
     }
 
     [Test]

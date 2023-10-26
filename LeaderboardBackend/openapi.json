@@ -42,6 +42,9 @@
               }
             }
           },
+          "500": {
+            "description": "Server Error"
+          },
           "400": {
             "description": "The request was malformed."
           },
