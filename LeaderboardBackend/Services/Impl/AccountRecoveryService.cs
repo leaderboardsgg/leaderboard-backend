@@ -44,7 +44,7 @@ public class AccountRecoveryService : IAccountRecoveryService
             User = user
         };
 
-        await _applicationContext.AccountRecoveries.AddAsync(recovery);
+        _applicationContext.AccountRecoveries.Add(recovery);
         await _applicationContext.SaveChangesAsync();
 
         try

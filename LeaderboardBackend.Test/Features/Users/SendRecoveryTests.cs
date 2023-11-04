@@ -56,7 +56,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             Role = UserRole.Confirmed
         };
 
-        await context.Users.AddAsync(user);
+        context.Users.Add(user);
         await context.SaveChangesAsync();
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(
@@ -103,7 +103,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             Role = UserRole.Confirmed
         };
 
-        await context.Users.AddAsync(user);
+        context.Users.Add(user);
         await context.SaveChangesAsync();
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(
@@ -152,7 +152,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             Role = role
         };
 
-        await context.Users.AddAsync(user);
+        context.Users.Add(user);
         await context.SaveChangesAsync();
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(
@@ -232,7 +232,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             Role = UserRole.Confirmed
         };
 
-        await context.Users.AddAsync(user);
+        context.Users.Add(user);
         await context.SaveChangesAsync();
 
         HttpResponseMessage res = await client.PostAsJsonAsync(
