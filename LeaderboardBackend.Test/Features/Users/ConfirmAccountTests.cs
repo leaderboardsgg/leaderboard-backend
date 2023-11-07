@@ -58,7 +58,7 @@ public class ConfirmAccountTests : IntegrationTestsBase
             }
         };
 
-        await context.AccountConfirmations.AddAsync(confirmation);
+        context.AccountConfirmations.Add(confirmation);
         await context.SaveChangesAsync();
         HttpResponseMessage res = await _client.PutAsync(Routes.ConfirmAccount(Guid.NewGuid()), null);
         res.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -94,7 +94,7 @@ public class ConfirmAccountTests : IntegrationTestsBase
             }
         };
 
-        await context.AccountConfirmations.AddAsync(confirmation);
+        context.AccountConfirmations.Add(confirmation);
         await context.SaveChangesAsync();
 
         HttpResponseMessage res = await _client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
@@ -122,7 +122,7 @@ public class ConfirmAccountTests : IntegrationTestsBase
             }
         };
 
-        await context.AccountConfirmations.AddAsync(confirmation);
+        context.AccountConfirmations.Add(confirmation);
         await context.SaveChangesAsync();
         HttpResponseMessage res = await _client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
         res.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -151,7 +151,7 @@ public class ConfirmAccountTests : IntegrationTestsBase
             }
         };
 
-        await context.AccountConfirmations.AddAsync(confirmation);
+        context.AccountConfirmations.Add(confirmation);
         await context.SaveChangesAsync();
         HttpResponseMessage res = await _client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
         res.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -178,7 +178,7 @@ public class ConfirmAccountTests : IntegrationTestsBase
         };
 
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        await context.AccountConfirmations.AddAsync(confirmation);
+        context.AccountConfirmations.Add(confirmation);
         await context.SaveChangesAsync();
         HttpResponseMessage res = await _client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
         res.Should().HaveStatusCode(HttpStatusCode.OK);

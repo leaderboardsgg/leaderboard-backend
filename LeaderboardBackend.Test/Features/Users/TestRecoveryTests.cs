@@ -64,7 +64,7 @@ public class TestRecoveryTests : IntegrationTestsBase
             }
         };
 
-        await context.AccountRecoveries.AddAsync(recovery);
+        context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery.Id));
         res.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -83,7 +83,7 @@ public class TestRecoveryTests : IntegrationTestsBase
             Username = "username",
             Role = UserRole.Confirmed
         };
-        await context.Users.AddAsync(user);
+        context.Users.Add(user);
 
         AccountRecovery recovery1 = new()
         {
@@ -125,7 +125,7 @@ public class TestRecoveryTests : IntegrationTestsBase
             }
         };
 
-        await context.AccountRecoveries.AddAsync(recovery);
+        context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery.Id));
         res.Should().HaveStatusCode(HttpStatusCode.NotFound);
@@ -153,7 +153,7 @@ public class TestRecoveryTests : IntegrationTestsBase
             }
         };
 
-        await context.AccountRecoveries.AddAsync(recovery);
+        context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery.Id));
         res.Should().HaveStatusCode(expected);
