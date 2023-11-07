@@ -181,6 +181,7 @@ public class AccountController : ApiController
     [HttpPost("recover")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [FeatureGate(Features.ACCOUNT_RECOVERY)]
     public async Task<ActionResult> RecoverAccount(
         [FromServices] IAccountRecoveryService recoveryService,
         [FromBody] RecoverAccountRequest request
@@ -235,6 +236,7 @@ public class AccountController : ApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [FeatureGate(Features.ACCOUNT_RECOVERY)]
     public async Task<ActionResult> TestRecovery(Guid id, [FromServices] IAccountRecoveryService recoveryService)
     {
         TestRecoveryResult result = await recoveryService.TestRecovery(id);
@@ -270,6 +272,7 @@ public class AccountController : ApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ValidationProblemDetails))]
+    [FeatureGate(Features.ACCOUNT_RECOVERY)]
     public async Task<ActionResult> ResetPassword(
         Guid id,
         [FromBody] ChangePasswordRequest request,
