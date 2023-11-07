@@ -199,21 +199,17 @@ public class AccountController : ApiController
         return Ok();
     }
 
-    /// <summary>
-    ///     Confirms a user account.
-    /// </summary>
-    /// <param name="id">The confirmation token.</param>
-    /// <param name="confirmationService">IAccountConfirmationService dependency.</param>
-    /// <response code="200">The account was confirmed successfully.</response>
-    /// <response code="404">The token provided was invalid or expired.</response>
-    /// <response code="409">The user's account was either already confirmed or banned.</response>
     [AllowAnonymous]
     [HttpPut("confirm/{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult> ConfirmAccount(Guid id, [FromServices] IAccountConfirmationService confirmationService)
+    [SwaggerOperation("Confirms a user account.")]
+    [SwaggerResponse(200, "The account was confirmed successfully.")]
+    [SwaggerResponse(400)]
+    [SwaggerResponse(404, "The token provided was invalid or expired.")]
+    [SwaggerResponse(409, "the user's account was either already confirmed or banned.")]
+    public async Task<ActionResult> ConfirmAccount(
+        [SwaggerParameter("The confirmation token.")] Guid id,
+        [FromServices] IAccountConfirmationService confirmationService
+    )
     {
         ConfirmAccountResult result = await confirmationService.ConfirmAccount(id);
 
