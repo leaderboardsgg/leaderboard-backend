@@ -139,7 +139,6 @@ public class AccountController : ApiController
         );
     }
 
-    /// <param name="confirmationService">IAccountConfirmationService dependency.</param>
     [HttpPost("confirm")]
     [SwaggerOperation("Resends the account confirmation link.")]
     [SwaggerResponse(200, "A new confirmation link was generated.")]
