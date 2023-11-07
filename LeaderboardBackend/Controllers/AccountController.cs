@@ -224,20 +224,17 @@ public class AccountController : ApiController
         );
     }
 
-    /// <summary>
-    /// Tests an account recovery token for validity.
-    /// </summary>
-    /// <param name="id">The recovery token.</param>
-    /// <param name="recoveryService">IAccountRecoveryService dependency.</param>
-    /// <response code="200">The token provided is valid.</response>
-    /// <response code="404">The token provided is invalid or expired, or the user is banned.</response>
     [AllowAnonymous]
     [HttpGet("recover/{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [SwaggerOperation("Tests an account recovery token for validity.")]
+    [SwaggerResponse(200, "The token provided is valid.")]
+    [SwaggerResponse(400)]
+    [SwaggerResponse(404, "The token provided is invalid or expired, or the user is banned.")]
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
-    public async Task<ActionResult> TestRecovery(Guid id, [FromServices] IAccountRecoveryService recoveryService)
+    public async Task<ActionResult> TestRecovery(
+        [SwaggerParameter("The recovery token.")] Guid id,
+        [FromServices] IAccountRecoveryService recoveryService
+    )
     {
         TestRecoveryResult result = await recoveryService.TestRecovery(id);
 
