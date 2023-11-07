@@ -95,38 +95,39 @@ public class AccountController : ApiController
         return Conflict(new ValidationProblemDetails(ModelState));
     }
 
-    /// <summary>
-    ///     Logs a User in.
-    /// </summary>
-    /// <param name="request">
-    ///     The `LoginRequest` instance from which to perform the login.
-    /// </param>
-    /// <response code="200">
-    ///     The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.
-    /// </response>
-    /// <response code="400">The request was malformed.</response>
-    /// <response code="401">The password given was incorrect.</response>
-    /// <response code="403">The associated `User` is banned.</response>
-    /// <response code="404">No `User` with the requested details could be found.</response>
-    /// <response code="422">
-    ///     The request contains errors.<br/><br/>
-    ///     Validation error codes by property:
-    ///     - **Password**:
-    ///       - **NotEmptyValidator**: No password was passed
-    ///       - **PasswordFormat**: Invalid password format
-    ///     - **Email**:
-    ///       - **NotNullValidator**: No email was passed
-    ///       - **EmailValidator**: Invalid email format
-    /// </response>
     [AllowAnonymous]
-    [HttpPost("/login")]
     [ApiConventionMethod(typeof(Conventions), nameof(Conventions.PostAnon))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [FeatureGate(Features.LOGIN)]
-    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
+    [HttpPost("/login")]
+    [SwaggerOperation("Logs a User in.")]
+    [SwaggerResponse(
+        200,
+        "The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.",
+        typeof(LoginResponse)
+    )]
+    [SwaggerResponse(400, "The request was malformed.")]
+    [SwaggerResponse(401, "The password given was incorrect.")]
+    [SwaggerResponse(403, "The associated `User` is banned.")]
+    [SwaggerResponse(404, "No `User` with the requested details could be found.")]
+    [SwaggerResponse(
+        422,
+        """
+        The request contains errors.<br/><br/>
+        Validation error codes by property:
+        - **Password**:
+          - **NotEmptyValidator**: No password was passed
+          - **PasswordFormat**: Invalid password format
+        - **Email**:
+          - **NotNullValidator**: No email was passed
+          - **EmailValidator**: Invalid email format
+        """
+    )]
+    public async Task<ActionResult<LoginResponse>> Login(
+        [FromBody, SwaggerRequestBody(
+            "The `LoginRequest` instance with which to perform the login.",
+            Required = true
+        )] LoginRequest request
+    )
     {
         LoginResult result = await _userService.LoginByEmailAndPassword(request.Email, request.Password);
 
