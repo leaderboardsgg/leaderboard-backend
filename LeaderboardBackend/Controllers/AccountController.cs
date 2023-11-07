@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using OneOf;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Controllers;
 
@@ -21,41 +22,44 @@ public class AccountController : ApiController
         _userService = userService;
     }
 
-    /// <summary>
-    ///     Registers a new User.
-    /// </summary>
-    /// <param name="request">
-    ///     The `RegisterRequest` instance from which register the `User`.
-    /// </param>
-    /// <response code="201">The `User` was registered and returned successfully.</response>
-    /// <response code="400">
-    ///     The request was malformed.
-    /// </response>
-    /// <response code="409">
-    ///     A `User` with the specified username or email already exists.<br/><br/>
-    ///     Validation error codes by property:
-    ///     - **Username**:
-    ///       - **UsernameTaken**: the username is already in use
-    ///     - **Email**:
-    ///       - **EmailAlreadyUsed**: the email is already in use
-    /// </response>
-    /// <response code="422">
-    ///     The request contains errors.<br/><br/>
-    ///     Validation error codes by property:
-    ///     - **Username**:
-    ///       - **UsernameFormat**: Invalid username format
-    ///     - **Password**:
-    ///       - **PasswordFormat**: Invalid password format
-    ///     - **Email**:
-    ///       - **EmailValidator**: Invalid email format
-    /// </response>
     [AllowAnonymous]
-    [HttpPost("register")]
     [ApiConventionMethod(typeof(Conventions), nameof(Conventions.PostAnon))]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ValidationProblemDetails))]
     [FeatureGate(Features.ACCOUNT_REGISTRATION)]
-    public async Task<ActionResult<UserViewModel>> Register([FromBody] RegisterRequest request)
+    [HttpPost("register")]
+    [SwaggerOperation(Summary = "Registers a new User.")]
+    [SwaggerResponse(201, "The `User` was registered and returned successfully.")]
+    [SwaggerResponse(400, "The request was malformed.")]
+    [SwaggerResponse(
+        409,
+        """
+        A `User` with the specified username or email already exists.<br/><br/>
+        Validation error codes by property:
+        - **Username**:
+          - **UsernameTaken**: the username is already in use
+        - **Email**:
+          - **EmailAlreadyUsed**: the email is already in use
+        """
+    )]
+    [SwaggerResponse(
+        422,
+        """
+        The request contains errors.<br/><br/>
+        Validation error codes by property:
+        - **Username**:
+          - **UsernameFormat**: Invalid username format
+        - **Password**:
+          - **PasswordFormat**: Invalid password format
+        - **Email**:
+          - **EmailValidator**: Invalid email format
+        """,
+        typeof(ValidationProblemDetails)
+    )]
+    public async Task<ActionResult<UserViewModel>> Register(
+        [FromBody, SwaggerRequestBody(
+            "The `RegisterRequest` instance from which to register the `User`.",
+            Required = true
+        )] RegisterRequest request
+    )
     {
         CreateUserResult result = await _userService.CreateUser(request);
         return result.Match<ActionResult<UserViewModel>>(
