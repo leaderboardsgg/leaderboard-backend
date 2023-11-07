@@ -247,32 +247,26 @@ public class AccountController : ApiController
         );
     }
 
-    /// <summary>
-    /// Recover the user's account by resetting their password to a new value.
-    /// </summary>
-    /// <param name="id">The recovery token.</param>
-    /// <param name="request">The password recovery request object.</param>
-    /// <param name="recoveryService">IAccountRecoveryService dependency</param>
-    /// <response code="200">The user's password was reset successfully.</response>
-    /// <response code="403">The user is banned.</response>
-    /// <response code="404">The token provided is invalid or expired.</response>
-    /// <response code="409">The new password is the same as the user's existing password.</response>
-    /// <response code="422">
-    ///     The request body contains errors.<br/>
-    ///     A **PasswordFormat** Validation error on the Password field indicates that the password format is invalid.
-    /// </response>
     [AllowAnonymous]
     [HttpPost("recover/{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ValidationProblemDetails))]
+    [SwaggerOperation("Recover the user's account by resetting their password to a new value.")]
+    [SwaggerResponse(200, "The user's password was reset successfully.")]
+    [SwaggerResponse(400)]
+    [SwaggerResponse(403, "The user is banned.")]
+    [SwaggerResponse(404, "The token provided is invalid or expired.")]
+    [SwaggerResponse(409, "The new password is the same as the user's existing password.")]
+    [SwaggerResponse(
+        422,
+        """
+        The request body contains errors.<br/>
+        A **PasswordFormat** Validation error on the Password field indicates that the password format is invalid.
+        """,
+        typeof(ValidationProblemDetails)
+    )]
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
     public async Task<ActionResult> ResetPassword(
-        Guid id,
-        [FromBody] ChangePasswordRequest request,
+        [SwaggerParameter("The recovery token.")] Guid id,
+        [FromBody, SwaggerRequestBody("The password recovery request object.", Required = true)] ChangePasswordRequest request,
         [FromServices] IAccountRecoveryService recoveryService
     )
     {
