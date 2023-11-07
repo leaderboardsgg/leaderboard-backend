@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using NodaTime;
+using NodaTime.Testing;
 using NUnit.Framework;
 
 namespace LeaderboardBackend.Test.Features.Users;
@@ -28,9 +30,19 @@ public class RegistrationTests : IntegrationTestsBase
     [Test]
     public async Task Register_ValidRequest_CreatesAndReturnsUser()
     {
+        Mock<IEmailSender> emailSenderMock = new();
+        using HttpClient client = _factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddScoped(_ => emailSenderMock.Object);
+                services.AddSingleton<IClock, FakeClock>(_ => new(Instant.FromUnixTimeSeconds(1)));
+            });
+        })
+        .CreateClient();
         RegisterRequest request = _registerReqFaker.Generate();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
+        HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
         res.Should().HaveStatusCode(HttpStatusCode.Created);
         UserViewModel? content = await res.Content.ReadFromJsonAsync<UserViewModel>();
@@ -39,6 +51,14 @@ public class RegistrationTests : IntegrationTestsBase
             Id = content!.Id,
             Username = request.Username
         });
+        emailSenderMock.Verify(x =>
+            x.EnqueueEmailAsync(
+                It.IsAny<string>(),
+                "Confirm Your Account",
+                It.IsAny<string>()
+            ),
+            Times.Once()
+        );
 
         using IServiceScope scope = _factory.Services.CreateScope();
         using ApplicationContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
@@ -51,6 +71,11 @@ public class RegistrationTests : IntegrationTestsBase
             Email = request.Email,
             Role = UserRole.Registered
         });
+        AccountConfirmation confirmation = dbContext.AccountConfirmations.First(c => c.UserId == createdUser.Id);
+        confirmation.Should().NotBeNull();
+        confirmation.CreatedAt.ToUnixTimeSeconds().Should().Be(1);
+        confirmation.UsedAt.Should().BeNull();
+        Instant.Subtract(confirmation.ExpiresAt, confirmation.CreatedAt).Should().Be(Duration.FromHours(1));
     }
 
     [Test]
