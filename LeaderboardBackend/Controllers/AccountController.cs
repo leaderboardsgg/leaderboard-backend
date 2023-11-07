@@ -38,7 +38,8 @@ public class AccountController : ApiController
           - **UsernameTaken**: the username is already in use
         - **Email**:
           - **EmailAlreadyUsed**: the email is already in use
-        """
+        """,
+        typeof(ValidationProblemDetails)
     )]
     [SwaggerResponse(
         422,
@@ -120,7 +121,8 @@ public class AccountController : ApiController
         - **Email**:
           - **NotNullValidator**: No email was passed
           - **EmailValidator**: Invalid email format
-        """
+        """,
+        typeof(ValidationProblemDetails)
     )]
     public async Task<ActionResult<LoginResponse>> Login(
         [FromBody, SwaggerRequestBody(
