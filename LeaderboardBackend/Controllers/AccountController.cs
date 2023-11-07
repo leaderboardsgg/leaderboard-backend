@@ -172,23 +172,16 @@ public class AccountController : ApiController
         );
     }
 
-    /// <summary>
-    ///     Sends an account recovery email.
-    /// </summary>
-    /// <param name="recoveryService">IAccountRecoveryService dependency.</param>
-    /// <param name="logger"></param>
-    /// <param name="request">The account recovery request.</param>
-    /// <response code="200">This endpoint returns 200 OK regardless of whether the email was sent successfully or not.</response>
-    /// <response code="400">The request object was malformed.</response>
     [AllowAnonymous]
     [HttpPost("recover")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [SwaggerOperation("Sends an account recovery email.")]
+    [SwaggerResponse(200, "This endpoint returns 200 OK regardless of whether the email was sent successfully or not.")]
+    [SwaggerResponse(400, "The request object was malformed.")]
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
     public async Task<ActionResult> RecoverAccount(
         [FromServices] IAccountRecoveryService recoveryService,
         [FromServices] ILogger<AccountController> logger,
-        [FromBody] RecoverAccountRequest request
+        [FromBody, SwaggerRequestBody("The account recovery request.")] RecoverAccountRequest request
     )
     {
         User? user = await _userService.GetUserByNameAndEmail(request.Username, request.Email);
