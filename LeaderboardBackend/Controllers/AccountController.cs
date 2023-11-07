@@ -26,7 +26,7 @@ public class AccountController : ApiController
     [ApiConventionMethod(typeof(Conventions), nameof(Conventions.PostAnon))]
     [FeatureGate(Features.ACCOUNT_REGISTRATION)]
     [HttpPost("register")]
-    [SwaggerOperation(Summary = "Registers a new User.")]
+    [SwaggerOperation("Registers a new User.")]
     [SwaggerResponse(201, "The `User` was registered and returned successfully.")]
     [SwaggerResponse(400, "The request was malformed.")]
     [SwaggerResponse(
