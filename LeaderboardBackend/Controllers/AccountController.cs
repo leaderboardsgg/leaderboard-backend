@@ -139,30 +139,14 @@ public class AccountController : ApiController
         );
     }
 
-    /// <summary>
-    ///     Resends the account confirmation link.
-    /// </summary>
     /// <param name="confirmationService">IAccountConfirmationService dependency.</param>
-    /// <response code="200">A new confirmation link was generated.</response>
-    /// <response code="400">
-    ///     The request was malformed.
-    /// </response>
-    /// <response code="401">
-    ///     The request doesn't contain a valid session token.
-    /// </response>
-    /// <response code="409">
-    ///     The `User`'s account has already been confirmed.
-    /// </response>
-    /// <response code="500">
-    ///     The account recovery email failed to be created.
-    /// </response>
     [HttpPost("confirm")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [SwaggerOperation("Resends the account confirmation link.")]
+    [SwaggerResponse(200, "A new confirmation link was generated.")]
+    [SwaggerResponse(400, "The request was malformed.")]
+    [SwaggerResponse(401, "The request doesn't contain a valid session token.")]
+    [SwaggerResponse(409, "The `User`'s account has already been confirmed.")]
+    [SwaggerResponse(500, "The account recovery email failed to be created.")]
     public async Task<ActionResult> ResendConfirmation(
         [FromServices] IAccountConfirmationService confirmationService
     )
