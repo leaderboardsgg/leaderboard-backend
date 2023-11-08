@@ -27,6 +27,7 @@ public class AccountController : ApiController
     /// <param name="request">
     ///     The `RegisterRequest` instance from which register the `User`.
     /// </param>
+    /// <param name="confirmationService">The IConfirmationService dependency.</param>
     /// <response code="201">The `User` was registered and returned successfully.</response>
     /// <response code="400">
     ///     The request was malformed.
@@ -54,27 +55,42 @@ public class AccountController : ApiController
     [ApiConventionMethod(typeof(Conventions), nameof(Conventions.PostAnon))]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ValidationProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [FeatureGate(Features.ACCOUNT_REGISTRATION)]
-    public async Task<ActionResult<UserViewModel>> Register([FromBody] RegisterRequest request)
+    public async Task<ActionResult<UserViewModel>> Register(
+        [FromBody] RegisterRequest request,
+        [FromServices] IAccountConfirmationService confirmationService
+    )
     {
         CreateUserResult result = await _userService.CreateUser(request);
-        return result.Match<ActionResult<UserViewModel>>(
-            user => CreatedAtAction(nameof(UsersController.GetUserById), "Users",
-                new { id = user.Id }, UserViewModel.MapFrom(user)),
-            conflicts =>
-            {
-                if (conflicts.Username)
-                {
-                    ModelState.AddModelError(nameof(request.Username), "UsernameTaken");
-                }
 
-                if (conflicts.Email)
-                {
-                    ModelState.AddModelError(nameof(request.Email), "EmailAlreadyUsed");
-                }
+        if (result.TryPickT0(out User user, out CreateUserConflicts conflicts))
+        {
+            CreateConfirmationResult r = await confirmationService.CreateConfirmationAndSendEmail(user);
 
-                return Conflict(new ValidationProblemDetails(ModelState));
-            });
+            return r.Match<ActionResult>(
+                confirmation => CreatedAtAction(
+                    nameof(UsersController.GetUserById),
+                    "Users",
+                    new { id = user.Id },
+                    UserViewModel.MapFrom(confirmation.User)
+                ),
+                badRole => StatusCode(StatusCodes.Status500InternalServerError),
+                emailFailed => StatusCode(StatusCodes.Status500InternalServerError)
+            );
+        }
+
+        if (conflicts.Username)
+        {
+            ModelState.AddModelError(nameof(request.Username), "UsernameTaken");
+        }
+
+        if (conflicts.Email)
+        {
+            ModelState.AddModelError(nameof(request.Email), "EmailAlreadyUsed");
+        }
+
+        return Conflict(new ValidationProblemDetails(ModelState));
     }
 
     /// <summary>

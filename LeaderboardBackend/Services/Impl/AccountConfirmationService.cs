@@ -49,7 +49,6 @@ public class AccountConfirmationService : IAccountConfirmationService
             };
 
         _applicationContext.AccountConfirmations.Add(newConfirmation);
-
         await _applicationContext.SaveChangesAsync();
 
         try
@@ -62,7 +61,6 @@ public class AccountConfirmationService : IAccountConfirmationService
         }
         catch
         {
-            // TODO: Log/otherwise handle the fact that the email failed to be queued - zysim
             return new EmailFailed();
         }
 
@@ -104,9 +102,11 @@ public class AccountConfirmationService : IAccountConfirmationService
     private string GenerateAccountConfirmationEmailBody(User user, AccountConfirmation confirmation)
     {
         // Copy of https://datatracker.ietf.org/doc/html/rfc7515#page-55
-        UriBuilder builder = new(_appConfig.WebsiteUrl);
-        builder.Path = "confirm-account";
-        builder.Query = $"code={confirmation.Id.ToUrlSafeBase64String()}";
-        return $@"Hi {user.Username},<br/><br/>Click <a href=""{builder.Uri.ToString()}"">here</a> to confirm your account.";
+        UriBuilder builder = new(_appConfig.WebsiteUrl)
+        {
+            Path = "confirm-account",
+            Query = $"code={confirmation.Id.ToUrlSafeBase64String()}"
+        };
+        return $@"Hi {user.Username},<br/><br/>Click <a href=""{builder.Uri}"">here</a> to confirm your account.";
     }
 }
