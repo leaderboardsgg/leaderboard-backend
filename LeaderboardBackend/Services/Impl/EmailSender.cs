@@ -63,15 +63,34 @@ public class EmailSender : IEmailSender
 
         if (!_smtpClient.IsConnected)
         {
-            await _smtpClient.ConnectAsync(_config.Smtp!.Host, _config.Smtp.Port, _config.Smtp.UseSsl);
+            _logger.LogInformation("Connecting to client");
+            try
+            {
+                await _smtpClient.ConnectAsync(_config.Smtp!.Host, _config.Smtp.Port, _config.Smtp.UseSsl);
+                _logger.LogError("Client connected");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Connecting failed: {message}", e.Message);
+            }
         }
 
         if ((_config.Smtp!.Username is not null || _config.Smtp.Password is not null)
             && !_smtpClient.IsAuthenticated)
         {
-            await _smtpClient.AuthenticateAsync(_config.Smtp.Username, _config.Smtp.Password);
+            _logger.LogInformation("Logging into client");
+            try
+            {
+                await _smtpClient.AuthenticateAsync(_config.Smtp.Username, _config.Smtp.Password);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Auth failed: {message}", e.Message);
+            }
         }
 
-        await _smtpClient.SendAsync(message);
+        _logger.LogInformation("Calling SendAsync");
+        string res = await _smtpClient.SendAsync(message);
+        _logger.LogInformation("SendAsync done: {res}", res);
     }
 }
