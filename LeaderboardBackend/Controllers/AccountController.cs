@@ -209,7 +209,7 @@ public class AccountController : ApiController
 
         if (user is null)
         {
-            logger.LogError("User not found: {usermame}; {email}", request.Username.Obfuscate(), request.Email.Obfuscate());
+            logger.LogError("User not found: {usermame}", request.Username);
         }
         else
         {
