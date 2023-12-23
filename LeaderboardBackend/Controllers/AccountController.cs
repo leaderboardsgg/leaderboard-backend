@@ -209,10 +209,11 @@ public class AccountController : ApiController
 
         if (user is null)
         {
-            logger.LogError("User not found: {usermame}", request.Username);
+            logger.LogWarning("Account recovery attempt failed. User not found: {username}", request.Username);
         }
         else
         {
+            logger.LogInformation("Sending account recovery email to user: {id}", user.Id);
             await recoveryService.CreateRecoveryAndSendEmail(user);
         }
 

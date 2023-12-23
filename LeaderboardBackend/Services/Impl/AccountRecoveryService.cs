@@ -35,7 +35,7 @@ public class AccountRecoveryService : IAccountRecoveryService
     {
         if (user.Role is not UserRole.Confirmed && user.Role is not UserRole.Administrator)
         {
-            _logger.LogWarning("User role is not confirmed/admin: {id}", user.Id);
+            _logger.LogWarning("Can't send account recovery email; user {id} not confirmed/admin", user.Id);
             return new BadRole();
         }
 
@@ -61,7 +61,12 @@ public class AccountRecoveryService : IAccountRecoveryService
         }
         catch (Exception e)
         {
-            _logger.LogError("Recovery email failed to send: {err}", e.Message);
+            _logger.LogError(
+                "Recovery email failed to send with {type} for user {id}, {username}",
+                e.GetType().ToString(),
+                user.Id,
+                user.Username
+            );
             return new EmailFailed();
         }
 
