@@ -14,24 +14,28 @@ public class AccountRecoveryService : IAccountRecoveryService
     private readonly IEmailSender _emailSender;
     private readonly IClock _clock;
     private readonly AppConfig _appConfig;
+    private readonly ILogger<AccountRecoveryService> _logger;
 
     public AccountRecoveryService(
         ApplicationContext applicationContext,
         IEmailSender emailSender,
         IClock clock,
-        IOptions<AppConfig> appConfig
+        IOptions<AppConfig> appConfig,
+        ILogger<AccountRecoveryService> logger
     )
     {
         _applicationContext = applicationContext;
         _emailSender = emailSender;
         _clock = clock;
         _appConfig = appConfig.Value;
+        _logger = logger;
     }
 
     public async Task<CreateRecoveryResult> CreateRecoveryAndSendEmail(User user)
     {
         if (user.Role is not UserRole.Confirmed && user.Role is not UserRole.Administrator)
         {
+            _logger.LogWarning("Can't send account recovery email; user {id} not confirmed/admin", user.Id);
             return new BadRole();
         }
 
@@ -55,8 +59,14 @@ public class AccountRecoveryService : IAccountRecoveryService
                 GenerateAccountRecoveryEmailBody(user, recovery)
             );
         }
-        catch
+        catch (Exception e)
         {
+            _logger.LogError(
+                "{type}: Recovery email failed to send for user {id}, {username}",
+                e.GetType().ToString(),
+                user.Id,
+                user.Username
+            );
             return new EmailFailed();
         }
 

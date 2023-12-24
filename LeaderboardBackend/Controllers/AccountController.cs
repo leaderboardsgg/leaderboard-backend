@@ -190,6 +190,7 @@ public class AccountController : ApiController
     ///     Sends an account recovery email.
     /// </summary>
     /// <param name="recoveryService">IAccountRecoveryService dependency.</param>
+    /// <param name="logger"></param>
     /// <param name="request">The account recovery request.</param>
     /// <response code="200">This endpoint returns 200 OK regardless of whether the email was sent successfully or not.</response>
     /// <response code="400">The request object was malformed.</response>
@@ -200,13 +201,19 @@ public class AccountController : ApiController
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
     public async Task<ActionResult> RecoverAccount(
         [FromServices] IAccountRecoveryService recoveryService,
+        [FromServices] ILogger<AccountController> logger,
         [FromBody] RecoverAccountRequest request
     )
     {
         User? user = await _userService.GetUserByNameAndEmail(request.Username, request.Email);
 
-        if (user is not null)
+        if (user is null)
         {
+            logger.LogWarning("Account recovery attempt failed. User not found: {username}", request.Username);
+        }
+        else
+        {
+            logger.LogInformation("Sending account recovery email to user: {id}", user.Id);
             await recoveryService.CreateRecoveryAndSendEmail(user);
         }
 
