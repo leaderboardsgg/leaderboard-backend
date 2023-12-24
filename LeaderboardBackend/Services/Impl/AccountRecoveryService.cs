@@ -62,7 +62,7 @@ public class AccountRecoveryService : IAccountRecoveryService
         catch (Exception e)
         {
             _logger.LogError(
-                "Recovery email failed to send with {type} for user {id}, {username}",
+                "{type}: Recovery email failed to send for user {id}, {username}",
                 e.GetType().ToString(),
                 user.Id,
                 user.Username
