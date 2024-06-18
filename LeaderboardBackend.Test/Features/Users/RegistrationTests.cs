@@ -49,7 +49,8 @@ public class RegistrationTests : IntegrationTestsBase
         content.Should().NotBeNull().And.BeEquivalentTo(new UserViewModel
         {
             Id = content!.Id,
-            Username = request.Username
+            Username = request.Username,
+            Role = UserRole.Registered
         });
         emailSenderMock.Verify(x =>
             x.EnqueueEmailAsync(

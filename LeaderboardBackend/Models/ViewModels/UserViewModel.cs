@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using LeaderboardBackend.Models.Entities;
 
 namespace LeaderboardBackend.Models.ViewModels;
@@ -28,12 +29,13 @@ public record UserViewModel
     /// <example>J'on-Doe</example>
     public required string Username { get; set; }
 
-    public static UserViewModel MapFrom(User user)
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public required UserRole Role { get; set; }
+
+    public static UserViewModel MapFrom(User user) => new()
     {
-        return new UserViewModel
-        {
-            Id = user.Id,
-            Username = user.Username,
-        };
-    }
+        Id = user.Id,
+        Username = user.Username,
+        Role = user.Role
+    };
 }
