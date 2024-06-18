@@ -1244,17 +1244,16 @@
       },
       "IsoDayOfWeek": {
         "enum": [
-          0,
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7
+          "None",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+          "Sunday"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "LeaderboardViewModel": {
         "required": [
@@ -1482,9 +1481,19 @@
         },
         "additionalProperties": false
       },
+      "UserRole": {
+        "enum": [
+          "Registered",
+          "Confirmed",
+          "Administrator",
+          "Banned"
+        ],
+        "type": "string"
+      },
       "UserViewModel": {
         "required": [
           "id",
+          "role",
           "username"
         ],
         "type": "object",
@@ -1498,6 +1507,9 @@
             "type": "string",
             "description": "The username of the `User`. It:\r\n<ul><li>must be [2, 25] in length;</li><li>must be made up of alphanumeric characters around zero or one of:</li><ul><li>hyphen;</li><li>underscore; or</li><li>apostrophe</li></ul></ul>\r\nUsernames are saved case-sensitively, but matcehd against case-insensitively.\r\nA `User` may not register with the name 'Cool' when another `User` with the name 'cool'\r\nexists.",
             "example": "J'on-Doe"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
           }
         },
         "additionalProperties": false
