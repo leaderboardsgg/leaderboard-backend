@@ -55,6 +55,7 @@ public class AccountController : ApiController
         """,
         typeof(ValidationProblemDetails)
     )]
+    [SwaggerResponse(500, "Server Error")]
     public async Task<ActionResult<UserViewModel>> Register(
 
         [FromBody, SwaggerRequestBody(
