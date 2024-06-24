@@ -1371,8 +1371,7 @@
               "items": {
                 "type": "string"
               }
-            },
-            "readOnly": true
+            }
           }
         },
         "additionalProperties": { }
