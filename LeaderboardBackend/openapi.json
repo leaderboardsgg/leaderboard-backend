@@ -55,6 +55,9 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Server Error"
           }
         }
       }
