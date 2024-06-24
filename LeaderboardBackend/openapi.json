@@ -1047,8 +1047,18 @@
               }
             }
           },
-          "403": {
+          "401": {
             "description": "An invalid JWT was passed in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The user was not found in the database.",
             "content": {
               "application/json": {
                 "schema": {
