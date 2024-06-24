@@ -1,5 +1,5 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 namespace LeaderboardBackend.Authorization;
@@ -10,7 +10,7 @@ namespace LeaderboardBackend.Authorization;
 /// </summary>
 public static class Jwt
 {
-    public static JwtSecurityTokenHandler SecurityTokenHandler { get; } = new();
+    public static JsonWebTokenHandler SecurityTokenHandler { get; } = new();
 
     public static class ValidationParameters
     {
