@@ -37,7 +37,7 @@
             "description": "The request was malformed."
           },
           "409": {
-            "description": "A `User` with the specified username or email already exists.<br/><br/>\nValidation error codes by property:\n- **Username**:\n  - **UsernameTaken**: the username is already in use\n- **Email**:\n  - **EmailAlreadyUsed**: the email is already in use",
+            "description": "A `User` with the specified username or email already exists.\nValidation error codes by property:\n- **Username**:\n  - **UsernameTaken**: the username is already in use\n- **Email**:\n  - **EmailAlreadyUsed**: the email is already in use",
             "content": {
               "application/json": {
                 "schema": {
@@ -47,7 +47,7 @@
             }
           },
           "422": {
-            "description": "The request contains errors.<br/><br/>\nValidation error codes by property:\n- **Username**:\n  - **UsernameFormat**: Invalid username format\n- **Password**:\n  - **PasswordFormat**: Invalid password format\n- **Email**:\n  - **EmailValidator**: Invalid email format",
+            "description": "The request contains errors.\nValidation error codes by property:\n- **Username**:\n  - **UsernameFormat**: Invalid username format\n- **Password**:\n  - **PasswordFormat**: Invalid password format\n- **Email**:\n  - **EmailValidator**: Invalid email format",
             "content": {
               "application/json": {
                 "schema": {
@@ -103,7 +103,7 @@
             "description": "No `User` with the requested details could be found."
           },
           "422": {
-            "description": "The request contains errors.<br/><br/>\nValidation error codes by property:\n- **Password**:\n  - **NotEmptyValidator**: No password was passed\n  - **PasswordFormat**: Invalid password format\n- **Email**:\n  - **NotNullValidator**: No email was passed\n  - **EmailValidator**: Invalid email format",
+            "description": "The request contains errors.\nValidation error codes by property:\n- **Password**:\n  - **NotEmptyValidator**: No password was passed\n  - **PasswordFormat**: Invalid password format\n- **Email**:\n  - **NotNullValidator**: No email was passed\n  - **EmailValidator**: Invalid email format",
             "content": {
               "application/json": {
                 "schema": {
@@ -275,7 +275,7 @@
             "description": "The new password is the same as the user's existing password."
           },
           "422": {
-            "description": "The request body contains errors.<br/>\nA **PasswordFormat** Validation error on the Password field indicates that the password format is invalid.",
+            "description": "The request body contains errors.\nA **PasswordFormat** Validation error on the Password field indicates that the password format is invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -913,7 +913,7 @@
           "Users"
         ],
         "summary": "Gets the currently logged-in User.",
-        "description": "Call this method with the 'Authorization' header. A valid JWT bearer token must be\npassed.<br/>\nExample: `{ 'Authorization': 'Bearer JWT' }`.",
+        "description": "Call this method with the 'Authorization' header. A valid JWT bearer token must be\npassed.\nExample: `{ 'Authorization': 'Bearer JWT' }`.",
         "responses": {
           "200": {
             "description": "The `User` was found and returned successfully.",

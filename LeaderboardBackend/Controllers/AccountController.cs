@@ -32,7 +32,7 @@ public class AccountController : ApiController
     [SwaggerResponse(
         409,
         """
-        A `User` with the specified username or email already exists.<br/><br/>
+        A `User` with the specified username or email already exists.
         Validation error codes by property:
         - **Username**:
           - **UsernameTaken**: the username is already in use
@@ -44,7 +44,7 @@ public class AccountController : ApiController
     [SwaggerResponse(
         422,
         """
-        The request contains errors.<br/><br/>
+        The request contains errors.
         Validation error codes by property:
         - **Username**:
           - **UsernameFormat**: Invalid username format
@@ -114,7 +114,7 @@ public class AccountController : ApiController
     [SwaggerResponse(
         422,
         """
-        The request contains errors.<br/><br/>
+        The request contains errors.
         Validation error codes by property:
         - **Password**:
           - **NotEmptyValidator**: No password was passed
@@ -259,7 +259,7 @@ public class AccountController : ApiController
     [SwaggerResponse(
         422,
         """
-        The request body contains errors.<br/>
+        The request body contains errors.
         A **PasswordFormat** Validation error on the Password field indicates that the password format is invalid.
         """,
         typeof(ValidationProblemDetails)

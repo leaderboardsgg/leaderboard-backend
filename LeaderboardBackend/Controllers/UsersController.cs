@@ -47,7 +47,7 @@ public class UsersController : ApiController
         "Gets the currently logged-in User.",
         """
         Call this method with the 'Authorization' header. A valid JWT bearer token must be
-        passed.<br/>
+        passed.
         Example: `{ 'Authorization': 'Bearer JWT' }`.
         """
     )]
