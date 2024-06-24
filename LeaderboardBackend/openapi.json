@@ -34,7 +34,7 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "201": {
             "description": "The `User` was registered and returned successfully.",
@@ -98,7 +98,7 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "200": {
             "description": "The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.",
@@ -192,7 +192,7 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "200": {
             "description": "This endpoint returns 200 OK regardless of whether the email was sent successfully or not."
@@ -230,7 +230,7 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "200": {
             "description": "The account was confirmed successfully."
@@ -274,7 +274,7 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "200": {
             "description": "The token provided is valid."
@@ -324,7 +324,7 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "200": {
             "description": "The user's password was reset successfully."
@@ -380,10 +380,10 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -425,7 +425,7 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "201": {
             "description": "Created",
@@ -441,7 +441,7 @@
             "description": "Not Found"
           },
           "422": {
-            "description": "Client Error",
+            "description": "Unprocessable Content",
             "content": {
               "application/json": {
                 "schema": {
@@ -482,10 +482,10 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -528,10 +528,10 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -577,10 +577,10 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -620,7 +620,7 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "201": {
             "description": "Created",
@@ -639,7 +639,7 @@
             "description": "The requesting `User` is unauthorized to create `Leaderboard`s."
           },
           "422": {
-            "description": "Client Error",
+            "description": "Unprocessable Content",
             "content": {
               "application/json": {
                 "schema": {
@@ -680,10 +680,10 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -725,7 +725,7 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "201": {
             "description": "Created"
@@ -737,7 +737,7 @@
             "description": "Forbidden"
           },
           "422": {
-            "description": "Client Error",
+            "description": "Unprocessable Content",
             "content": {
               "application/json": {
                 "schema": {
@@ -777,10 +777,10 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -825,7 +825,7 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "200": {
             "description": "The `User` was found and returned successfully.",
@@ -862,7 +862,7 @@
             }
           },
           "500": {
-            "description": "Server Error"
+            "description": "Internal Server Error"
           },
           "200": {
             "description": "The `User` was found and returned successfully.",
@@ -928,13 +928,14 @@
         "required": [
           "id",
           "name",
+          "rules",
           "slug"
         ],
         "type": "object",
         "properties": {
           "id": {
             "type": "integer",
-            "description": "The unique identifier of the `Category`.<br />",
+            "description": "The unique identifier of the `Category`.\n",
             "format": "int64"
           },
           "name": {
@@ -944,7 +945,7 @@
           },
           "slug": {
             "type": "string",
-            "description": "The URL-scoped unique identifier of the `Category`.<br />",
+            "description": "The URL-scoped unique identifier of the `Category`.\n",
             "example": "foo-bar-baz"
           },
           "rules": {
@@ -986,7 +987,7 @@
           "slug": {
             "minLength": 1,
             "type": "string",
-            "description": "The URL-scoped unique identifier of the `Category`.<br />\r\nMust be [2, 25] in length and consist only of alphanumeric characters and hyphens.",
+            "description": "The URL-scoped unique identifier of the `Category`.\n\r\nMust be [2, 25] in length and consist only of alphanumeric characters and hyphens.",
             "example": "foo-bar-baz"
           },
           "rules": {
@@ -1018,7 +1019,7 @@
           },
           "slug": {
             "type": "string",
-            "description": "The URL-scoped unique identifier of the `Leaderboard`.<br />\r\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
+            "description": "The URL-scoped unique identifier of the `Leaderboard`.\n\r\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
             "example": "foo-bar"
           }
         },
@@ -1083,13 +1084,14 @@
           "categories",
           "id",
           "name",
+          "rules",
           "slug"
         ],
         "type": "object",
         "properties": {
           "id": {
             "type": "integer",
-            "description": "The unique identifier of the `Leaderboard`.<br />\r\nGenerated on creation.",
+            "description": "The unique identifier of the `Leaderboard`.\n\r\nGenerated on creation.",
             "format": "int64"
           },
           "name": {
@@ -1099,7 +1101,7 @@
           },
           "slug": {
             "type": "string",
-            "description": "The URL-scoped unique identifier of the `Leaderboard`.<br />\r\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
+            "description": "The URL-scoped unique identifier of the `Leaderboard`.\n\r\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
             "example": "foo-bar"
           },
           "rules": {
@@ -1291,7 +1293,7 @@
           "id": {
             "pattern": "^[a-zA-Z0-9-_]{22}$",
             "type": "string",
-            "description": "The unique identifier of the `Run`.<br />\r\nGenerated on creation."
+            "description": "The unique identifier of the `Run`.\n\r\nGenerated on creation."
           },
           "submittedAt": {
             "$ref": "#/components/schemas/Instant"
@@ -1324,7 +1326,7 @@
           "id": {
             "pattern": "^[a-zA-Z0-9-_]{22}$",
             "type": "string",
-            "description": "The unique identifier of the `User`.<br />\r\nGenerated on creation."
+            "description": "The unique identifier of the `User`.\n\r\nGenerated on creation."
           },
           "username": {
             "type": "string",
