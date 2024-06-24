@@ -70,6 +70,7 @@ public class TestApiFactory : WebApplicationFactory<Program>
         {
             dbContext.MigrateDatabase();
             Seed(dbContext);
+            dbContext.Dispose();
             PostgresDatabaseFixture.CreateTemplateFromCurrentDb();
         }
     }
