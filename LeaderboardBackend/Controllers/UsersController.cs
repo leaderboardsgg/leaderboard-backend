@@ -50,29 +50,19 @@ public class UsersController : ApiController
     ///     Example: `{ 'Authorization': 'Bearer JWT' }`.
     /// </remarks>
     /// <response code="200">The `User` was found and returned successfully..</response>
-    /// <response code="403">An invalid JWT was passed in.</response>
+    /// <response code="401">An invalid JWT was passed in.</response>
+    /// <response code="404">The user was not found in the database.</response>
     [HttpGet("me")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
     public async Task<ActionResult<UserViewModel>> Me()
     {
-        // FIXME: Use ApiConventionMethod here! - Ero
-
-        string? email = _authService.GetEmailFromClaims(HttpContext.User);
-
-        if (email is null)
-        {
-            return Forbid();
-        }
-
-        User? user = await _userService.GetUserByEmail(email);
-
-        // FIXME: Should return NotFound()! - Ero
-        if (user is null)
-        {
-            return Forbid();
-        }
-
-        return Ok(UserViewModel.MapFrom(user));
+        return (await _userService.GetUserFromClaims(HttpContext.User)).Match<ActionResult<UserViewModel>>(
+            user => Ok(UserViewModel.MapFrom(user)),
+            badCredentials => Unauthorized(),
+            userNotFound => NotFound()
+        );
     }
 }
