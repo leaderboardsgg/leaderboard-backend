@@ -33,9 +33,7 @@ public class ApplicationContext : DbContext
         Database.Migrate();
 
         // when new extensions have been enabled by migrations, Npgsql's type cache must be refreshed
-        Database.OpenConnection();
         ((NpgsqlConnection)Database.GetDbConnection()).ReloadTypes();
-        Database.CloseConnection();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
