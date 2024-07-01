@@ -23,6 +23,19 @@
           "required": true
         },
         "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
           "201": {
             "description": "The `User` was registered and returned successfully.",
             "content": {
@@ -32,9 +45,6 @@
                 }
               }
             }
-          },
-          "400": {
-            "description": "The request was malformed."
           },
           "409": {
             "description": "A `User` with the specified username or email already exists.\nValidation error codes by property:\n- **Username**:\n  - **UsernameTaken**: the username is already in use\n- **Email**:\n  - **EmailAlreadyUsed**: the email is already in use",
@@ -55,9 +65,6 @@
                 }
               }
             }
-          },
-          "500": {
-            "description": "Server Error"
           }
         }
       }
@@ -80,6 +87,19 @@
           "required": true
         },
         "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
           "200": {
             "description": "The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.",
             "content": {
@@ -89,9 +109,6 @@
                 }
               }
             }
-          },
-          "400": {
-            "description": "The request was malformed."
           },
           "401": {
             "description": "The password given was incorrect."
@@ -122,20 +139,27 @@
         ],
         "summary": "Resends the account confirmation link.",
         "responses": {
-          "200": {
-            "description": "A new confirmation link was generated."
-          },
           "400": {
-            "description": "The request was malformed."
-          },
-          "401": {
-            "description": "The request doesn't contain a valid session token."
-          },
-          "409": {
-            "description": "The `User`'s account has already been confirmed."
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           },
           "500": {
             "description": "The account recovery email failed to be created."
+          },
+          "200": {
+            "description": "A new confirmation link was generated."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "409": {
+            "description": "The `User`'s account has already been confirmed."
           }
         }
       }
@@ -157,11 +181,21 @@
           }
         },
         "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
           "200": {
             "description": "This endpoint returns 200 OK regardless of whether the email was sent successfully or not."
-          },
-          "400": {
-            "description": "The request object was malformed."
           }
         }
       }
@@ -185,11 +219,21 @@
           }
         ],
         "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
           "200": {
             "description": "The account was confirmed successfully."
-          },
-          "400": {
-            "description": "Bad Request"
           },
           "404": {
             "description": "The token provided was invalid or expired."
@@ -219,11 +263,21 @@
           }
         ],
         "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
           "200": {
             "description": "The token provided is valid."
-          },
-          "400": {
-            "description": "Bad Request"
           },
           "404": {
             "description": "The token provided is invalid or expired, or the user is banned."
@@ -259,11 +313,21 @@
           "required": true
         },
         "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
           "200": {
             "description": "The user's password was reset successfully."
-          },
-          "400": {
-            "description": "Bad Request"
           },
           "403": {
             "description": "The user is banned."
@@ -297,7 +361,6 @@
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the `Category` which should be retrieved.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -306,16 +369,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "The `Category` was found and returned successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoryViewModel"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -326,35 +379,21 @@
               }
             }
           },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+          "500": {
+            "description": "Server Error"
           },
-          "403": {
-            "description": "Forbidden",
+          "200": {
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/CategoryViewModel"
                 }
               }
             }
           },
           "404": {
-            "description": "No `Category` with the requested ID could be found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+            "description": "Not Found"
           }
         }
       }
@@ -364,9 +403,8 @@
         "tags": [
           "Categories"
         ],
-        "summary": "Creates a new Category.\r\nThis request is restricted to Moderators.",
+        "summary": "Creates a new Category. This request is restricted to Moderators.",
         "requestBody": {
-          "description": "The `CreateCategoryRequest` instance from which to create the `Category`.",
           "content": {
             "application/json": {
               "schema": {
@@ -376,8 +414,21 @@
           }
         },
         "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
           "201": {
-            "description": "The `Category` was created and returned successfully.",
+            "description": "Created",
             "content": {
               "application/json": {
                 "schema": {
@@ -386,45 +437,8 @@
               }
             }
           },
-          "400": {
-            "description": "The request was malformed.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
           "404": {
-            "description": "The requesting `User` is unauthorized to create a `Category`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+            "description": "Not Found"
           },
           "422": {
             "description": "Client Error",
@@ -444,12 +458,11 @@
         "tags": [
           "Leaderboards"
         ],
-        "summary": "Gets a Leaderboard by its ID.",
+        "summary": "Gets a leaderboard by its ID.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the `Leaderboard` which should be retrieved.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -458,16 +471,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "The `Leaderboard` was found and returned successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LeaderboardViewModel"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -478,15 +481,21 @@
               }
             }
           },
-          "404": {
-            "description": "No `Leaderboard` with the requested ID or slug could be found.",
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
                 }
               }
             }
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -501,7 +510,6 @@
           {
             "name": "slug",
             "in": "path",
-            "description": "The slug of the `Leaderboard` which should be retrieved.",
             "required": true,
             "schema": {
               "type": "string"
@@ -509,16 +517,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "The `Leaderboard` was found and returned successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LeaderboardViewModel"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -529,15 +527,21 @@
               }
             }
           },
-          "404": {
-            "description": "No `Leaderboard` with the requested ID or slug could be found.",
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
                 }
               }
             }
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -547,12 +551,11 @@
         "tags": [
           "Leaderboards"
         ],
-        "summary": "Gets Leaderboards by their IDs.",
+        "summary": "Gets leaderboards by their IDs.",
         "parameters": [
           {
             "name": "ids",
             "in": "query",
-            "description": "The IDs of the `Leaderboard`s which should be retrieved.",
             "schema": {
               "type": "array",
               "items": {
@@ -563,8 +566,21 @@
           }
         ],
         "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
           "200": {
-            "description": "The list of `Leaderboard`s was retrieved successfully. The result can be an empty\r\ncollection.",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -582,9 +598,8 @@
         "tags": [
           "Leaderboards"
         ],
-        "summary": "Creates a new Leaderboard.\r\nThis request is restricted to Administrators.",
+        "summary": "Creates a new leaderboard. This request is restricted to Administrators.",
         "requestBody": {
-          "description": "The `CreateLeaderboardRequest` instance from which to create the `Leaderboard`.",
           "content": {
             "application/json": {
               "schema": {
@@ -594,8 +609,21 @@
           }
         },
         "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
           "201": {
-            "description": "The `Leaderboard` was created and returned successfully.",
+            "description": "Created",
             "content": {
               "application/json": {
                 "schema": {
@@ -604,45 +632,11 @@
               }
             }
           },
-          "400": {
-            "description": "The request was malformed.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
           "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+            "description": "Unauthorized"
           },
           "404": {
-            "description": "The requesting `User` is unauthorized to create `Leaderboard`s.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+            "description": "The requesting `User` is unauthorized to create `Leaderboard`s."
           },
           "422": {
             "description": "Client Error",
@@ -667,7 +661,6 @@
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the `Run` which should be retrieved.<br />\r\nIt must be possible to parse this to `long` for this request to complete.",
             "required": true,
             "schema": {
               "pattern": "^[a-zA-Z0-9-_]{22}$",
@@ -676,16 +669,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "The `Run` was found and returned successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RunViewModel"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -696,35 +679,21 @@
               }
             }
           },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+          "500": {
+            "description": "Server Error"
           },
-          "403": {
-            "description": "Forbidden",
+          "200": {
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/RunViewModel"
                 }
               }
             }
           },
           "404": {
-            "description": "No `Run` with the requested ID could be found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+            "description": "Not Found"
           }
         }
       }
@@ -736,7 +705,6 @@
         ],
         "summary": "Creates a new Run.",
         "requestBody": {
-          "description": "The `CreateRunRequest` instance from which to create the `Run`.",
           "content": {
             "application/json": {
               "schema": {
@@ -746,9 +714,6 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "The `Run` was created and returned successfully."
-          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -759,35 +724,17 @@
               }
             }
           },
+          "500": {
+            "description": "Server Error"
+          },
+          "201": {
+            "description": "Created"
+          },
           "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+            "description": "Forbidden"
           },
           "422": {
             "description": "Client Error",
@@ -819,16 +766,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoryViewModel"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -839,35 +776,21 @@
               }
             }
           },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+          "500": {
+            "description": "Server Error"
           },
-          "403": {
-            "description": "Forbidden",
+          "200": {
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/CategoryViewModel"
                 }
               }
             }
           },
           "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+            "description": "Not Found"
           }
         }
       }
@@ -891,6 +814,19 @@
           }
         ],
         "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
           "200": {
             "description": "The `User` was found and returned successfully.",
             "content": {
@@ -915,6 +851,19 @@
         "summary": "Gets the currently logged-in User.",
         "description": "Call this method with the 'Authorization' header. A valid JWT bearer token must be\npassed.\nExample: `{ 'Authorization': 'Bearer JWT' }`.",
         "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
           "200": {
             "description": "The `User` was found and returned successfully.",
             "content": {
