@@ -1,9 +1,10 @@
-using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Controllers;
 
@@ -21,21 +22,13 @@ public class RunsController : ApiController
         _categoryService = categoryService;
     }
 
-    /// <summary>
-    ///     Gets a Run by its ID.
-    /// </summary>
-    /// <param name="id">
-    ///     The ID of the `Run` which should be retrieved.<br/>
-    ///     It must be possible to parse this to `long` for this request to complete.
-    /// </param>
-    /// <response code="200">The `Run` was found and returned successfully.</response>
-    /// <response code="404">No `Run` with the requested ID could be found.</response>
-    [ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
+    [AllowAnonymous]
     [HttpGet("{id}")]
+    [SwaggerOperation("Gets a Run by its ID.")]
+    [SwaggerResponse(200)]
+    [SwaggerResponse(404)]
     public async Task<ActionResult<RunViewModel>> GetRun(Guid id)
     {
-        // NOTE: Should this use [AllowAnonymous]? - Ero
-
         Run? run = await _runService.GetRun(id);
 
         if (run is null)
@@ -46,15 +39,12 @@ public class RunsController : ApiController
         return Ok(RunViewModel.MapFrom(run));
     }
 
-    /// <summary>
-    ///     Creates a new Run.
-    /// </summary>
-    /// <param name="request">
-    ///     The `CreateRunRequest` instance from which to create the `Run`.
-    /// </param>
-    /// <response code="201">The `Run` was created and returned successfully.</response>
-    [ApiConventionMethod(typeof(Conventions), nameof(Conventions.Post))]
     [HttpPost]
+    [SwaggerOperation("Creates a new Run.")]
+    [SwaggerResponse(201)]
+    [SwaggerResponse(401)]
+    [SwaggerResponse(403)]
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult> CreateRun([FromBody] CreateRunRequest request)
     {
         // FIXME: Should return Task<ActionResult<Run>>! - Ero
@@ -73,8 +63,9 @@ public class RunsController : ApiController
         return CreatedAtAction(nameof(GetRun), new { id = run.Id }, RunViewModel.MapFrom(run));
     }
 
-    [ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
     [HttpGet("{id}/category")]
+    [SwaggerResponse(200)]
+    [SwaggerResponse(404)]
     public async Task<ActionResult<CategoryViewModel>> GetCategoryForRun(Guid id)
     {
         Run? run = await _runService.GetRun(id);

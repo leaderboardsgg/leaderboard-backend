@@ -157,6 +157,7 @@ builder.Services.AddSwaggerGen(c =>
     // Enable adding XML comments to controllers to populate Swagger UI
     string xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+    c.EnableAnnotations();
 
     c.AddSecurityDefinition(
         "Bearer",

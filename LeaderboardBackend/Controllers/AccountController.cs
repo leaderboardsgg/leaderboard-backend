@@ -1,4 +1,3 @@
-using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
@@ -8,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using OneOf;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Controllers;
 
@@ -21,44 +21,44 @@ public class AccountController : ApiController
         _userService = userService;
     }
 
-    /// <summary>
-    ///     Registers a new User.
-    /// </summary>
-    /// <param name="request">
-    ///     The `RegisterRequest` instance from which register the `User`.
-    /// </param>
-    /// <param name="confirmationService">The IConfirmationService dependency.</param>
-    /// <response code="201">The `User` was registered and returned successfully.</response>
-    /// <response code="400">
-    ///     The request was malformed.
-    /// </response>
-    /// <response code="409">
-    ///     A `User` with the specified username or email already exists.<br/><br/>
-    ///     Validation error codes by property:
-    ///     - **Username**:
-    ///       - **UsernameTaken**: the username is already in use
-    ///     - **Email**:
-    ///       - **EmailAlreadyUsed**: the email is already in use
-    /// </response>
-    /// <response code="422">
-    ///     The request contains errors.<br/><br/>
-    ///     Validation error codes by property:
-    ///     - **Username**:
-    ///       - **UsernameFormat**: Invalid username format
-    ///     - **Password**:
-    ///       - **PasswordFormat**: Invalid password format
-    ///     - **Email**:
-    ///       - **EmailValidator**: Invalid email format
-    /// </response>
     [AllowAnonymous]
-    [HttpPost("register")]
-    [ApiConventionMethod(typeof(Conventions), nameof(Conventions.PostAnon))]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ValidationProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [FeatureGate(Features.ACCOUNT_REGISTRATION)]
+    [HttpPost("register")]
+    [SwaggerOperation("Registers a new User.")]
+    [SwaggerResponse(201, "The `User` was registered and returned successfully.")]
+    [SwaggerResponse(
+        409,
+        """
+        A `User` with the specified username or email already exists.
+        Validation error codes by property:
+        - **Username**:
+          - **UsernameTaken**: the username is already in use
+        - **Email**:
+          - **EmailAlreadyUsed**: the email is already in use
+        """,
+        typeof(ValidationProblemDetails)
+    )]
+    [SwaggerResponse(
+        422,
+        """
+        The request contains errors.
+        Validation error codes by property:
+        - **Username**:
+          - **UsernameFormat**: Invalid username format
+        - **Password**:
+          - **PasswordFormat**: Invalid password format
+        - **Email**:
+          - **EmailValidator**: Invalid email format
+        """,
+        typeof(ValidationProblemDetails)
+    )]
     public async Task<ActionResult<UserViewModel>> Register(
-        [FromBody] RegisterRequest request,
+
+        [FromBody, SwaggerRequestBody(
+            "The `RegisterRequest` instance from which to register the `User`.",
+            Required = true
+        )] RegisterRequest request
+    ,
         [FromServices] IAccountConfirmationService confirmationService
     )
     {
@@ -93,38 +93,38 @@ public class AccountController : ApiController
         return Conflict(new ValidationProblemDetails(ModelState));
     }
 
-    /// <summary>
-    ///     Logs a User in.
-    /// </summary>
-    /// <param name="request">
-    ///     The `LoginRequest` instance from which to perform the login.
-    /// </param>
-    /// <response code="200">
-    ///     The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.
-    /// </response>
-    /// <response code="400">The request was malformed.</response>
-    /// <response code="401">The password given was incorrect.</response>
-    /// <response code="403">The associated `User` is banned.</response>
-    /// <response code="404">No `User` with the requested details could be found.</response>
-    /// <response code="422">
-    ///     The request contains errors.<br/><br/>
-    ///     Validation error codes by property:
-    ///     - **Password**:
-    ///       - **NotEmptyValidator**: No password was passed
-    ///       - **PasswordFormat**: Invalid password format
-    ///     - **Email**:
-    ///       - **NotNullValidator**: No email was passed
-    ///       - **EmailValidator**: Invalid email format
-    /// </response>
     [AllowAnonymous]
-    [HttpPost("/login")]
-    [ApiConventionMethod(typeof(Conventions), nameof(Conventions.PostAnon))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [FeatureGate(Features.LOGIN)]
-    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
+    [HttpPost("/login")]
+    [SwaggerOperation("Logs a User in.")]
+    [SwaggerResponse(
+        200,
+        "The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.",
+        typeof(LoginResponse)
+    )]
+    [SwaggerResponse(401, "The password given was incorrect.")]
+    [SwaggerResponse(403, "The associated `User` is banned.")]
+    [SwaggerResponse(404, "No `User` with the requested details could be found.")]
+    [SwaggerResponse(
+        422,
+        """
+        The request contains errors.
+        Validation error codes by property:
+        - **Password**:
+          - **NotEmptyValidator**: No password was passed
+          - **PasswordFormat**: Invalid password format
+        - **Email**:
+          - **NotNullValidator**: No email was passed
+          - **EmailValidator**: Invalid email format
+        """,
+        typeof(ValidationProblemDetails)
+    )]
+    public async Task<ActionResult<LoginResponse>> Login(
+        [FromBody, SwaggerRequestBody(
+            "The `LoginRequest` instance with which to perform the login.",
+            Required = true
+        )] LoginRequest request
+    )
     {
         LoginResult result = await _userService.LoginByEmailAndPassword(request.Email, request.Password);
 
@@ -136,30 +136,12 @@ public class AccountController : ApiController
         );
     }
 
-    /// <summary>
-    ///     Resends the account confirmation link.
-    /// </summary>
-    /// <param name="confirmationService">IAccountConfirmationService dependency.</param>
-    /// <response code="200">A new confirmation link was generated.</response>
-    /// <response code="400">
-    ///     The request was malformed.
-    /// </response>
-    /// <response code="401">
-    ///     The request doesn't contain a valid session token.
-    /// </response>
-    /// <response code="409">
-    ///     The `User`'s account has already been confirmed.
-    /// </response>
-    /// <response code="500">
-    ///     The account recovery email failed to be created.
-    /// </response>
     [HttpPost("confirm")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [SwaggerOperation("Resends the account confirmation link.")]
+    [SwaggerResponse(200, "A new confirmation link was generated.")]
+    [SwaggerResponse(401)]
+    [SwaggerResponse(409, "The `User`'s account has already been confirmed.")]
+    [SwaggerResponse(500, "The account recovery email failed to be created.")]
     public async Task<ActionResult> ResendConfirmation(
         [FromServices] IAccountConfirmationService confirmationService
     )
@@ -186,23 +168,15 @@ public class AccountController : ApiController
         );
     }
 
-    /// <summary>
-    ///     Sends an account recovery email.
-    /// </summary>
-    /// <param name="recoveryService">IAccountRecoveryService dependency.</param>
-    /// <param name="logger"></param>
-    /// <param name="request">The account recovery request.</param>
-    /// <response code="200">This endpoint returns 200 OK regardless of whether the email was sent successfully or not.</response>
-    /// <response code="400">The request object was malformed.</response>
     [AllowAnonymous]
     [HttpPost("recover")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [SwaggerOperation("Sends an account recovery email.")]
+    [SwaggerResponse(200, "This endpoint returns 200 OK regardless of whether the email was sent successfully or not.")]
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
     public async Task<ActionResult> RecoverAccount(
         [FromServices] IAccountRecoveryService recoveryService,
         [FromServices] ILogger<AccountController> logger,
-        [FromBody] RecoverAccountRequest request
+        [FromBody, SwaggerRequestBody("The account recovery request.")] RecoverAccountRequest request
     )
     {
         User? user = await _userService.GetUserByNameAndEmail(request.Username, request.Email);
@@ -220,21 +194,16 @@ public class AccountController : ApiController
         return Ok();
     }
 
-    /// <summary>
-    ///     Confirms a user account.
-    /// </summary>
-    /// <param name="id">The confirmation token.</param>
-    /// <param name="confirmationService">IAccountConfirmationService dependency.</param>
-    /// <response code="200">The account was confirmed successfully.</response>
-    /// <response code="404">The token provided was invalid or expired.</response>
-    /// <response code="409">The user's account was either already confirmed or banned.</response>
     [AllowAnonymous]
     [HttpPut("confirm/{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult> ConfirmAccount(Guid id, [FromServices] IAccountConfirmationService confirmationService)
+    [SwaggerOperation("Confirms a user account.")]
+    [SwaggerResponse(200, "The account was confirmed successfully.")]
+    [SwaggerResponse(404, "The token provided was invalid or expired.")]
+    [SwaggerResponse(409, "the user's account was either already confirmed or banned.")]
+    public async Task<ActionResult> ConfirmAccount(
+        [SwaggerParameter("The confirmation token.")] Guid id,
+        [FromServices] IAccountConfirmationService confirmationService
+    )
     {
         ConfirmAccountResult result = await confirmationService.ConfirmAccount(id);
 
@@ -247,20 +216,16 @@ public class AccountController : ApiController
         );
     }
 
-    /// <summary>
-    /// Tests an account recovery token for validity.
-    /// </summary>
-    /// <param name="id">The recovery token.</param>
-    /// <param name="recoveryService">IAccountRecoveryService dependency.</param>
-    /// <response code="200">The token provided is valid.</response>
-    /// <response code="404">The token provided is invalid or expired, or the user is banned.</response>
     [AllowAnonymous]
     [HttpGet("recover/{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [SwaggerOperation("Tests an account recovery token for validity.")]
+    [SwaggerResponse(200, "The token provided is valid.")]
+    [SwaggerResponse(404, "The token provided is invalid or expired, or the user is banned.")]
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
-    public async Task<ActionResult> TestRecovery(Guid id, [FromServices] IAccountRecoveryService recoveryService)
+    public async Task<ActionResult> TestRecovery(
+        [SwaggerParameter("The recovery token.")] Guid id,
+        [FromServices] IAccountRecoveryService recoveryService
+    )
     {
         TestRecoveryResult result = await recoveryService.TestRecovery(id);
 
@@ -273,32 +238,25 @@ public class AccountController : ApiController
         );
     }
 
-    /// <summary>
-    /// Recover the user's account by resetting their password to a new value.
-    /// </summary>
-    /// <param name="id">The recovery token.</param>
-    /// <param name="request">The password recovery request object.</param>
-    /// <param name="recoveryService">IAccountRecoveryService dependency</param>
-    /// <response code="200">The user's password was reset successfully.</response>
-    /// <response code="403">The user is banned.</response>
-    /// <response code="404">The token provided is invalid or expired.</response>
-    /// <response code="409">The new password is the same as the user's existing password.</response>
-    /// <response code="422">
-    ///     The request body contains errors.<br/>
-    ///     A **PasswordFormat** Validation error on the Password field indicates that the password format is invalid.
-    /// </response>
     [AllowAnonymous]
-    [HttpPost("recover/{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ValidationProblemDetails))]
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
+    [HttpPost("recover/{id}")]
+    [SwaggerOperation("Recover the user's account by resetting their password to a new value.")]
+    [SwaggerResponse(200, "The user's password was reset successfully.")]
+    [SwaggerResponse(403, "The user is banned.")]
+    [SwaggerResponse(404, "The token provided is invalid or expired.")]
+    [SwaggerResponse(409, "The new password is the same as the user's existing password.")]
+    [SwaggerResponse(
+        422,
+        """
+        The request body contains errors.
+        A **PasswordFormat** Validation error on the Password field indicates that the password format is invalid.
+        """,
+        typeof(ValidationProblemDetails)
+    )]
     public async Task<ActionResult> ResetPassword(
-        Guid id,
-        [FromBody] ChangePasswordRequest request,
+        [SwaggerParameter("The recovery token.")] Guid id,
+        [FromBody, SwaggerRequestBody("The password recovery request object.", Required = true)] ChangePasswordRequest request,
         [FromServices] IAccountRecoveryService recoveryService
     )
     {
