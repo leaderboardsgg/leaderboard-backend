@@ -1,4 +1,3 @@
-using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
@@ -23,12 +22,10 @@ public class AccountController : ApiController
     }
 
     [AllowAnonymous]
-    [ApiConventionMethod(typeof(Conventions), nameof(Conventions.PostAnon))]
     [FeatureGate(Features.ACCOUNT_REGISTRATION)]
     [HttpPost("register")]
     [SwaggerOperation("Registers a new User.")]
     [SwaggerResponse(201, "The `User` was registered and returned successfully.")]
-    [SwaggerResponse(400, "The request was malformed.")]
     [SwaggerResponse(
         409,
         """
@@ -55,7 +52,6 @@ public class AccountController : ApiController
         """,
         typeof(ValidationProblemDetails)
     )]
-    [SwaggerResponse(500, "Server Error")]
     public async Task<ActionResult<UserViewModel>> Register(
 
         [FromBody, SwaggerRequestBody(
@@ -98,7 +94,6 @@ public class AccountController : ApiController
     }
 
     [AllowAnonymous]
-    [ApiConventionMethod(typeof(Conventions), nameof(Conventions.PostAnon))]
     [FeatureGate(Features.LOGIN)]
     [HttpPost("/login")]
     [SwaggerOperation("Logs a User in.")]
@@ -107,7 +102,6 @@ public class AccountController : ApiController
         "The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.",
         typeof(LoginResponse)
     )]
-    [SwaggerResponse(400, "The request was malformed.")]
     [SwaggerResponse(401, "The password given was incorrect.")]
     [SwaggerResponse(403, "The associated `User` is banned.")]
     [SwaggerResponse(404, "No `User` with the requested details could be found.")]
@@ -145,8 +139,7 @@ public class AccountController : ApiController
     [HttpPost("confirm")]
     [SwaggerOperation("Resends the account confirmation link.")]
     [SwaggerResponse(200, "A new confirmation link was generated.")]
-    [SwaggerResponse(400, "The request was malformed.")]
-    [SwaggerResponse(401, "The request doesn't contain a valid session token.")]
+    [SwaggerResponse(401)]
     [SwaggerResponse(409, "The `User`'s account has already been confirmed.")]
     [SwaggerResponse(500, "The account recovery email failed to be created.")]
     public async Task<ActionResult> ResendConfirmation(
@@ -179,7 +172,6 @@ public class AccountController : ApiController
     [HttpPost("recover")]
     [SwaggerOperation("Sends an account recovery email.")]
     [SwaggerResponse(200, "This endpoint returns 200 OK regardless of whether the email was sent successfully or not.")]
-    [SwaggerResponse(400, "The request object was malformed.")]
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
     public async Task<ActionResult> RecoverAccount(
         [FromServices] IAccountRecoveryService recoveryService,
@@ -206,7 +198,6 @@ public class AccountController : ApiController
     [HttpPut("confirm/{id}")]
     [SwaggerOperation("Confirms a user account.")]
     [SwaggerResponse(200, "The account was confirmed successfully.")]
-    [SwaggerResponse(400)]
     [SwaggerResponse(404, "The token provided was invalid or expired.")]
     [SwaggerResponse(409, "the user's account was either already confirmed or banned.")]
     public async Task<ActionResult> ConfirmAccount(
@@ -229,7 +220,6 @@ public class AccountController : ApiController
     [HttpGet("recover/{id}")]
     [SwaggerOperation("Tests an account recovery token for validity.")]
     [SwaggerResponse(200, "The token provided is valid.")]
-    [SwaggerResponse(400)]
     [SwaggerResponse(404, "The token provided is invalid or expired, or the user is banned.")]
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
     public async Task<ActionResult> TestRecovery(
@@ -249,10 +239,10 @@ public class AccountController : ApiController
     }
 
     [AllowAnonymous]
+    [FeatureGate(Features.ACCOUNT_RECOVERY)]
     [HttpPost("recover/{id}")]
     [SwaggerOperation("Recover the user's account by resetting their password to a new value.")]
     [SwaggerResponse(200, "The user's password was reset successfully.")]
-    [SwaggerResponse(400)]
     [SwaggerResponse(403, "The user is banned.")]
     [SwaggerResponse(404, "The token provided is invalid or expired.")]
     [SwaggerResponse(409, "The new password is the same as the user's existing password.")]
@@ -264,7 +254,6 @@ public class AccountController : ApiController
         """,
         typeof(ValidationProblemDetails)
     )]
-    [FeatureGate(Features.ACCOUNT_RECOVERY)]
     public async Task<ActionResult> ResetPassword(
         [SwaggerParameter("The recovery token.")] Guid id,
         [FromBody, SwaggerRequestBody("The password recovery request object.", Required = true)] ChangePasswordRequest request,

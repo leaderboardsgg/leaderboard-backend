@@ -1,4 +1,3 @@
-using LeaderboardBackend.Controllers.Annotations;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
@@ -12,17 +11,14 @@ namespace LeaderboardBackend.Controllers;
 
 public class UsersController : ApiController
 {
-    private readonly IAuthService _authService;
     private readonly IUserService _userService;
 
-    public UsersController(IAuthService authService, IUserService userService)
+    public UsersController(IUserService userService)
     {
-        _authService = authService;
         _userService = userService;
     }
 
     [AllowAnonymous]
-    [ApiConventionMethod(typeof(Conventions), nameof(Conventions.GetAnon))]
     [HttpGet("{id:guid}")]
     [SwaggerOperation("Gets a User by their ID.")]
     [SwaggerResponse(200, "The `User` was found and returned successfully.")]
@@ -41,7 +37,6 @@ public class UsersController : ApiController
         return Ok(UserViewModel.MapFrom(user));
     }
 
-    [ApiConventionMethod(typeof(Conventions), nameof(Conventions.Get))]
     [HttpGet("me")]
     [SwaggerOperation(
         "Gets the currently logged-in User.",
