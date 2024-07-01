@@ -33,16 +33,6 @@ internal class Categories
     }
 
     [Test]
-    public static void GetCategory_Unauthorized()
-    {
-        RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(
-            async () => await _apiClient.Get<CategoryViewModel>($"/api/categories/1", new())
-        )!;
-
-        Assert.AreEqual(HttpStatusCode.Unauthorized, e.Response.StatusCode);
-    }
-
-    [Test]
     public static void GetCategory_NotFound()
     {
         RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(
@@ -87,8 +77,7 @@ internal class Categories
         );
 
         CategoryViewModel retrievedCategory = await _apiClient.Get<CategoryViewModel>(
-            $"/api/categories/{createdCategory?.Id}",
-            new() { Jwt = _jwt }
+            $"/api/categories/{createdCategory?.Id}", new() { }
         );
 
         Assert.AreEqual(createdCategory, retrievedCategory);
