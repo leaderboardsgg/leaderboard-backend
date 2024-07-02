@@ -10,9 +10,11 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         - name: Checkout repo
-          uses: actions/checkout@v2
-        - name: Setup dotnet 7
-          uses: actions/setup-dotnet@v1
+          uses: actions/checkout@v4
+        - name: Setup dotnet 8
+          uses: actions/setup-dotnet@v4
+          with:
+            dotnet-version: '8.0'
         - name: Restore NuGet packages
           run: dotnet restore
         - name: Restore tools

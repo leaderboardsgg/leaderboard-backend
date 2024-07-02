@@ -1,9 +1,9 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 namespace LeaderboardBackend.Services;
@@ -24,22 +24,19 @@ public class AuthService : IAuthService
 
     public string GenerateJSONWebToken(User user)
     {
-        Claim[] claims =
+        SecurityTokenDescriptor descriptor = new()
         {
-            new(JwtRegisteredClaimNames.Email, user.Email),
-            new(JwtRegisteredClaimNames.Sub, user.Id.ToString())
+            Issuer = _issuer,
+            Audience = _issuer,
+            Claims = new Dictionary<string, object> {
+                { JwtRegisteredClaimNames.Email, user.Email },
+                { JwtRegisteredClaimNames.Sub, user.Id.ToString() }
+            },
+            Expires = DateTime.Now.AddMinutes(30),
+            SigningCredentials = _credentials
         };
 
-        JwtSecurityToken token =
-            new(
-                issuer: _issuer,
-                audience: _issuer,
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: _credentials
-            );
-
-        return Jwt.SecurityTokenHandler.WriteToken(token);
+        return Jwt.SecurityTokenHandler.CreateToken(descriptor);
     }
 
     public string? GetEmailFromClaims(ClaimsPrincipal claims)

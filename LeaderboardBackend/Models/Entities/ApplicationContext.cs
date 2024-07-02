@@ -1,3 +1,4 @@
+using System.Data;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -31,11 +32,22 @@ public class ApplicationContext : DbContext
     public void MigrateDatabase()
     {
         Database.Migrate();
+        bool tempConnection = false;
+        NpgsqlConnection connection = (NpgsqlConnection)Database.GetDbConnection();
+
+        if (connection.State is ConnectionState.Closed)
+        {
+            tempConnection = true;
+            Database.OpenConnection();
+        }
 
         // when new extensions have been enabled by migrations, Npgsql's type cache must be refreshed
-        Database.OpenConnection();
-        ((NpgsqlConnection)Database.GetDbConnection()).ReloadTypes();
-        Database.CloseConnection();
+        connection.ReloadTypes();
+
+        if (tempConnection)
+        {
+            Database.CloseConnection();
+        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
