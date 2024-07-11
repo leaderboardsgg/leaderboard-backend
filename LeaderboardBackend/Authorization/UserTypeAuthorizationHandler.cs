@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
@@ -7,22 +8,13 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace LeaderboardBackend.Authorization;
 
-public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequirement>
+public class UserTypeAuthorizationHandler(
+    IOptions<JwtConfig> config,
+    IUserService userService
+    ) : AuthorizationHandler<UserTypeRequirement>
 {
-    private readonly IAuthService _authService;
-    private readonly TokenValidationParameters _jwtValidationParams;
-    private readonly IUserService _userService;
-
-    public UserTypeAuthorizationHandler(
-        IAuthService authService,
-        IOptions<JwtConfig> config,
-        IUserService userService
-    )
-    {
-        _authService = authService;
-        _jwtValidationParams = Jwt.ValidationParameters.GetInstance(config.Value);
-        _userService = userService;
-    }
+    private readonly TokenValidationParameters _jwtValidationParams = Jwt.ValidationParameters.GetInstance(config.Value);
+    private readonly IUserService _userService = userService;
 
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
@@ -34,37 +26,27 @@ public class UserTypeAuthorizationHandler : AuthorizationHandler<UserTypeRequire
             return;
         }
 
-        Guid? userId = _authService.GetUserIdFromClaims(context.User);
+        GetUserResult res = await _userService.GetUserFromClaims(context.User);
 
-        if (userId is null)
+        res.Switch(user =>
         {
-            context.Fail();
-            return;
-        }
-
-        User? user = _userService.GetUserById(userId.Value).Result;
-
-        if (user is null || !Handle(user, requirement))
-        {
-            // FIXME: Work out how to fail as a ForbiddenResult.
-            context.Fail();
-            return;
-        }
-
-        context.Succeed(requirement);
-
-        return;
+            if (Handle(user, requirement))
+            {
+                context.Succeed(requirement);
+            }
+            else
+            {
+                context.Fail();
+            }
+        }, badCredentials => context.Fail(new(this, "Bad Credentials")), notFound => context.Fail(new(this, "User Not Found")));
     }
 
-    private bool Handle(User user, UserTypeRequirement requirement)
+    private static bool Handle(User user, UserTypeRequirement requirement) => requirement.Type switch
     {
-        return requirement.Type switch
-        {
-            UserTypes.ADMINISTRATOR => user.IsAdmin,
-            UserTypes.USER => true,
-            _ => false,
-        };
-    }
+        UserTypes.ADMINISTRATOR => user.IsAdmin,
+        UserTypes.USER => true,
+        _ => false,
+    };
     private static bool TryGetJwtFromHttpContext(
         AuthorizationHandlerContext context,
         [NotNullWhen(true)] out string? token
