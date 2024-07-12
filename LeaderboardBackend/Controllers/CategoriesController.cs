@@ -39,7 +39,7 @@ public class CategoriesController : ApiController
     [HttpPost]
     [SwaggerOperation("Creates a new Category. This request is restricted to Moderators.")]
     [SwaggerResponse(201)]
-    [SwaggerResponse(404)]
+    [SwaggerResponse(403)]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<CategoryViewModel>> CreateCategory(
         [FromBody] CreateCategoryRequest request
