@@ -39,6 +39,7 @@ public class RunsController : ApiController
         return Ok(RunViewModel.MapFrom(run));
     }
 
+    [Authorize]
     [HttpPost]
     [SwaggerOperation("Creates a new Run.")]
     [SwaggerResponse(201)]
