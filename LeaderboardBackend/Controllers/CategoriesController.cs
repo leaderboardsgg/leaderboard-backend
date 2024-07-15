@@ -1,3 +1,4 @@
+using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
@@ -36,6 +37,7 @@ public class CategoriesController : ApiController
         return Ok(CategoryViewModel.MapFrom(category));
     }
 
+    [Authorize(Policy = UserTypes.MODERATOR)]
     [HttpPost]
     [SwaggerOperation("Creates a new Category. This request is restricted to Moderators.")]
     [SwaggerResponse(201)]
