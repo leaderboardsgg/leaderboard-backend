@@ -25,8 +25,6 @@ public class CategoriesController : ApiController
     [SwaggerResponse(404)]
     public async Task<ActionResult<CategoryViewModel>> GetCategory(long id)
     {
-        // NOTE: Should this use [AllowAnonymous]? - Ero
-
         Category? category = await _categoryService.GetCategory(id);
 
         if (category == null)
@@ -47,9 +45,6 @@ public class CategoriesController : ApiController
         [FromBody] CreateCategoryRequest request
     )
     {
-        // FIXME: Allow only moderators to call this! - Ero
-        // NOTE: Allow administrators to call this as well? - Ero
-
         // NOTE: Check that body.PlayersMax > body.PlayersMin? - Ero
         Category category =
             new()
