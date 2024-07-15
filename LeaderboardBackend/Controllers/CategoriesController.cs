@@ -37,7 +37,7 @@ public class CategoriesController : ApiController
         return Ok(CategoryViewModel.MapFrom(category));
     }
 
-    [Authorize(Policy = UserTypes.MODERATOR)]
+    [Authorize(Policy = UserTypes.ADMINISTRATOR)]
     [HttpPost]
     [SwaggerOperation("Creates a new Category. This request is restricted to Moderators.")]
     [SwaggerResponse(201)]
