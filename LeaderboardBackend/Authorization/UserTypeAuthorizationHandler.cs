@@ -34,10 +34,6 @@ public class UserTypeAuthorizationHandler(
             {
                 context.Succeed(requirement);
             }
-            else
-            {
-                context.Fail();
-            }
         }, badCredentials => context.Fail(new(this, "Bad Credentials")), notFound => context.Fail(new(this, "User Not Found")));
     }
 
