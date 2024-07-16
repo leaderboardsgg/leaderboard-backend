@@ -12,23 +12,32 @@ public record RunViewModel
     public required Guid Id { get; set; }
 
     /// <summary>
-    ///     The time the request was made at.
+    ///     The time the run was created.
     /// </summary>
-    public required Instant SubmittedAt { get; set; }
+    public required Instant CreatedAt { get; set; }
+
+    /// <summary>
+    ///     The last time the run was updated or <see langword="null" />.
+    /// </summary>
+    public Instant? UpdatedAt { get; set; }
+
+    /// <summary>
+    ///     The time at which the run was deleted, or <see langword="null" /> if the run has not been deleted.
+    /// </summary>
+    public Instant? DeletedAt { get; set; }
 
     /// <summary>
     /// 	The ID of the `Category` for `Run`.
     /// </summary>
     public required long CategoryId { get; set; }
 
-    public static RunViewModel MapFrom(Run run)
+    public static RunViewModel MapFrom(Run run) => new()
     {
-        return new RunViewModel
-        {
-            Id = run.Id,
-            CategoryId = run.CategoryId,
-            SubmittedAt = run.SubmittedAt
-        };
-    }
+        Id = run.Id,
+        CategoryId = run.CategoryId,
+        CreatedAt = run.CreatedAt,
+        UpdatedAt = run.UpdatedAt,
+        DeletedAt = run.DeletedAt
+    };
 }
 

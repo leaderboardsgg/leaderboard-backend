@@ -55,7 +55,7 @@ public class RunsController : ApiController
             new()
             {
                 PlayedOn = request.PlayedOn,
-                SubmittedAt = request.SubmittedAt,
+                CreatedAt = request.SubmittedAt,
                 CategoryId = request.CategoryId
             };
 
