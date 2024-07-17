@@ -37,6 +37,7 @@ public class UsersController : ApiController
         return Ok(UserViewModel.MapFrom(user));
     }
 
+    [Authorize]
     [HttpGet("me")]
     [SwaggerOperation(
         "Gets the currently logged-in User.",

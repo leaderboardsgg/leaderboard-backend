@@ -136,6 +136,7 @@ public class AccountController : ApiController
         );
     }
 
+    [Authorize]
     [HttpPost("confirm")]
     [SwaggerOperation("Resends the account confirmation link.")]
     [SwaggerResponse(200, "A new confirmation link was generated.")]

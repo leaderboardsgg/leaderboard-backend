@@ -221,40 +221,26 @@ builder.Services
 JsonWebTokenHandler.DefaultInboundClaimTypeMap.Clear();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 
-// Configure authorisation.
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy(
-        UserTypes.ADMINISTRATOR,
-        policy =>
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(UserTypes.ADMINISTRATOR, policy =>
         {
             policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
             policy.RequireAuthenticatedUser();
             policy.Requirements.Add(new UserTypeRequirement(UserTypes.ADMINISTRATOR));
         }
-    );
-    options.AddPolicy(
-        UserTypes.MODERATOR,
-        policy =>
+)
+    .AddPolicy(UserTypes.MODERATOR, policy =>
         {
             policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
             policy.RequireAuthenticatedUser();
             policy.Requirements.Add(new UserTypeRequirement(UserTypes.MODERATOR));
         }
-    );
-
-    // Handles empty [Authorize] attributes
-    options.DefaultPolicy = new AuthorizationPolicyBuilder()
+)
+    .SetDefaultPolicy(new AuthorizationPolicyBuilder()
         .AddAuthenticationSchemes(new[] { JwtBearerDefaults.AuthenticationScheme })
         .RequireAuthenticatedUser()
         .AddRequirements(new[] { new UserTypeRequirement(UserTypes.USER) })
-        .Build();
-
-    options.FallbackPolicy = new AuthorizationPolicyBuilder()
-        .AddAuthenticationSchemes(new[] { JwtBearerDefaults.AuthenticationScheme })
-        .RequireAuthenticatedUser()
-        .Build();
-});
+        .Build());
 
 builder.Services.AddSingleton<IValidatorInterceptor, LeaderboardBackend.Models.Validation.UseErrorCodeInterceptor>();
 builder.Services.AddFluentValidationAutoValidation(c =>

@@ -143,12 +143,8 @@ internal class Leaderboards
         }
 
         CreateLeaderboardRequest reqForInexistentBoard = _createBoardReqFaker.Generate();
-
-        RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(
-            () => _apiClient.Get<string>($"/api/leaderboards/{reqForInexistentBoard.Slug}", new())
-        )!;
-
-        e.Response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        Func<Task<string>> act = async () => await _apiClient.Get<string>($"/api/leaderboards/{reqForInexistentBoard.Slug}", new());
+        await act.Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
     }
 
     private static string ListToQueryString<T>(IEnumerable<T> list, string key)

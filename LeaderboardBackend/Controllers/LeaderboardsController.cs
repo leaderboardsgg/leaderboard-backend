@@ -69,7 +69,7 @@ public class LeaderboardsController : ApiController
     [SwaggerOperation("Creates a new leaderboard. This request is restricted to Administrators.")]
     [SwaggerResponse(201)]
     [SwaggerResponse(401)]
-    [SwaggerResponse(404, "The requesting `User` is unauthorized to create `Leaderboard`s.")]
+    [SwaggerResponse(403, "The requesting `User` is unauthorized to create `Leaderboard`s.")]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<LeaderboardViewModel>> CreateLeaderboard(
         [FromBody] CreateLeaderboardRequest request

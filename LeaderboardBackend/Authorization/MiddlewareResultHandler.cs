@@ -15,9 +15,9 @@ public class MiddlewareResultHandler : IAuthorizationMiddlewareResultHandler
         PolicyAuthorizationResult policyAuthorizationResult
     )
     {
-        if (policyAuthorizationResult.Forbidden)
+        if (policyAuthorizationResult.AuthorizationFailure?.FailureReasons.Any(fr => fr.Handler is UserTypeAuthorizationHandler) ?? false)
         {
-            httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+            httpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
             return;
         }
 
