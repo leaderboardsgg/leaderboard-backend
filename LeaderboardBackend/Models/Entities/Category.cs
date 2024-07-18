@@ -64,6 +64,7 @@ public class Category
             && Id == category.Id
             && Name == category.Name
             && Slug == category.Slug
+            && Info == category.Info
             && PlayersMax == category.PlayersMax
             && PlayersMin == category.PlayersMin
             && LeaderboardId == category.LeaderboardId;
