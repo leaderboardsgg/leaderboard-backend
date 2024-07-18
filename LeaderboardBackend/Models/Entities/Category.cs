@@ -4,6 +4,12 @@ using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
 
+public enum SortDirection
+{
+    Ascending,
+    Descending
+}
+
 /// <summary>
 ///     Represents a `Category` tied to a `Leaderboard`.
 /// </summary>
@@ -48,6 +54,12 @@ public class Category
     public string? Info { get; set; }
 
     /// <summary>
+    ///     The direction used to rank runs belonging to this category.
+    /// </summary>
+    [Required]
+    public SortDirection SortDirection { get; set; }
+
+    /// <summary>
     ///     The time the Category was created.
     /// </summary>
     [Required]
@@ -70,6 +82,7 @@ public class Category
             && Name == category.Name
             && Slug == category.Slug
             && Info == category.Info
+            && SortDirection == category.SortDirection
             && LeaderboardId == category.LeaderboardId;
     }
 

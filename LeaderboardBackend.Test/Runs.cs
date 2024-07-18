@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.Lib;
@@ -55,7 +56,8 @@ namespace LeaderboardBackend.Test
                         Name = Generators.GenerateRandomString(),
                         Slug = Generators.GenerateRandomString(),
                         LeaderboardId = createdLeaderboard.Id,
-                        Info = null
+                        Info = null,
+                        SortDirection = SortDirection.Ascending
                     },
                     Jwt = _jwt,
                 }

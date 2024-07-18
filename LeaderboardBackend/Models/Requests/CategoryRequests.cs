@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using LeaderboardBackend.Models.Entities;
 
 namespace LeaderboardBackend.Models.Requests;
 
@@ -30,4 +31,7 @@ public record CreateCategoryRequest
     ///     The ID of the `Leaderboard` the `Category` is a part of.
     /// </summary>
     public required long LeaderboardId { get; set; }
+
+    /// <inheritdoc cref="Category.SortDirection" />
+    public required SortDirection SortDirection { get; set; }
 }

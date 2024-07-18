@@ -1,5 +1,6 @@
 using System.Net;
 using System.Threading.Tasks;
+using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.Lib;
@@ -72,7 +73,8 @@ internal class Categories
                     Name = Generators.GenerateRandomString(),
                     Slug = Generators.GenerateRandomString(),
                     LeaderboardId = createdLeaderboard.Id,
-                    Info = null
+                    Info = null,
+                    SortDirection = SortDirection.Ascending
                 },
                 Jwt = _jwt
             }
