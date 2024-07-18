@@ -32,7 +32,7 @@ public class Leaderboard
     ///     The general rules for the Leaderboard.
     /// </summary>
     /// <example>Timer starts on selecting New Game and ends when the final boss is beaten.</example>
-    public string? Rules { get; set; }
+    public string? Info { get; set; }
 
     /// <summary>
     ///     A collection of `Category` entities for the `Leaderboard`.

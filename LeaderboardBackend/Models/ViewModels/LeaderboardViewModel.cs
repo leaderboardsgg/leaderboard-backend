@@ -30,7 +30,7 @@ public record LeaderboardViewModel
     ///     The general rules for the Leaderboard.
     /// </summary>
     /// <example>Timer starts on selecting New Game and ends when the final boss is beaten.</example>
-    public required string? Rules { get; init; }
+    public required string? Info { get; init; }
 
     /// <summary>
     ///     A collection of `Category` entities for the `Leaderboard`.
@@ -47,7 +47,7 @@ public record LeaderboardViewModel
             Id = leaderboard.Id,
             Name = leaderboard.Name,
             Slug = leaderboard.Slug,
-            Rules = leaderboard.Rules,
+            Info = leaderboard.Info,
             Categories = categories ?? Array.Empty<CategoryViewModel>(),
         };
     }
