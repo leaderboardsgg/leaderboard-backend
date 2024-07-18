@@ -61,7 +61,8 @@ public class Leaderboard
         return obj is Leaderboard leaderboard
             && Id == leaderboard.Id
             && Name == leaderboard.Name
-            && Slug == leaderboard.Slug;
+            && Slug == leaderboard.Slug
+            && Info == leaderboard.Info;
     }
 
     public override int GetHashCode()
