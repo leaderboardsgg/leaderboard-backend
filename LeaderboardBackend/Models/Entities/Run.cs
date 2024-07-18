@@ -15,6 +15,11 @@ public class Run
     public Guid Id { get; set; }
 
     /// <summary>
+    ///     User-provided details about the run.
+    /// </summary>
+    public string? Info { get; set; }
+
+    /// <summary>
     ///     The date the `Run` was played on.
     /// </summary>
     [Required]

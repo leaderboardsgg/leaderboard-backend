@@ -12,6 +12,10 @@ public record RunViewModel
     public required Guid Id { get; set; }
 
     /// <summary>
+    ///     User-provided details about the run.
+    /// </summary>
+    public required string? Info { get; set; }
+    /// <summary>
     ///     The time the run was created.
     /// </summary>
     public required Instant CreatedAt { get; set; }
@@ -37,7 +41,8 @@ public record RunViewModel
         CategoryId = run.CategoryId,
         CreatedAt = run.CreatedAt,
         UpdatedAt = run.UpdatedAt,
-        DeletedAt = run.DeletedAt
+        DeletedAt = run.DeletedAt,
+        Info = run.Info
     };
 }
 
