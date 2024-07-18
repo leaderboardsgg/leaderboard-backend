@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -33,6 +34,22 @@ public class Leaderboard
     /// </summary>
     /// <example>Timer starts on selecting New Game and ends when the final boss is beaten.</example>
     public string? Info { get; set; }
+
+    /// <summary>
+    ///     The time the Leaderboard was created.
+    /// </summary>
+    [Required]
+    public Instant CreatedAt { get; set; }
+
+    /// <summary>
+    ///     The last time the Leaderboard was updated or <see langword="null" />.
+    /// </summary>
+    public Instant? UpdatedAt { get; set; }
+
+    /// <summary>
+    ///     The time at which the Leaderboard was deleted, or <see langword="null" /> if the Leaderboard has not been deleted.
+    /// </summary>
+    public Instant? DeletedAt { get; set; }
 
     /// <summary>
     ///     A collection of `Category` entities for the `Leaderboard`.

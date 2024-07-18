@@ -1,4 +1,5 @@
 using LeaderboardBackend.Models.Entities;
+using NodaTime;
 
 namespace LeaderboardBackend.Models.ViewModels;
 
@@ -33,6 +34,21 @@ public record LeaderboardViewModel
     public required string? Info { get; init; }
 
     /// <summary>
+    ///     The time the Leaderboard was created.
+    /// </summary>
+    public required Instant CreatedAt { get; set; }
+
+    /// <summary>
+    ///     The last time the Leaderboard was updated or <see langword="null" />.
+    /// </summary>
+    public required Instant? UpdatedAt { get; set; }
+
+    /// <summary>
+    ///     The time at which the Leaderboard was deleted, or <see langword="null" /> if the Leaderboard has not been deleted.
+    /// </summary>
+    public required Instant? DeletedAt { get; set; }
+
+    /// <summary>
     ///     A collection of `Category` entities for the `Leaderboard`.
     /// </summary>
     public required IList<CategoryViewModel> Categories { get; init; }
@@ -48,6 +64,9 @@ public record LeaderboardViewModel
             Name = leaderboard.Name,
             Slug = leaderboard.Slug,
             Info = leaderboard.Info,
+            CreatedAt = leaderboard.CreatedAt,
+            UpdatedAt = leaderboard.UpdatedAt,
+            DeletedAt = leaderboard.DeletedAt,
             Categories = categories ?? Array.Empty<CategoryViewModel>(),
         };
     }
