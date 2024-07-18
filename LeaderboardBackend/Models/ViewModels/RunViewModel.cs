@@ -15,6 +15,7 @@ public record RunViewModel
     ///     User-provided details about the run.
     /// </summary>
     public required string? Info { get; set; }
+
     /// <summary>
     ///     The time the run was created.
     /// </summary>
