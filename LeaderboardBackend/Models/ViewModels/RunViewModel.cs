@@ -24,12 +24,12 @@ public record RunViewModel
     /// <summary>
     ///     The last time the run was updated or <see langword="null" />.
     /// </summary>
-    public Instant? UpdatedAt { get; set; }
+    public required Instant? UpdatedAt { get; set; }
 
     /// <summary>
     ///     The time at which the run was deleted, or <see langword="null" /> if the run has not been deleted.
     /// </summary>
-    public Instant? DeletedAt { get; set; }
+    public required Instant? DeletedAt { get; set; }
 
     /// <summary>
     /// 	The ID of the `Category` for `Run`.
