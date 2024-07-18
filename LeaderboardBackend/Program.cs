@@ -195,7 +195,10 @@ builder.Services.AddSwaggerGen(c =>
 
     c.SupportNonNullableReferenceTypes();
     c.MapType<Guid>(() => new OpenApiSchema { Type = "string", Pattern = "^[a-zA-Z0-9-_]{22}$" });
-    c.ConfigureForNodaTimeWithSystemTextJson(jsonSerializerOptions);
+    c.ConfigureForNodaTimeWithSystemTextJson(jsonSerializerOptions, null, null, true, new(DateTimeZoneProviders.Tzdb)
+    {
+        Instant = Instant.FromUtc(1984, 1, 1, 0, 0),
+    });
 });
 
 // Configure JWT Authentication.

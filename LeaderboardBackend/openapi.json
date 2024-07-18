@@ -1006,7 +1006,7 @@
             "type": "string",
             "description": "The time the request was made at.",
             "format": "date-time",
-            "example": "2024-07-18T16:42:35.6691199Z"
+            "example": "1984-01-01T00:00:00Z"
           },
           "categoryId": {
             "type": "integer",
@@ -1190,7 +1190,7 @@
             "type": "string",
             "description": "The time the request was made at.",
             "format": "date-time",
-            "example": "2024-07-18T16:42:35.6691199Z"
+            "example": "1984-01-01T00:00:00Z"
           },
           "categoryId": {
             "type": "integer",
