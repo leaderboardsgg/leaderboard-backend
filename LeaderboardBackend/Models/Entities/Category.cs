@@ -23,7 +23,6 @@ public class Category
     /// <summary>
     ///     Relationship model for `LeaderboardId`.
     /// </summary>
-    [JsonIgnore]
     public Leaderboard? Leaderboard { get; set; }
 
     /// <summary>
