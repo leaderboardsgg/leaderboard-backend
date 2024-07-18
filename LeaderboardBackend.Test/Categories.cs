@@ -71,7 +71,8 @@ internal class Categories
                 {
                     Name = Generators.GenerateRandomString(),
                     Slug = Generators.GenerateRandomString(),
-                    LeaderboardId = createdLeaderboard.Id
+                    LeaderboardId = createdLeaderboard.Id,
+                    Info = null
                 },
                 Jwt = _jwt
             }

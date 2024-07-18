@@ -26,7 +26,7 @@ public record CreateCategoryRequest
     ///     Information pertaining to the `Category`.
     /// </summary>
     /// <example>Video proof is required.</example>
-    public string? Info { get; set; }
+    public required string? Info { get; set; }
 
     /// <summary>
     ///     The ID of the `Leaderboard` the `Category` is a part of.

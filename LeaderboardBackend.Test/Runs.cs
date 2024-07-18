@@ -55,6 +55,7 @@ namespace LeaderboardBackend.Test
                         Name = Generators.GenerateRandomString(),
                         Slug = Generators.GenerateRandomString(),
                         LeaderboardId = createdLeaderboard.Id,
+                        Info = null
                     },
                     Jwt = _jwt,
                 }
