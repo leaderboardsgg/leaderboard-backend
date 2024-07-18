@@ -29,7 +29,7 @@ public class Leaderboard
     public string Slug { get; set; } = null!;
 
     /// <summary>
-    ///     The general rules for the Leaderboard.
+    ///     The general information for the Leaderboard.
     /// </summary>
     /// <example>Timer starts on selecting New Game and ends when the final boss is beaten.</example>
     public string? Info { get; set; }

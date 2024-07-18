@@ -27,7 +27,7 @@ public record LeaderboardViewModel
     public required string Slug { get; init; }
 
     /// <summary>
-    ///     The general rules for the Leaderboard.
+    ///     The general information for the Leaderboard.
     /// </summary>
     /// <example>Timer starts on selecting New Game and ends when the final boss is beaten.</example>
     public required string? Info { get; init; }
