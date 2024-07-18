@@ -19,5 +19,5 @@ public record CreateLeaderboardRequest
     public required string Slug { get; set; }
 
     /// <inheritdoc cref="Entities.Leaderboard.Info" />
-    public required string? Info { get; set; } = null;
+    public required string? Info { get; set; }
 }
