@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -45,6 +46,22 @@ public class Category
     /// </summary>
     /// <example>Video proof is required.</example>
     public string? Info { get; set; }
+
+    /// <summary>
+    ///     The time the Category was created.
+    /// </summary>
+    [Required]
+    public Instant CreatedAt { get; set; }
+
+    /// <summary>
+    ///     The last time the Category was updated or <see langword="null" />.
+    /// </summary>
+    public Instant? UpdatedAt { get; set; }
+
+    /// <summary>
+    ///     The time at which the Category was deleted, or <see langword="null" /> if the Category has not been deleted.
+    /// </summary>
+    public Instant? DeletedAt { get; set; }
 
     public override bool Equals(object? obj)
     {

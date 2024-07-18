@@ -1,4 +1,5 @@
 using LeaderboardBackend.Models.Entities;
+using NodaTime;
 
 namespace LeaderboardBackend.Models.ViewModels;
 
@@ -30,14 +31,23 @@ public record CategoryViewModel
     /// <example>Video proof is required.</example>
     public required string? Info { get; set; }
 
-    public static CategoryViewModel MapFrom(Category category)
+    /// <inheritdoc cref="Category.CreatedAt" />
+    public required Instant CreatedAt { get; set; }
+
+    /// <inheritdoc cref="Category.UpdatedAt" />
+    public required Instant? UpdatedAt { get; set; }
+
+    /// <inheritdoc cref="Category.DeletedAt" />
+    public required Instant? DeletedAt { get; set; }
+
+    public static CategoryViewModel MapFrom(Category category) => new()
     {
-        return new CategoryViewModel
-        {
-            Id = category.Id,
-            Name = category.Name,
-            Slug = category.Slug,
-            Info = category.Info
-        };
-    }
+        Id = category.Id,
+        Name = category.Name,
+        Slug = category.Slug,
+        Info = category.Info,
+        CreatedAt = category.CreatedAt,
+        UpdatedAt = category.UpdatedAt,
+        DeletedAt = category.DeletedAt
+    };
 }
