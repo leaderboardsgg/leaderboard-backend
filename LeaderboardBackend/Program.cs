@@ -11,7 +11,6 @@ using LeaderboardBackend;
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
-using LeaderboardBackend.Swagger;
 using MailKit.Net.Smtp;
 using MicroElements.Swashbuckle.NodaTime;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -195,7 +194,6 @@ builder.Services.AddSwaggerGen(c =>
     );
 
     c.SupportNonNullableReferenceTypes();
-    c.SchemaFilter<RequiredNotNullableSchemaFilter>();
     c.MapType<Guid>(() => new OpenApiSchema { Type = "string", Pattern = "^[a-zA-Z0-9-_]{22}$" });
     c.ConfigureForNodaTimeWithSystemTextJson(jsonSerializerOptions);
 });
