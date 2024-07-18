@@ -46,18 +46,6 @@ public class Category
     /// <example>Video proof is required.</example>
     public string? Info { get; set; }
 
-    /// <summary>
-    ///     The minimum player count of the `Category`. The default is 1.
-    /// </summary>
-    [Required]
-    public int PlayersMin { get; set; }
-
-    /// <summary>
-    ///     The maximum player count of the `Category`. The default is `PlayersMin`.
-    /// </summary>
-    [Required]
-    public int PlayersMax { get; set; }
-
     public override bool Equals(object? obj)
     {
         return obj is Category category
@@ -65,8 +53,6 @@ public class Category
             && Name == category.Name
             && Slug == category.Slug
             && Info == category.Info
-            && PlayersMax == category.PlayersMax
-            && PlayersMin == category.PlayersMin
             && LeaderboardId == category.LeaderboardId;
     }
 

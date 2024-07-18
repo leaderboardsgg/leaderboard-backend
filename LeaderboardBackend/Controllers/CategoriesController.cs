@@ -45,7 +45,6 @@ public class CategoriesController : ApiController
         [FromBody] CreateCategoryRequest request
     )
     {
-        // NOTE: Check that body.PlayersMax > body.PlayersMin? - Ero
         Category category =
             new()
             {
