@@ -56,7 +56,8 @@ internal class Categories
                 Body = new CreateLeaderboardRequest()
                 {
                     Name = Generators.GenerateRandomString(),
-                    Slug = Generators.GenerateRandomString()
+                    Slug = Generators.GenerateRandomString(),
+                    Info = null
                 },
                 Jwt = _jwt
             }

@@ -40,6 +40,7 @@ namespace LeaderboardBackend.Test
                     {
                         Name = Generators.GenerateRandomString(),
                         Slug = Generators.GenerateRandomString(),
+                        Info = null
                     },
                     Jwt = _jwt,
                 }
