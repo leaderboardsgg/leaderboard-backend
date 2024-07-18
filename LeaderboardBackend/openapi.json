@@ -886,44 +886,6 @@
   },
   "components": {
     "schemas": {
-      "CalendarSystem": {
-        "required": [
-          "eras",
-          "id",
-          "maxYear",
-          "minYear",
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "readOnly": true
-          },
-          "name": {
-            "type": "string",
-            "readOnly": true
-          },
-          "minYear": {
-            "type": "integer",
-            "format": "int32",
-            "readOnly": true
-          },
-          "maxYear": {
-            "type": "integer",
-            "format": "int32",
-            "readOnly": true
-          },
-          "eras": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Era"
-            },
-            "readOnly": true
-          }
-        },
-        "additionalProperties": false
-      },
       "CategoryViewModel": {
         "required": [
           "id",
@@ -1035,10 +997,16 @@
         "type": "object",
         "properties": {
           "playedOn": {
-            "$ref": "#/components/schemas/LocalDate"
+            "type": "string",
+            "description": "The date the `Run` was played on.",
+            "format": "date",
+            "example": "2024-07-18"
           },
           "submittedAt": {
-            "$ref": "#/components/schemas/Instant"
+            "type": "string",
+            "description": "The time the request was made at.",
+            "format": "date-time",
+            "example": "2024-07-18T16:42:35.6691199Z"
           },
           "categoryId": {
             "type": "integer",
@@ -1048,36 +1016,6 @@
         },
         "additionalProperties": false,
         "description": "This request object is sent when creating a `Run`."
-      },
-      "Era": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "readOnly": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Instant": {
-        "type": "object",
-        "additionalProperties": false
-      },
-      "IsoDayOfWeek": {
-        "enum": [
-          "None",
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-          "Sunday"
-        ],
-        "type": "string"
       },
       "LeaderboardViewModel": {
         "required": [
@@ -1120,53 +1058,6 @@
         },
         "additionalProperties": false,
         "description": "Represents a collection of `Leaderboard` entities."
-      },
-      "LocalDate": {
-        "required": [
-          "calendar",
-          "day",
-          "dayOfWeek",
-          "dayOfYear",
-          "era",
-          "month",
-          "year",
-          "yearOfEra"
-        ],
-        "type": "object",
-        "properties": {
-          "calendar": {
-            "$ref": "#/components/schemas/CalendarSystem"
-          },
-          "year": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "month": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "day": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "dayOfWeek": {
-            "$ref": "#/components/schemas/IsoDayOfWeek"
-          },
-          "yearOfEra": {
-            "type": "integer",
-            "format": "int32",
-            "readOnly": true
-          },
-          "era": {
-            "$ref": "#/components/schemas/Era"
-          },
-          "dayOfYear": {
-            "type": "integer",
-            "format": "int32",
-            "readOnly": true
-          }
-        },
-        "additionalProperties": false
       },
       "LoginRequest": {
         "required": [
@@ -1296,7 +1187,10 @@
             "description": "The unique identifier of the `Run`.\n\r\nGenerated on creation."
           },
           "submittedAt": {
-            "$ref": "#/components/schemas/Instant"
+            "type": "string",
+            "description": "The time the request was made at.",
+            "format": "date-time",
+            "example": "2024-07-18T16:42:35.6691199Z"
           },
           "categoryId": {
             "type": "integer",
@@ -1340,9 +1234,6 @@
         "additionalProperties": false
       },
       "ValidationProblemDetails": {
-        "required": [
-          "errors"
-        ],
         "type": "object",
         "properties": {
           "type": {
