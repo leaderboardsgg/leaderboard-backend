@@ -51,7 +51,7 @@ public class CategoriesController : ApiController
             {
                 Name = request.Name,
                 Slug = request.Slug,
-                Rules = request.Rules,
+                Info = request.Info,
                 LeaderboardId = request.LeaderboardId,
             };
 

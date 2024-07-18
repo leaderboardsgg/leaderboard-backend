@@ -42,10 +42,10 @@ public class Category
     public string Slug { get; set; } = null!;
 
     /// <summary>
-    ///     The rules of the `Category`.
+    ///     Information pertaining to the `Category`.
     /// </summary>
     /// <example>Video proof is required.</example>
-    public string? Rules { get; set; }
+    public string? Info { get; set; }
 
     /// <summary>
     ///     The minimum player count of the `Category`. The default is 1.

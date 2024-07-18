@@ -23,10 +23,10 @@ public record CreateCategoryRequest
     public string Slug { get; set; } = null!;
 
     /// <summary>
-    ///     The rules of the `Category`.
+    ///     Information pertaining to the `Category`.
     /// </summary>
     /// <example>Video proof is required.</example>
-    public string? Rules { get; set; }
+    public string? Info { get; set; }
 
     /// <summary>
     ///     The ID of the `Leaderboard` the `Category` is a part of.

@@ -25,10 +25,10 @@ public record CategoryViewModel
     public required string Slug { get; set; }
 
     /// <summary>
-    ///     The rules of the `Category`.
+    ///     Information pertaining to the `Category`.
     /// </summary>
     /// <example>Video proof is required.</example>
-    public required string? Rules { get; set; }
+    public required string? Info { get; set; }
 
     public static CategoryViewModel MapFrom(Category category)
     {
@@ -37,7 +37,7 @@ public record CategoryViewModel
             Id = category.Id,
             Name = category.Name,
             Slug = category.Slug,
-            Rules = category.Rules
+            Info = category.Info
         };
     }
 }
