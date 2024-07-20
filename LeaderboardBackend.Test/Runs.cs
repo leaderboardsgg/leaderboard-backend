@@ -39,8 +39,8 @@ namespace LeaderboardBackend.Test
                 {
                     Body = new CreateLeaderboardRequest()
                     {
-                        Name = Generators.GenerateRandomString(),
-                        Slug = Generators.GenerateRandomString(),
+                        Name = "Super Mario 64",
+                        Slug = "super_mario_64",
                         Info = null
                     },
                     Jwt = _jwt,
@@ -53,8 +53,8 @@ namespace LeaderboardBackend.Test
                 {
                     Body = new CreateCategoryRequest()
                     {
-                        Name = Generators.GenerateRandomString(),
-                        Slug = Generators.GenerateRandomString(),
+                        Name = "120 Stars",
+                        Slug = "120_stars",
                         LeaderboardId = createdLeaderboard.Id,
                         Info = null,
                         SortDirection = SortDirection.Ascending

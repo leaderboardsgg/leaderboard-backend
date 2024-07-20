@@ -56,8 +56,8 @@ internal class Categories
             {
                 Body = new CreateLeaderboardRequest()
                 {
-                    Name = Generators.GenerateRandomString(),
-                    Slug = Generators.GenerateRandomString(),
+                    Name = "Super Mario Bros.",
+                    Slug = "super_mario_bros",
                     Info = null
                 },
                 Jwt = _jwt
@@ -70,8 +70,8 @@ internal class Categories
             {
                 Body = new CreateCategoryRequest()
                 {
-                    Name = Generators.GenerateRandomString(),
-                    Slug = Generators.GenerateRandomString(),
+                    Name = "1 Player",
+                    Slug = "1_player",
                     LeaderboardId = createdLeaderboard.Id,
                     Info = null,
                     SortDirection = SortDirection.Ascending
