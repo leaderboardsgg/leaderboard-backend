@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
@@ -6,6 +7,7 @@ namespace LeaderboardBackend.Models.Entities;
 /// <summary>
 ///     Represents a collection of `Category` entities.
 /// </summary>
+[Index(nameof(Slug), IsUnique = true)]
 public class Leaderboard
 {
     /// <summary>
