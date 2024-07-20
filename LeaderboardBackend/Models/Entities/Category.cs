@@ -42,6 +42,8 @@ public class Category
     ///     Must be [2, 25] in length and consist only of alphanumeric characters and hyphens.
     /// </summary>
     /// <example>foo-bar-baz</example>
+    [StringLength(80, MinimumLength = 2)]
+    [RegularExpression(@"^([a-zA-Z0-9\-_]|%[A-F0-9]{2})*$")]
     public required string Slug { get; set; }
 
     /// <summary>
