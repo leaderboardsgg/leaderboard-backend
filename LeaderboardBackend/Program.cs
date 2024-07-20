@@ -198,6 +198,7 @@ builder.Services.AddSwaggerGen(c =>
     c.ConfigureForNodaTimeWithSystemTextJson(jsonSerializerOptions, null, null, true, new(DateTimeZoneProviders.Tzdb)
     {
         Instant = Instant.FromUtc(1984, 1, 1, 0, 0),
+        ZonedDateTime = ZonedDateTime.FromDateTimeOffset(new(new DateTime(2000, 1, 1)))
     });
 });
 
