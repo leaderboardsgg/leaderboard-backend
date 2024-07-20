@@ -5,12 +5,11 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Models.ViewModels;
 
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "Type")]
 [JsonDerivedType(typeof(TimedRunViewModel), "Time")]
 [JsonDerivedType(typeof(ScoredRunViewModel), "Score")]
 [SwaggerSubType(typeof(TimedRunViewModel), DiscriminatorValue = "Time")]
 [SwaggerSubType(typeof(ScoredRunViewModel), DiscriminatorValue = "Score")]
-[SwaggerDiscriminator("Type")]
+[SwaggerDiscriminator("$type")]
 public record RunViewModel
 {
     /// <summary>
@@ -23,8 +22,6 @@ public record RunViewModel
     ///     User-provided details about the run.
     /// </summary>
     public required string? Info { get; set; }
-
-    public required RunType Type { get; set; }
 
     /// <summary>
     ///     The time the run was created.
@@ -56,7 +53,6 @@ public record RunViewModel
             UpdatedAt = run.UpdatedAt,
             DeletedAt = run.DeletedAt,
             Info = run.Info,
-            Type = run.Type,
             Time = run.Time
         },
         RunType.Score => new ScoredRunViewModel
@@ -67,7 +63,6 @@ public record RunViewModel
             UpdatedAt = run.UpdatedAt,
             DeletedAt = run.DeletedAt,
             Info = run.Info,
-            Type = run.Type,
             Score = run.TimeOrScore
         },
         _ => throw new NotImplementedException(),
