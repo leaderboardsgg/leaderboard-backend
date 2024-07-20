@@ -26,7 +26,7 @@ public class Leaderboard
     /// </summary>
     /// <example>foo-bar</example>
     [StringLength(80, MinimumLength = 2)]
-    [RegularExpression(@"^([a-zA-Z0-9-_]|%[A-F0-9]{2})*$")]
+    [RegularExpression(@"^([a-zA-Z0-9\-_]|%[A-F0-9]{2})*$")]
     public required string Slug { get; set; }
 
     /// <summary>
