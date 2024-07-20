@@ -66,6 +66,6 @@ public class Leaderboard
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Id, Name, Slug);
+        return HashCode.Combine(Id, Name, Slug, Info);
     }
 }
