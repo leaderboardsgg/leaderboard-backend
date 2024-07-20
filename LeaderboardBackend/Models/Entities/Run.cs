@@ -19,6 +19,8 @@ public class Run
     /// </summary>
     public string? Info { get; set; }
 
+    public RunType Type => Category.Type;
+
     /// <summary>
     ///     The duration of the run in nanoseconds if the run belongs to a timed category, otherwise the score.
     /// </summary>
