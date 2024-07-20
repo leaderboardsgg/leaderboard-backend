@@ -88,6 +88,7 @@ builder.Services.AddDbContext<ApplicationContext>(
 
             opt.UseNpgsql(connectionBuilder.ConnectionString, o => o.UseNodaTime());
             opt.UseSnakeCaseNamingConvention();
+            opt.UseValidationCheckConstraints();
         }
         else
         {
