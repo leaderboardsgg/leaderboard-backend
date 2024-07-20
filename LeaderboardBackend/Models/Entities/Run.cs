@@ -20,6 +20,11 @@ public class Run
     public string? Info { get; set; }
 
     /// <summary>
+    ///     The duration of the run in nanoseconds if the run belongs to a timed category, otherwise the score.
+    /// </summary>
+    public long TimeOrScore { get; set; }
+
+    /// <summary>
     ///     The date the `Run` was played on.
     /// </summary>
     public LocalDate PlayedOn { get; set; }
@@ -47,5 +52,5 @@ public class Run
     /// <summary>
     /// 	Relationship model for `CategoryId`.
     /// </summary>
-    public Category? Category { get; set; }
+    public Category Category { get; set; } = null!;
 }

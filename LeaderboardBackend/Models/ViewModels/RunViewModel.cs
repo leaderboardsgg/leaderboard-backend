@@ -1,9 +1,17 @@
+using System.Text.Json.Serialization;
 using LeaderboardBackend.Models.Entities;
 using NodaTime;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Models.ViewModels;
 
-public record RunViewModel
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "Type")]
+[JsonDerivedType(typeof(TimedRunViewModel), "Time")]
+[JsonDerivedType(typeof(ScoredRunViewModel), "Score")]
+[SwaggerSubType(typeof(TimedRunViewModel), DiscriminatorValue = "Time")]
+[SwaggerSubType(typeof(ScoredRunViewModel), DiscriminatorValue = "Score")]
+[SwaggerDiscriminator("Type")]
+public abstract record RunViewModel
 {
     /// <summary>
     ///     The unique identifier of the `Run`.<br/>
@@ -15,6 +23,8 @@ public record RunViewModel
     ///     User-provided details about the run.
     /// </summary>
     public required string? Info { get; set; }
+
+    public required RunType Type { get; set; }
 
     /// <summary>
     ///     The time the run was created.
@@ -36,14 +46,46 @@ public record RunViewModel
     /// </summary>
     public required long CategoryId { get; set; }
 
-    public static RunViewModel MapFrom(Run run) => new()
+    public static RunViewModel MapFrom(Run run) => run.Category.Type switch
     {
-        Id = run.Id,
-        CategoryId = run.CategoryId,
-        CreatedAt = run.CreatedAt,
-        UpdatedAt = run.UpdatedAt,
-        DeletedAt = run.DeletedAt,
-        Info = run.Info
+        RunType.Time => new TimedRunViewModel
+        {
+            Id = run.Id,
+            CategoryId = run.CategoryId,
+            CreatedAt = run.CreatedAt,
+            UpdatedAt = run.UpdatedAt,
+            DeletedAt = run.DeletedAt,
+            Info = run.Info,
+            Type = run.Category.Type,
+            Time = Duration.FromNanoseconds(run.TimeOrScore)
+        },
+        RunType.Score => new ScoredRunViewModel
+        {
+            Id = run.Id,
+            CategoryId = run.CategoryId,
+            CreatedAt = run.CreatedAt,
+            UpdatedAt = run.UpdatedAt,
+            DeletedAt = run.DeletedAt,
+            Info = run.Info,
+            Type = run.Category.Type,
+            Score = run.TimeOrScore
+        },
+        _ => throw new NotImplementedException(),
     };
 }
 
+public record TimedRunViewModel : RunViewModel
+{
+    /// <summary>
+    ///     The duration of the run.
+    /// </summary>
+    public required Duration Time { get; set; }
+}
+
+public record ScoredRunViewModel : RunViewModel
+{
+    /// <summary>
+    ///     The score achieved during the run.
+    /// </summary>
+    public required long Score { get; set; }
+}
