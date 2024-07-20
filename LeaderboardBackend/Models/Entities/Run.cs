@@ -22,13 +22,11 @@ public class Run
     /// <summary>
     ///     The date the `Run` was played on.
     /// </summary>
-    [Required]
     public LocalDate PlayedOn { get; set; }
 
     /// <summary>
     ///     The time the run was created.
     /// </summary>
-    [Required]
     public Instant CreatedAt { get; set; }
 
     /// <summary>
@@ -44,7 +42,6 @@ public class Run
     /// <summary>
     /// 	The ID of the `Category` for `Run`.
     /// </summary>
-    [Required]
     public long CategoryId { get; set; }
 
     /// <summary>

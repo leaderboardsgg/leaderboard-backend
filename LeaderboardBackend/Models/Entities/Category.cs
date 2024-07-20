@@ -24,7 +24,6 @@ public class Category
     /// <summary>
     ///     The ID of the `Leaderboard` the `Category` is a part of.
     /// </summary>
-    [Required]
     public long LeaderboardId { get; set; }
 
     /// <summary>
@@ -36,16 +35,14 @@ public class Category
     ///     The display name of the `Category`.
     /// </summary>
     /// <example>Foo Bar Baz%</example>
-    [Required]
-    public string Name { get; set; } = null!;
+    public required string Name { get; set; }
 
     /// <summary>
     ///     The URL-scoped unique identifier of the `Category`.<br/>
     ///     Must be [2, 25] in length and consist only of alphanumeric characters and hyphens.
     /// </summary>
     /// <example>foo-bar-baz</example>
-    [Required]
-    public string Slug { get; set; } = null!;
+    public required string Slug { get; set; }
 
     /// <summary>
     ///     Information pertaining to the `Category`.
@@ -56,13 +53,11 @@ public class Category
     /// <summary>
     ///     The direction used to rank runs belonging to this category.
     /// </summary>
-    [Required]
     public SortDirection SortDirection { get; set; }
 
     /// <summary>
     ///     The time the Category was created.
     /// </summary>
-    [Required]
     public Instant CreatedAt { get; set; }
 
     /// <summary>

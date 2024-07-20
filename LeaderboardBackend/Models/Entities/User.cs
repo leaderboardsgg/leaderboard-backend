@@ -40,15 +40,13 @@ public class User
     ///     exists.
     /// </summary>
     /// <example>J'on-Doe</example>
-    [Required]
-    public string Username { get; set; } = null!;
+    public required string Username { get; set; }
 
     /// <summary>
     ///     The `User`'s email address.
     /// </summary>
     /// <example>john.doe@example.com</example>
-    [Required]
-    public string Email { get; set; } = null!;
+    public required string Email { get; set; }
 
     /// <summary>
     ///     The `User`'s password. It:
@@ -64,14 +62,11 @@ public class User
     ///     </ul>
     /// </summary>
     /// <example>P4ssword</example>
-    [JsonIgnore]
-    [Required]
-    public string Password { get; set; } = null!;
+    public required string Password { get; set; }
 
     /// <summary>
     /// User role (site-wide)
     /// </summary>
-    [Required]
     public UserRole Role { get; set; } = UserRole.Registered;
 
     public bool IsAdmin => Role == UserRole.Administrator;
