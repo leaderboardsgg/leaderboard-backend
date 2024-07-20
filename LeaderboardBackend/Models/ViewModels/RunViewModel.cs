@@ -10,7 +10,7 @@ namespace LeaderboardBackend.Models.ViewModels;
 [SwaggerSubType(typeof(TimedRunViewModel), DiscriminatorValue = "Time")]
 [SwaggerSubType(typeof(ScoredRunViewModel), DiscriminatorValue = "Score")]
 [SwaggerDiscriminator("$type")]
-public abstract record RunViewModel
+public record RunViewModel
 {
     /// <summary>
     ///     The unique identifier of the `Run`.<br/>
