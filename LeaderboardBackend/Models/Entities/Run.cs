@@ -21,6 +21,8 @@ public class Run
 
     public RunType Type => Category.Type;
 
+    public Duration Time => Duration.FromNanoseconds(TimeOrScore);
+
     /// <summary>
     ///     The duration of the run in nanoseconds if the run belongs to a timed category, otherwise the score.
     /// </summary>

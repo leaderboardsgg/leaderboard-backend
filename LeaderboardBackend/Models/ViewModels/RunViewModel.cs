@@ -57,7 +57,7 @@ public record RunViewModel
             DeletedAt = run.DeletedAt,
             Info = run.Info,
             Type = run.Type,
-            Time = Duration.FromNanoseconds(run.TimeOrScore)
+            Time = run.Time
         },
         RunType.Score => new ScoredRunViewModel
         {
