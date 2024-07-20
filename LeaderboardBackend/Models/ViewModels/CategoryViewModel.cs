@@ -31,6 +31,8 @@ public record CategoryViewModel
     /// <example>Video proof is required.</example>
     public required string? Info { get; set; }
 
+    public required RunType Type { get; set; }
+
     /// <inheritdoc cref="Category.SortDirection" />
     public required SortDirection SortDirection { get; set; }
 
@@ -50,6 +52,7 @@ public record CategoryViewModel
         Slug = category.Slug,
         Info = category.Info,
         SortDirection = category.SortDirection,
+        Type = category.Type,
         CreatedAt = category.CreatedAt,
         UpdatedAt = category.UpdatedAt,
         DeletedAt = category.DeletedAt

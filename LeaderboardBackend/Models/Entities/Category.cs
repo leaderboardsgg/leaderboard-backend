@@ -58,6 +58,12 @@ public class Category
     public SortDirection SortDirection { get; set; }
 
     /// <summary>
+    ///     The type of run this category accepts.
+    ///     Determines how the TimeOrScore of a Run belonging to this category is interpreted.
+    /// </summary>
+    public RunType Type { get; set; }
+
+    /// <summary>
     ///     The time the Category was created.
     /// </summary>
     public Instant CreatedAt { get; set; }
@@ -80,6 +86,7 @@ public class Category
             && Slug == category.Slug
             && Info == category.Info
             && SortDirection == category.SortDirection
+            && Type == category.Type
             && LeaderboardId == category.LeaderboardId;
     }
 
