@@ -92,6 +92,6 @@ public class Category
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Id, Name, Slug, LeaderboardId);
+        return HashCode.Combine(Id, Name, Slug, LeaderboardId, Info, SortDirection, Type);
     }
 }
