@@ -11,7 +11,7 @@ using LeaderboardBackend;
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
-using LeaderboardBackend.Swagger;
+using MicroElements.Swashbuckle.NodaTime;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +23,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
 using Npgsql;
 
 #region WebApplicationBuilder
@@ -125,6 +126,8 @@ else if (builder.Environment.IsDevelopment())
         ));
 }
 
+JsonSerializerOptions jsonSerializerOptions = new();
+
 // Add controllers to the container.
 builder.Services
     .AddControllers(opt =>
@@ -138,6 +141,8 @@ builder.Services
         opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        opt.JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
+        jsonSerializerOptions = opt.JsonSerializerOptions;
     });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -181,8 +186,12 @@ builder.Services.AddSwaggerGen(c =>
     );
 
     c.SupportNonNullableReferenceTypes();
-    c.SchemaFilter<RequiredNotNullableSchemaFilter>();
     c.MapType<Guid>(() => new OpenApiSchema { Type = "string", Pattern = "^[a-zA-Z0-9-_]{22}$" });
+    c.ConfigureForNodaTimeWithSystemTextJson(jsonSerializerOptions, null, null, true, new(DateTimeZoneProviders.Tzdb)
+    {
+        Instant = Instant.FromUtc(1984, 1, 1, 0, 0),
+        ZonedDateTime = ZonedDateTime.FromDateTimeOffset(new(new DateTime(2000, 1, 1)))
+    });
 });
 
 // Configure JWT Authentication.
