@@ -29,7 +29,6 @@ public record UserViewModel
     /// <example>J'on-Doe</example>
     public required string Username { get; set; }
 
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public required UserRole Role { get; set; }
 
     public static UserViewModel MapFrom(User user) => new()
