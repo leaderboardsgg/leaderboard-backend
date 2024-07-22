@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
@@ -57,7 +58,8 @@ namespace LeaderboardBackend.Test
                         Slug = "120_stars",
                         LeaderboardId = createdLeaderboard.Id,
                         Info = null,
-                        SortDirection = SortDirection.Ascending
+                        SortDirection = SortDirection.Ascending,
+                        Type = RunType.Time
                     },
                     Jwt = _jwt,
                 }

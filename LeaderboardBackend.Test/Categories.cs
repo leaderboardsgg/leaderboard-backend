@@ -1,5 +1,6 @@
 using System.Net;
 using System.Threading.Tasks;
+using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
@@ -74,7 +75,8 @@ internal class Categories
                     Slug = "1_player",
                     LeaderboardId = createdLeaderboard.Id,
                     Info = null,
-                    SortDirection = SortDirection.Ascending
+                    SortDirection = SortDirection.Ascending,
+                    Type = RunType.Time
                 },
                 Jwt = _jwt
             }

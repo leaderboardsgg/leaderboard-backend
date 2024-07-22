@@ -976,7 +976,8 @@
           "leaderboardId",
           "name",
           "slug",
-          "sortDirection"
+          "sortDirection",
+          "type"
         ],
         "type": "object",
         "properties": {
@@ -1003,6 +1004,9 @@
           },
           "sortDirection": {
             "$ref": "#/components/schemas/SortDirection"
+          },
+          "type": {
+            "$ref": "#/components/schemas/RunType"
           }
         },
         "additionalProperties": false,

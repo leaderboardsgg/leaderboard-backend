@@ -34,4 +34,7 @@ public record CreateCategoryRequest
 
     /// <inheritdoc cref="Category.SortDirection" />
     public required SortDirection SortDirection { get; set; }
+
+    /// <inheritdoc cref="Category.Type" />
+    public required RunType Type { get; set; }
 }
