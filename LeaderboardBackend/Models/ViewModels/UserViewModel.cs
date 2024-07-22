@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using LeaderboardBackend.Models.Entities;
+using NodaTime;
 
 namespace LeaderboardBackend.Models.ViewModels;
 
@@ -31,10 +32,13 @@ public record UserViewModel
 
     public required UserRole Role { get; set; }
 
+    public required Instant CreatedAt { get; set; }
+
     public static UserViewModel MapFrom(User user) => new()
     {
         Id = user.Id,
         Username = user.Username,
-        Role = user.Role
+        Role = user.Role,
+        CreatedAt = user.CreatedAt
     };
 }

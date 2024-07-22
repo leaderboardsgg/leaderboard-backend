@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -68,6 +69,8 @@ public class User
     /// User role (site-wide)
     /// </summary>
     public UserRole Role { get; set; } = UserRole.Registered;
+
+    public Instant CreatedAt { get; set; }
 
     public bool IsAdmin => Role == UserRole.Administrator;
 

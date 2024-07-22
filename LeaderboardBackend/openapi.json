@@ -1375,6 +1375,7 @@
       },
       "UserViewModel": {
         "required": [
+          "createdAt",
           "id",
           "role",
           "username"
@@ -1393,6 +1394,11 @@
           },
           "role": {
             "$ref": "#/components/schemas/UserRole"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "1984-01-01T00:00:00Z"
           }
         },
         "additionalProperties": false
