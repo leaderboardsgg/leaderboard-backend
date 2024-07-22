@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
 using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
@@ -13,6 +13,7 @@ public enum SortDirection
 /// <summary>
 ///     Represents a `Category` tied to a `Leaderboard`.
 /// </summary>
+[Index(nameof(Slug), IsUnique = true)]
 public class Category
 {
     /// <summary>
