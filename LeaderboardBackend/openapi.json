@@ -687,7 +687,17 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RunViewModel"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RunViewModel"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TimedRunViewModel"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScoredRunViewModel"
+                    }
+                  ]
                 }
               }
             }
@@ -888,10 +898,15 @@
     "schemas": {
       "CategoryViewModel": {
         "required": [
+          "createdAt",
+          "deletedAt",
           "id",
+          "info",
           "name",
-          "rules",
-          "slug"
+          "slug",
+          "sortDirection",
+          "type",
+          "updatedAt"
         ],
         "type": "object",
         "properties": {
@@ -910,11 +925,34 @@
             "description": "The URL-scoped unique identifier of the `Category`.\n",
             "example": "foo-bar-baz"
           },
-          "rules": {
+          "info": {
             "type": "string",
-            "description": "The rules of the `Category`.",
+            "description": "Information pertaining to the `Category`.",
             "nullable": true,
             "example": "Video proof is required."
+          },
+          "type": {
+            "$ref": "#/components/schemas/RunType"
+          },
+          "sortDirection": {
+            "$ref": "#/components/schemas/SortDirection"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
           }
         },
         "additionalProperties": false,
@@ -934,27 +972,27 @@
       },
       "CreateCategoryRequest": {
         "required": [
+          "info",
           "leaderboardId",
           "name",
-          "slug"
+          "slug",
+          "sortDirection"
         ],
         "type": "object",
         "properties": {
           "name": {
-            "minLength": 1,
             "type": "string",
             "description": "The display name of the `Category`.",
             "example": "Foo Bar Baz%"
           },
           "slug": {
-            "minLength": 1,
             "type": "string",
             "description": "The URL-scoped unique identifier of the `Category`.\n\r\nMust be [2, 25] in length and consist only of alphanumeric characters and hyphens.",
             "example": "foo-bar-baz"
           },
-          "rules": {
+          "info": {
             "type": "string",
-            "description": "The rules of the `Category`.",
+            "description": "Information pertaining to the `Category`.",
             "nullable": true,
             "example": "Video proof is required."
           },
@@ -962,6 +1000,9 @@
             "type": "integer",
             "description": "The ID of the `Leaderboard` the `Category` is a part of.",
             "format": "int64"
+          },
+          "sortDirection": {
+            "$ref": "#/components/schemas/SortDirection"
           }
         },
         "additionalProperties": false,
@@ -969,6 +1010,7 @@
       },
       "CreateLeaderboardRequest": {
         "required": [
+          "info",
           "name",
           "slug"
         ],
@@ -983,6 +1025,10 @@
             "type": "string",
             "description": "The URL-scoped unique identifier of the `Leaderboard`.\n\r\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
             "example": "foo-bar"
+          },
+          "info": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -1020,10 +1066,13 @@
       "LeaderboardViewModel": {
         "required": [
           "categories",
+          "createdAt",
+          "deletedAt",
           "id",
+          "info",
           "name",
-          "rules",
-          "slug"
+          "slug",
+          "updatedAt"
         ],
         "type": "object",
         "properties": {
@@ -1042,11 +1091,31 @@
             "description": "The URL-scoped unique identifier of the `Leaderboard`.\n\r\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
             "example": "foo-bar"
           },
-          "rules": {
+          "info": {
             "type": "string",
-            "description": "The general rules for the Leaderboard.",
+            "description": "The general information for the Leaderboard.",
             "nullable": true,
             "example": "Timer starts on selecting New Game and ends when the final boss is beaten."
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The time the Leaderboard was created.",
+            "format": "date-time",
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "The last time the Leaderboard was updated or null.",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "deletedAt": {
+            "type": "string",
+            "description": "The time at which the Leaderboard was deleted, or null if the Leaderboard has not been deleted.",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
           },
           "categories": {
             "type": "array",
@@ -1173,32 +1242,127 @@
         "additionalProperties": false,
         "description": "This request object is sent when a `User` is attempting to register."
       },
+      "RunType": {
+        "enum": [
+          "Time",
+          "Score"
+        ],
+        "type": "string"
+      },
       "RunViewModel": {
         "required": [
+          "$type",
           "categoryId",
+          "createdAt",
+          "deletedAt",
           "id",
-          "submittedAt"
+          "info",
+          "updatedAt",
+          "userId"
         ],
         "type": "object",
         "properties": {
+          "$type": {
+            "type": "string"
+          },
           "id": {
             "pattern": "^[a-zA-Z0-9-_]{22}$",
             "type": "string",
             "description": "The unique identifier of the `Run`.\n\r\nGenerated on creation."
           },
-          "submittedAt": {
+          "info": {
             "type": "string",
-            "description": "The time the request was made at.",
+            "description": "User-provided details about the run.",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The time the run was created.",
             "format": "date-time",
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "The last time the run was updated or null.",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "deletedAt": {
+            "type": "string",
+            "description": "The time at which the run was deleted, or null if the run has not been deleted.",
+            "format": "date-time",
+            "nullable": true,
             "example": "1984-01-01T00:00:00Z"
           },
           "categoryId": {
             "type": "integer",
             "description": "The ID of the `Category` for `Run`.",
             "format": "int64"
+          },
+          "userId": {
+            "pattern": "^[a-zA-Z0-9-_]{22}$",
+            "type": "string",
+            "description": "The ID of the LeaderboardBackend.Models.Entities.User who submitted this run."
           }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "discriminator": {
+          "propertyName": "$type",
+          "mapping": {
+            "Time": "#/components/schemas/TimedRunViewModel",
+            "Score": "#/components/schemas/ScoredRunViewModel"
+          }
+        }
+      },
+      "ScoredRunViewModel": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RunViewModel"
+          },
+          {
+            "required": [
+              "score"
+            ],
+            "type": "object",
+            "properties": {
+              "score": {
+                "type": "integer",
+                "description": "The score achieved during the run.",
+                "format": "int64"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "SortDirection": {
+        "enum": [
+          "Ascending",
+          "Descending"
+        ],
+        "type": "string"
+      },
+      "TimedRunViewModel": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RunViewModel"
+          },
+          {
+            "required": [
+              "time"
+            ],
+            "type": "object",
+            "properties": {
+              "time": {
+                "type": "string",
+                "description": "The duration of the run.",
+                "example": "25:01:01.001"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
       },
       "UserRole": {
         "enum": [
