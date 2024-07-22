@@ -4,6 +4,7 @@ using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LeaderboardBackend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20240720215755_CategoryAddType")]
+    partial class CategoryAddType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -146,10 +149,6 @@ namespace LeaderboardBackend.Migrations
                     b.HasIndex("LeaderboardId")
                         .HasDatabaseName("ix_categories_leaderboard_id");
 
-                    b.HasIndex("Slug")
-                        .IsUnique()
-                        .HasDatabaseName("ix_categories_slug");
-
                     b.ToTable("categories", null, t =>
                         {
                             t.HasCheckConstraint("CK_categories_slug_MinLength", "LENGTH(slug) >= 2");
@@ -197,10 +196,6 @@ namespace LeaderboardBackend.Migrations
                     b.HasKey("Id")
                         .HasName("pk_leaderboards");
 
-                    b.HasIndex("Slug")
-                        .IsUnique()
-                        .HasDatabaseName("ix_leaderboards_slug");
-
                     b.ToTable("leaderboards", null, t =>
                         {
                             t.HasCheckConstraint("CK_leaderboards_slug_MinLength", "LENGTH(slug) >= 2");
@@ -236,26 +231,15 @@ namespace LeaderboardBackend.Migrations
                         .HasColumnType("date")
                         .HasColumnName("played_on");
 
-                    b.Property<long>("TimeOrScore")
-                        .HasColumnType("bigint")
-                        .HasColumnName("time_or_score");
-
                     b.Property<Instant?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
 
                     b.HasKey("Id")
                         .HasName("pk_runs");
 
                     b.HasIndex("CategoryId")
                         .HasDatabaseName("ix_runs_category_id");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_runs_user_id");
 
                     b.ToTable("runs", (string)null);
                 });
@@ -266,10 +250,6 @@ namespace LeaderboardBackend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    b.Property<Instant>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -351,16 +331,7 @@ namespace LeaderboardBackend.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_runs_categories_category_id");
 
-                    b.HasOne("LeaderboardBackend.Models.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_runs_users_user_id");
-
                     b.Navigation("Category");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.Leaderboard", b =>

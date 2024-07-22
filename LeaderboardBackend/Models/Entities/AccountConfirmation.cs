@@ -17,7 +17,6 @@ public class AccountConfirmation
     /// <summary>
     ///     The ID of the `User` the `AccountConfirmation` is a part of.
     /// </summary>
-    [Required]
     public Guid UserId { get; set; }
 
     /// <summary>

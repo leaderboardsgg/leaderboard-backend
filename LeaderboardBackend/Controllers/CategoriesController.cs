@@ -45,13 +45,12 @@ public class CategoriesController : ApiController
         [FromBody] CreateCategoryRequest request
     )
     {
-        // NOTE: Check that body.PlayersMax > body.PlayersMin? - Ero
         Category category =
             new()
             {
                 Name = request.Name,
                 Slug = request.Slug,
-                Rules = request.Rules,
+                Info = request.Info,
                 LeaderboardId = request.LeaderboardId,
             };
 

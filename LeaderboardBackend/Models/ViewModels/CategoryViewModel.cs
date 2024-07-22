@@ -1,4 +1,5 @@
 using LeaderboardBackend.Models.Entities;
+using NodaTime;
 
 namespace LeaderboardBackend.Models.ViewModels;
 
@@ -25,19 +26,35 @@ public record CategoryViewModel
     public required string Slug { get; set; }
 
     /// <summary>
-    ///     The rules of the `Category`.
+    ///     Information pertaining to the `Category`.
     /// </summary>
     /// <example>Video proof is required.</example>
-    public required string? Rules { get; set; }
+    public required string? Info { get; set; }
 
-    public static CategoryViewModel MapFrom(Category category)
+    public required RunType Type { get; set; }
+
+    /// <inheritdoc cref="Category.SortDirection" />
+    public required SortDirection SortDirection { get; set; }
+
+    /// <inheritdoc cref="Category.CreatedAt" />
+    public required Instant CreatedAt { get; set; }
+
+    /// <inheritdoc cref="Category.UpdatedAt" />
+    public required Instant? UpdatedAt { get; set; }
+
+    /// <inheritdoc cref="Category.DeletedAt" />
+    public required Instant? DeletedAt { get; set; }
+
+    public static CategoryViewModel MapFrom(Category category) => new()
     {
-        return new CategoryViewModel
-        {
-            Id = category.Id,
-            Name = category.Name,
-            Slug = category.Slug,
-            Rules = category.Rules
-        };
-    }
+        Id = category.Id,
+        Name = category.Name,
+        Slug = category.Slug,
+        Info = category.Info,
+        SortDirection = category.SortDirection,
+        Type = category.Type,
+        CreatedAt = category.CreatedAt,
+        UpdatedAt = category.UpdatedAt,
+        DeletedAt = category.DeletedAt
+    };
 }

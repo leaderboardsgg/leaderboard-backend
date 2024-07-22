@@ -1,4 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+using FluentValidation;
+using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Validation;
 
 namespace LeaderboardBackend.Models.Requests;
 
@@ -11,26 +13,34 @@ public record CreateCategoryRequest
     ///     The display name of the `Category`.
     /// </summary>
     /// <example>Foo Bar Baz%</example>
-    [Required]
-    public string Name { get; set; } = null!;
+    public required string Name { get; set; } = null!;
 
     /// <summary>
     ///     The URL-scoped unique identifier of the `Category`.<br/>
     ///     Must be [2, 25] in length and consist only of alphanumeric characters and hyphens.
     /// </summary>
     /// <example>foo-bar-baz</example>
-    [Required]
-    public string Slug { get; set; } = null!;
+    public required string Slug { get; set; } = null!;
 
     /// <summary>
-    ///     The rules of the `Category`.
+    ///     Information pertaining to the `Category`.
     /// </summary>
     /// <example>Video proof is required.</example>
-    public string? Rules { get; set; }
+    public required string? Info { get; set; }
 
     /// <summary>
     ///     The ID of the `Leaderboard` the `Category` is a part of.
     /// </summary>
-    [Required]
-    public long LeaderboardId { get; set; }
+    public required long LeaderboardId { get; set; }
+
+    /// <inheritdoc cref="Category.SortDirection" />
+    public required SortDirection SortDirection { get; set; }
+
+    /// <inheritdoc cref="Category.Type" />
+    public required RunType Type { get; set; }
+}
+
+public class CreateCategoryRequestValidator : AbstractValidator<CreateCategoryRequest>
+{
+    public CreateCategoryRequestValidator() => RuleFor(x => x.Slug).Slug();
 }
