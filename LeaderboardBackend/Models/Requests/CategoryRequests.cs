@@ -1,5 +1,6 @@
 using FluentValidation;
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Validation;
 
 namespace LeaderboardBackend.Models.Requests;
 
@@ -41,5 +42,5 @@ public record CreateCategoryRequest
 
 public class CreateCategoryRequestValidator : AbstractValidator<CreateCategoryRequest>
 {
-    public CreateCategoryRequestValidator() => RuleFor(x => x.Slug).Length(2, 80).Matches(@"^([a-zA-Z0-9\-_]|%[A-F0-9]{2})*$");
+    public CreateCategoryRequestValidator() => RuleFor(x => x.Slug).Slug();
 }
