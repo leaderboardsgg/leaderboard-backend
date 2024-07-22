@@ -1,3 +1,6 @@
+using FluentValidation;
+using LeaderboardBackend.Models.Validation;
+
 namespace LeaderboardBackend.Models.Requests;
 
 /// <summary>
@@ -20,4 +23,8 @@ public record CreateLeaderboardRequest
 
     /// <inheritdoc cref="Entities.Leaderboard.Info" />
     public required string? Info { get; set; }
+}
+public class CreateLeaderboardRequestValidator : AbstractValidator<CreateLeaderboardRequest>
+{
+    public CreateLeaderboardRequestValidator() => RuleFor(x => x.Slug).Slug();
 }
