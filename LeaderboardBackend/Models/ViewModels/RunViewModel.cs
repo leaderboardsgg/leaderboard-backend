@@ -43,12 +43,18 @@ public record RunViewModel
     /// </summary>
     public required long CategoryId { get; set; }
 
+    /// <summary>
+    ///     The ID of the <see cref="User" /> who submitted this run.
+    /// </summary>
+    public required Guid UserId { get; set; }
+
     public static RunViewModel MapFrom(Run run) => run.Type switch
     {
         RunType.Time => new TimedRunViewModel
         {
             Id = run.Id,
             CategoryId = run.CategoryId,
+            UserId = run.UserId,
             CreatedAt = run.CreatedAt,
             UpdatedAt = run.UpdatedAt,
             DeletedAt = run.DeletedAt,
@@ -59,6 +65,7 @@ public record RunViewModel
         {
             Id = run.Id,
             CategoryId = run.CategoryId,
+            UserId = run.UserId,
             CreatedAt = run.CreatedAt,
             UpdatedAt = run.UpdatedAt,
             DeletedAt = run.DeletedAt,

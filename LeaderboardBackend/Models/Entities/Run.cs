@@ -57,4 +57,11 @@ public class Run
     /// 	Relationship model for `CategoryId`.
     /// </summary>
     public Category Category { get; set; } = null!;
+
+    public Guid UserId { get; set; }
+
+    /// <summary>
+    ///     The User who submitted the run.
+    /// </summary>
+    public User User { get; set; } = null!;
 }
