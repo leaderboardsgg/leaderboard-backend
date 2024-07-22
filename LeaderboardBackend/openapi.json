@@ -1041,26 +1041,29 @@
       "CreateRunRequest": {
         "required": [
           "categoryId",
+          "info",
           "playedOn",
-          "submittedAt"
+          "timeOrScore"
         ],
         "type": "object",
         "properties": {
+          "info": {
+            "type": "string",
+            "nullable": true
+          },
           "playedOn": {
             "type": "string",
             "description": "The date the `Run` was played on.",
             "format": "date",
             "example": "2000-01-01"
           },
-          "submittedAt": {
-            "type": "string",
-            "description": "The time the request was made at.",
-            "format": "date-time",
-            "example": "1984-01-01T00:00:00Z"
-          },
           "categoryId": {
             "type": "integer",
             "description": "The ID of the `Category` for the `Run`.",
+            "format": "int64"
+          },
+          "timeOrScore": {
+            "type": "integer",
             "format": "int64"
           }
         },

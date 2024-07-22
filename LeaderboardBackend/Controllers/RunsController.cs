@@ -52,7 +52,6 @@ public class RunsController(
             Run run = new()
             {
                 PlayedOn = request.PlayedOn,
-                CreatedAt = request.SubmittedAt,
                 CategoryId = request.CategoryId,
                 User = user,
             };

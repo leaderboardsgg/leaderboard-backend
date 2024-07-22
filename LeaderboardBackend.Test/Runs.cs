@@ -102,7 +102,8 @@ namespace LeaderboardBackend.Test
                     Body = new CreateRunRequest
                     {
                         PlayedOn = LocalDate.MinIsoValue,
-                        SubmittedAt = Instant.MaxValue,
+                        Info = null,
+                        TimeOrScore = Duration.FromHours(2).ToInt64Nanoseconds(),
                         CategoryId = _categoryId
                     },
                     Jwt = _jwt
