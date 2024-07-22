@@ -25,7 +25,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
-using NodaTime.Serialization.SystemTextJson;
 using Npgsql;
 
 #region WebApplicationBuilder
