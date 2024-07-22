@@ -1,7 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 using NodaTime;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Models.Requests;
 
