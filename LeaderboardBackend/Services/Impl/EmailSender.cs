@@ -4,6 +4,7 @@ using MimeKit;
 
 namespace LeaderboardBackend.Services;
 
+[Obsolete("Replaced by BrevoService")]
 public class EmailSender : IEmailSender
 {
     private readonly EmailSenderConfig _config;
