@@ -1,8 +1,8 @@
 using System;
 using System.Net.Http;
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Lib;
-using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,8 +41,7 @@ public class TestApiFactory : WebApplicationFactory<Program>
                 };
             });
 
-            // mock SMTP client
-            services.Replace(ServiceDescriptor.Transient<ISmtpClient>(_ => new Mock<ISmtpClient>().Object));
+            services.Replace(ServiceDescriptor.Singleton(_ => new Mock<IEmailSender>().Object));
 
             using IServiceScope scope = services.BuildServiceProvider().CreateScope();
             ApplicationContext dbContext =
