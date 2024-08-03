@@ -48,8 +48,8 @@ builder.Services
     .ValidateOnStart();
 
 builder.Services
-    .AddOptions<EmailSenderConfig>()
-    .BindConfiguration(EmailSenderConfig.KEY)
+    .AddOptions<BrevoOptions>()
+    .BindConfiguration(BrevoOptions.KEY)
     .ValidateFluentValidation()
     .ValidateOnStart();
 
@@ -104,8 +104,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IAccountConfirmationService, AccountConfirmationService>();
 builder.Services.AddScoped<IAccountRecoveryService, AccountRecoveryService>();
 builder.Services.AddScoped<IRunService, RunService>();
-builder.Services.AddSingleton<IEmailSender, EmailSender>();
-builder.Services.AddSingleton<ISmtpClient>(_ => new SmtpClient() { Timeout = 3000 });
+builder.Services.AddSingleton<IEmailSender, BrevoService>();
 builder.Services.AddSingleton<IClock>(_ => SystemClock.Instance);
 
 AppConfig? appConfig = builder.Configuration.Get<AppConfig>();
@@ -277,6 +276,9 @@ builder.Services.AddFeatureManagement(builder.Configuration.GetSection("Feature"
 
 #region WebApplication
 WebApplication app = builder.Build();
+
+BrevoOptions brevoOptions = app.Services.GetRequiredService<IOptionsMonitor<BrevoOptions>>().CurrentValue;
+brevo_csharp.Client.Configuration.Default.AddApiKey("api-key", brevoOptions.ApiKey);
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();
