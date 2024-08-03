@@ -12,7 +12,6 @@ using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Swagger;
-using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +33,7 @@ if (!builder.Environment.IsProduction())
 {
     AppConfig? appConfigWithoutDotEnv = builder.Configuration.Get<AppConfig>();
     EnvConfigurationSource dotEnvSource =
-        new(new string[] { appConfigWithoutDotEnv?.EnvPath ?? ".env" }, LoadOptions.NoClobber());
+        new([appConfigWithoutDotEnv?.EnvPath ?? ".env"], LoadOptions.NoClobber());
     builder.Configuration.Sources.Insert(0, dotEnvSource); // all other configuration providers override .env
 }
 
@@ -110,26 +109,20 @@ builder.Services.AddSingleton<IClock>(_ => SystemClock.Instance);
 AppConfig? appConfig = builder.Configuration.Get<AppConfig>();
 if (!string.IsNullOrWhiteSpace(appConfig?.AllowedOrigins))
 {
-    builder.Services.AddCors(options =>
-    {
-        options.AddDefaultPolicy(
+    builder.Services.AddCors(options => options.AddDefaultPolicy(
             policy =>
                 policy
                     .WithOrigins(appConfig.ParseAllowedOrigins())
                     .SetIsOriginAllowedToAllowWildcardSubdomains()
                     .AllowAnyMethod()
                     .AllowAnyHeader()
-        );
-    });
+        ));
 }
 else if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddCors(options =>
-    {
-        options.AddDefaultPolicy(
+    builder.Services.AddCors(options => options.AddDefaultPolicy(
             policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
-        );
-    });
+        ));
 }
 
 // Add controllers to the container.
@@ -236,19 +229,14 @@ builder.Services.AddAuthorizationBuilder()
         }
 )
     .SetDefaultPolicy(new AuthorizationPolicyBuilder()
-        .AddAuthenticationSchemes(new[] { JwtBearerDefaults.AuthenticationScheme })
+        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
         .RequireAuthenticatedUser()
         .AddRequirements(new[] { new UserTypeRequirement(UserTypes.USER) })
         .Build());
 
 builder.Services.AddSingleton<IValidatorInterceptor, LeaderboardBackend.Models.Validation.UseErrorCodeInterceptor>();
-builder.Services.AddFluentValidationAutoValidation(c =>
-{
-    c.DisableDataAnnotationsValidation = true;
-});
-builder.Services.Configure<ApiBehaviorOptions>(options =>
-{
-    options.InvalidModelStateResponseFactory = context =>
+builder.Services.AddFluentValidationAutoValidation(c => c.DisableDataAnnotationsValidation = true);
+builder.Services.Configure<ApiBehaviorOptions>(options => options.InvalidModelStateResponseFactory = context =>
     {
         ValidationProblemDetails problemDetails = new(context.ModelState);
 
@@ -257,14 +245,13 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
         // For JSON syntax errors that we don't override, their keys will be the field
         // path that has the error, which always starts with "$", denoting the object
         // root. We check for that, and return the error code accordingly. - zysim
-        if (problemDetails.Errors.Keys.Any(x => x.StartsWith("$")))
+        if (problemDetails.Errors.Keys.Any(x => x.StartsWith('$')))
         {
             return new BadRequestObjectResult(problemDetails);
         }
 
         return new UnprocessableEntityObjectResult(problemDetails);
-    };
-});
+    });
 
 // Can't use AddSingleton here since we call the DB in the Handler
 builder.Services.AddScoped<IAuthorizationHandler, UserTypeAuthorizationHandler>();
