@@ -13,6 +13,8 @@ using NUnit.Framework;
 
 namespace LeaderboardBackend.Test.Features.Emails;
 
+[Obsolete("EmailSender is no longer used.")]
+[Ignore("EmailSender is no longer used.")]
 public class EmailSenderTests
 {
     private IEmailSender _sut = null!;
