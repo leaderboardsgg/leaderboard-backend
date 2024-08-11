@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
@@ -20,7 +21,12 @@ public class Run
 
     public RunType Type => Category.Type;
 
-    public Duration Time => Duration.FromNanoseconds(TimeOrScore);
+    [NotMapped]
+    public Duration Time
+    {
+        get => Duration.FromNanoseconds(TimeOrScore);
+        set => TimeOrScore = value.ToInt64Nanoseconds();
+    }
 
     /// <summary>
     ///     The duration of the run in nanoseconds if the run belongs to a timed category, otherwise the score.
