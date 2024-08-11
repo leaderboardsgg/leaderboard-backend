@@ -10,6 +10,7 @@ using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Fixtures;
+using LeaderboardBackend.Test.Lib;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,12 +46,13 @@ public class RegistrationTests : IntegrationTestsBase
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
         res.Should().HaveStatusCode(HttpStatusCode.Created);
-        UserViewModel? content = await res.Content.ReadFromJsonAsync<UserViewModel>();
+        UserViewModel? content = await res.Content.ReadFromJsonAsync<UserViewModel>(TestInitCommonFields.JsonSerializerOptions);
         content.Should().NotBeNull().And.BeEquivalentTo(new UserViewModel
         {
             Id = content!.Id,
             Username = request.Username,
-            Role = UserRole.Registered
+            Role = UserRole.Registered,
+            CreatedAt = Instant.FromUnixTimeSeconds(1)
         });
         emailSenderMock.Verify(x =>
             x.EnqueueEmailAsync(

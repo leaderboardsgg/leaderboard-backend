@@ -1,5 +1,7 @@
 using System.Net;
 using System.Threading.Tasks;
+using LeaderboardBackend.Models;
+using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.Lib;
@@ -55,8 +57,9 @@ internal class Categories
             {
                 Body = new CreateLeaderboardRequest()
                 {
-                    Name = Generators.GenerateRandomString(),
-                    Slug = Generators.GenerateRandomString()
+                    Name = "Super Mario Bros.",
+                    Slug = "super_mario_bros",
+                    Info = null
                 },
                 Jwt = _jwt
             }
@@ -68,9 +71,12 @@ internal class Categories
             {
                 Body = new CreateCategoryRequest()
                 {
-                    Name = Generators.GenerateRandomString(),
-                    Slug = Generators.GenerateRandomString(),
-                    LeaderboardId = createdLeaderboard.Id
+                    Name = "1 Player",
+                    Slug = "1_player",
+                    LeaderboardId = createdLeaderboard.Id,
+                    Info = null,
+                    SortDirection = SortDirection.Ascending,
+                    Type = RunType.Time
                 },
                 Jwt = _jwt
             }

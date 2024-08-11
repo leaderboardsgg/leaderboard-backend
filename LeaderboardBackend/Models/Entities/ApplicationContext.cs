@@ -14,6 +14,8 @@ public class ApplicationContext : DbContext
     {
         // GlobalTypeMapper is obsolete but the new way (DataSource) is a pain to work with
         NpgsqlConnection.GlobalTypeMapper.MapEnum<UserRole>();
+        NpgsqlConnection.GlobalTypeMapper.MapEnum<SortDirection>();
+        NpgsqlConnection.GlobalTypeMapper.MapEnum<RunType>();
     }
 
     public ApplicationContext(DbContextOptions<ApplicationContext> options)
@@ -56,5 +58,7 @@ public class ApplicationContext : DbContext
 
         modelBuilder.HasCollation(CASE_INSENSITIVE_COLLATION, "und-u-ks-level2", "icu", deterministic: false);
         modelBuilder.HasPostgresEnum<UserRole>();
+        modelBuilder.HasPostgresEnum<SortDirection>();
+        modelBuilder.HasPostgresEnum<RunType>();
     }
 }
