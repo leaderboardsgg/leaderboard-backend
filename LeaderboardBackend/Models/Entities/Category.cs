@@ -1,11 +1,20 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+using LeaderboardBackend.Models.Validation;
+using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
+
+public enum SortDirection
+{
+    Ascending,
+    Descending
+}
 
 /// <summary>
 ///     Represents a `Category` tied to a `Leaderboard`.
 /// </summary>
+[Index(nameof(Slug), IsUnique = true)]
 public class Category
 {
     /// <summary>
@@ -17,47 +26,59 @@ public class Category
     /// <summary>
     ///     The ID of the `Leaderboard` the `Category` is a part of.
     /// </summary>
-    [Required]
     public long LeaderboardId { get; set; }
 
     /// <summary>
     ///     Relationship model for `LeaderboardId`.
     /// </summary>
-    [JsonIgnore]
     public Leaderboard? Leaderboard { get; set; }
 
     /// <summary>
     ///     The display name of the `Category`.
     /// </summary>
     /// <example>Foo Bar Baz%</example>
-    [Required]
-    public string Name { get; set; } = null!;
+    public required string Name { get; set; }
 
     /// <summary>
     ///     The URL-scoped unique identifier of the `Category`.<br/>
     ///     Must be [2, 25] in length and consist only of alphanumeric characters and hyphens.
     /// </summary>
     /// <example>foo-bar-baz</example>
-    [Required]
-    public string Slug { get; set; } = null!;
+    [StringLength(80, MinimumLength = 2)]
+    [RegularExpression(SlugRule.REGEX)]
+    public required string Slug { get; set; }
 
     /// <summary>
-    ///     The rules of the `Category`.
+    ///     Information pertaining to the `Category`.
     /// </summary>
     /// <example>Video proof is required.</example>
-    public string? Rules { get; set; }
+    public string? Info { get; set; }
 
     /// <summary>
-    ///     The minimum player count of the `Category`. The default is 1.
+    ///     The direction used to rank runs belonging to this category.
     /// </summary>
-    [Required]
-    public int PlayersMin { get; set; }
+    public SortDirection SortDirection { get; set; }
 
     /// <summary>
-    ///     The maximum player count of the `Category`. The default is `PlayersMin`.
+    ///     The type of run this category accepts.
+    ///     Determines how the TimeOrScore of a Run belonging to this category is interpreted.
     /// </summary>
-    [Required]
-    public int PlayersMax { get; set; }
+    public RunType Type { get; set; }
+
+    /// <summary>
+    ///     The time the Category was created.
+    /// </summary>
+    public Instant CreatedAt { get; set; }
+
+    /// <summary>
+    ///     The last time the Category was updated or <see langword="null" />.
+    /// </summary>
+    public Instant? UpdatedAt { get; set; }
+
+    /// <summary>
+    ///     The time at which the Category was deleted, or <see langword="null" /> if the Category has not been deleted.
+    /// </summary>
+    public Instant? DeletedAt { get; set; }
 
     public override bool Equals(object? obj)
     {
@@ -65,13 +86,14 @@ public class Category
             && Id == category.Id
             && Name == category.Name
             && Slug == category.Slug
-            && PlayersMax == category.PlayersMax
-            && PlayersMin == category.PlayersMin
+            && Info == category.Info
+            && SortDirection == category.SortDirection
+            && Type == category.Type
             && LeaderboardId == category.LeaderboardId;
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Id, Name, Slug, LeaderboardId);
+        return HashCode.Combine(Id, Name, Slug, LeaderboardId, Info, SortDirection, Type);
     }
 }

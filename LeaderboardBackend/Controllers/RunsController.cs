@@ -1,27 +1,21 @@
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
+using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OneOf;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Controllers;
 
-public class RunsController : ApiController
+public class RunsController(
+    IRunService runService,
+    ICategoryService categoryService,
+    IUserService userService
+    ) : ApiController
 {
-    private readonly IRunService _runService;
-    private readonly ICategoryService _categoryService;
-
-    public RunsController(
-        IRunService runService,
-        ICategoryService categoryService
-    )
-    {
-        _runService = runService;
-        _categoryService = categoryService;
-    }
-
     [AllowAnonymous]
     [HttpGet("{id}")]
     [SwaggerOperation("Gets a Run by its ID.")]
@@ -29,7 +23,7 @@ public class RunsController : ApiController
     [SwaggerResponse(404)]
     public async Task<ActionResult<RunViewModel>> GetRun(Guid id)
     {
-        Run? run = await _runService.GetRun(id);
+        Run? run = await runService.GetRun(id);
 
         if (run is null)
         {
@@ -51,17 +45,22 @@ public class RunsController : ApiController
         // FIXME: Should return Task<ActionResult<Run>>! - Ero
         // NOTE: Return NotFound for anything in here? - Ero
 
-        Run run =
-            new()
+        GetUserResult res = await userService.GetUserFromClaims(HttpContext.User);
+
+        if (res.TryPickT0(out User user, out OneOf<BadCredentials, UserNotFound> _))
+        {
+            Run run = new()
             {
                 PlayedOn = request.PlayedOn,
-                SubmittedAt = request.SubmittedAt,
-                CategoryId = request.CategoryId
+                CategoryId = request.CategoryId,
+                User = user,
             };
 
-        await _runService.CreateRun(run);
+            await runService.CreateRun(run);
+            return CreatedAtAction(nameof(GetRun), new { id = run.Id }, RunViewModel.MapFrom(run));
+        }
 
-        return CreatedAtAction(nameof(GetRun), new { id = run.Id }, RunViewModel.MapFrom(run));
+        return Unauthorized();
     }
 
     [HttpGet("{id}/category")]
@@ -69,14 +68,14 @@ public class RunsController : ApiController
     [SwaggerResponse(404)]
     public async Task<ActionResult<CategoryViewModel>> GetCategoryForRun(Guid id)
     {
-        Run? run = await _runService.GetRun(id);
+        Run? run = await runService.GetRun(id);
 
         if (run is null)
         {
             return NotFound("Run not found");
         }
 
-        Category? category = await _categoryService.GetCategoryForRun(run);
+        Category? category = await categoryService.GetCategoryForRun(run);
 
         if (category is null)
         {

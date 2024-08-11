@@ -75,7 +75,7 @@ public class LeaderboardsController : ApiController
         [FromBody] CreateLeaderboardRequest request
     )
     {
-        Leaderboard leaderboard = new() { Name = request.Name, Slug = request.Slug };
+        Leaderboard leaderboard = new() { Name = request.Name, Slug = request.Slug, Info = request.Info };
 
         await _leaderboardService.CreateLeaderboard(leaderboard);
 

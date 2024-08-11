@@ -3,38 +3,30 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 using Npgsql;
 using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace LeaderboardBackend.Services;
 
-public class UserService : IUserService
+public class UserService(ApplicationContext applicationContext, IAuthService authService, IClock clock) : IUserService
 {
-    private readonly ApplicationContext _applicationContext;
-    private readonly IAuthService _authService;
-
-    public UserService(ApplicationContext applicationContext, IAuthService authService)
-    {
-        _applicationContext = applicationContext;
-        _authService = authService;
-    }
-
     // TODO: Convert return sig to Task<GetUserResult>
     public async Task<User?> GetUserById(Guid id)
     {
-        return await _applicationContext.Users.FindAsync(id);
+        return await applicationContext.Users.FindAsync(id);
     }
 
     public async Task<GetUserResult> GetUserFromClaims(ClaimsPrincipal claims)
     {
-        Guid? id = _authService.GetUserIdFromClaims(claims);
+        Guid? id = authService.GetUserIdFromClaims(claims);
 
         if (id is null)
         {
             return new BadCredentials();
         }
 
-        User? user = await _applicationContext.Users.FindAsync(id);
+        User? user = await applicationContext.Users.FindAsync(id);
 
         if (user is null)
         {
@@ -47,12 +39,12 @@ public class UserService : IUserService
     // TODO: Convert return sig to Task<GetUserResult>
     public async Task<User?> GetUserByEmail(string email)
     {
-        return await _applicationContext.Users.SingleOrDefaultAsync(user => user.Email == email);
+        return await applicationContext.Users.SingleOrDefaultAsync(user => user.Email == email);
     }
 
     public async Task<LoginResult> LoginByEmailAndPassword(string email, string password)
     {
-        User? user = await _applicationContext.Users.SingleOrDefaultAsync(user => user.Email == email);
+        User? user = await applicationContext.Users.SingleOrDefaultAsync(user => user.Email == email);
 
         if (user is null)
         {
@@ -69,18 +61,18 @@ public class UserService : IUserService
             return new BadCredentials();
         }
 
-        return _authService.GenerateJSONWebToken(user);
+        return authService.GenerateJSONWebToken(user);
     }
 
     // TODO: Convert return sig to Task<GetUserResult>
     public async Task<User?> GetUserByName(string name)
     {
-        return await _applicationContext.Users.SingleOrDefaultAsync(user => user.Username == name);
+        return await applicationContext.Users.SingleOrDefaultAsync(user => user.Username == name);
     }
 
     public async Task<User?> GetUserByNameAndEmail(string name, string email)
     {
-        return await _applicationContext.Users.SingleOrDefaultAsync(
+        return await applicationContext.Users.SingleOrDefaultAsync(
             user => user.Username == name && user.Email == email
         );
     }
@@ -93,14 +85,15 @@ public class UserService : IUserService
                 Username = request.Username,
                 Email = request.Email,
                 Password = BCryptNet.EnhancedHashPassword(request.Password),
-                Role = UserRole.Registered
+                Role = UserRole.Registered,
+                CreatedAt = clock.GetCurrentInstant()
             };
 
-        _applicationContext.Users.Add(newUser);
+        applicationContext.Users.Add(newUser);
 
         try
         {
-            await _applicationContext.SaveChangesAsync();
+            await applicationContext.SaveChangesAsync();
         }
         catch (DbUpdateException e)
             when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } pgEx)

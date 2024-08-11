@@ -1,10 +1,14 @@
 using System.ComponentModel.DataAnnotations;
+using LeaderboardBackend.Models.Validation;
+using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
 
 /// <summary>
 ///     Represents a collection of `Category` entities.
 /// </summary>
+[Index(nameof(Slug), IsUnique = true)]
 public class Leaderboard
 {
     /// <summary>
@@ -17,22 +21,37 @@ public class Leaderboard
     ///     The display name of the `Leaderboard` to create.
     /// </summary>
     /// <example>Foo Bar</example>
-    [Required]
-    public string Name { get; set; } = null!;
+    public required string Name { get; set; }
 
     /// <summary>
     ///     The URL-scoped unique identifier of the `Leaderboard`.<br/>
     ///     Must be [2, 80] in length and consist only of alphanumeric characters and hyphens.
     /// </summary>
     /// <example>foo-bar</example>
-    [Required]
-    public string Slug { get; set; } = null!;
+    [StringLength(80, MinimumLength = 2)]
+    [RegularExpression(SlugRule.REGEX)]
+    public required string Slug { get; set; }
 
     /// <summary>
-    ///     The general rules for the Leaderboard.
+    ///     The general information for the Leaderboard.
     /// </summary>
     /// <example>Timer starts on selecting New Game and ends when the final boss is beaten.</example>
-    public string? Rules { get; set; }
+    public string? Info { get; set; }
+
+    /// <summary>
+    ///     The time the Leaderboard was created.
+    /// </summary>
+    public Instant CreatedAt { get; set; }
+
+    /// <summary>
+    ///     The last time the Leaderboard was updated or <see langword="null" />.
+    /// </summary>
+    public Instant? UpdatedAt { get; set; }
+
+    /// <summary>
+    ///     The time at which the Leaderboard was deleted, or <see langword="null" /> if the Leaderboard has not been deleted.
+    /// </summary>
+    public Instant? DeletedAt { get; set; }
 
     /// <summary>
     ///     A collection of `Category` entities for the `Leaderboard`.
@@ -44,11 +63,12 @@ public class Leaderboard
         return obj is Leaderboard leaderboard
             && Id == leaderboard.Id
             && Name == leaderboard.Name
-            && Slug == leaderboard.Slug;
+            && Slug == leaderboard.Slug
+            && Info == leaderboard.Info;
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Id, Name, Slug);
+        return HashCode.Combine(Id, Name, Slug, Info);
     }
 }
