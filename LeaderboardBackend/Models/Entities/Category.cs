@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using LeaderboardBackend.Models.Validation;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 
@@ -44,7 +45,7 @@ public class Category
     /// </summary>
     /// <example>foo-bar-baz</example>
     [StringLength(80, MinimumLength = 2)]
-    [RegularExpression(@"^([a-zA-Z0-9\-_]|%[A-F0-9]{2})*$")]
+    [RegularExpression(SlugRule.REGEX)]
     public required string Slug { get; set; }
 
     /// <summary>
