@@ -397,3 +397,6 @@ FodyWeavers.xsd
 *.env
 !example.env
 !swagger-gen.env
+
+# Github Codespaces
+.devcontainer/

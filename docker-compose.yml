@@ -9,6 +9,8 @@ services:
             POSTGRES_USER: ${ApplicationContext__PG__USER}
             POSTGRES_PASSWORD: ${ApplicationContext__PG__PASSWORD}
             POSTGRES_DB: ${ApplicationContext__PG__DB}
+        volumes:
+            - 'db_data:/var/lib/postgresql/data'
         ports:
             - ${ApplicationContext__PG__PORT}:5432
 
@@ -17,3 +19,5 @@ services:
         restart: always
         ports:
             - ${ADMINER_PORT}:8080
+volumes:
+  db_data:
