@@ -12,17 +12,14 @@ public class LeaderboardService : ILeaderboardService
         _applicationContext = applicationContext;
     }
 
-    public async Task<Leaderboard?> GetLeaderboard(long id)
-    {
-        return await _applicationContext.Leaderboards.FindAsync(id);
-    }
+    public async Task<Leaderboard?> GetLeaderboard(long id) =>
+        await _applicationContext.Leaderboards
+            .FirstOrDefaultAsync(board => board.Id == id);
 
-    public async Task<Leaderboard?> GetLeaderboardBySlug(string slug)
-    {
-        return await _applicationContext.Leaderboards
+    public Task<Leaderboard?> GetLeaderboardBySlug(string slug) =>
+        _applicationContext.Leaderboards
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Slug == slug);
-    }
 
     // FIXME: Paginate this
     public async Task<List<Leaderboard>> GetLeaderboards(long[]? ids = null)

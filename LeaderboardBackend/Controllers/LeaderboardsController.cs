@@ -13,10 +13,8 @@ public class LeaderboardsController : ApiController
 {
     private readonly ILeaderboardService _leaderboardService;
 
-    public LeaderboardsController(ILeaderboardService leaderboardService)
-    {
+    public LeaderboardsController(ILeaderboardService leaderboardService) =>
         _leaderboardService = leaderboardService;
-    }
 
     [AllowAnonymous]
     [HttpGet("api/leaderboard/{id:long}")]
