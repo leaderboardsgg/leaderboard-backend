@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using LeaderboardBackend.Models.Entities;
 using NodaTime;
 
@@ -18,6 +19,7 @@ public record LeaderboardViewModel
     ///     The display name of the `Leaderboard` to create.
     /// </summary>
     /// <example>Foo Bar</example>
+    [Required]
     public required string Name { get; init; }
 
     /// <summary>

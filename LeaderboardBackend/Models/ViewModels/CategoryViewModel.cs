@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using LeaderboardBackend.Models.Entities;
 using NodaTime;
 
@@ -17,6 +18,7 @@ public record CategoryViewModel
     ///     The display name of the `Category`.
     /// </summary>
     /// <example>Foo Bar Baz%</example>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>

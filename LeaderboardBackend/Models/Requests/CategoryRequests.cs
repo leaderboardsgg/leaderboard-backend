@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using FluentValidation;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Validation;
@@ -13,6 +14,7 @@ public record CreateCategoryRequest
     ///     The display name of the `Category`.
     /// </summary>
     /// <example>Foo Bar Baz%</example>
+    [Required]
     public required string Name { get; set; } = null!;
 
     /// <summary>

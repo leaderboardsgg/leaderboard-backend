@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using FluentValidation;
 using LeaderboardBackend.Models.Validation;
 
@@ -12,6 +13,7 @@ public record CreateLeaderboardRequest
     ///     The display name of the `Leaderboard` to create.
     /// </summary>
     /// <example>Foo Bar</example>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>
