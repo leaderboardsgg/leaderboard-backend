@@ -4,7 +4,6 @@ using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
-using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
 using NUnit.Framework;
@@ -52,7 +51,7 @@ internal class Categories
     public static async Task CreateCategory_GetCategory_OK()
     {
         LeaderboardViewModel createdLeaderboard = await _apiClient.Post<LeaderboardViewModel>(
-            "/api/leaderboards",
+            "/leaderboards/create",
             new()
             {
                 Body = new CreateLeaderboardRequest()
@@ -66,7 +65,7 @@ internal class Categories
         );
 
         CategoryViewModel createdCategory = await _apiClient.Post<CategoryViewModel>(
-            "/api/categories",
+            "/categories/create",
             new()
             {
                 Body = new CreateCategoryRequest()
@@ -83,7 +82,7 @@ internal class Categories
         );
 
         CategoryViewModel retrievedCategory = await _apiClient.Get<CategoryViewModel>(
-            $"/api/categories/{createdCategory?.Id}", new() { }
+            $"/api/category/{createdCategory?.Id}", new() { }
         );
 
         Assert.AreEqual(createdCategory, retrievedCategory);

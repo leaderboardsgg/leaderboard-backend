@@ -4,7 +4,6 @@ using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
-using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
 using NodaTime;
@@ -35,7 +34,7 @@ namespace LeaderboardBackend.Test
             _jwt = (await _apiClient.LoginAdminUser()).Token;
 
             LeaderboardViewModel createdLeaderboard = await _apiClient.Post<LeaderboardViewModel>(
-                "/api/leaderboards",
+                "/leaderboards/create",
                 new()
                 {
                     Body = new CreateLeaderboardRequest()
@@ -49,7 +48,7 @@ namespace LeaderboardBackend.Test
             );
 
             CategoryViewModel createdCategory = await _apiClient.Post<CategoryViewModel>(
-                "/api/categories",
+                "/categories/create",
                 new()
                 {
                     Body = new CreateCategoryRequest()
@@ -85,7 +84,7 @@ namespace LeaderboardBackend.Test
             RunViewModel createdRun = await CreateRun();
 
             CategoryViewModel category = await _apiClient.Get<CategoryViewModel>(
-                $"api/runs/{createdRun.Id.ToUrlSafeBase64String()}/category",
+                $"api/run/{createdRun.Id.ToUrlSafeBase64String()}/category",
                 new() { Jwt = _jwt }
             );
 
@@ -96,7 +95,7 @@ namespace LeaderboardBackend.Test
         private static async Task<RunViewModel> CreateRun()
         {
             return await _apiClient.Post<RunViewModel>(
-                "/api/runs",
+                "/runs/create",
                 new()
                 {
                     Body = new CreateRunRequest
@@ -113,7 +112,7 @@ namespace LeaderboardBackend.Test
 
         private static async Task<RunViewModel> GetRun(Guid id)
         {
-            return await _apiClient.Get<RunViewModel>($"/api/runs/{id.ToUrlSafeBase64String()}", new() { Jwt = _jwt });
+            return await _apiClient.Get<RunViewModel>($"/api/run/{id.ToUrlSafeBase64String()}", new() { Jwt = _jwt });
         }
     }
 }
