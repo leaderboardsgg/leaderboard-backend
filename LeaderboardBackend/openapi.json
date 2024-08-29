@@ -351,7 +351,7 @@
         }
       }
     },
-    "/api/Categories/{id}": {
+    "/api/category/{id}": {
       "get": {
         "tags": [
           "Categories"
@@ -398,7 +398,7 @@
         }
       }
     },
-    "/api/Categories": {
+    "/categories/create": {
       "post": {
         "tags": [
           "Categories"
@@ -453,7 +453,7 @@
         }
       }
     },
-    "/api/Leaderboards/{id}": {
+    "/api/leaderboard/{id}": {
       "get": {
         "tags": [
           "Leaderboards"
@@ -500,7 +500,7 @@
         }
       }
     },
-    "/api/Leaderboards/{slug}": {
+    "/api/leaderboard": {
       "get": {
         "tags": [
           "Leaderboards"
@@ -509,7 +509,7 @@
         "parameters": [
           {
             "name": "slug",
-            "in": "path",
+            "in": "query",
             "required": true,
             "schema": {
               "type": "string"
@@ -546,7 +546,7 @@
         }
       }
     },
-    "/api/Leaderboards": {
+    "/api/leaderboards": {
       "get": {
         "tags": [
           "Leaderboards"
@@ -593,7 +593,9 @@
             }
           }
         }
-      },
+      }
+    },
+    "/leaderboards/create": {
       "post": {
         "tags": [
           "Leaderboards"
@@ -651,7 +653,7 @@
         }
       }
     },
-    "/api/Runs/{id}": {
+    "/api/run/{id}": {
       "get": {
         "tags": [
           "Runs"
@@ -708,7 +710,7 @@
         }
       }
     },
-    "/api/Runs": {
+    "/runs/create": {
       "post": {
         "tags": [
           "Runs"
@@ -759,7 +761,7 @@
         }
       }
     },
-    "/api/Runs/{id}/category": {
+    "/api/run/{id}/category": {
       "get": {
         "tags": [
           "Runs"
@@ -805,7 +807,7 @@
         }
       }
     },
-    "/api/Users/{id}": {
+    "/api/user/{id}": {
       "get": {
         "tags": [
           "Users"
@@ -853,7 +855,7 @@
         }
       }
     },
-    "/api/Users/me": {
+    "/user/me": {
       "get": {
         "tags": [
           "Users"

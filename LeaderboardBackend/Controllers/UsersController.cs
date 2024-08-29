@@ -19,7 +19,7 @@ public class UsersController : ApiController
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:guid}")]
+    [HttpGet("api/user/{id:guid}")]
     [SwaggerOperation("Gets a User by their ID.")]
     [SwaggerResponse(200, "The `User` was found and returned successfully.")]
     [SwaggerResponse(404, "No `User` with the requested ID could be found.")]
@@ -38,7 +38,7 @@ public class UsersController : ApiController
     }
 
     [Authorize]
-    [HttpGet("me")]
+    [HttpGet("user/me")]
     [SwaggerOperation(
         "Gets the currently logged-in User.",
         """

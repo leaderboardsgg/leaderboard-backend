@@ -19,7 +19,7 @@ public class CategoriesController : ApiController
     }
 
     [AllowAnonymous]
-    [HttpGet("{id}")]
+    [HttpGet("api/category/{id}")]
     [SwaggerOperation("Gets a Category by its ID.")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
@@ -36,7 +36,7 @@ public class CategoriesController : ApiController
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpPost]
+    [HttpPost("categories/create")]
     [SwaggerOperation("Creates a new Category. This request is restricted to Moderators.")]
     [SwaggerResponse(201)]
     [SwaggerResponse(403)]
