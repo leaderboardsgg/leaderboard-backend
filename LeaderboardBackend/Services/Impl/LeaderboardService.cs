@@ -17,9 +17,9 @@ public class LeaderboardService : ILeaderboardService
         return await _applicationContext.Leaderboards.FindAsync(id);
     }
 
-    public Task<Leaderboard?> GetLeaderboardBySlug(string slug)
+    public async Task<Leaderboard?> GetLeaderboardBySlug(string slug)
     {
-        return _applicationContext.Leaderboards
+        return await _applicationContext.Leaderboards
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Slug == slug);
     }
