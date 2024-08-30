@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NodaTime;
@@ -40,6 +41,7 @@ public class User
     ///     exists.
     /// </summary>
     /// <example>J'on-Doe</example>
+    [Column(TypeName = "citext")]
     [StringLength(25, MinimumLength = 2)]
     public required string Username { get; set; }
 
@@ -47,6 +49,7 @@ public class User
     ///     The `User`'s email address.
     /// </summary>
     /// <example>john.doe@example.com</example>
+    [Column(TypeName = "citext")]
     public required string Email { get; set; }
 
     /// <summary>
@@ -93,12 +96,6 @@ public class UserEntityTypeConfig : IEntityTypeConfiguration<User>
 
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder.Property(x => x.Username)
-            .UseCollation(ApplicationContext.CASE_INSENSITIVE_COLLATION);
-
-        builder.Property(x => x.Email)
-            .UseCollation(ApplicationContext.CASE_INSENSITIVE_COLLATION);
-
         builder.HasIndex(x => x.Username)
             .IsUnique()
             .HasDatabaseName(USERNAME_UNIQUE_INDEX);
