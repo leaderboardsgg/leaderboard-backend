@@ -50,6 +50,7 @@ public class User
     /// </summary>
     /// <example>john.doe@example.com</example>
     [Column(TypeName = "citext")]
+    [EmailAddress]
     public required string Email { get; set; }
 
     /// <summary>
