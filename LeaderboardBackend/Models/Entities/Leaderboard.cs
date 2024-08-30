@@ -21,6 +21,7 @@ public class Leaderboard
     ///     The display name of the `Leaderboard` to create.
     /// </summary>
     /// <example>Foo Bar</example>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>

@@ -37,6 +37,7 @@ public class Category
     ///     The display name of the `Category`.
     /// </summary>
     /// <example>Foo Bar Baz%</example>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>

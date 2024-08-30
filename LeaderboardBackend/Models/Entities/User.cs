@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NodaTime;
@@ -41,6 +40,7 @@ public class User
     ///     exists.
     /// </summary>
     /// <example>J'on-Doe</example>
+    [StringLength(25, MinimumLength = 2)]
     public required string Username { get; set; }
 
     /// <summary>
@@ -63,6 +63,7 @@ public class User
     ///     </ul>
     /// </summary>
     /// <example>P4ssword</example>
+    [Required]
     public required string Password { get; set; }
 
     /// <summary>
