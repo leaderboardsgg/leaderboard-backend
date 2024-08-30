@@ -7,8 +7,6 @@ namespace LeaderboardBackend.Models.Entities;
 
 public class ApplicationContext : DbContext
 {
-    public const string CASE_INSENSITIVE_COLLATION = "case_insensitive";
-
     [Obsolete]
     static ApplicationContext()
     {
@@ -55,8 +53,6 @@ public class ApplicationContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-
-        modelBuilder.HasCollation(CASE_INSENSITIVE_COLLATION, "und-u-ks-level2", "icu", deterministic: false);
         modelBuilder.HasPostgresEnum<UserRole>();
         modelBuilder.HasPostgresEnum<SortDirection>();
         modelBuilder.HasPostgresEnum<RunType>();
