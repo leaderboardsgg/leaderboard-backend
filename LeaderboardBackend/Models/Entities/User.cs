@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using LeaderboardBackend.Models.Validation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NodaTime;
@@ -42,6 +43,7 @@ public class User
     /// </summary>
     /// <example>J'on-Doe</example>
     [Column(TypeName = "citext")]
+    [RegularExpression(UsernameRule.REGEX)]
     [StringLength(25, MinimumLength = 2)]
     public required string Username { get; set; }
 
