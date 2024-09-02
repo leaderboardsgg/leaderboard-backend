@@ -19,7 +19,7 @@ public class LeaderboardsController : ApiController
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:long}")]
+    [HttpGet("api/leaderboard/{id:long}")]
     [SwaggerOperation("Gets a leaderboard by its ID.")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
@@ -36,11 +36,11 @@ public class LeaderboardsController : ApiController
     }
 
     [AllowAnonymous]
-    [HttpGet("{slug}")]
+    [HttpGet("api/leaderboard")]
     [SwaggerOperation("Gets a Leaderboard by its slug.")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
-    public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboardBySlug(string slug)
+    public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboardBySlug([FromQuery, SwaggerParameter(Required = true)] string slug)
     {
         Leaderboard? leaderboard = await _leaderboardService.GetLeaderboardBySlug(slug);
 
@@ -53,7 +53,7 @@ public class LeaderboardsController : ApiController
     }
 
     [AllowAnonymous]
-    [HttpGet]
+    [HttpGet("api/leaderboards")]
     [SwaggerOperation("Gets leaderboards by their IDs.")]
     [SwaggerResponse(200)]
     public async Task<ActionResult<List<LeaderboardViewModel>>> GetLeaderboards(
@@ -65,7 +65,7 @@ public class LeaderboardsController : ApiController
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpPost]
+    [HttpPost("leaderboards/create")]
     [SwaggerOperation("Creates a new leaderboard. This request is restricted to Administrators.")]
     [SwaggerResponse(201)]
     [SwaggerResponse(401)]
