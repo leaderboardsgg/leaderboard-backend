@@ -4,6 +4,7 @@ using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -13,19 +14,21 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LeaderboardBackend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20240830045334_AddMissingConstraints")]
+    partial class AddMissingConstraints
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasAnnotation("Npgsql:CollationDefinition:case_insensitive", "und-u-ks-level2,und-u-ks-level2,icu,False")
                 .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "run_type", new[] { "time", "score" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "sort_direction", new[] { "ascending", "descending" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "user_role", new[] { "registered", "confirmed", "administrator", "banned" });
-            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("LeaderboardBackend.Models.Entities.AccountConfirmation", b =>
@@ -201,8 +204,7 @@ namespace LeaderboardBackend.Migrations
 
                     b.HasIndex("Slug")
                         .IsUnique()
-                        .HasDatabaseName("ix_leaderboards_slug")
-                        .HasFilter("deleted_at IS NULL");
+                        .HasDatabaseName("ix_leaderboards_slug");
 
                     b.ToTable("leaderboards", null, t =>
                         {
@@ -278,8 +280,9 @@ namespace LeaderboardBackend.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("citext")
-                        .HasColumnName("email");
+                        .HasColumnType("text")
+                        .HasColumnName("email")
+                        .UseCollation("case_insensitive");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -293,8 +296,9 @@ namespace LeaderboardBackend.Migrations
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(25)
-                        .HasColumnType("citext")
-                        .HasColumnName("username");
+                        .HasColumnType("character varying(25)")
+                        .HasColumnName("username")
+                        .UseCollation("case_insensitive");
 
                     b.HasKey("Id")
                         .HasName("pk_users");
@@ -309,13 +313,9 @@ namespace LeaderboardBackend.Migrations
 
                     b.ToTable("users", null, t =>
                         {
-                            t.HasCheckConstraint("CK_users_email_EmailAddress", "email ~ '^[^@]+@[^@]+$'");
-
                             t.HasCheckConstraint("CK_users_password_MinLength", "LENGTH(password) >= 1");
 
                             t.HasCheckConstraint("CK_users_username_MinLength", "LENGTH(username) >= 2");
-
-                            t.HasCheckConstraint("CK_users_username_RegularExpression", "username ~ '^[a-zA-Z0-9]([-_'']?[a-zA-Z0-9])+$'");
                         });
                 });
 

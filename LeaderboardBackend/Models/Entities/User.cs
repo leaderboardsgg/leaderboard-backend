@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations.Schema;
+using LeaderboardBackend.Models.Validation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NodaTime;
@@ -41,12 +42,17 @@ public class User
     ///     exists.
     /// </summary>
     /// <example>J'on-Doe</example>
+    [Column(TypeName = "citext")]
+    [RegularExpression(UsernameRule.REGEX)]
+    [StringLength(25, MinimumLength = 2)]
     public required string Username { get; set; }
 
     /// <summary>
     ///     The `User`'s email address.
     /// </summary>
     /// <example>john.doe@example.com</example>
+    [Column(TypeName = "citext")]
+    [EmailAddress]
     public required string Email { get; set; }
 
     /// <summary>
@@ -63,6 +69,7 @@ public class User
     ///     </ul>
     /// </summary>
     /// <example>P4ssword</example>
+    [Required]
     public required string Password { get; set; }
 
     /// <summary>
@@ -92,12 +99,6 @@ public class UserEntityTypeConfig : IEntityTypeConfiguration<User>
 
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder.Property(x => x.Username)
-            .UseCollation(ApplicationContext.CASE_INSENSITIVE_COLLATION);
-
-        builder.Property(x => x.Email)
-            .UseCollation(ApplicationContext.CASE_INSENSITIVE_COLLATION);
-
         builder.HasIndex(x => x.Username)
             .IsUnique()
             .HasDatabaseName(USERNAME_UNIQUE_INDEX);

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using LeaderboardBackend.Models.Validation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
@@ -8,7 +9,6 @@ namespace LeaderboardBackend.Models.Entities;
 /// <summary>
 ///     Represents a collection of `Category` entities.
 /// </summary>
-[Index(nameof(Slug), IsUnique = true)]
 public class Leaderboard
 {
     /// <summary>
@@ -21,6 +21,7 @@ public class Leaderboard
     ///     The display name of the `Leaderboard` to create.
     /// </summary>
     /// <example>Foo Bar</example>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>
@@ -70,5 +71,15 @@ public class Leaderboard
     public override int GetHashCode()
     {
         return HashCode.Combine(Id, Name, Slug, Info);
+    }
+}
+
+public class LeaderboardEntityTypeConfig : IEntityTypeConfiguration<Leaderboard>
+{
+    public void Configure(EntityTypeBuilder<Leaderboard> builder)
+    {
+        builder.HasIndex(l => l.Slug)
+            .IsUnique()
+            .HasFilter("deleted_at IS NULL");
     }
 }

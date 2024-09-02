@@ -152,9 +152,20 @@ public class RegistrationTests : IntegrationTestsBase
     [Test]
     public async Task Register_UsernameAlreadyTaken_ReturnsConflictAndErrorCode()
     {
-        RegisterRequest createExistingUserReq = _registerReqFaker.Generate();
+        RegisterRequest createExistingUserReq = new()
+        {
+            Email = "toddparker@example.com",
+            Password = "MyPassword1",
+            Username = "Todd"
+        };
+
         await Client.PostAsJsonAsync(Routes.REGISTER, createExistingUserReq);
-        RegisterRequest request = _registerReqFaker.Generate() with { Username = createExistingUserReq.Username.ToLower() };
+        RegisterRequest request = new()
+        {
+            Email = "toddjones@example.com",
+            Password = "MyPassword2",
+            Username = "todd"
+        };
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
 
