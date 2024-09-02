@@ -18,7 +18,7 @@ public class RunsController(
 {
     [AllowAnonymous]
     [HttpGet("api/run/{id}")]
-    [SwaggerOperation("Gets a Run by its ID.")]
+    [SwaggerOperation("Gets a Run by its ID.", OperationId = "getRun")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
     public async Task<ActionResult<RunViewModel>> GetRun(Guid id)
@@ -35,7 +35,7 @@ public class RunsController(
 
     [Authorize]
     [HttpPost("runs/create")]
-    [SwaggerOperation("Creates a new Run.")]
+    [SwaggerOperation("Creates a new Run.", OperationId = "createRun")]
     [SwaggerResponse(201)]
     [SwaggerResponse(401)]
     [SwaggerResponse(403)]
@@ -64,6 +64,7 @@ public class RunsController(
     }
 
     [HttpGet("/api/run/{id}/category")]
+    [SwaggerOperation("Gets the category a run belongs to.", OperationId = "getRunCategory")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
     public async Task<ActionResult<CategoryViewModel>> GetCategoryForRun(Guid id)
