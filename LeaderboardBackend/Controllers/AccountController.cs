@@ -24,7 +24,7 @@ public class AccountController : ApiController
     [AllowAnonymous]
     [FeatureGate(Features.ACCOUNT_REGISTRATION)]
     [HttpPost("register")]
-    [SwaggerOperation("Registers a new User.")]
+    [SwaggerOperation("Registers a new User.", OperationId = "register")]
     [SwaggerResponse(201, "The `User` was registered and returned successfully.")]
     [SwaggerResponse(
         409,
@@ -96,7 +96,7 @@ public class AccountController : ApiController
     [AllowAnonymous]
     [FeatureGate(Features.LOGIN)]
     [HttpPost("/login")]
-    [SwaggerOperation("Logs a User in.")]
+    [SwaggerOperation("Logs a User in.", OperationId = "login")]
     [SwaggerResponse(
         200,
         "The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.",
@@ -138,7 +138,7 @@ public class AccountController : ApiController
 
     [Authorize]
     [HttpPost("confirm")]
-    [SwaggerOperation("Resends the account confirmation link.")]
+    [SwaggerOperation("Resends the account confirmation link.", OperationId = "resendConfirmationEmail")]
     [SwaggerResponse(200, "A new confirmation link was generated.")]
     [SwaggerResponse(401)]
     [SwaggerResponse(409, "The `User`'s account has already been confirmed.")]
@@ -171,7 +171,7 @@ public class AccountController : ApiController
 
     [AllowAnonymous]
     [HttpPost("recover")]
-    [SwaggerOperation("Sends an account recovery email.")]
+    [SwaggerOperation("Sends an account recovery email.", OperationId = "sendRecoveryEmail")]
     [SwaggerResponse(200, "This endpoint returns 200 OK regardless of whether the email was sent successfully or not.")]
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
     public async Task<ActionResult> RecoverAccount(
@@ -197,7 +197,7 @@ public class AccountController : ApiController
 
     [AllowAnonymous]
     [HttpPut("confirm/{id}")]
-    [SwaggerOperation("Confirms a user account.")]
+    [SwaggerOperation("Confirms a user account.", OperationId = "confirmAccount")]
     [SwaggerResponse(200, "The account was confirmed successfully.")]
     [SwaggerResponse(404, "The token provided was invalid or expired.")]
     [SwaggerResponse(409, "the user's account was either already confirmed or banned.")]
@@ -219,7 +219,7 @@ public class AccountController : ApiController
 
     [AllowAnonymous]
     [HttpGet("recover/{id}")]
-    [SwaggerOperation("Tests an account recovery token for validity.")]
+    [SwaggerOperation("Tests an account recovery token for validity.", OperationId = "testRecoveryToken")]
     [SwaggerResponse(200, "The token provided is valid.")]
     [SwaggerResponse(404, "The token provided is invalid or expired, or the user is banned.")]
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
@@ -242,7 +242,7 @@ public class AccountController : ApiController
     [AllowAnonymous]
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
     [HttpPost("recover/{id}")]
-    [SwaggerOperation("Recover the user's account by resetting their password to a new value.")]
+    [SwaggerOperation("Recover the user's account by resetting their password to a new value.", OperationId = "changePassword")]
     [SwaggerResponse(200, "The user's password was reset successfully.")]
     [SwaggerResponse(403, "The user is banned.")]
     [SwaggerResponse(404, "The token provided is invalid or expired.")]

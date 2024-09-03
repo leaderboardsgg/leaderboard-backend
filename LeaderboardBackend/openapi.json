@@ -11,6 +11,7 @@
           "Account"
         ],
         "summary": "Registers a new User.",
+        "operationId": "register",
         "requestBody": {
           "description": "The `RegisterRequest` instance from which to register the `User`.",
           "content": {
@@ -75,6 +76,7 @@
           "Account"
         ],
         "summary": "Logs a User in.",
+        "operationId": "login",
         "requestBody": {
           "description": "The `LoginRequest` instance with which to perform the login.",
           "content": {
@@ -138,6 +140,7 @@
           "Account"
         ],
         "summary": "Resends the account confirmation link.",
+        "operationId": "resendConfirmationEmail",
         "responses": {
           "400": {
             "description": "Bad Request",
@@ -170,6 +173,7 @@
           "Account"
         ],
         "summary": "Sends an account recovery email.",
+        "operationId": "sendRecoveryEmail",
         "requestBody": {
           "description": "The account recovery request.",
           "content": {
@@ -206,6 +210,7 @@
           "Account"
         ],
         "summary": "Confirms a user account.",
+        "operationId": "confirmAccount",
         "parameters": [
           {
             "name": "id",
@@ -250,6 +255,7 @@
           "Account"
         ],
         "summary": "Tests an account recovery token for validity.",
+        "operationId": "testRecoveryToken",
         "parameters": [
           {
             "name": "id",
@@ -289,6 +295,7 @@
           "Account"
         ],
         "summary": "Recover the user's account by resetting their password to a new value.",
+        "operationId": "changePassword",
         "parameters": [
           {
             "name": "id",
@@ -357,6 +364,7 @@
           "Categories"
         ],
         "summary": "Gets a Category by its ID.",
+        "operationId": "getCategory",
         "parameters": [
           {
             "name": "id",
@@ -404,6 +412,7 @@
           "Categories"
         ],
         "summary": "Creates a new Category. This request is restricted to Moderators.",
+        "operationId": "createCategory",
         "requestBody": {
           "content": {
             "application/json": {
@@ -459,6 +468,7 @@
           "Leaderboards"
         ],
         "summary": "Gets a leaderboard by its ID.",
+        "operationId": "getLeaderboard",
         "parameters": [
           {
             "name": "id",
@@ -506,6 +516,7 @@
           "Leaderboards"
         ],
         "summary": "Gets a Leaderboard by its slug.",
+        "operationId": "getLeaderboardBySlug",
         "parameters": [
           {
             "name": "slug",
@@ -552,6 +563,7 @@
           "Leaderboards"
         ],
         "summary": "Gets leaderboards by their IDs.",
+        "operationId": "getLeaderboards",
         "parameters": [
           {
             "name": "ids",
@@ -601,6 +613,7 @@
           "Leaderboards"
         ],
         "summary": "Creates a new leaderboard. This request is restricted to Administrators.",
+        "operationId": "createLeaderboard",
         "requestBody": {
           "content": {
             "application/json": {
@@ -659,6 +672,7 @@
           "Runs"
         ],
         "summary": "Gets a Run by its ID.",
+        "operationId": "getRun",
         "parameters": [
           {
             "name": "id",
@@ -716,6 +730,7 @@
           "Runs"
         ],
         "summary": "Creates a new Run.",
+        "operationId": "createRun",
         "requestBody": {
           "content": {
             "application/json": {
@@ -766,6 +781,8 @@
         "tags": [
           "Runs"
         ],
+        "summary": "Gets the category a run belongs to.",
+        "operationId": "getRunCategory",
         "parameters": [
           {
             "name": "id",
@@ -813,6 +830,7 @@
           "Users"
         ],
         "summary": "Gets a User by their ID.",
+        "operationId": "getUser",
         "parameters": [
           {
             "name": "id",
@@ -862,6 +880,7 @@
         ],
         "summary": "Gets the currently logged-in User.",
         "description": "Call this method with the 'Authorization' header. A valid JWT bearer token must be\npassed.\nExample: `{ 'Authorization': 'Bearer JWT' }`.",
+        "operationId": "me",
         "responses": {
           "400": {
             "description": "Bad Request",

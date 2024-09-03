@@ -20,7 +20,7 @@ public class UsersController : ApiController
 
     [AllowAnonymous]
     [HttpGet("api/user/{id:guid}")]
-    [SwaggerOperation("Gets a User by their ID.")]
+    [SwaggerOperation("Gets a User by their ID.", OperationId = "getUser")]
     [SwaggerResponse(200, "The `User` was found and returned successfully.")]
     [SwaggerResponse(404, "No `User` with the requested ID could be found.")]
     public async Task<ActionResult<UserViewModel>> GetUserById(
@@ -45,7 +45,8 @@ public class UsersController : ApiController
         Call this method with the 'Authorization' header. A valid JWT bearer token must be
         passed.
         Example: `{ 'Authorization': 'Bearer JWT' }`.
-        """
+        """,
+        OperationId = "me"
     )]
     [SwaggerResponse(200, "The `User` was found and returned successfully.")]
     [SwaggerResponse(401, "An invalid JWT was passed in.")]

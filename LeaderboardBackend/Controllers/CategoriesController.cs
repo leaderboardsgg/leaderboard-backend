@@ -20,7 +20,7 @@ public class CategoriesController : ApiController
 
     [AllowAnonymous]
     [HttpGet("api/category/{id}")]
-    [SwaggerOperation("Gets a Category by its ID.")]
+    [SwaggerOperation("Gets a Category by its ID.", OperationId = "getCategory")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
     public async Task<ActionResult<CategoryViewModel>> GetCategory(long id)
@@ -37,7 +37,7 @@ public class CategoriesController : ApiController
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
     [HttpPost("categories/create")]
-    [SwaggerOperation("Creates a new Category. This request is restricted to Moderators.")]
+    [SwaggerOperation("Creates a new Category. This request is restricted to Moderators.", OperationId = "createCategory")]
     [SwaggerResponse(201)]
     [SwaggerResponse(403)]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
