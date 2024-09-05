@@ -9,12 +9,9 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Controllers;
 
-public class LeaderboardsController : ApiController
+public class LeaderboardsController(ILeaderboardService leaderboardService) : ApiController
 {
-    private readonly ILeaderboardService _leaderboardService;
-
-    public LeaderboardsController(ILeaderboardService leaderboardService) =>
-        _leaderboardService = leaderboardService;
+    private readonly ILeaderboardService _leaderboardService = leaderboardService;
 
     [AllowAnonymous]
     [HttpGet("api/leaderboard/{id:long}")]
