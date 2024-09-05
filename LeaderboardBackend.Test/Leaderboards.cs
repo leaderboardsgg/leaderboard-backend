@@ -38,11 +38,12 @@ internal class Leaderboards
     public void OneTimeTearDown() => _factory.Dispose();
 
     [Test]
-    public void GetLeaderboard_NotFound() => _apiClient.Invoking(a => a.Get<LeaderboardViewModel>(
-        $"/api/leaderboard/{long.MaxValue}",
-        new()
-    )).Should()
-    .ThrowAsync<RequestFailureException>()
+    public async Task GetLeaderboard_NotFound() => await FluentActions.Awaiting(
+        async () => await _apiClient.Get<LeaderboardViewModel>(
+            $"/api/leaderboards/{long.MaxValue}",
+            new()
+        )
+    ).Should().ThrowAsync<RequestFailureException>()
     .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
 
     [Test]
