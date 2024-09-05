@@ -3,18 +3,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LeaderboardBackend.Services;
 
-public class LeaderboardService : ILeaderboardService
+public class LeaderboardService(ApplicationContext applicationContext) : ILeaderboardService
 {
-    private readonly ApplicationContext _applicationContext;
+    private readonly ApplicationContext _applicationContext = applicationContext;
 
-    public LeaderboardService(ApplicationContext applicationContext)
-    {
-        _applicationContext = applicationContext;
-    }
-
-    public async Task<Leaderboard?> GetLeaderboard(long id) =>
-        await _applicationContext.Leaderboards
-            .FirstOrDefaultAsync(board => board.Id == id);
+    public ValueTask<Leaderboard?> GetLeaderboard(long id) =>
+        _applicationContext.Leaderboards
+            .FindAsync([id]);
 
     public Task<Leaderboard?> GetLeaderboardBySlug(string slug) =>
         _applicationContext.Leaderboards
