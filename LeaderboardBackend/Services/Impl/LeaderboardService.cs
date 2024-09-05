@@ -5,14 +5,11 @@ namespace LeaderboardBackend.Services;
 
 public class LeaderboardService(ApplicationContext applicationContext) : ILeaderboardService
 {
-    private readonly ApplicationContext _applicationContext = applicationContext;
-
-    public ValueTask<Leaderboard?> GetLeaderboard(long id) =>
-        _applicationContext.Leaderboards
-            .FindAsync([id]);
+    public async Task<Leaderboard?> GetLeaderboard(long id) =>
+        await applicationContext.Leaderboards.FindAsync(id);
 
     public Task<Leaderboard?> GetLeaderboardBySlug(string slug) =>
-        _applicationContext.Leaderboards
+        applicationContext.Leaderboards
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Slug == slug);
 
@@ -21,11 +18,11 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
     {
         if (ids is null)
         {
-            return await _applicationContext.Leaderboards.ToListAsync();
+            return await applicationContext.Leaderboards.ToListAsync();
         }
         else
         {
-            return await _applicationContext.Leaderboards
+            return await applicationContext.Leaderboards
                 .Where(leaderboard => ids.Contains(leaderboard.Id))
                 .ToListAsync();
         }
@@ -33,7 +30,7 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
 
     public async Task CreateLeaderboard(Leaderboard leaderboard)
     {
-        _applicationContext.Leaderboards.Add(leaderboard);
-        await _applicationContext.SaveChangesAsync();
+        applicationContext.Leaderboards.Add(leaderboard);
+        await applicationContext.SaveChangesAsync();
     }
 }
