@@ -1,12 +1,16 @@
 using System.Data;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using NodaTime;
 using Npgsql;
 
 namespace LeaderboardBackend.Models.Entities;
 
 public class ApplicationContext : DbContext
 {
+    private readonly IClock _clock;
+
     [Obsolete]
     static ApplicationContext()
     {
@@ -16,8 +20,20 @@ public class ApplicationContext : DbContext
         NpgsqlConnection.GlobalTypeMapper.MapEnum<RunType>();
     }
 
-    public ApplicationContext(DbContextOptions<ApplicationContext> options)
-        : base(options) { }
+    private void AddCreationTimeStamp(object? sender, EntityEntryEventArgs e)
+    {
+        if (e.Entry.State is EntityState.Added && e.Entry.Entity is IHasCreationTimestamp entity)
+        {
+            entity.CreatedAt = _clock.GetCurrentInstant();
+        }
+    }
+
+    public ApplicationContext(DbContextOptions<ApplicationContext> options, IClock clock)
+        : base(options)
+    {
+        _clock = clock;
+        ChangeTracker.Tracked += AddCreationTimeStamp;
+    }
 
     public DbSet<AccountRecovery> AccountRecoveries { get; set; } = null!;
     public DbSet<Category> Categories { get; set; } = null!;
