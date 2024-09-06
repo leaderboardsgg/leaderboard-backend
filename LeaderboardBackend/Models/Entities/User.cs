@@ -18,7 +18,7 @@ public enum UserRole
 /// <summary>
 ///     Represents a user account registered on the website.
 /// </summary>
-public class User
+public class User : IHasCreationTimestamp
 {
     /// <summary>
     ///     The unique identifier of the `User`.<br/>
