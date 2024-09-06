@@ -6,7 +6,7 @@ namespace LeaderboardBackend.Models.Entities;
 /// <summary>
 ///     Represents an entry on a `Category`.
 /// </summary>
-public class Run : IHasCreationTimestamp
+public class Run : IHasUpdateTimestamp
 {
     /// <summary>
     ///     The unique identifier of the `Run`.<br/>

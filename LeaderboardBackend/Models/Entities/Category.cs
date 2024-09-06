@@ -15,7 +15,7 @@ public enum SortDirection
 ///     Represents a `Category` tied to a `Leaderboard`.
 /// </summary>
 [Index(nameof(Slug), IsUnique = true)]
-public class Category : IHasCreationTimestamp
+public class Category : IHasUpdateTimestamp
 {
     /// <summary>
     ///     The unique identifier of the `Category`.<br/>
