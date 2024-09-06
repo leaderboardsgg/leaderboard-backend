@@ -2,14 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
+using NodaTime.Testing;
 using NUnit.Framework;
 
 namespace LeaderboardBackend.Test;
@@ -18,7 +22,8 @@ namespace LeaderboardBackend.Test;
 internal class Leaderboards
 {
     private static TestApiClient _apiClient = null!;
-    private static TestApiFactory _factory = null!;
+    private static WebApplicationFactory<Program> _factory = null!;
+    private static readonly FakeClock _clock = new(new Instant());
     private static string? _jwt;
 
     private readonly Faker<CreateLeaderboardRequest> _createBoardReqFaker =
@@ -30,10 +35,17 @@ internal class Leaderboards
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        _factory = new TestApiFactory();
-        _apiClient = _factory.CreateTestApiClient();
+        _factory = new TestApiFactory().WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton<IClock, FakeClock>(_ => _clock);
+            });
+        });
 
-        _factory.ResetDatabase();
+        _apiClient = new TestApiClient(_factory.CreateClient());
+
+        PostgresDatabaseFixture.ResetDatabaseToTemplate();
         _jwt = (await _apiClient.LoginAdminUser()).Token;
     }
 
@@ -52,26 +64,29 @@ internal class Leaderboards
     [Test]
     public async Task CreateLeaderboard_GetLeaderboard_OK()
     {
-        CreateLeaderboardRequest req = _createBoardReqFaker.Generate();
+        CreateLeaderboardRequest req = new()
+        {
+            Name = "Super Mario 64",
+            Slug = "super-mario-64",
+            Info = "The iQue is not allowed."
+        };
+
+        Instant now = Instant.FromUnixTimeSeconds(1);
+        _clock.Reset(now);
+
         LeaderboardViewModel createdLeaderboard = await _apiClient.Post<LeaderboardViewModel>(
             "/leaderboards/create",
             new() { Body = req, Jwt = _jwt }
         );
+
+        createdLeaderboard.CreatedAt.Should().Be(now);
 
         LeaderboardViewModel retrievedLeaderboard = await _apiClient.Get<LeaderboardViewModel>(
             $"/api/leaderboard/{createdLeaderboard?.Id}",
             new()
         );
 
-        createdLeaderboard.Should().NotBeNull();
-        (string, string) expectedCreatedBoard = ValueTuple.Create(req.Name, req.Slug);
-        (string, string) actualCreatedBoard = ValueTuple.Create(
-            createdLeaderboard!.Name,
-            createdLeaderboard.Slug
-        );
-        expectedCreatedBoard.Should().BeEquivalentTo(actualCreatedBoard);
-
-        createdLeaderboard.Should().BeEquivalentTo(retrievedLeaderboard);
+        retrievedLeaderboard.Should().BeEquivalentTo(req);
     }
 
     [Test]
@@ -80,8 +95,8 @@ internal class Leaderboards
         IEnumerable<Task<LeaderboardViewModel>> boardCreationTasks = _createBoardReqFaker
             .GenerateBetween(3, 10)
             .Select(
-                req =>
-                    _apiClient.Post<LeaderboardViewModel>(
+                async req =>
+                    await _apiClient.Post<LeaderboardViewModel>(
                         "/leaderboards/create",
                         new() { Body = req, Jwt = _jwt }
                     )
@@ -122,7 +137,7 @@ internal class Leaderboards
             new()
         );
 
-        leaderboard.Should().BeEquivalentTo(createdLeaderboard);
+        leaderboard.Should().BeEquivalentTo(createReqBody);
     }
 
     [Test]
