@@ -20,7 +20,7 @@ public class ApplicationContext : DbContext
         NpgsqlConnection.GlobalTypeMapper.MapEnum<RunType>();
     }
 
-    private void AddCreationTimeStamp(object? sender, EntityEntryEventArgs e)
+    private void AddCreationTimestamp(object? sender, EntityEntryEventArgs e)
     {
         if (e.Entry.State is EntityState.Added && e.Entry.Entity is IHasCreationTimestamp entity)
         {
@@ -28,11 +28,20 @@ public class ApplicationContext : DbContext
         }
     }
 
+    private void SetUpdateTimestamp(object? sender, EntityEntryEventArgs e)
+    {
+        if (e.Entry.State is EntityState.Modified && e.Entry.Entity is IHasUpdateTimestamp entity)
+        {
+            entity.UpdatedAt = _clock.GetCurrentInstant();
+        }
+    }
+
     public ApplicationContext(DbContextOptions<ApplicationContext> options, IClock clock)
         : base(options)
     {
         _clock = clock;
-        ChangeTracker.Tracked += AddCreationTimeStamp;
+        ChangeTracker.Tracked += AddCreationTimestamp;
+        ChangeTracker.Tracked += SetUpdateTimestamp;
     }
 
     public DbSet<AccountRecovery> AccountRecoveries { get; set; } = null!;
