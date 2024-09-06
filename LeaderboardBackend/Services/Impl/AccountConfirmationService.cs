@@ -43,7 +43,6 @@ public class AccountConfirmationService : IAccountConfirmationService
         AccountConfirmation newConfirmation =
             new()
             {
-                CreatedAt = now,
                 ExpiresAt = now + Duration.FromHours(1),
                 UserId = user.Id,
             };

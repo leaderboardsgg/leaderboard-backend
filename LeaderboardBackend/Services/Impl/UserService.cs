@@ -9,7 +9,7 @@ using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace LeaderboardBackend.Services;
 
-public class UserService(ApplicationContext applicationContext, IAuthService authService, IClock clock) : IUserService
+public class UserService(ApplicationContext applicationContext, IAuthService authService) : IUserService
 {
     // TODO: Convert return sig to Task<GetUserResult>
     public async Task<User?> GetUserById(Guid id)
@@ -86,7 +86,6 @@ public class UserService(ApplicationContext applicationContext, IAuthService aut
                 Email = request.Email,
                 Password = BCryptNet.EnhancedHashPassword(request.Password),
                 Role = UserRole.Registered,
-                CreatedAt = clock.GetCurrentInstant()
             };
 
         applicationContext.Users.Add(newUser);

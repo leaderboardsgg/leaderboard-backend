@@ -43,7 +43,6 @@ public class AccountRecoveryService : IAccountRecoveryService
 
         AccountRecovery recovery = new()
         {
-            CreatedAt = now,
             ExpiresAt = now + Duration.FromHours(1),
             User = user
         };
