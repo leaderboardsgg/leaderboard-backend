@@ -80,21 +80,4 @@ public class Category : IHasCreationTimestamp
     ///     The time at which the Category was deleted, or <see langword="null" /> if the Category has not been deleted.
     /// </summary>
     public Instant? DeletedAt { get; set; }
-
-    public override bool Equals(object? obj)
-    {
-        return obj is Category category
-            && Id == category.Id
-            && Name == category.Name
-            && Slug == category.Slug
-            && Info == category.Info
-            && SortDirection == category.SortDirection
-            && Type == category.Type
-            && LeaderboardId == category.LeaderboardId;
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Id, Name, Slug, LeaderboardId, Info, SortDirection, Type);
-    }
 }

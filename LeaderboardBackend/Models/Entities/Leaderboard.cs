@@ -58,20 +58,6 @@ public class Leaderboard : IHasCreationTimestamp
     ///     A collection of `Category` entities for the `Leaderboard`.
     /// </summary>
     public List<Category>? Categories { get; set; }
-
-    public override bool Equals(object? obj)
-    {
-        return obj is Leaderboard leaderboard
-            && Id == leaderboard.Id
-            && Name == leaderboard.Name
-            && Slug == leaderboard.Slug
-            && Info == leaderboard.Info;
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Id, Name, Slug, Info);
-    }
 }
 
 public class LeaderboardEntityTypeConfig : IEntityTypeConfiguration<Leaderboard>

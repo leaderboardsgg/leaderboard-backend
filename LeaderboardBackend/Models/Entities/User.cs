@@ -80,16 +80,6 @@ public class User : IHasCreationTimestamp
     public Instant CreatedAt { get; set; }
 
     public bool IsAdmin => Role == UserRole.Administrator;
-
-    public override bool Equals(object? obj)
-    {
-        return obj is User user && Id.Equals(user.Id);
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Id, Username, Email);
-    }
 }
 
 public class UserEntityTypeConfig : IEntityTypeConfiguration<User>
