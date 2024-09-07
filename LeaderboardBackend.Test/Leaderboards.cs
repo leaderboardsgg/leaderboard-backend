@@ -40,7 +40,7 @@ internal class Leaderboards
     [Test]
     public async Task GetLeaderboard_NotFound() => await FluentActions.Awaiting(
         async () => await _apiClient.Get<LeaderboardViewModel>(
-            $"/api/leaderboards/{long.MaxValue}",
+            $"/api/leaderboard/{long.MaxValue}",
             new()
         )
     ).Should().ThrowAsync<RequestFailureException>()
