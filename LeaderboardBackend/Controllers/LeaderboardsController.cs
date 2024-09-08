@@ -11,8 +11,6 @@ namespace LeaderboardBackend.Controllers;
 
 public class LeaderboardsController(ILeaderboardService leaderboardService) : ApiController
 {
-    private readonly ILeaderboardService _leaderboardService = leaderboardService;
-
     [AllowAnonymous]
     [HttpGet("api/leaderboard/{id:long}")]
     [SwaggerOperation("Gets a leaderboard by its ID.", OperationId = "getLeaderboard")]
@@ -20,7 +18,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
     [SwaggerResponse(404)]
     public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboard(long id)
     {
-        Leaderboard? leaderboard = await _leaderboardService.GetLeaderboard(id);
+        Leaderboard? leaderboard = await leaderboardService.GetLeaderboard(id);
 
         if (leaderboard == null)
         {
@@ -37,7 +35,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
     [SwaggerResponse(404)]
     public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboardBySlug([FromQuery, SwaggerParameter(Required = true)] string slug)
     {
-        Leaderboard? leaderboard = await _leaderboardService.GetLeaderboardBySlug(slug);
+        Leaderboard? leaderboard = await leaderboardService.GetLeaderboardBySlug(slug);
 
         if (leaderboard == null)
         {
@@ -55,7 +53,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
         [FromQuery] long[] ids
     )
     {
-        List<Leaderboard> result = await _leaderboardService.GetLeaderboards(ids);
+        List<Leaderboard> result = await leaderboardService.GetLeaderboards(ids);
         return Ok(result.Select(LeaderboardViewModel.MapFrom));
     }
 
@@ -72,7 +70,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
     {
         Leaderboard leaderboard = new() { Name = request.Name, Slug = request.Slug, Info = request.Info };
 
-        await _leaderboardService.CreateLeaderboard(leaderboard);
+        await leaderboardService.CreateLeaderboard(leaderboard);
 
         return CreatedAtAction(
             nameof(GetLeaderboard),
