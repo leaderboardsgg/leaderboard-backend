@@ -8,8 +8,8 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
     public async Task<Leaderboard?> GetLeaderboard(long id) =>
         await applicationContext.Leaderboards.FindAsync(id);
 
-    public Task<Leaderboard?> GetLeaderboardBySlug(string slug) =>
-        applicationContext.Leaderboards
+    public async Task<Leaderboard?> GetLeaderboardBySlug(string slug) =>
+        await applicationContext.Leaderboards
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Slug == slug);
 
