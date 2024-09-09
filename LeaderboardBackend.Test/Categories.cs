@@ -28,10 +28,7 @@ internal class Categories
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown()
-    {
-        _factory.Dispose();
-    }
+    public void OneTimeTearDown() => _factory.Dispose();
 
     [Test]
     public static void GetCategory_NotFound()

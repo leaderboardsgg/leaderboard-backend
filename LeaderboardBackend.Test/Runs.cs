@@ -110,9 +110,10 @@ namespace LeaderboardBackend.Test
             );
         }
 
-        private static async Task<RunViewModel> GetRun(Guid id)
-        {
-            return await _apiClient.Get<RunViewModel>($"/api/run/{id.ToUrlSafeBase64String()}", new() { Jwt = _jwt });
-        }
+        private static async Task<RunViewModel> GetRun(Guid id) =>
+            await _apiClient.Get<RunViewModel>(
+                $"/api/run/{id.ToUrlSafeBase64String()}",
+                new() { Jwt = _jwt }
+            );
     }
 }
