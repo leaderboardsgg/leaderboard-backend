@@ -28,24 +28,18 @@ internal class Categories
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown()
-    {
-        _factory.Dispose();
-    }
+    public void OneTimeTearDown() => _factory.Dispose();
 
     [Test]
-    public static void GetCategory_NotFound()
-    {
-        RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(
-            async () =>
-                await _apiClient.Get<CategoryViewModel>(
-                    $"/api/categories/69",
-                    new() { Jwt = _jwt }
-                )
-        )!;
-
-        Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);
-    }
+    public static async Task GetCategory_NotFound() =>
+        await _apiClient.Awaiting(
+            a => a.Get<CategoryViewModel>(
+                $"/api/cateogries/69",
+                new() { Jwt = _jwt }
+            )
+        ).Should()
+        .ThrowAsync<RequestFailureException>()
+        .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
 
     [Test]
     public static async Task CreateCategory_GetCategory_OK()

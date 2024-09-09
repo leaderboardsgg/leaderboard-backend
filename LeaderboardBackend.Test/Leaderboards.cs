@@ -35,24 +35,16 @@ internal class Leaderboards
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown()
-    {
-        _factory.Dispose();
-    }
+    public void OneTimeTearDown() => _factory.Dispose();
 
     [Test]
-    public void GetLeaderboard_NotFound()
-    {
-        RequestFailureException e = Assert.ThrowsAsync<RequestFailureException>(
-            async () =>
-                await _apiClient.Get<LeaderboardViewModel>(
-                    $"/api/leaderboard/{long.MaxValue}",
-                    new()
-                )
-        )!;
-
-        Assert.AreEqual(HttpStatusCode.NotFound, e.Response.StatusCode);
-    }
+    public async Task GetLeaderboard_NotFound() => await FluentActions.Awaiting(
+        async () => await _apiClient.Get<LeaderboardViewModel>(
+            $"/api/leaderboard/{long.MaxValue}",
+            new()
+        )
+    ).Should().ThrowAsync<RequestFailureException>()
+    .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
 
     [Test]
     public async Task CreateLeaderboard_GetLeaderboard_OK()

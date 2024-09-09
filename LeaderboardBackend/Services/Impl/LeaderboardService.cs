@@ -3,37 +3,26 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LeaderboardBackend.Services;
 
-public class LeaderboardService : ILeaderboardService
+public class LeaderboardService(ApplicationContext applicationContext) : ILeaderboardService
 {
-    private readonly ApplicationContext _applicationContext;
+    public async Task<Leaderboard?> GetLeaderboard(long id) =>
+        await applicationContext.Leaderboards.FindAsync(id);
 
-    public LeaderboardService(ApplicationContext applicationContext)
-    {
-        _applicationContext = applicationContext;
-    }
-
-    public async Task<Leaderboard?> GetLeaderboard(long id)
-    {
-        return await _applicationContext.Leaderboards.FindAsync(id);
-    }
-
-    public async Task<Leaderboard?> GetLeaderboardBySlug(string slug)
-    {
-        return await _applicationContext.Leaderboards
+    public async Task<Leaderboard?> GetLeaderboardBySlug(string slug) =>
+        await applicationContext.Leaderboards
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Slug == slug);
-    }
 
     // FIXME: Paginate this
     public async Task<List<Leaderboard>> GetLeaderboards(long[]? ids = null)
     {
         if (ids is null)
         {
-            return await _applicationContext.Leaderboards.ToListAsync();
+            return await applicationContext.Leaderboards.ToListAsync();
         }
         else
         {
-            return await _applicationContext.Leaderboards
+            return await applicationContext.Leaderboards
                 .Where(leaderboard => ids.Contains(leaderboard.Id))
                 .ToListAsync();
         }
@@ -41,7 +30,7 @@ public class LeaderboardService : ILeaderboardService
 
     public async Task CreateLeaderboard(Leaderboard leaderboard)
     {
-        _applicationContext.Leaderboards.Add(leaderboard);
-        await _applicationContext.SaveChangesAsync();
+        applicationContext.Leaderboards.Add(leaderboard);
+        await applicationContext.SaveChangesAsync();
     }
 }
