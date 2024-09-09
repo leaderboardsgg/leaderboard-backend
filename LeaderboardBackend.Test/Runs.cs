@@ -74,8 +74,8 @@ namespace LeaderboardBackend.Test
 
             RunViewModel retrieved = await GetRun(created.Id);
 
-            Assert.NotNull(created);
-            Assert.AreEqual(created.Id, retrieved.Id);
+            created.Should().NotBeNull();
+            created.Id.Should().Be(retrieved.Id);
         }
 
         [Test]
@@ -88,13 +88,12 @@ namespace LeaderboardBackend.Test
                 new() { Jwt = _jwt }
             );
 
-            Assert.NotNull(category);
-            Assert.AreEqual(category.Id, _categoryId);
+            category.Should().NotBeNull();
+            category.Id.Should().Be(_categoryId);
         }
 
-        private static async Task<RunViewModel> CreateRun()
-        {
-            return await _apiClient.Post<RunViewModel>(
+        private static async Task<RunViewModel> CreateRun() =>
+            await _apiClient.Post<RunViewModel>(
                 "/runs/create",
                 new()
                 {
@@ -108,7 +107,6 @@ namespace LeaderboardBackend.Test
                     Jwt = _jwt
                 }
             );
-        }
 
         private static async Task<RunViewModel> GetRun(Guid id) =>
             await _apiClient.Get<RunViewModel>(
