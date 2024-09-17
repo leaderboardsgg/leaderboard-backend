@@ -10,8 +10,7 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
 
     public async Task<Leaderboard?> GetLeaderboardBySlug(string slug) =>
         await applicationContext.Leaderboards
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Slug == slug);
+            .FirstOrDefaultAsync(b => b.Slug == slug && b.DeletedAt == null);
 
     // FIXME: Paginate this
     public async Task<List<Leaderboard>> GetLeaderboards(long[]? ids = null)

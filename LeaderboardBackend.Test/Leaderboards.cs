@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using NodaTime;
 using NUnit.Framework;
 
 namespace LeaderboardBackend.Test;
@@ -135,7 +138,27 @@ internal class Leaderboards
         }
 
         CreateLeaderboardRequest reqForInexistentBoard = _createBoardReqFaker.Generate();
-        Func<Task<string>> act = async () => await _apiClient.Get<string>($"/api/leaderboard?slug={reqForInexistentBoard.Slug}", new());
+        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Get<LeaderboardViewModel>($"/api/leaderboard?slug={reqForInexistentBoard.Slug}", new());
+        await act.Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Test]
+    public async Task GetLeaderboards_Deleted_BySlug_NotFound()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+        Leaderboard board = new()
+        {
+            Name = "Should 404",
+            Slug = "should-404",
+            CreatedAt = Instant.FromUnixTimeSeconds(0),
+            UpdatedAt = Instant.FromUnixTimeSeconds(0),
+            DeletedAt = Instant.FromUnixTimeSeconds(0),
+        };
+
+        context.Leaderboards.Add(board);
+        await context.SaveChangesAsync();
+
+        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Get<LeaderboardViewModel>($"/api/leaderboard?slug={board.Slug}", new());
         await act.Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
     }
 
