@@ -1,23 +1,14 @@
 using LeaderboardBackend.Models.Entities;
-using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace LeaderboardBackend.Controllers;
 
-public class UsersController : ApiController
+public class UsersController(IUserService userService) : ApiController
 {
-    private readonly IUserService _userService;
-
-    public UsersController(IUserService userService)
-    {
-        _userService = userService;
-    }
-
     [AllowAnonymous]
     [HttpGet("api/user/{id:guid}")]
     [SwaggerOperation("Gets a User by their ID.", OperationId = "getUser")]
@@ -27,7 +18,7 @@ public class UsersController : ApiController
         [SwaggerParameter("The ID of the `User` which should be retrieved.")] Guid id
     )
     {
-        User? user = await _userService.GetUserById(id);
+        User? user = await userService.GetUserById(id);
 
         if (user is null)
         {
@@ -51,12 +42,9 @@ public class UsersController : ApiController
     [SwaggerResponse(200, "The `User` was found and returned successfully.")]
     [SwaggerResponse(401, "An invalid JWT was passed in.")]
     [SwaggerResponse(404, "The user was not found in the database.")]
-    public async Task<ActionResult<UserViewModel>> Me()
-    {
-        return (await _userService.GetUserFromClaims(HttpContext.User)).Match<ActionResult<UserViewModel>>(
+    public async Task<ActionResult<UserViewModel>> Me() => (await userService.GetUserFromClaims(HttpContext.User)).Match<ActionResult<UserViewModel>>(
             user => Ok(UserViewModel.MapFrom(user)),
             badCredentials => Unauthorized(),
             userNotFound => NotFound()
         );
-    }
 }

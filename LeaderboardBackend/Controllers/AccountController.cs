@@ -12,15 +12,8 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace LeaderboardBackend.Controllers;
 
 [Route("[controller]")]
-public class AccountController : ApiController
+public class AccountController(IUserService userService) : ApiController
 {
-    private readonly IUserService _userService;
-
-    public AccountController(IUserService userService)
-    {
-        _userService = userService;
-    }
-
     [AllowAnonymous]
     [FeatureGate(Features.ACCOUNT_REGISTRATION)]
     [HttpPost("register")]
@@ -62,7 +55,7 @@ public class AccountController : ApiController
         [FromServices] IAccountConfirmationService confirmationService
     )
     {
-        CreateUserResult result = await _userService.CreateUser(request);
+        CreateUserResult result = await userService.CreateUser(request);
 
         if (result.TryPickT0(out User user, out CreateUserConflicts conflicts))
         {
@@ -126,7 +119,7 @@ public class AccountController : ApiController
         )] LoginRequest request
     )
     {
-        LoginResult result = await _userService.LoginByEmailAndPassword(request.Email, request.Password);
+        LoginResult result = await userService.LoginByEmailAndPassword(request.Email, request.Password);
 
         return result.Match<ActionResult<LoginResponse>>(
             loginToken => Ok(new LoginResponse { Token = loginToken }),
@@ -149,7 +142,7 @@ public class AccountController : ApiController
     {
         // TODO: Handle rate limiting (429 case) - zysim
 
-        GetUserResult result = await _userService.GetUserFromClaims(HttpContext.User);
+        GetUserResult result = await userService.GetUserFromClaims(HttpContext.User);
 
         if (result.TryPickT0(out User user, out OneOf<BadCredentials, UserNotFound> errors))
         {
@@ -180,7 +173,7 @@ public class AccountController : ApiController
         [FromBody, SwaggerRequestBody("The account recovery request.")] RecoverAccountRequest request
     )
     {
-        User? user = await _userService.GetUserByNameAndEmail(request.Username, request.Email);
+        User? user = await userService.GetUserByNameAndEmail(request.Username, request.Email);
 
         if (user is null)
         {

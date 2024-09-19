@@ -9,15 +9,8 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Controllers;
 
-public class CategoriesController : ApiController
+public class CategoriesController(ICategoryService categoryService) : ApiController
 {
-    private readonly ICategoryService _categoryService;
-
-    public CategoriesController(ICategoryService categoryService)
-    {
-        _categoryService = categoryService;
-    }
-
     [AllowAnonymous]
     [HttpGet("api/category/{id}")]
     [SwaggerOperation("Gets a Category by its ID.", OperationId = "getCategory")]
@@ -25,7 +18,7 @@ public class CategoriesController : ApiController
     [SwaggerResponse(404)]
     public async Task<ActionResult<CategoryViewModel>> GetCategory(long id)
     {
-        Category? category = await _categoryService.GetCategory(id);
+        Category? category = await categoryService.GetCategory(id);
 
         if (category == null)
         {
@@ -54,7 +47,7 @@ public class CategoriesController : ApiController
                 LeaderboardId = request.LeaderboardId,
             };
 
-        await _categoryService.CreateCategory(category);
+        await categoryService.CreateCategory(category);
 
         return CreatedAtAction(
             nameof(GetCategory),
