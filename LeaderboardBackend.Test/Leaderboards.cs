@@ -21,10 +21,10 @@ namespace LeaderboardBackend.Test;
 [TestFixture]
 internal class Leaderboards
 {
-    private static TestApiClient _apiClient = null!;
-    private static WebApplicationFactory<Program> _factory = null!;
-    private static readonly FakeClock _clock = new(new Instant());
-    private static string? _jwt;
+    private static readonly TestApiClient _apiClient = null!;
+    private static readonly WebApplicationFactory<Program> _factory = null!;
+    private static readonly FakeClock _clock = new(new());
+    private static readonly string? _jwt;
 
     private readonly Faker<CreateLeaderboardRequest> _createBoardReqFaker =
         new AutoFaker<CreateLeaderboardRequest>().RuleFor(
