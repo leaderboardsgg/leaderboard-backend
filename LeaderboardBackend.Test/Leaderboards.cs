@@ -165,13 +165,13 @@ internal class Leaderboards
         {
             Name = "Should 404",
             Slug = "should-404",
-            CreatedAt = Instant.FromUnixTimeSeconds(0),
-            UpdatedAt = Instant.FromUnixTimeSeconds(0),
-            DeletedAt = Instant.FromUnixTimeSeconds(0),
+            UpdatedAt = _clock.GetCurrentInstant() + Duration.FromMinutes(1),
+            DeletedAt = _clock.GetCurrentInstant() + Duration.FromMinutes(1),
         };
 
         context.Leaderboards.Add(board);
         await context.SaveChangesAsync();
+        _clock.AdvanceMinutes(2);
 
         Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Get<LeaderboardViewModel>($"/api/leaderboard?slug={board.Slug}", new());
         await act.Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
