@@ -165,16 +165,46 @@ internal class Leaderboards
         {
             Name = "Should 404",
             Slug = "should-404",
-            UpdatedAt = _clock.GetCurrentInstant() + Duration.FromMinutes(1),
-            DeletedAt = _clock.GetCurrentInstant() + Duration.FromMinutes(1),
+            UpdatedAt = _clock.GetCurrentInstant() - Duration.FromMinutes(1),
+            DeletedAt = _clock.GetCurrentInstant() - Duration.FromMinutes(1),
         };
 
         context.Leaderboards.Add(board);
         await context.SaveChangesAsync();
-        _clock.AdvanceMinutes(2);
 
         Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Get<LeaderboardViewModel>($"/api/leaderboard?slug={board.Slug}", new());
         await act.Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Test]
+    public async Task DeletedBoardsDontConsumeSlugs()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard deletedBoard = new()
+        {
+            Name = "Super Mario 64 (OLD)",
+            Slug = "super-mario-64",
+            DeletedAt = _clock.GetCurrentInstant()
+        };
+
+        context.Leaderboards.Add(deletedBoard);
+        await context.SaveChangesAsync();
+        deletedBoard.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
+        Leaderboard? retrieved = await context.Leaderboards.FindAsync(deletedBoard.Id);
+        retrieved.Should().NotBeNull();
+
+        await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>("/leaderboards/create", new()
+        {
+            Body = new CreateLeaderboardRequest()
+            {
+                Name = "Super Mario 64",
+                Info = "new and improved",
+                Slug = "super-mario-64"
+            },
+            Jwt = _jwt
+        })).Should().NotThrowAsync();
     }
 
     private static string ListToQueryString<T>(IEnumerable<T> list, string key)
