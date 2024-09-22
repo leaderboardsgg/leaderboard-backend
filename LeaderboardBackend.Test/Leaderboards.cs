@@ -183,8 +183,8 @@ internal class Leaderboards
 
         Leaderboard deletedBoard = new()
         {
-            Name = "Super Mario 64 (OLD)",
-            Slug = "super-mario-64",
+            Name = "Super Mario World (OLD)",
+            Slug = "super-mario-world",
             DeletedAt = _clock.GetCurrentInstant()
         };
 
@@ -199,9 +199,9 @@ internal class Leaderboards
         {
             Body = new CreateLeaderboardRequest()
             {
-                Name = "Super Mario 64",
+                Name = "Super Mario World",
                 Info = "new and improved",
-                Slug = "super-mario-64"
+                Slug = "super-mario-world"
             },
             Jwt = _jwt
         })).Should().NotThrowAsync();
