@@ -191,20 +191,25 @@ internal class Leaderboards
         context.Leaderboards.Add(deletedBoard);
         await context.SaveChangesAsync();
         deletedBoard.Id.Should().NotBe(default);
-        context.ChangeTracker.Clear();
-        Leaderboard? retrieved = await context.Leaderboards.FindAsync(deletedBoard.Id);
-        retrieved.Should().NotBeNull();
 
-        await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>("/leaderboards/create", new()
+        CreateLeaderboardRequest lbRequest = new()
         {
-            Body = new CreateLeaderboardRequest()
-            {
-                Name = "Super Mario World",
-                Info = "new and improved",
-                Slug = "super-mario-world"
-            },
+            Name = "Super Mario World",
+            Info = "new and improved",
+            Slug = "super-mario-world"
+        };
+
+#pragma warning disable IDE0008 // Use explicit type
+        var res = await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>("/leaderboards/create", new()
+        {
+            Body = lbRequest,
             Jwt = _jwt
         })).Should().NotThrowAsync();
+#pragma warning restore IDE0008 // Use explicit type
+
+        Leaderboard? created = await context.Leaderboards.FindAsync(res.Subject.Id);
+        created.Should().NotBeNull().And.BeEquivalentTo(lbRequest);
+        created!.CreatedAt.Should().Be(_clock.GetCurrentInstant());
     }
 
     private static string ListToQueryString<T>(IEnumerable<T> list, string key)
