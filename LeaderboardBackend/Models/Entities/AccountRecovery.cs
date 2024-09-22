@@ -6,7 +6,7 @@ namespace LeaderboardBackend.Models.Entities;
 /// <summary>
 ///     Represents an account recovery attempt for a `User`.
 /// </summary>
-public class AccountRecovery
+public class AccountRecovery : IHasCreationTimestamp
 {
     /// <summary>
     ///     The unique identifier of the `AccountRecovery`.<br/>

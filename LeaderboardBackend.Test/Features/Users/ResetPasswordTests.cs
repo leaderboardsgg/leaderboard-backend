@@ -40,7 +40,11 @@ public class ResetPasswordTests : IntegrationTestsBase
     [SetUp]
     public void Init()
     {
-        _scope = _factory.Services.CreateScope();
+        _scope = _factory.WithWebHostBuilder(
+            builder => builder.ConfigureTestServices(
+                services => services.AddSingleton<IClock, FakeClock>(_ => _clock)
+            )
+        ).Services.CreateScope();
     }
 
     [TearDown]
@@ -75,8 +79,7 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         AccountRecovery recovery = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(0),
-            ExpiresAt = Instant.FromUnixTimeSeconds(0) + Duration.FromHours(1),
+            ExpiresAt = _clock.GetCurrentInstant() + Duration.FromHours(1),
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
@@ -88,6 +91,8 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
+
+        _clock.AdvanceHours(2);
 
         HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
         {
@@ -117,20 +122,23 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         AccountRecovery recovery1 = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(20),
-            ExpiresAt = Instant.FromUnixTimeSeconds(20) + Duration.FromHours(1),
+            ExpiresAt = _clock.GetCurrentInstant() + Duration.FromHours(1),
             User = user
         };
+
+        context.AccountRecoveries.Add(recovery1);
+        await context.SaveChangesAsync();
+        _clock.AdvanceMinutes(1);
 
         AccountRecovery recovery2 = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(30),
-            ExpiresAt = Instant.FromUnixTimeSeconds(30) + Duration.FromHours(1),
+            ExpiresAt = _clock.GetCurrentInstant() + Duration.FromHours(1),
             User = user
         };
 
-        context.AccountRecoveries.AddRange(recovery1, recovery2);
+        context.AccountRecoveries.Add(recovery2);
         await context.SaveChangesAsync();
+        _clock.AdvanceMinutes(1);
 
         HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery1.Id), new ChangePasswordRequest
         {
@@ -152,9 +160,8 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         AccountRecovery recovery = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(20),
-            ExpiresAt = Instant.FromUnixTimeSeconds(20) + Duration.FromHours(1),
-            UsedAt = Instant.FromUnixTimeSeconds(30),
+            ExpiresAt = _clock.GetCurrentInstant() + Duration.FromHours(1),
+            UsedAt = _clock.GetCurrentInstant() + Duration.FromMinutes(1),
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
@@ -166,6 +173,7 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
+        _clock.AdvanceMinutes(2);
 
         HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
         {
@@ -175,7 +183,7 @@ public class ResetPasswordTests : IntegrationTestsBase
         res.Should().HaveStatusCode(System.Net.HttpStatusCode.NotFound);
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
-        recovery.UsedAt.Should().Be(Instant.FromUnixTimeSeconds(30));
+        recovery.UsedAt.Should().Be(_clock.GetCurrentInstant() - Duration.FromMinutes(1));
         BCryptNet.EnhancedVerify("P4ssword", recovery.User.Password).Should().BeTrue();
     }
 
@@ -187,8 +195,7 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         AccountRecovery recovery = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(20),
-            ExpiresAt = Instant.FromUnixTimeSeconds(20) + Duration.FromHours(1),
+            ExpiresAt = _clock.GetCurrentInstant() + Duration.FromHours(1),
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
@@ -226,8 +233,7 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         AccountRecovery recovery = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(20),
-            ExpiresAt = Instant.FromUnixTimeSeconds(20) + Duration.FromHours(1),
+            ExpiresAt = _clock.GetCurrentInstant() + Duration.FromHours(1),
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
@@ -268,8 +274,7 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         AccountRecovery recovery = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(20),
-            ExpiresAt = Instant.FromUnixTimeSeconds(20) + Duration.FromHours(1),
+            ExpiresAt = _clock.GetCurrentInstant() + Duration.FromHours(1),
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
@@ -303,8 +308,7 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         AccountRecovery recovery = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(20),
-            ExpiresAt = Instant.FromUnixTimeSeconds(20) + Duration.FromHours(1),
+            ExpiresAt = _clock.GetCurrentInstant() + Duration.FromHours(1),
             User = new()
             {
                 Email = $"pwdresettestuser{userNumber}@email.com",
@@ -316,6 +320,7 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
+        _clock.AdvanceMinutes(1);
 
         HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
         {
@@ -325,7 +330,7 @@ public class ResetPasswordTests : IntegrationTestsBase
         res.Should().HaveStatusCode(System.Net.HttpStatusCode.OK);
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
-        recovery.UsedAt.Should().Be(Instant.FromUnixTimeSeconds(10) + Duration.FromHours(1));
+        recovery.UsedAt.Should().Be(_clock.GetCurrentInstant());
         BCryptNet.EnhancedVerify("AValidP4ssword", recovery.User.Password).Should().BeTrue();
     }
 }

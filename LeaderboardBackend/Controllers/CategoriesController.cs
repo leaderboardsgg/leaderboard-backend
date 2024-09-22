@@ -45,6 +45,8 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
                 Slug = request.Slug,
                 Info = request.Info,
                 LeaderboardId = request.LeaderboardId,
+                SortDirection = request.SortDirection,
+                Type = request.Type
             };
 
         await categoryService.CreateCategory(category);

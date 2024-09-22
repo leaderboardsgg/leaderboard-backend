@@ -6,7 +6,7 @@ namespace LeaderboardBackend.Models.Entities;
 /// <summary>
 ///     Represents a user account confirmation.
 /// </summary>
-public class AccountConfirmation
+public class AccountConfirmation : IHasCreationTimestamp
 {
     /// <summary>
     ///     The unique identifier of the `AccountConfirmation`.<br/>

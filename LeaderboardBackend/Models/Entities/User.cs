@@ -18,7 +18,7 @@ public enum UserRole
 /// <summary>
 ///     Represents a user account registered on the website.
 /// </summary>
-public class User
+public class User : IHasCreationTimestamp
 {
     /// <summary>
     ///     The unique identifier of the `User`.<br/>
@@ -80,16 +80,6 @@ public class User
     public Instant CreatedAt { get; set; }
 
     public bool IsAdmin => Role == UserRole.Administrator;
-
-    public override bool Equals(object? obj)
-    {
-        return obj is User user && Id.Equals(user.Id);
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Id, Username, Email);
-    }
 }
 
 public class UserEntityTypeConfig : IEntityTypeConfiguration<User>

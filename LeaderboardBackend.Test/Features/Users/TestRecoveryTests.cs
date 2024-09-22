@@ -31,7 +31,11 @@ public class TestRecoveryTests : IntegrationTestsBase
     public void Init()
     {
         _factory.ResetDatabase();
-        _scope = _factory.Services.CreateScope();
+        _scope = _factory.WithWebHostBuilder(builder =>
+            builder.ConfigureTestServices(services =>
+                services.AddSingleton<IClock, FakeClock>(_ => _clock)
+            )
+        ).Services.CreateScope();
     }
 
     [TearDown]
@@ -48,13 +52,11 @@ public class TestRecoveryTests : IntegrationTestsBase
     [Test]
     public async Task TestRecovery_Expired()
     {
-        _clock.Reset(Instant.FromUnixTimeSeconds(1) + Duration.FromHours(2));
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
         AccountRecovery recovery = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(0),
-            ExpiresAt = Instant.FromUnixTimeSeconds(0).Plus(Duration.FromHours(1)),
+            ExpiresAt = _clock.GetCurrentInstant().Plus(Duration.FromHours(1)),
             User = new()
             {
                 Email = "test@email.com",
@@ -66,6 +68,7 @@ public class TestRecoveryTests : IntegrationTestsBase
 
         context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
+        _clock.AdvanceHours(2);
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery.Id));
         res.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -73,7 +76,6 @@ public class TestRecoveryTests : IntegrationTestsBase
     [Test]
     public async Task TestRecovery_Old()
     {
-        _clock.Reset(Instant.FromUnixTimeSeconds(10));
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
         User user = new()
@@ -87,20 +89,23 @@ public class TestRecoveryTests : IntegrationTestsBase
 
         AccountRecovery recovery1 = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(0),
-            ExpiresAt = Instant.FromUnixTimeSeconds(0).Plus(Duration.FromHours(1)),
+            ExpiresAt = _clock.GetCurrentInstant().Plus(Duration.FromHours(1)),
             User = user
         };
+
+        context.AccountRecoveries.Add(recovery1);
+        await context.SaveChangesAsync();
+        _clock.AdvanceMinutes(1);
 
         AccountRecovery recovery2 = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(5),
-            ExpiresAt = Instant.FromUnixTimeSeconds(5).Plus(Duration.FromHours(1)),
+            ExpiresAt = _clock.GetCurrentInstant().Plus(Duration.FromHours(1)),
             User = user
         };
 
-        await context.AccountRecoveries.AddRangeAsync(recovery1, recovery2);
+        context.AccountRecoveries.Add(recovery2);
         await context.SaveChangesAsync();
+        _clock.AdvanceMinutes(1);
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery1.Id));
         res.Should().HaveStatusCode(HttpStatusCode.NotFound);
     }
@@ -108,14 +113,12 @@ public class TestRecoveryTests : IntegrationTestsBase
     [Test]
     public async Task TestRecovery_Used()
     {
-        _clock.Reset(Instant.FromUnixTimeSeconds(10));
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
         AccountRecovery recovery = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(0),
-            ExpiresAt = Instant.FromUnixTimeSeconds(0).Plus(Duration.FromHours(1)),
-            UsedAt = Instant.FromUnixTimeSeconds(5),
+            ExpiresAt = _clock.GetCurrentInstant().Plus(Duration.FromHours(1)),
+            UsedAt = _clock.GetCurrentInstant().Plus(Duration.FromMinutes(1)),
             User = new()
             {
                 Email = "test@email.com",
@@ -127,6 +130,7 @@ public class TestRecoveryTests : IntegrationTestsBase
 
         context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
+        _clock.AdvanceMinutes(2);
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery.Id));
         res.Should().HaveStatusCode(HttpStatusCode.NotFound);
     }
@@ -137,13 +141,11 @@ public class TestRecoveryTests : IntegrationTestsBase
     [TestCase(UserRole.Registered, HttpStatusCode.OK)]
     public async Task TestRecovery_Roles(UserRole role, HttpStatusCode expected)
     {
-        _clock.Reset(Instant.FromUnixTimeSeconds(1));
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
         AccountRecovery recovery = new()
         {
-            CreatedAt = Instant.FromUnixTimeSeconds(0),
-            ExpiresAt = Instant.FromUnixTimeSeconds(0).Plus(Duration.FromHours(1)),
+            ExpiresAt = _clock.GetCurrentInstant().Plus(Duration.FromHours(1)),
             User = new()
             {
                 Email = "test@email.com",
@@ -155,6 +157,7 @@ public class TestRecoveryTests : IntegrationTestsBase
 
         context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
+        recovery.CreatedAt.Should().Be(_clock.GetCurrentInstant());
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery.Id));
         res.Should().HaveStatusCode(expected);
     }
