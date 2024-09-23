@@ -165,16 +165,51 @@ internal class Leaderboards
         {
             Name = "Should 404",
             Slug = "should-404",
-            UpdatedAt = _clock.GetCurrentInstant() + Duration.FromMinutes(1),
-            DeletedAt = _clock.GetCurrentInstant() + Duration.FromMinutes(1),
+            UpdatedAt = _clock.GetCurrentInstant() - Duration.FromMinutes(1),
+            DeletedAt = _clock.GetCurrentInstant() - Duration.FromMinutes(1),
         };
 
         context.Leaderboards.Add(board);
         await context.SaveChangesAsync();
-        _clock.AdvanceMinutes(2);
 
         Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Get<LeaderboardViewModel>($"/api/leaderboard?slug={board.Slug}", new());
         await act.Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Test]
+    public async Task DeletedBoardsDontConsumeSlugs()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard deletedBoard = new()
+        {
+            Name = "Super Mario World (OLD)",
+            Slug = "super-mario-world",
+            DeletedAt = _clock.GetCurrentInstant()
+        };
+
+        context.Leaderboards.Add(deletedBoard);
+        await context.SaveChangesAsync();
+        deletedBoard.Id.Should().NotBe(default);
+
+        CreateLeaderboardRequest lbRequest = new()
+        {
+            Name = "Super Mario World",
+            Info = "new and improved",
+            Slug = "super-mario-world"
+        };
+
+#pragma warning disable IDE0008 // Use explicit type
+        var res = await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>("/leaderboards/create", new()
+        {
+            Body = lbRequest,
+            Jwt = _jwt
+        })).Should().NotThrowAsync();
+#pragma warning restore IDE0008 // Use explicit type
+
+        Leaderboard? created = await context.Leaderboards.FindAsync(res.Subject.Id);
+        created.Should().NotBeNull().And.BeEquivalentTo(lbRequest);
+        created!.CreatedAt.Should().Be(_clock.GetCurrentInstant());
     }
 
     private static string ListToQueryString<T>(IEnumerable<T> list, string key)
