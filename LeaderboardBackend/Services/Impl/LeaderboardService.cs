@@ -1,5 +1,8 @@
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace LeaderboardBackend.Services;
 
@@ -27,9 +30,26 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
         }
     }
 
-    public async Task CreateLeaderboard(Leaderboard leaderboard)
+    public async Task<CreateLeaderboardResult> CreateLeaderboard(CreateLeaderboardRequest request)
     {
-        applicationContext.Leaderboards.Add(leaderboard);
-        await applicationContext.SaveChangesAsync();
+        Leaderboard lb = new()
+        {
+            Name = request.Name,
+            Slug = request.Slug,
+            Info = request.Info
+        };
+
+        applicationContext.Leaderboards.Add(lb);
+
+        try
+        {
+            await applicationContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException e) when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            return new CreateLeaderboardConflict();
+        }
+
+        return lb;
     }
 }

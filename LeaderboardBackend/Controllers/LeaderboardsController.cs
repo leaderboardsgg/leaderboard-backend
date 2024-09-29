@@ -1,6 +1,7 @@
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Models.Validation;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -63,19 +64,26 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
     [SwaggerResponse(201)]
     [SwaggerResponse(401)]
     [SwaggerResponse(403, "The requesting `User` is unauthorized to create `Leaderboard`s.")]
-    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
+    [SwaggerResponse(409, "A Leaderboard with the specified slug already exists.", typeof(ValidationProblemDetails))]
+    [SwaggerResponse(422, $"The request contains errors. The following errors can occur: NotEmptyValidator, {SlugRule.SLUG_FORMAT}", Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<LeaderboardViewModel>> CreateLeaderboard(
         [FromBody] CreateLeaderboardRequest request
     )
     {
-        Leaderboard leaderboard = new() { Name = request.Name, Slug = request.Slug, Info = request.Info };
+        CreateLeaderboardResult r = await leaderboardService.CreateLeaderboard(request);
 
-        await leaderboardService.CreateLeaderboard(leaderboard);
+        return r.Match<ActionResult<LeaderboardViewModel>>(
+            lb => CreatedAtAction(
+                nameof(GetLeaderboard),
+                new { id = lb.Id },
+                LeaderboardViewModel.MapFrom(lb)
+            ),
+            conflict =>
+            {
+                ModelState.AddModelError(nameof(request.Slug), "SlugAlreadyUsed");
 
-        return CreatedAtAction(
-            nameof(GetLeaderboard),
-            new { id = leaderboard.Id },
-            LeaderboardViewModel.MapFrom(leaderboard)
+                return Conflict(new ValidationProblemDetails(ModelState));
+            }
         );
     }
 }
