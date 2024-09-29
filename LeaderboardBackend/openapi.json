@@ -122,7 +122,7 @@
             "description": "No `User` with the requested details could be found."
           },
           "422": {
-            "description": "The request contains errors.\nValidation error codes by property:\n- **Password**:\n  - **NotEmptyValidator**: No password was passed\n  - **PasswordFormat**: Invalid password format\n- **Email**:\n  - **NotNullValidator**: No email was passed\n  - **EmailValidator**: Invalid email format",
+            "description": "The request contains errors.\nValidation error codes by property:\n- **Password**:\n  - **NotEmptyValidator**: No password was passed\n  - **PasswordFormat**: Invalid password format\n- **Email**:\n  - **NotEmptyValidator**: No email was passed\n  - **EmailValidator**: Invalid email format",
             "content": {
               "application/json": {
                 "schema": {
@@ -653,8 +653,18 @@
           "403": {
             "description": "The requesting `User` is unauthorized to create `Leaderboard`s."
           },
+          "409": {
+            "description": "A Leaderboard with the specified slug already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Unprocessable Content",
+            "description": "The request contains errors. The following errors can occur: NotEmptyValidator, SlugFormat",
             "content": {
               "application/json": {
                 "schema": {
@@ -986,6 +996,7 @@
         "type": "object",
         "properties": {
           "password": {
+            "minLength": 1,
             "type": "string"
           }
         },
@@ -1035,18 +1046,19 @@
       },
       "CreateLeaderboardRequest": {
         "required": [
-          "info",
           "name",
           "slug"
         ],
         "type": "object",
         "properties": {
           "name": {
+            "minLength": 1,
             "type": "string",
             "description": "The display name of the `Leaderboard` to create.",
             "example": "Foo Bar"
           },
           "slug": {
+            "minLength": 1,
             "type": "string",
             "description": "The URL-scoped unique identifier of the `Leaderboard`.\n\r\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
             "example": "foo-bar"
@@ -1252,16 +1264,19 @@
         "type": "object",
         "properties": {
           "username": {
+            "minLength": 1,
             "type": "string",
             "description": "The username of the `User`. It:\r\n<ul><li>must be [2, 25] in length;</li><li>must be made up of letters sandwiching zero or one of:</li><ul><li>hyphen;</li><li>underscore; or</li><li>apostrophe</li></ul></ul>\r\nUsernames are saved case-sensitively, but matched against case-insensitively.\r\nA `User` may not register with the name 'Cool' when another `User` with the name 'cool'\r\nexists.",
             "example": "J'on-Doe"
           },
           "email": {
+            "minLength": 1,
             "type": "string",
             "description": "The `User`'s email address.",
             "example": "john.doe@example.com"
           },
           "password": {
+            "minLength": 1,
             "type": "string",
             "description": "The `User`'s password. It:\r\n<ul><li>supports Unicode;</li><li>must be [8, 80] in length;</li><li>must have at least:</li><ul><li>one uppercase letter;</li><li>one lowercase letter; and</li><li>one number.</li></ul></ul>",
             "example": "P4ssword"
