@@ -68,7 +68,7 @@ public class LoginTests : IntegrationTestsBase
         validationResult.ClaimsIdentity.IsAuthenticated.Should().BeTrue();
     }
 
-    [TestCase(null, null, "NotNullValidator", "NotEmptyValidator", Description = "Null email + password")]
+    [TestCase(null, null, "NotEmptyValidator", "NotEmptyValidator", Description = "Null email + password")]
     [TestCase("ee", "ff", "EmailValidator", null, Description = "Invalid email + password")]
     [TestCase("ee", "P4ssword", "EmailValidator", null, Description = "Null email + valid password")]
     public async Task Login_InvalidRequest_Returns422(

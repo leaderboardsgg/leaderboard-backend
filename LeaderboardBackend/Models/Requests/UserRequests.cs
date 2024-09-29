@@ -125,8 +125,8 @@ public class LoginRequestValidator : AbstractValidator<LoginRequest>
 {
     public LoginRequestValidator()
     {
-        // NotNull() needed because EmailAddress() does not fail null input
-        RuleFor(x => x.Email).NotNull().EmailAddress();
+        // NotEmpty() needed because EmailAddress() does not fail null input
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
         RuleFor(x => x.Password).NotEmpty();
     }
 }
@@ -136,7 +136,7 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
     public RegisterRequestValidator()
     {
         RuleFor(x => x.Username).Username();
-        RuleFor(x => x.Email).EmailAddress();
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
         RuleFor(x => x.Password).UserPassword();
     }
 }

@@ -41,7 +41,7 @@ public class UserPasswordTests
         TestValidationResult<ExampleObject> result = _sut.TestValidate(new ExampleObject());
 
         result.ShouldHaveValidationErrorFor(x => x.Password)
-            .WithErrorCode("NotNullValidator");
+            .WithErrorCode("NotEmptyValidator");
     }
 
     private record ExampleObject(string? Password = null);

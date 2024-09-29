@@ -26,5 +26,9 @@ public record CreateLeaderboardRequest
 }
 public class CreateLeaderboardRequestValidator : AbstractValidator<CreateLeaderboardRequest>
 {
-    public CreateLeaderboardRequestValidator() => RuleFor(x => x.Slug).Slug();
+    public CreateLeaderboardRequestValidator()
+    {
+        RuleFor(x => x.Name).NotEmpty();
+        RuleFor(x => x.Slug).Slug();
+    }
 }

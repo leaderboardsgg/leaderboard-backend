@@ -107,7 +107,7 @@ public class AccountController(IUserService userService) : ApiController
           - **NotEmptyValidator**: No password was passed
           - **PasswordFormat**: Invalid password format
         - **Email**:
-          - **NotNullValidator**: No email was passed
+          - **NotEmptyValidator**: No email was passed
           - **EmailValidator**: Invalid email format
         """,
         typeof(ValidationProblemDetails)
