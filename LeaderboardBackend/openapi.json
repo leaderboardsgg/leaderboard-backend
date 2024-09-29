@@ -621,7 +621,8 @@
                 "$ref": "#/components/schemas/CreateLeaderboardRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "400": {

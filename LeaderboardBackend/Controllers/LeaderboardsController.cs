@@ -67,7 +67,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
     [SwaggerResponse(409, "A Leaderboard with the specified slug already exists.", typeof(ValidationProblemDetails))]
     [SwaggerResponse(422, $"The request contains errors. The following errors can occur: NotEmptyValidator, {SlugRule.SLUG_FORMAT}", Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<LeaderboardViewModel>> CreateLeaderboard(
-        [FromBody] CreateLeaderboardRequest request
+        [FromBody, SwaggerRequestBody(Required = true)] CreateLeaderboardRequest request
     )
     {
         CreateLeaderboardResult r = await leaderboardService.CreateLeaderboard(request);
