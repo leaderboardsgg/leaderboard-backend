@@ -9,12 +9,12 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using LeaderboardBackend;
 using LeaderboardBackend.Authorization;
+using LeaderboardBackend.Filters;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using MicroElements.Swashbuckle.NodaTime;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -136,7 +136,9 @@ builder.Services
         // Enforces JSON output and causes OpenAPI UI to correctly show that we return JSON.
         opt.OutputFormatters.RemoveType<StringOutputFormatter>();
         opt.ModelBinderProviders.Insert(0, new UrlSafeBase64GuidBinderProvider());
+        opt.Filters.AddService<ValidationFilter>();
     })
+    .ConfigureApiBehaviorOptions(opt => opt.SuppressModelStateInvalidFilter = true)
     .AddJsonOptions(opt =>
     {
         opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
@@ -246,26 +248,11 @@ builder.Services.AddAuthorizationBuilder()
 
 builder.Services.AddSingleton<IValidatorInterceptor, LeaderboardBackend.Models.Validation.UseErrorCodeInterceptor>();
 builder.Services.AddFluentValidationAutoValidation(c => c.DisableDataAnnotationsValidation = true);
-builder.Services.Configure<ApiBehaviorOptions>(options => options.InvalidModelStateResponseFactory = context =>
-    {
-        ValidationProblemDetails problemDetails = new(context.ModelState);
-
-        // As of this writing, we want our custom validation rules to return with
-        // a 422, while keeping 400 for all other input syntax errors.
-        // For JSON syntax errors that we don't override, their keys will be the field
-        // path that has the error, which always starts with "$", denoting the object
-        // root. We check for that, and return the error code accordingly. - zysim
-        if (problemDetails.Errors.Keys.Any(x => x.StartsWith('$')))
-        {
-            return new BadRequestObjectResult(problemDetails);
-        }
-
-        return new UnprocessableEntityObjectResult(problemDetails);
-    });
 
 // Can't use AddSingleton here since we call the DB in the Handler
 builder.Services.AddScoped<IAuthorizationHandler, UserTypeAuthorizationHandler>();
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, MiddlewareResultHandler>();
+builder.Services.AddSingleton<ValidationFilter>();
 
 // Enable feature management.
 builder.Services.AddFeatureManagement(builder.Configuration.GetSection("Feature"));

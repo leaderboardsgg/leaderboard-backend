@@ -9,6 +9,7 @@ public static class SlugRule
 
     public static IRuleBuilderOptions<T, string> Slug<T>(this IRuleBuilder<T, string> ruleBuilder)
         => ruleBuilder
+            .NotEmpty()
             .Length(2, 80)
                 .WithErrorCode(SLUG_FORMAT)
             .Matches(REGEX)

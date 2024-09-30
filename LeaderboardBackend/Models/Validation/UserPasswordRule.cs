@@ -13,7 +13,7 @@ public static class UserPasswordRule
     {
         return ruleBuilder
             .Cascade(CascadeMode.Stop)
-            .NotNull()
+            .NotEmpty()
             .Length(8, 80)
                 .WithErrorCode(PASSWORD_FORMAT)
             .Must(IsValidPassword)

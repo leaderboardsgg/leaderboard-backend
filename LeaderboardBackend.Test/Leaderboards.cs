@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
+using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -87,6 +88,132 @@ internal class Leaderboards
         );
 
         retrievedLeaderboard.Should().BeEquivalentTo(req);
+    }
+
+    [Test]
+    public async Task CreateLeaderboard_Unauthenticated()
+    {
+        CreateLeaderboardRequest req = new()
+        {
+            Name = "Super Mario Sunshine",
+            Slug = "Super-mario-sunshine",
+            Info = "This leaderboard should not be created."
+        };
+
+        await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>(
+            "/leaderboards/create",
+            new() { Body = req }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+    }
+
+    [Test]
+    public async Task CreateLeaderbaord_SlugInUse()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        context.Leaderboards.Add(new()
+        {
+            Name = "Super Mario Galaxy",
+            Slug = "super-mario-galaxy",
+        });
+
+        await context.SaveChangesAsync();
+
+        CreateLeaderboardRequest req = new()
+        {
+            Name = "Super Mario Galaxy (again)",
+            Slug = "super-mario-galaxy",
+            Info = "This leaderboard should not be created."
+        };
+
+        await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>(
+            "/leaderboards/create",
+            new() { Body = req, Jwt = _jwt }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Conflict);
+    }
+
+    [Test]
+    public async Task CreateLeaderboard_MissingData()
+    {
+        await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>(
+        "/leaderboards/create",
+        new()
+        {
+            Body = new
+            {
+                Name = "Super Mario Bros. 2"
+            },
+            Jwt = _jwt
+        }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableContent);
+
+        await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>(
+        "/leaderboards/create",
+        new()
+        {
+            Body = new
+            {
+                Slug = "super-mario-bros-2"
+            },
+            Jwt = _jwt
+        }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableContent);
+    }
+
+    [TestCase("", "super-mario-bros")]
+    [TestCase(" ", "super-mario-bros")]
+    [TestCase("Super Mario Bros.", "")]
+    [TestCase("Super Mario Bros.", "m")]
+    [TestCase("Super Mario Bros.", "super mario bros")]
+    [TestCase("Super Mario Bros.", "super-mario-bros.")]
+    [TestCase("Super Mario Bros.", "1985-nintendo-nes-famicom-fds-gbc-gba-gcn-wiivc-3dsvc-wiiuvc-super-marios-bros-best-game")]
+    [TestCase("Super Mario Bros.", "スーパーマリオブラザーズ")]
+    public async Task CreateLeaderboard_BadData(string name, string slug)
+    {
+        CreateLeaderboardRequest req = new()
+        {
+            Name = name,
+            Slug = slug,
+            Info = "This leaderboard should not be created."
+        };
+
+        await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>(
+            "/leaderboards/create",
+            new() { Body = req, Jwt = _jwt }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableContent);
+    }
+
+    [TestCase(UserRole.Banned)]
+    [TestCase(UserRole.Confirmed)]
+    [TestCase(UserRole.Registered)]
+    public async Task CreateLeaderboard_BadRole(UserRole role)
+    {
+        IUserService userService = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<IUserService>();
+
+        RegisterRequest registerRequest = new()
+        {
+            Email = $"testuser.createlb.{role}@example.com",
+            Password = "Passw0rd",
+            Username = $"CreateLBTest{role}"
+        };
+
+        await userService.CreateUser(registerRequest);
+
+        CreateLeaderboardRequest req = new()
+        {
+            Name = "Super Mario Bros. 3",
+            Slug = "super-mario-bros-3",
+            Info = "You don't have permission to create this!"
+        };
+
+#pragma warning disable IDE0008
+        var res = await FluentActions.Awaiting(() => _apiClient.LoginUser(registerRequest.Email, registerRequest.Password)).Should().NotThrowAsync();
+#pragma warning restore IDE0008
+
+        await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>(
+            "/leaderboards/create",
+            new() { Body = req, Jwt = res.Subject.Token }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
     }
 
     [Test]

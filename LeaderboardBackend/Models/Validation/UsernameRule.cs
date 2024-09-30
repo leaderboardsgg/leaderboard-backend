@@ -15,6 +15,7 @@ public static class UsernameRule
     public static IRuleBuilderOptions<T, string> Username<T>(this IRuleBuilder<T, string> ruleBuilder)
     {
         return ruleBuilder
+            .NotEmpty()
             .Length(2, 25)
                 .WithErrorCode(USERNAME_FORMAT)
             .Matches(REGEX)

@@ -4,6 +4,8 @@ using LeaderboardBackend.Models.Validation;
 
 namespace LeaderboardBackend.Models.Requests;
 
+#nullable disable warnings
+
 /// <summary>
 ///     This request object is sent when a `User` is attempting to log in.
 /// </summary>
@@ -75,13 +77,15 @@ public record RegisterRequest
     ///     exists.
     /// </summary>
     /// <example>J'on-Doe</example>
-    public required string Username { get; set; }
+    [Required]
+    public string Username { get; set; }
 
     /// <summary>
     ///     The `User`'s email address.
     /// </summary>
     /// <example>john.doe@example.com</example>
-    public required string Email { get; set; }
+    [Required]
+    public string Email { get; set; }
 
     /// <summary>
     ///     The `User`'s password. It:
@@ -97,7 +101,8 @@ public record RegisterRequest
     ///     </ul>
     /// </summary>
     /// <example>P4ssword</example>
-    public required string Password { get; set; }
+    [Required]
+    public string Password { get; set; }
 }
 
 public record RecoverAccountRequest
@@ -106,27 +111,28 @@ public record RecoverAccountRequest
     /// The user's name.
     /// </summary>
     [Required]
-    public required string Username { get; set; }
+    public string Username { get; set; }
 
     /// <summary>
     /// The user's email address.
     /// </summary>
     [EmailAddress]
     [Required]
-    public required string Email { get; set; }
+    public string Email { get; set; }
 }
 
 public record ChangePasswordRequest
 {
-    public required string Password { get; set; }
+    [Required]
+    public string Password { get; set; }
 }
 
 public class LoginRequestValidator : AbstractValidator<LoginRequest>
 {
     public LoginRequestValidator()
     {
-        // NotNull() needed because EmailAddress() does not fail null input
-        RuleFor(x => x.Email).NotNull().EmailAddress();
+        // NotEmpty() needed because EmailAddress() does not fail null input
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
         RuleFor(x => x.Password).NotEmpty();
     }
 }
@@ -136,7 +142,7 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
     public RegisterRequestValidator()
     {
         RuleFor(x => x.Username).Username();
-        RuleFor(x => x.Email).EmailAddress();
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
         RuleFor(x => x.Password).UserPassword();
     }
 }
