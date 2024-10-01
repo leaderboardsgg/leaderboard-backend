@@ -50,11 +50,12 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
     [HttpGet("api/leaderboards")]
     [SwaggerOperation("Gets leaderboards by their IDs.", OperationId = "getLeaderboards")]
     [SwaggerResponse(200)]
-    public async Task<ActionResult<List<LeaderboardViewModel>>> GetLeaderboards(
-        [FromQuery] long[] ids
-    )
+    public async Task<ActionResult<List<LeaderboardViewModel>>> GetLeaderboards([FromQuery] long[] ids)
     {
-        List<Leaderboard> result = await leaderboardService.GetLeaderboards(ids);
+        List<Leaderboard> result = Request.Query.ContainsKey("ids") ?
+            await leaderboardService.GetLeaderboardsById(ids) :
+            await leaderboardService.ListLeaderboards();
+
         return Ok(result.Select(LeaderboardViewModel.MapFrom));
     }
 
