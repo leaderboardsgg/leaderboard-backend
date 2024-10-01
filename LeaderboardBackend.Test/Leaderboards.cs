@@ -12,6 +12,7 @@ using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
 using NodaTime.Testing;
@@ -337,6 +338,40 @@ internal class Leaderboards
         Leaderboard? created = await context.Leaderboards.FindAsync(res.Subject.Id);
         created.Should().NotBeNull().And.BeEquivalentTo(lbRequest);
         created!.CreatedAt.Should().Be(_clock.GetCurrentInstant());
+    }
+
+    [Test]
+    public async Task GetLeaderboards()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+        await context.Leaderboards.ExecuteDeleteAsync();
+
+        Leaderboard[] boards = [
+            new()
+            {
+                Name = "The Legend of Zelda",
+                Slug = "legend-of-zelda",
+                Info = "The original for the NES"
+            },
+            new()
+            {
+                Name = "Zelda II: The Adventure of Link",
+                Slug = "adventure-of-link",
+                Info = "The daring sequel"
+            },
+            new()
+            {
+                Name = "Link: The Faces of Evil",
+                Slug = "link-faces-of-evil",
+                Info = "Nobody should play this one.",
+                DeletedAt = _clock.GetCurrentInstant()
+            }
+        ];
+
+        context.Leaderboards.AddRange(boards);
+        await context.SaveChangesAsync();
+        LeaderboardViewModel[] returned = await _apiClient.Get<LeaderboardViewModel[]>("/api/leaderboards", new());
+        returned.Should().BeEquivalentTo(boards.Take(2));
     }
 
     private static string ListToQueryString<T>(IEnumerable<T> list, string key)
