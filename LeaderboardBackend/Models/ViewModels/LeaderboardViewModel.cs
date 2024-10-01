@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using LeaderboardBackend.Models.Entities;
 using NodaTime;
 
@@ -51,7 +52,8 @@ public record LeaderboardViewModel
     /// <summary>
     ///     A collection of `Category` entities for the `Leaderboard`.
     /// </summary>
-    public required IList<CategoryViewModel> Categories { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IList<CategoryViewModel>? Categories { get; init; }
 
     public static LeaderboardViewModel MapFrom(Leaderboard leaderboard)
     {
@@ -67,7 +69,7 @@ public record LeaderboardViewModel
             CreatedAt = leaderboard.CreatedAt,
             UpdatedAt = leaderboard.UpdatedAt,
             DeletedAt = leaderboard.DeletedAt,
-            Categories = categories ?? Array.Empty<CategoryViewModel>(),
+            Categories = categories,
         };
     }
 }
