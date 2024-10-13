@@ -4,8 +4,6 @@ using NodaTime;
 
 namespace LeaderboardBackend.Models.ViewModels;
 
-#nullable disable warnings
-
 /// <summary>
 ///     Represents a collection of `Leaderboard` entities.
 /// </summary>
@@ -58,7 +56,7 @@ public record LeaderboardViewModel
 
     public static LeaderboardViewModel MapFrom(Leaderboard leaderboard)
     {
-        IList<CategoryViewModel> categories = leaderboard.Categories
+        IList<CategoryViewModel>? categories = leaderboard.Categories
             ?.Select(CategoryViewModel.MapFrom)
             .ToList();
 
