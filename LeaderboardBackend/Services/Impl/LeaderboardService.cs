@@ -20,11 +20,6 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
         await applicationContext.Leaderboards
             .Where(lb => lb.DeletedAt == null).ToListAsync();
 
-    public async Task<List<Leaderboard>> GetLeaderboardsById(long[] ids) =>
-        await applicationContext.Leaderboards
-            .Where(leaderboard => ids.Contains(leaderboard.Id))
-            .ToListAsync();
-
     public async Task<CreateLeaderboardResult> CreateLeaderboard(CreateLeaderboardRequest request)
     {
         Leaderboard lb = new()

@@ -218,31 +218,6 @@ internal class Leaderboards
     }
 
     [Test]
-    public async Task CreateLeaderboards_GetLeaderboards()
-    {
-        IEnumerable<Task<LeaderboardViewModel>> boardCreationTasks = _createBoardReqFaker
-            .GenerateBetween(3, 10)
-            .Select(
-                async req =>
-                    await _apiClient.Post<LeaderboardViewModel>(
-                        "/leaderboards/create",
-                        new() { Body = req, Jwt = _jwt }
-                    )
-            );
-        LeaderboardViewModel[] createdLeaderboards = await Task.WhenAll(boardCreationTasks);
-
-        IEnumerable<long> leaderboardIds = createdLeaderboards.Select(l => l.Id).ToList();
-        string leaderboardIdQuery = ListToQueryString(leaderboardIds, "ids");
-
-        List<LeaderboardViewModel> leaderboards = await _apiClient.Get<List<LeaderboardViewModel>>(
-            $"api/leaderboards?{leaderboardIdQuery}",
-            new()
-        );
-
-        leaderboards.Should().BeEquivalentTo(createdLeaderboards);
-    }
-
-    [Test]
     public async Task GetLeaderboards_BySlug_OK()
     {
         CreateLeaderboardRequest createReqBody = _createBoardReqFaker.Generate();
@@ -371,12 +346,6 @@ internal class Leaderboards
         context.Leaderboards.AddRange(boards);
         await context.SaveChangesAsync();
         LeaderboardViewModel[] returned = await _apiClient.Get<LeaderboardViewModel[]>("/api/leaderboards", new());
-        returned.Should().BeEquivalentTo(boards.Take(2));
-    }
-
-    private static string ListToQueryString<T>(IEnumerable<T> list, string key)
-    {
-        IEnumerable<string> queryList = list.Select(l => $"{key}={l}");
-        return string.Join("&", queryList);
+        returned.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
     }
 }
