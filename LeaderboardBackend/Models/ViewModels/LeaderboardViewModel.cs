@@ -54,14 +54,14 @@ public record LeaderboardViewModel
     /// <summary>
     ///     A collection of `Category` entities for the `Leaderboard`.
     /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IList<CategoryViewModel> Categories { get; init; }
+    public required IList<CategoryViewModel> Categories { get; init; }
 
     public static LeaderboardViewModel MapFrom(Leaderboard leaderboard)
     {
         IList<CategoryViewModel> categories = leaderboard.Categories
             ?.Select(CategoryViewModel.MapFrom)
             .ToList();
+
         return new LeaderboardViewModel
         {
             Id = leaderboard.Id,
@@ -71,7 +71,7 @@ public record LeaderboardViewModel
             CreatedAt = leaderboard.CreatedAt,
             UpdatedAt = leaderboard.UpdatedAt,
             DeletedAt = leaderboard.DeletedAt,
-            Categories = categories,
+            Categories = categories ?? Array.Empty<CategoryViewModel>(),
         };
     }
 }
