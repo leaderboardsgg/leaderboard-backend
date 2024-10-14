@@ -36,25 +36,17 @@ public class TestApiClient
         _client = client;
     }
 
-    public async Task<TResponse> Get<TResponse>(string endpoint, HttpRequestInit init)
-    {
-        return await SendAndRead<TResponse>(endpoint, init with { Method = HttpMethod.Get });
-    }
+    public async Task<TResponse> Get<TResponse>(string endpoint, HttpRequestInit init) =>
+        await SendAndRead<TResponse>(endpoint, init with { Method = HttpMethod.Get });
 
-    public async Task<TResponse> Post<TResponse>(string endpoint, HttpRequestInit init)
-    {
-        return await SendAndRead<TResponse>(endpoint, init with { Method = HttpMethod.Post });
-    }
+    public async Task<TResponse> Post<TResponse>(string endpoint, HttpRequestInit init) =>
+        await SendAndRead<TResponse>(endpoint, init with { Method = HttpMethod.Post });
 
-    public async Task<HttpResponseMessage> Put(string endpoint, HttpRequestInit init)
-    {
-        return await Send(endpoint, init with { Method = HttpMethod.Put });
-    }
+    public async Task<HttpResponseMessage> Put(string endpoint, HttpRequestInit init) =>
+        await Send(endpoint, init with { Method = HttpMethod.Put });
 
-    public async Task<HttpResponseMessage> Delete(string endpoint, HttpRequestInit init)
-    {
-        return await Send(endpoint, init with { Method = HttpMethod.Delete });
-    }
+    public async Task<HttpResponseMessage> Delete(string endpoint, HttpRequestInit init) =>
+        await Send(endpoint, init with { Method = HttpMethod.Delete });
 
     private async Task<TResponse> SendAndRead<TResponse>(string endpoint, HttpRequestInit init)
     {
@@ -82,7 +74,7 @@ public class TestApiClient
         string rawJson = await response.Content.ReadAsStringAsync();
         T? obj = JsonSerializer.Deserialize<T>(rawJson, TestInitCommonFields.JsonSerializerOptions);
 
-        Assert.NotNull(obj);
+        obj.Should().NotBeNull();
 
         return obj!;
     }
@@ -91,9 +83,8 @@ public class TestApiClient
         string endpoint,
         HttpRequestInit init,
         JsonSerializerOptions options
-    )
-    {
-        return new(init.Method, endpoint)
+    ) =>
+        new(init.Method, endpoint)
         {
             Headers = { Authorization = new(JwtBearerDefaults.AuthenticationScheme, init.Jwt) },
             Content = init.Body switch
@@ -106,5 +97,4 @@ public class TestApiClient
                 _ => default
             }
         };
-    }
 }
