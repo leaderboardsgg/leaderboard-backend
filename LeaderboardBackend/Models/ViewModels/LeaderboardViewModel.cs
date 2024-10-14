@@ -58,6 +58,7 @@ public record LeaderboardViewModel
         IList<CategoryViewModel>? categories = leaderboard.Categories
             ?.Select(CategoryViewModel.MapFrom)
             .ToList();
+
         return new LeaderboardViewModel
         {
             Id = leaderboard.Id,

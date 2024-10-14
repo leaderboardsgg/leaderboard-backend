@@ -562,21 +562,8 @@
         "tags": [
           "Leaderboards"
         ],
-        "summary": "Gets leaderboards by their IDs.",
-        "operationId": "getLeaderboards",
-        "parameters": [
-          {
-            "name": "ids",
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ],
+        "summary": "Gets all leaderboards.",
+        "operationId": "listLeaderboards",
         "responses": {
           "400": {
             "description": "Bad Request",

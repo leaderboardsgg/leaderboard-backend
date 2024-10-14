@@ -12,6 +12,7 @@ using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
 using NodaTime.Testing;
@@ -217,31 +218,6 @@ internal class Leaderboards
     }
 
     [Test]
-    public async Task CreateLeaderboards_GetLeaderboards()
-    {
-        IEnumerable<Task<LeaderboardViewModel>> boardCreationTasks = _createBoardReqFaker
-            .GenerateBetween(3, 10)
-            .Select(
-                async req =>
-                    await _apiClient.Post<LeaderboardViewModel>(
-                        "/leaderboards/create",
-                        new() { Body = req, Jwt = _jwt }
-                    )
-            );
-        LeaderboardViewModel[] createdLeaderboards = await Task.WhenAll(boardCreationTasks);
-
-        IEnumerable<long> leaderboardIds = createdLeaderboards.Select(l => l.Id).ToList();
-        string leaderboardIdQuery = ListToQueryString(leaderboardIds, "ids");
-
-        List<LeaderboardViewModel> leaderboards = await _apiClient.Get<List<LeaderboardViewModel>>(
-            $"api/leaderboards?{leaderboardIdQuery}",
-            new()
-        );
-
-        leaderboards.Should().BeEquivalentTo(createdLeaderboards);
-    }
-
-    [Test]
     public async Task GetLeaderboards_BySlug_OK()
     {
         CreateLeaderboardRequest createReqBody = _createBoardReqFaker.Generate();
@@ -339,9 +315,37 @@ internal class Leaderboards
         created!.CreatedAt.Should().Be(_clock.GetCurrentInstant());
     }
 
-    private static string ListToQueryString<T>(IEnumerable<T> list, string key)
+    [Test]
+    public async Task GetLeaderboards()
     {
-        IEnumerable<string> queryList = list.Select(l => $"{key}={l}");
-        return string.Join("&", queryList);
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+        await context.Leaderboards.ExecuteDeleteAsync();
+
+        Leaderboard[] boards = [
+            new()
+            {
+                Name = "The Legend of Zelda",
+                Slug = "legend-of-zelda",
+                Info = "The original for the NES"
+            },
+            new()
+            {
+                Name = "Zelda II: The Adventure of Link",
+                Slug = "adventure-of-link",
+                Info = "The daring sequel"
+            },
+            new()
+            {
+                Name = "Link: The Faces of Evil",
+                Slug = "link-faces-of-evil",
+                Info = "Nobody should play this one.",
+                DeletedAt = _clock.GetCurrentInstant()
+            }
+        ];
+
+        context.Leaderboards.AddRange(boards);
+        await context.SaveChangesAsync();
+        LeaderboardViewModel[] returned = await _apiClient.Get<LeaderboardViewModel[]>("/api/leaderboards", new());
+        returned.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
     }
 }

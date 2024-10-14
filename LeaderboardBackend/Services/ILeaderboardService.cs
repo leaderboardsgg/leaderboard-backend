@@ -9,7 +9,7 @@ public interface ILeaderboardService
 {
     Task<Leaderboard?> GetLeaderboard(long id);
     Task<Leaderboard?> GetLeaderboardBySlug(string slug);
-    Task<List<Leaderboard>> GetLeaderboards(long[]? ids = null);
+    Task<List<Leaderboard>> ListLeaderboards();
     Task<CreateLeaderboardResult> CreateLeaderboard(CreateLeaderboardRequest request);
 }
 

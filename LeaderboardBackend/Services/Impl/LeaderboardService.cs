@@ -15,20 +15,10 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
         await applicationContext.Leaderboards
             .FirstOrDefaultAsync(b => b.Slug == slug && b.DeletedAt == null);
 
-    // FIXME: Paginate this
-    public async Task<List<Leaderboard>> GetLeaderboards(long[]? ids = null)
-    {
-        if (ids is null)
-        {
-            return await applicationContext.Leaderboards.ToListAsync();
-        }
-        else
-        {
-            return await applicationContext.Leaderboards
-                .Where(leaderboard => ids.Contains(leaderboard.Id))
-                .ToListAsync();
-        }
-    }
+    // FIXME: Paginate these
+    public async Task<List<Leaderboard>> ListLeaderboards() =>
+        await applicationContext.Leaderboards
+            .Where(lb => lb.DeletedAt == null).ToListAsync();
 
     public async Task<CreateLeaderboardResult> CreateLeaderboard(CreateLeaderboardRequest request)
     {
