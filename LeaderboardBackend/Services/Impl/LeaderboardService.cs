@@ -42,4 +42,27 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
 
         return lb;
     }
+
+    public async Task<RestoreLeaderboardResult> RestoreLeaderboard(long id)
+    {
+        Leaderboard? lb = await applicationContext.Leaderboards.FindAsync([id]);
+
+        if (lb == null)
+        {
+            return new LeaderboardNotFound();
+        }
+
+        if (lb.DeletedAt == null)
+        {
+            return new LeaderboardNeverDeleted();
+        }
+
+        applicationContext.Leaderboards.Update(lb);
+
+        lb.DeletedAt = null;
+
+        await applicationContext.SaveChangesAsync();
+
+        return Task.CompletedTask;
+    }
 }

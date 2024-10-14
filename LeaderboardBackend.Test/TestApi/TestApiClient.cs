@@ -46,6 +46,11 @@ public class TestApiClient
         return await SendAndRead<TResponse>(endpoint, init with { Method = HttpMethod.Post });
     }
 
+    public async Task<HttpResponseMessage> Put(string endpoint, HttpRequestInit init)
+    {
+        return await Send(endpoint, init with { Method = HttpMethod.Put });
+    }
+
     public async Task<HttpResponseMessage> Delete(string endpoint, HttpRequestInit init)
     {
         return await Send(endpoint, init with { Method = HttpMethod.Delete });

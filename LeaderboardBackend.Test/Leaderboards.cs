@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualBasic;
 using NodaTime;
 using NodaTime.Testing;
 using NUnit.Framework;
@@ -347,5 +349,70 @@ internal class Leaderboards
         await context.SaveChangesAsync();
         LeaderboardViewModel[] returned = await _apiClient.Get<LeaderboardViewModel[]>("/api/leaderboards", new());
         returned.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
+    }
+
+    [Test]
+    public async Task RestoreLeaderboard_OK()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard deletedBoard = new()
+        {
+            Name = "Super Mario World",
+            Slug = "super-mario-world-deleted",
+            DeletedAt = _clock.GetCurrentInstant()
+        };
+
+        context.Leaderboards.Add(deletedBoard);
+        await context.SaveChangesAsync();
+        deletedBoard.Id.Should().NotBe(default);
+
+        HttpResponseMessage res = await _apiClient.Put($"/leaderboard/{deletedBoard.Id}/restore", new()
+        {
+            Jwt = _jwt
+        });
+
+        res.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        Leaderboard? board = await context.Leaderboards.FindAsync(deletedBoard.Id);
+        board.Should().NotBeNull();
+        // TODO: `DeletedAt` is still not null here. Don't know how to fix it.
+        board!.DeletedAt.Should().BeNull();
+    }
+
+    [Test]
+    public async Task RestoreLeaderboard_NotFound()
+    {
+        Func<Task<HttpResponseMessage>> act = async () => await _apiClient.Put($"/leaderboard/100/restore", new()
+        {
+            Jwt = _jwt
+        });
+
+        await act.Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Test]
+    public async Task RestoreLeaderboard_NotFound_WasNeverDeleted()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard board = new()
+        {
+            Name = "Super Mario World",
+            Slug = "super-mario-world-deleted",
+        };
+
+        context.Leaderboards.Add(board);
+        await context.SaveChangesAsync();
+        board.Id.Should().NotBe(default);
+
+        Func<Task<HttpResponseMessage>> act = async () => await _apiClient.Put($"/leaderboard/{board.Id}/restore", new()
+        {
+            Jwt = _jwt
+        });
+
+        await act.Should().ThrowAsync<RequestFailureException>()
+            .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+        // TODO: Don't know how to test for the response message.
     }
 }

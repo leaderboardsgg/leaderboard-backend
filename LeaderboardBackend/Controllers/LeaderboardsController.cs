@@ -86,4 +86,27 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
             }
         );
     }
+
+    [Authorize(Policy = UserTypes.ADMINISTRATOR)]
+    [HttpPut("leaderboard/{id:long}/restore")]
+    [SwaggerResponse(201)]
+    [SwaggerResponse(401)]
+    [SwaggerResponse(403, "The requesting `User` is unauthorized to restore `Leaderboard`s.")]
+    [SwaggerResponse(404, "The `Leaderboard` was not found, or it wasn't deleted in the first place.")]
+    public async Task<ActionResult<RestoreLeaderboardResult>> RestoreLeaderboard(
+        long id
+    )
+    {
+        RestoreLeaderboardResult r = await leaderboardService.RestoreLeaderboard(id);
+
+        return r.Match<ActionResult<RestoreLeaderboardResult>>(
+            _ => NoContent(),
+            notFound => NotFound(),
+            neverDeleted =>
+            {
+                ModelState.AddModelError("Leaderboard", "LeaderboardWasNeverPreviouslyDeleted");
+                return NotFound(new ValidationProblemDetails(ModelState));
+            }
+        );
+    }
 }
