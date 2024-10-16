@@ -373,7 +373,7 @@ internal class Leaderboards
         });
 
         res.StatusCode.Should().Be(HttpStatusCode.NoContent);
-
+        context.ChangeTracker.Clear();
         Leaderboard? board = await context.Leaderboards.FindAsync(deletedBoard.Id);
         board.Should().NotBeNull();
         // TODO: `DeletedAt` is still not null here. Don't know how to fix it.
@@ -399,7 +399,7 @@ internal class Leaderboards
         Leaderboard board = new()
         {
             Name = "Super Mario World",
-            Slug = "super-mario-world-deleted",
+            Slug = "super-mario-world-non-deleted",
         };
 
         context.Leaderboards.Add(board);
