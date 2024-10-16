@@ -384,6 +384,41 @@ internal class Leaderboards
     }
 
     [Test]
+    public async Task RestoreLeaderboard_Unauthenticated()
+    {
+        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/100/restore", new()
+        {
+            Jwt = ""
+        });
+
+        await act.Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+    }
+
+    [Test]
+    public async Task RestoreLeaderboard_Unauthorized()
+    {
+        IUserService userService = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<IUserService>();
+
+        RegisterRequest registerRequest = new()
+        {
+            Email = "user@example.com",
+            Password = "Passw0rd",
+            Username = "unauthorized"
+        };
+
+        await userService.CreateUser(registerRequest);
+
+        string jwt = (await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password)).Token;
+
+        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/100/restore", new()
+        {
+            Jwt = jwt,
+        });
+
+        await act.Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+    }
+
+    [Test]
     public async Task RestoreLeaderboard_NotFound()
     {
         Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/100/restore", new()
