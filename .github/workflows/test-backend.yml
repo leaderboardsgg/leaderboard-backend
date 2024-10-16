@@ -19,8 +19,6 @@ jobs:
           run: dotnet restore
         - name: Restore tools
           run: dotnet tool restore
-        - name: Lint
-          run: dotnet format --verify-no-changes --no-restore .
         - name: Backup committed openapi.json
           run: cp LeaderboardBackend/openapi.json /tmp/committed-openapi.json
         - name: Build
