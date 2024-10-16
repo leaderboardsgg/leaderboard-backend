@@ -363,27 +363,30 @@ internal class Leaderboards
             DeletedAt = _clock.GetCurrentInstant()
         };
 
+        Instant now = Instant.FromUnixTimeSeconds(1);
+        _clock.Reset(now);
+
         context.Leaderboards.Add(deletedBoard);
         await context.SaveChangesAsync();
         deletedBoard.Id.Should().NotBe(default);
 
-        HttpResponseMessage res = await _apiClient.Put($"/leaderboard/{deletedBoard.Id}/restore", new()
+        _clock.AdvanceMinutes(1);
+
+        LeaderboardViewModel res = await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/{deletedBoard.Id}/restore", new()
         {
             Jwt = _jwt
         });
 
-        res.StatusCode.Should().Be(HttpStatusCode.NoContent);
-        context.ChangeTracker.Clear();
-        Leaderboard? board = await context.Leaderboards.FindAsync(deletedBoard.Id);
-        board.Should().NotBeNull();
-        // TODO: `DeletedAt` is still not null here. Don't know how to fix it.
-        board!.DeletedAt.Should().BeNull();
+        res.Id.Should().Be(deletedBoard.Id);
+        res.Slug.Should().Be(deletedBoard.Slug);
+        res.UpdatedAt.Should().Be(res.CreatedAt + Duration.FromMinutes(1));
+        res.DeletedAt.Should().BeNull();
     }
 
     [Test]
     public async Task RestoreLeaderboard_NotFound()
     {
-        Func<Task<HttpResponseMessage>> act = async () => await _apiClient.Put($"/leaderboard/100/restore", new()
+        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/100/restore", new()
         {
             Jwt = _jwt
         });
@@ -406,7 +409,7 @@ internal class Leaderboards
         await context.SaveChangesAsync();
         board.Id.Should().NotBe(default);
 
-        Func<Task<HttpResponseMessage>> act = async () => await _apiClient.Put($"/leaderboard/{board.Id}/restore", new()
+        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/{board.Id}/restore", new()
         {
             Jwt = _jwt
         });

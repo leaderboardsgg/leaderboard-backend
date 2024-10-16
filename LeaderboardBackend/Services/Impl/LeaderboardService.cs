@@ -2,11 +2,12 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 using Npgsql;
 
 namespace LeaderboardBackend.Services;
 
-public class LeaderboardService(ApplicationContext applicationContext) : ILeaderboardService
+public class LeaderboardService(ApplicationContext applicationContext, IClock clock) : ILeaderboardService
 {
     public async Task<Leaderboard?> GetLeaderboard(long id) =>
         await applicationContext.Leaderboards.FindAsync(id);
@@ -59,10 +60,11 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
 
         applicationContext.Leaderboards.Update(lb);
 
+        lb.UpdatedAt = clock.GetCurrentInstant();
         lb.DeletedAt = null;
 
         await applicationContext.SaveChangesAsync();
 
-        return Task.CompletedTask;
+        return lb;
     }
 }

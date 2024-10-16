@@ -31,7 +31,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
 
     [AllowAnonymous]
     [HttpGet("api/leaderboard")]
-    [SwaggerOperation("Gets a Leaderboard by its slug.", OperationId = "getLeaderboardBySlug")]
+    [SwaggerOperation("Gets a leaderboard by its slug.", OperationId = "getLeaderboardBySlug")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
     public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboardBySlug([FromQuery, SwaggerParameter(Required = true)] string slug)
@@ -89,18 +89,19 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
     [HttpPut("leaderboard/{id:long}/restore")]
-    [SwaggerResponse(201)]
+    [SwaggerOperation("Restores a deleted leaderboard.", OperationId = "restoreLeaderboard")]
+    [SwaggerResponse(200)]
     [SwaggerResponse(401)]
     [SwaggerResponse(403, "The requesting `User` is unauthorized to restore `Leaderboard`s.")]
     [SwaggerResponse(404, "The `Leaderboard` was not found, or it wasn't deleted in the first place.")]
-    public async Task<ActionResult<RestoreLeaderboardResult>> RestoreLeaderboard(
+    public async Task<ActionResult<LeaderboardViewModel>> RestoreLeaderboard(
         long id
     )
     {
         RestoreLeaderboardResult r = await leaderboardService.RestoreLeaderboard(id);
 
-        return r.Match<ActionResult<RestoreLeaderboardResult>>(
-            _ => NoContent(),
+        return r.Match<ActionResult<LeaderboardViewModel>>(
+            board => Ok(LeaderboardViewModel.MapFrom(board)),
             notFound => NotFound(),
             neverDeleted =>
             {
