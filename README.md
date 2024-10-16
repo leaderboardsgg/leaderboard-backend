@@ -16,16 +16,6 @@ The original backend, written in Go and inactive, can be found [here](https://gi
 
 # Project Setup
 
-## Setting up Environment
-
-Firstly, set `core.filemode false` in your git config, either by running `git config core.filemode false` in your terminal, or
-```
-[core]
-    filemode = false
-```
-in your `~/.gitconfig` (Windows users may need to do the latter, according to a comment under [this SO answer](https://stackoverflow.com/a/2972113)). This is to prevent committing filemode changes of our pre-commit hook, `.husky/pre-commit` to your PRs.
-
-
 ## Editor/IDE
 
 There are a couple options available for you to choose, depending on your OS.
