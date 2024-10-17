@@ -41,7 +41,7 @@ public class ApplicationContext : DbContext
     {
         _clock = clock;
         ChangeTracker.Tracked += AddCreationTimestamp;
-        ChangeTracker.Tracked += SetUpdateTimestamp;
+        ChangeTracker.StateChanged += SetUpdateTimestamp;
     }
 
     public DbSet<AccountRecovery> AccountRecoveries { get; set; } = null!;
