@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using FluentAssertions.Specialized;
@@ -521,5 +522,123 @@ internal class Leaderboards
         LeaderboardViewModel? model = await exAssert.Which.Response.Content.ReadFromJsonAsync<LeaderboardViewModel>(TestInitCommonFields.JsonSerializerOptions);
         model.Should().NotBeNull();
         model!.Id.Should().Be(reclaimed.Id);
+    }
+
+    [Test]
+    public async Task DeleteLeaderboard_Unauthenticated()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard lb = new()
+        {
+            Name = "The Witness",
+            Slug = "the-witness",
+            Info = "Time ends upon achieving enlightenment."
+        };
+
+        context.Add(lb);
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        await FluentActions.Awaiting(() => _apiClient.Delete(
+            $"/leaderboards/{lb.Id}",
+            new()
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+
+        Leaderboard? found = await context.Leaderboards.FindAsync(lb.Id);
+        found.Should().NotBeNull();
+        found!.DeletedAt.Should().BeNull();
+    }
+
+    [TestCase(UserRole.Banned)]
+    [TestCase(UserRole.Confirmed)]
+    [TestCase(UserRole.Registered)]
+    public async Task DeleteLeaderboard_BadRole(UserRole role)
+    {
+        IUserService userService = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<IUserService>();
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        RegisterRequest registerRequest = new()
+        {
+            Email = $"testuser.deletelb.{role}@example.com",
+            Password = "Passw0rd",
+            Username = $"DeleteLBTest{role}"
+        };
+
+        Leaderboard lb = new()
+        {
+            Name = "Mario Kart",
+            Slug = "mario-kart",
+        };
+
+        await userService.CreateUser(registerRequest);
+        context.Leaderboards.Add(lb);
+        await context.SaveChangesAsync();
+
+#pragma warning disable IDE0008
+        var res = await FluentActions.Awaiting(() => _apiClient.LoginUser(registerRequest.Email, registerRequest.Password)).Should().NotThrowAsync();
+#pragma warning restore IDE0008
+
+        await FluentActions.Awaiting(() => _apiClient.Delete(
+            $"/leaderboards/{lb.Id}",
+            new() { Jwt = res.Subject.Token }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+
+        Leaderboard? found = await context.Leaderboards.FindAsync(lb.Id);
+        found.Should().NotBeNull();
+        found!.DeletedAt.Should().BeNull();
+    }
+
+    [Test]
+    public async Task DeleteLeaderboard_NotFound() =>
+        await FluentActions.Awaiting(() => _apiClient.Delete(
+            $"/leaderboards/{long.MaxValue}",
+            new() { Jwt = _jwt }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+    [Test]
+    public async Task DeleteLeaderboard_AlreadyDeleted()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard lb = new()
+        {
+            Name = "The Elder Scrolls V: Skyrim",
+            Slug = "tesv-skyrim",
+            DeletedAt = _clock.GetCurrentInstant()
+        };
+
+        context.Leaderboards.Add(lb);
+        await context.SaveChangesAsync();
+
+        await FluentActions.Awaiting(() => _apiClient.Delete(
+            $"/leaderboards/{lb.Id}",
+            new() { Jwt = _jwt }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Test]
+    public async Task DeleteLeaderboard_Success()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard lb = new()
+        {
+            Name = "Minecraft",
+            Slug = "minecraft"
+        };
+
+        context.Add(lb);
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        _clock.AdvanceMinutes(1);
+        HttpResponseMessage res = await _apiClient.Delete($"/leaderboards/{lb.Id}", new() { Jwt = _jwt });
+        res.Should().HaveStatusCode(HttpStatusCode.NoContent);
+        Leaderboard? found = await context.Leaderboards.FindAsync(lb.Id);
+        found.Should().NotBeNull();
+        found!.DeletedAt.Should().NotBeNull();
+        found!.DeletedAt!.Value.Should().Be(_clock.GetCurrentInstant());
+        found!.UpdatedAt.Should().NotBeNull();
+        found!.UpdatedAt!.Value.Should().Be(_clock.GetCurrentInstant());
     }
 }
