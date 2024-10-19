@@ -393,8 +393,8 @@ internal class Leaderboards
 
         Leaderboard lb = new()
         {
-            Name = "Mario Kart",
-            Slug = "mario-kart",
+            Name = "LB Delete Bad Role Test Board",
+            Slug = $"lb-delete-bad-role-test-{role}",
         };
 
         await userService.CreateUser(registerRequest);
