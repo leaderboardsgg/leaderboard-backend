@@ -90,10 +90,11 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
     [HttpPut("leaderboard/{id:long}/restore")]
     [SwaggerOperation("Restores a deleted leaderboard.", OperationId = "restoreLeaderboard")]
-    [SwaggerResponse(200)]
+    [SwaggerResponse(200, "The restored `Leaderboard`s view model.", typeof(LeaderboardViewModel))]
     [SwaggerResponse(401)]
     [SwaggerResponse(403, "The requesting `User` is unauthorized to restore `Leaderboard`s.")]
-    [SwaggerResponse(404, "The `Leaderboard` was not found, or it wasn't deleted in the first place.")]
+    [SwaggerResponse(404, "The `Leaderboard` was not found, or it wasn't deleted in the first place.", typeof(string))]
+    [SwaggerResponse(409, "Another `Leaderboard` with the same slug has been created since, and therefore can't be restored.", typeof(LeaderboardViewModel))]
     public async Task<ActionResult<LeaderboardViewModel>> RestoreLeaderboard(
         long id
     )
@@ -106,8 +107,9 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
             neverDeleted =>
             {
                 ModelState.AddModelError("Leaderboard", "LeaderboardWasNeverPreviouslyDeleted");
-                return NotFound(new ValidationProblemDetails(ModelState));
-            }
+                return NotFound("Was never deleted");
+            },
+            conflict => Conflict(conflict.Board)
         );
     }
 }

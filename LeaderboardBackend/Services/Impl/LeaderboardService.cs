@@ -7,7 +7,7 @@ using Npgsql;
 
 namespace LeaderboardBackend.Services;
 
-public class LeaderboardService(ApplicationContext applicationContext, IClock clock) : ILeaderboardService
+public class LeaderboardService(ApplicationContext applicationContext) : ILeaderboardService
 {
     public async Task<Leaderboard?> GetLeaderboard(long id) =>
         await applicationContext.Leaderboards.FindAsync(id);
@@ -58,9 +58,15 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
             return new LeaderboardNeverDeleted();
         }
 
+        Leaderboard? maybe = await applicationContext.Leaderboards.SingleOrDefaultAsync(board => board.Slug == lb.Slug && board.DeletedAt == null);
+
+        if (maybe != null)
+        {
+            return new RestoreLeaderboardConflict(maybe);
+        }
+
         applicationContext.Leaderboards.Update(lb);
 
-        lb.UpdatedAt = clock.GetCurrentInstant();
         lb.DeletedAt = null;
 
         await applicationContext.SaveChangesAsync();

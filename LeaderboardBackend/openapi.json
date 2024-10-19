@@ -697,7 +697,7 @@
             "description": "Internal Server Error"
           },
           "200": {
-            "description": "OK",
+            "description": "The restored `Leaderboard`s view model.",
             "content": {
               "application/json": {
                 "schema": {
@@ -713,7 +713,24 @@
             "description": "The requesting `User` is unauthorized to restore `Leaderboard`s."
           },
           "404": {
-            "description": "The `Leaderboard` was not found, or it wasn't deleted in the first place."
+            "description": "The `Leaderboard` was not found, or it wasn't deleted in the first place.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Another `Leaderboard` with the same slug has been created since, and therefore can't be restored.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
+                }
+              }
+            }
           }
         }
       }

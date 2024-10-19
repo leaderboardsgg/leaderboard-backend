@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
@@ -15,7 +12,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualBasic;
 using NodaTime;
 using NodaTime.Testing;
 using NUnit.Framework;
@@ -359,12 +355,9 @@ internal class Leaderboards
         Leaderboard deletedBoard = new()
         {
             Name = "Super Mario World",
-            Slug = "super-mario-world-deleted",
+            Slug = "super-mario-world-to-restore",
             DeletedAt = _clock.GetCurrentInstant()
         };
-
-        Instant now = Instant.FromUnixTimeSeconds(1);
-        _clock.Reset(now);
 
         context.Leaderboards.Add(deletedBoard);
         await context.SaveChangesAsync();
@@ -394,21 +387,22 @@ internal class Leaderboards
         await act.Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
     }
 
-    [Test]
-    public async Task RestoreLeaderboard_Unauthorized()
+    [TestCase("restore-leaderboard-unauth1@example.com", "RestoreBoard1", UserRole.Confirmed)]
+    [TestCase("restore-leaderboard-unauth2@example.com", "RestoreBoard2", UserRole.Registered)]
+    public async Task RestoreLeaderboard_Unauthorized(string email, string username, UserRole role)
     {
-        IUserService userService = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<IUserService>();
+        UserViewModel userModel = await _apiClient.RegisterUser(username, email, "P4ssword");
 
-        RegisterRequest registerRequest = new()
-        {
-            Email = "user@example.com",
-            Password = "Passw0rd",
-            Username = "unauthorized"
-        };
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
 
-        await userService.CreateUser(registerRequest);
+        User? user = await context.Users.FindAsync([userModel.Id]);
 
-        string jwt = (await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password)).Token;
+        context.Users.Update(user!);
+        user!.Role = role;
+
+        await context.SaveChangesAsync();
+
+        string jwt = (await _apiClient.LoginUser(email, "P4ssword")).Token;
 
         Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/100/restore", new()
         {
@@ -421,7 +415,7 @@ internal class Leaderboards
     [Test]
     public async Task RestoreLeaderboard_NotFound()
     {
-        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/100/restore", new()
+        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/{1e10}/restore", new()
         {
             Jwt = _jwt
         });
@@ -436,8 +430,8 @@ internal class Leaderboards
 
         Leaderboard board = new()
         {
-            Name = "Super Mario World",
-            Slug = "super-mario-world-non-deleted",
+            Name = "Hyper Mario World",
+            Slug = "hyper-mario-world-non-deleted",
         };
 
         context.Leaderboards.Add(board);
@@ -451,6 +445,5 @@ internal class Leaderboards
 
         await act.Should().ThrowAsync<RequestFailureException>()
             .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
-        // TODO: Don't know how to test for the response message.
     }
 }

@@ -18,4 +18,4 @@ public interface ILeaderboardService
 public partial class CreateLeaderboardResult : OneOfBase<Leaderboard, CreateLeaderboardConflict>;
 
 [GenerateOneOf]
-public partial class RestoreLeaderboardResult : OneOfBase<Leaderboard, LeaderboardNotFound, LeaderboardNeverDeleted>;
+public partial class RestoreLeaderboardResult : OneOfBase<Leaderboard, LeaderboardNotFound, LeaderboardNeverDeleted, RestoreLeaderboardConflict>;
