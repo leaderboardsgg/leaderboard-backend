@@ -574,14 +574,11 @@ internal class Leaderboards
         await userService.CreateUser(registerRequest);
         context.Leaderboards.Add(lb);
         await context.SaveChangesAsync();
-
-#pragma warning disable IDE0008
-        var res = await FluentActions.Awaiting(() => _apiClient.LoginUser(registerRequest.Email, registerRequest.Password)).Should().NotThrowAsync();
-#pragma warning restore IDE0008
+        LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
 
         await FluentActions.Awaiting(() => _apiClient.Delete(
             $"/leaderboard/{lb.Id}",
-            new() { Jwt = res.Subject.Token }
+            new() { Jwt = res.Token }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
 
         Leaderboard? found = await context.Leaderboards.FindAsync(lb.Id);
