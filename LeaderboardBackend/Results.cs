@@ -5,8 +5,8 @@ using LeaderboardBackend.Models.Entities;
 namespace LeaderboardBackend.Result;
 
 public readonly record struct AccountConfirmed;
-public readonly record struct AlreadyUsed;
 public readonly record struct AlreadyDeleted;
+public readonly record struct AlreadyUsed;
 public readonly record struct BadCredentials;
 public readonly record struct BadRole;
 public readonly record struct ConfirmationNotFound;
