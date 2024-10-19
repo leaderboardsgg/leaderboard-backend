@@ -664,6 +664,60 @@
         }
       }
     },
+    "/leaderboard/{id}": {
+      "delete": {
+        "tags": [
+          "Leaderboards"
+        ],
+        "summary": "Deletes a leaderboard. This request is restricted to Administrators.",
+        "operationId": "deleteLeaderboard",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "The leaderboard does not exist (Not Found) or was already deleted (Already Deleted).\nUse the title field of the response to differentiate between the two cases if necessary.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/leaderboard/{id}/restore": {
       "put": {
         "tags": [
