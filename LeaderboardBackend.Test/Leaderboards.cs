@@ -541,7 +541,7 @@ internal class Leaderboards
         context.ChangeTracker.Clear();
 
         await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"/leaderboards/{lb.Id}",
+            $"/leaderboard/{lb.Id}",
             new()
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
 
@@ -580,7 +580,7 @@ internal class Leaderboards
 #pragma warning restore IDE0008
 
         await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"/leaderboards/{lb.Id}",
+            $"/leaderboard/{lb.Id}",
             new() { Jwt = res.Subject.Token }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
 
@@ -592,7 +592,7 @@ internal class Leaderboards
     [Test]
     public async Task DeleteLeaderboard_NotFound() =>
         await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"/leaderboards/{long.MaxValue}",
+            $"/leaderboard/{long.MaxValue}",
             new() { Jwt = _jwt }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
 
@@ -612,7 +612,7 @@ internal class Leaderboards
         await context.SaveChangesAsync();
 
         await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"/leaderboards/{lb.Id}",
+            $"/leaderboard/{lb.Id}",
             new() { Jwt = _jwt }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
     }
@@ -632,7 +632,7 @@ internal class Leaderboards
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
         _clock.AdvanceMinutes(1);
-        HttpResponseMessage res = await _apiClient.Delete($"/leaderboards/{lb.Id}", new() { Jwt = _jwt });
+        HttpResponseMessage res = await _apiClient.Delete($"/leaderboard/{lb.Id}", new() { Jwt = _jwt });
         res.Should().HaveStatusCode(HttpStatusCode.NoContent);
         Leaderboard? found = await context.Leaderboards.FindAsync(lb.Id);
         found.Should().NotBeNull();
