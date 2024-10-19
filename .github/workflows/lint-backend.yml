@@ -1,0 +1,23 @@
+name: backend-lint
+on:
+    workflow_dispatch:
+    push:
+        branches: [ main ]
+    pull_request:
+        branches: [ main ]
+jobs:
+    backend-test:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Checkout repo
+          uses: actions/checkout@v4
+        - name: Setup dotnet 8
+          uses: actions/setup-dotnet@v4
+          with:
+            dotnet-version: '8.0'
+        - name: Restore NuGet packages
+          run: dotnet restore
+        - name: Restore tools
+          run: dotnet tool restore
+        - name: Lint
+          run: dotnet format --verify-no-changes --no-restore .

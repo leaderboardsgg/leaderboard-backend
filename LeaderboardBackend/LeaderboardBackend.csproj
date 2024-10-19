@@ -72,11 +72,4 @@
     <Exec Command="dotnet tool restore"></Exec>
     <Exec EnvironmentVariables="EnvPath=../swagger-gen.env;ASPNETCORE_ENVIRONMENT=development" Command="dotnet tool run swagger tofile --output &quot;@(OpenApiFile)&quot; &quot;$(OutputPath)/$(AssemblyName).dll&quot; v1"></Exec>
   </Target>
-
-  <!-- set HUSKY to 0 in CI/CD disable this -->
-  <Target Name="husky" BeforeTargets="Restore;CollectPackageReferences" Condition="'$(HUSKY)' != 0">
-    <Exec Command="dotnet tool restore" StandardOutputImportance="Low" StandardErrorImportance="High" />
-    <Exec Command="dotnet husky install" WorkingDirectory="../" StandardOutputImportance="Low" StandardErrorImportance="High" />
-  </Target>
-
 </Project>

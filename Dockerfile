@@ -9,7 +9,6 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG DISABLE_OPENAPI_FILE_GEN=true
-ARG HUSKY=0
 
 WORKDIR /source
 # copy csproj and restore as distinct layer that can be cached
