@@ -105,11 +105,8 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
             board => Ok(LeaderboardViewModel.MapFrom(board)),
             notFound => NotFound(),
             neverDeleted =>
-            {
-                ModelState.AddModelError("Leaderboard", "LeaderboardWasNeverPreviouslyDeleted");
-                return NotFound("Was never deleted");
-            },
-            conflict => Conflict(conflict.Board)
+                NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Not Deleted")),
+            conflict => Conflict(LeaderboardViewModel.MapFrom(conflict.Board))
         );
     }
 }

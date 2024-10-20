@@ -65,8 +65,6 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
             return new RestoreLeaderboardConflict(maybe);
         }
 
-        applicationContext.Leaderboards.Update(lb);
-
         lb.DeletedAt = null;
 
         await applicationContext.SaveChangesAsync();

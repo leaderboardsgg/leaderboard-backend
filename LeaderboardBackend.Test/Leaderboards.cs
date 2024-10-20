@@ -1,13 +1,16 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
+using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -372,19 +375,55 @@ internal class Leaderboards
 
         res.Id.Should().Be(deletedBoard.Id);
         res.Slug.Should().Be(deletedBoard.Slug);
-        res.UpdatedAt.Should().Be(res.CreatedAt + Duration.FromMinutes(1));
+        res.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
         res.DeletedAt.Should().BeNull();
     }
 
     [Test]
     public async Task RestoreLeaderboard_Unauthenticated()
     {
-        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/100/restore", new()
-        {
-            Jwt = ""
-        });
+        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/100/restore", new());
 
         await act.Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+    }
+
+    [Test]
+    public async Task RestoreLeaderboard_Banned_Unauthorized()
+    {
+        string email = "restore-leaderboard-banned@example.com";
+        string password = "P4ssword";
+
+        UserViewModel userModel = await _apiClient.RegisterUser(
+            "RestoreBoardBanned",
+            email,
+            password
+        );
+
+        string jwt = (await _apiClient.LoginUser(email, password)).Token;
+
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        context.Users.Update(new()
+        {
+            Id = userModel.Id,
+            Role = UserRole.Banned,
+            Username = userModel.Username,
+            Email = email,
+            Password = password
+        });
+
+        await context.SaveChangesAsync();
+
+        await FluentActions.Awaiting(
+            async () => await _apiClient.Put<LeaderboardViewModel>(
+                $"/leaderboard/1/restore",
+                new()
+                {
+                    Jwt = jwt,
+                }
+            )
+        ).Should().ThrowAsync<RequestFailureException>()
+        .Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
     }
 
     [TestCase("restore-leaderboard-unauth1@example.com", "RestoreBoard1", UserRole.Confirmed)]
@@ -395,7 +434,7 @@ internal class Leaderboards
 
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
 
-        User? user = await context.Users.FindAsync([userModel.Id]);
+        User? user = await context.Users.FindAsync(userModel.Id);
 
         context.Users.Update(user!);
         user!.Role = role;
@@ -430,7 +469,7 @@ internal class Leaderboards
 
         Leaderboard board = new()
         {
-            Name = "Hyper Mario World",
+            Name = "Hyper Mario World Not Deleted",
             Slug = "hyper-mario-world-non-deleted",
         };
 
@@ -438,12 +477,62 @@ internal class Leaderboards
         await context.SaveChangesAsync();
         board.Id.Should().NotBe(default);
 
-        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/{board.Id}/restore", new()
+        try
         {
-            Jwt = _jwt
-        });
+            await _apiClient.Put<LeaderboardViewModel>(
+                $"/leaderboard/{board.Id}/restore",
+                new()
+                {
+                    Jwt = _jwt,
+                }
+            );
+        }
+        catch (RequestFailureException e)
+        {
+            e.Response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            string? model = await e.Response.Content.ReadAsStringAsync();
+            model!.Should().MatchRegex("Not Deleted");
+        }
+    }
 
-        await act.Should().ThrowAsync<RequestFailureException>()
-            .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+    [Test]
+    public async Task RestoreLeaderboard_Conflict()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard deleted = new()
+        {
+            Name = "Conflicted Mario World",
+            Slug = "conflicted-mario-world",
+            DeletedAt = _clock.GetCurrentInstant()
+        };
+
+        Leaderboard reclaimed = new()
+        {
+            Name = "Reclaimed Mario World",
+            Slug = "conflicted-mario-world",
+        };
+
+        context.Leaderboards.Add(deleted);
+        context.Leaderboards.Add(reclaimed);
+        await context.SaveChangesAsync();
+
+        try
+        {
+            await _apiClient.Put<LeaderboardViewModel>(
+                $"/leaderboard/{deleted.Id}/restore",
+                new()
+                {
+                    Jwt = _jwt,
+                }
+            );
+        }
+        catch (RequestFailureException e)
+        {
+            e.Response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+            LeaderboardViewModel? model = await e.Response.Content.ReadFromJsonAsync<LeaderboardViewModel>(TestInitCommonFields.JsonSerializerOptions);
+            model.Should().NotBeNull();
+            model!.Slug.Should().Be("conflicted-mario-world");
+        }
     }
 }
