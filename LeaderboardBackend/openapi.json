@@ -713,17 +713,17 @@
             "description": "The requesting `User` is unauthorized to restore `Leaderboard`s."
           },
           "404": {
-            "description": "The `Leaderboard` was not found, or it wasn't deleted in the first place.",
+            "description": "The `Leaderboard` was not found, or it wasn't deleted in the first place. Includes a field, `title`, which will be \"Not Found\" in the former case, and \"Not Deleted\" in the latter.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
           },
           "409": {
-            "description": "Another `Leaderboard` with the same slug has been created since, and therefore can't be restored.",
+            "description": "Another `Leaderboard` with the same slug has been created since, and therefore can't be restored. Will include the conflicting board in the response.",
             "content": {
               "application/json": {
                 "schema": {

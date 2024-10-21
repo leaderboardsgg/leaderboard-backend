@@ -46,7 +46,7 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
 
     public async Task<RestoreLeaderboardResult> RestoreLeaderboard(long id)
     {
-        Leaderboard? lb = await applicationContext.Leaderboards.FindAsync([id]);
+        Leaderboard? lb = await applicationContext.Leaderboards.FindAsync(id);
 
         if (lb == null)
         {

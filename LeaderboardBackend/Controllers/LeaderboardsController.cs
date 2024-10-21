@@ -93,8 +93,8 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
     [SwaggerResponse(200, "The restored `Leaderboard`s view model.", typeof(LeaderboardViewModel))]
     [SwaggerResponse(401)]
     [SwaggerResponse(403, "The requesting `User` is unauthorized to restore `Leaderboard`s.")]
-    [SwaggerResponse(404, "The `Leaderboard` was not found, or it wasn't deleted in the first place.", typeof(string))]
-    [SwaggerResponse(409, "Another `Leaderboard` with the same slug has been created since, and therefore can't be restored.", typeof(LeaderboardViewModel))]
+    [SwaggerResponse(404, "The `Leaderboard` was not found, or it wasn't deleted in the first place. Includes a field, `title`, which will be \"Not Found\" in the former case, and \"Not Deleted\" in the latter.", typeof(ProblemDetails))]
+    [SwaggerResponse(409, "Another `Leaderboard` with the same slug has been created since, and therefore can't be restored. Will include the conflicting board in the response.", typeof(LeaderboardViewModel))]
     public async Task<ActionResult<LeaderboardViewModel>> RestoreLeaderboard(
         long id
     )

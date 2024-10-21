@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using FluentAssertions.Specialized;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
@@ -403,14 +404,8 @@ internal class Leaderboards
 
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
 
-        context.Users.Update(new()
-        {
-            Id = userModel.Id,
-            Role = UserRole.Banned,
-            Username = userModel.Username,
-            Email = email,
-            Password = password
-        });
+        User update = await context.Users.FirstAsync(user => user.Id == userModel.Id);
+        update.Role = UserRole.Banned;
 
         await context.SaveChangesAsync();
 
@@ -436,7 +431,6 @@ internal class Leaderboards
 
         User? user = await context.Users.FindAsync(userModel.Id);
 
-        context.Users.Update(user!);
         user!.Role = role;
 
         await context.SaveChangesAsync();
@@ -477,22 +471,19 @@ internal class Leaderboards
         await context.SaveChangesAsync();
         board.Id.Should().NotBe(default);
 
-        try
-        {
-            await _apiClient.Put<LeaderboardViewModel>(
+        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() =>
+            _apiClient.Put<LeaderboardViewModel>(
                 $"/leaderboard/{board.Id}/restore",
                 new()
                 {
                     Jwt = _jwt,
                 }
-            );
-        }
-        catch (RequestFailureException e)
-        {
-            e.Response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            string? model = await e.Response.Content.ReadAsStringAsync();
-            model!.Should().MatchRegex("Not Deleted");
-        }
+            )
+        ).Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.NotFound);
+
+        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+        problemDetails.Should().NotBeNull();
+        problemDetails!.Title.Should().Be("Not Deleted");
     }
 
     [Test]
@@ -517,22 +508,18 @@ internal class Leaderboards
         context.Leaderboards.Add(reclaimed);
         await context.SaveChangesAsync();
 
-        try
-        {
-            await _apiClient.Put<LeaderboardViewModel>(
+        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() =>
+            _apiClient.Put<LeaderboardViewModel>(
                 $"/leaderboard/{deleted.Id}/restore",
                 new()
                 {
                     Jwt = _jwt,
                 }
-            );
-        }
-        catch (RequestFailureException e)
-        {
-            e.Response.StatusCode.Should().Be(HttpStatusCode.Conflict);
-            LeaderboardViewModel? model = await e.Response.Content.ReadFromJsonAsync<LeaderboardViewModel>(TestInitCommonFields.JsonSerializerOptions);
-            model.Should().NotBeNull();
-            model!.Slug.Should().Be("conflicted-mario-world");
-        }
+            )
+        ).Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.Conflict);
+
+        LeaderboardViewModel? model = await exAssert.Which.Response.Content.ReadFromJsonAsync<LeaderboardViewModel>(TestInitCommonFields.JsonSerializerOptions);
+        model.Should().NotBeNull();
+        model!.Slug.Should().Be("conflicted-mario-world");
     }
 }
