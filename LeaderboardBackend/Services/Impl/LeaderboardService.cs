@@ -2,6 +2,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 using Npgsql;
 
 namespace LeaderboardBackend.Services;
@@ -39,6 +40,34 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
         {
             return new CreateLeaderboardConflict();
         }
+
+        return lb;
+    }
+
+    public async Task<RestoreLeaderboardResult> RestoreLeaderboard(long id)
+    {
+        Leaderboard? lb = await applicationContext.Leaderboards.FindAsync(id);
+
+        if (lb == null)
+        {
+            return new LeaderboardNotFound();
+        }
+
+        if (lb.DeletedAt == null)
+        {
+            return new LeaderboardNeverDeleted();
+        }
+
+        Leaderboard? maybe = await applicationContext.Leaderboards.SingleOrDefaultAsync(board => board.Slug == lb.Slug && board.DeletedAt == null);
+
+        if (maybe != null)
+        {
+            return new RestoreLeaderboardConflict(maybe);
+        }
+
+        lb.DeletedAt = null;
+
+        await applicationContext.SaveChangesAsync();
 
         return lb;
     }
