@@ -3,6 +3,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.Validation;
 using LeaderboardBackend.Models.ViewModels;
+using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -107,6 +108,31 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
             neverDeleted =>
                 NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Not Deleted")),
             conflict => Conflict(LeaderboardViewModel.MapFrom(conflict.Board))
+        );
+    }
+
+    [Authorize(Policy = UserTypes.ADMINISTRATOR)]
+    [HttpDelete("leaderboard/{id:long}")]
+    [SwaggerOperation("Deletes a leaderboard. This request is restricted to Administrators.", OperationId = "deleteLeaderboard")]
+    [SwaggerResponse(204)]
+    [SwaggerResponse(401)]
+    [SwaggerResponse(403)]
+    [SwaggerResponse(
+        404,
+        """
+        The leaderboard does not exist (Not Found) or was already deleted (Already Deleted).
+        Use the title field of the response to differentiate between the two cases if necessary.
+        """,
+        typeof(ProblemDetails)
+    )]
+    public async Task<ActionResult> DeleteLeaderboard([FromRoute, SwaggerParameter(Required = true)] long id)
+    {
+        DeleteResult res = await leaderboardService.DeleteLeaderboard(id);
+
+        return res.Match<ActionResult>(
+            success => NoContent(),
+            notFound => NotFound(),
+            alreadyDeleted => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Already Deleted"))
         );
     }
 }

@@ -4,10 +4,11 @@ using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using Npgsql;
+using OneOf.Types;
 
 namespace LeaderboardBackend.Services;
 
-public class LeaderboardService(ApplicationContext applicationContext) : ILeaderboardService
+public class LeaderboardService(ApplicationContext applicationContext, IClock clock) : ILeaderboardService
 {
     public async Task<Leaderboard?> GetLeaderboard(long id) =>
         await applicationContext.Leaderboards.FindAsync(id);
@@ -72,5 +73,24 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
         }
 
         return lb;
+    }
+
+    public async Task<DeleteResult> DeleteLeaderboard(long id)
+    {
+        Leaderboard? lb = await applicationContext.Leaderboards.FindAsync(id);
+
+        if (lb is null)
+        {
+            return new NotFound();
+        }
+
+        if (lb.DeletedAt is not null)
+        {
+            return new AlreadyDeleted();
+        }
+
+        lb.DeletedAt = clock.GetCurrentInstant();
+        await applicationContext.SaveChangesAsync();
+        return new Success();
     }
 }

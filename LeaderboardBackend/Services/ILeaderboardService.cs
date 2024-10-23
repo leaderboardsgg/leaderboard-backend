@@ -12,6 +12,7 @@ public interface ILeaderboardService
     Task<List<Leaderboard>> ListLeaderboards();
     Task<CreateLeaderboardResult> CreateLeaderboard(CreateLeaderboardRequest request);
     Task<RestoreLeaderboardResult> RestoreLeaderboard(long id);
+    Task<DeleteResult> DeleteLeaderboard(long id);
 }
 
 [GenerateOneOf]
