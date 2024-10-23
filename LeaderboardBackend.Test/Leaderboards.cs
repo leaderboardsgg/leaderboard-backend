@@ -520,6 +520,6 @@ internal class Leaderboards
 
         LeaderboardViewModel? model = await exAssert.Which.Response.Content.ReadFromJsonAsync<LeaderboardViewModel>(TestInitCommonFields.JsonSerializerOptions);
         model.Should().NotBeNull();
-        model!.Slug.Should().Be("conflicted-mario-world");
+        model!.Id.Should().Be(reclaimed.Id);
     }
 }
