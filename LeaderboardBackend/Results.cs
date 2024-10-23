@@ -1,6 +1,6 @@
+using LeaderboardBackend.Models.Entities;
 using OneOf;
 using OneOf.Types;
-using LeaderboardBackend.Models.Entities;
 
 namespace LeaderboardBackend.Result;
 
