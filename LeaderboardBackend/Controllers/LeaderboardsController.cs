@@ -31,7 +31,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
 
     [AllowAnonymous]
     [HttpGet("api/leaderboard")]
-    [SwaggerOperation("Gets a Leaderboard by its slug.", OperationId = "getLeaderboardBySlug")]
+    [SwaggerOperation("Gets a leaderboard by its slug.", OperationId = "getLeaderboardBySlug")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
     public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboardBySlug([FromQuery, SwaggerParameter(Required = true)] string slug)
@@ -84,6 +84,29 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
 
                 return Conflict(new ValidationProblemDetails(ModelState));
             }
+        );
+    }
+
+    [Authorize(Policy = UserTypes.ADMINISTRATOR)]
+    [HttpPut("leaderboard/{id:long}/restore")]
+    [SwaggerOperation("Restores a deleted leaderboard.", OperationId = "restoreLeaderboard")]
+    [SwaggerResponse(200, "The restored `Leaderboard`s view model.", typeof(LeaderboardViewModel))]
+    [SwaggerResponse(401)]
+    [SwaggerResponse(403, "The requesting `User` is unauthorized to restore `Leaderboard`s.")]
+    [SwaggerResponse(404, "The `Leaderboard` was not found, or it wasn't deleted in the first place. Includes a field, `title`, which will be \"Not Found\" in the former case, and \"Not Deleted\" in the latter.", typeof(ProblemDetails))]
+    [SwaggerResponse(409, "Another `Leaderboard` with the same slug has been created since, and therefore can't be restored. Will include the conflicting board in the response.", typeof(LeaderboardViewModel))]
+    public async Task<ActionResult<LeaderboardViewModel>> RestoreLeaderboard(
+        long id
+    )
+    {
+        RestoreLeaderboardResult r = await leaderboardService.RestoreLeaderboard(id);
+
+        return r.Match<ActionResult<LeaderboardViewModel>>(
+            board => Ok(LeaderboardViewModel.MapFrom(board)),
+            notFound => NotFound(),
+            neverDeleted =>
+                NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Not Deleted")),
+            conflict => Conflict(LeaderboardViewModel.MapFrom(conflict.Board))
         );
     }
 }

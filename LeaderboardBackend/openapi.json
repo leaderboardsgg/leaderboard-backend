@@ -515,7 +515,7 @@
         "tags": [
           "Leaderboards"
         ],
-        "summary": "Gets a Leaderboard by its slug.",
+        "summary": "Gets a leaderboard by its slug.",
         "operationId": "getLeaderboardBySlug",
         "parameters": [
           {
@@ -657,6 +657,77 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/leaderboard/{id}/restore": {
+      "put": {
+        "tags": [
+          "Leaderboards"
+        ],
+        "summary": "Restores a deleted leaderboard.",
+        "operationId": "restoreLeaderboard",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "200": {
+            "description": "The restored `Leaderboard`s view model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "The requesting `User` is unauthorized to restore `Leaderboard`s."
+          },
+          "404": {
+            "description": "The `Leaderboard` was not found, or it wasn't deleted in the first place. Includes a field, `title`, which will be \"Not Found\" in the former case, and \"Not Deleted\" in the latter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Another `Leaderboard` with the same slug has been created since, and therefore can't be restored. Will include the conflicting board in the response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
                 }
               }
             }

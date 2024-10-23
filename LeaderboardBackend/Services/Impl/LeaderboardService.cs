@@ -2,6 +2,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 using Npgsql;
 
 namespace LeaderboardBackend.Services;
@@ -38,6 +39,36 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
         catch (DbUpdateException e) when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
         {
             return new CreateLeaderboardConflict();
+        }
+
+        return lb;
+    }
+
+    public async Task<RestoreLeaderboardResult> RestoreLeaderboard(long id)
+    {
+        Leaderboard? lb = await applicationContext.Leaderboards.FindAsync(id);
+
+        if (lb == null)
+        {
+            return new LeaderboardNotFound();
+        }
+
+        if (lb.DeletedAt == null)
+        {
+            return new LeaderboardNeverDeleted();
+        }
+
+        lb.DeletedAt = null;
+
+        try
+        {
+            await applicationContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException e)
+            when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } pgEx)
+        {
+            Leaderboard conflict = await applicationContext.Leaderboards.SingleAsync(c => c.Slug == lb.Slug && c.DeletedAt == null);
+            return new RestoreLeaderboardConflict(conflict);
         }
 
         return lb;
