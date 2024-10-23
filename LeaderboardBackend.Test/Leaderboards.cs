@@ -597,12 +597,14 @@ internal class Leaderboards
     public async Task DeleteLeaderboard_AlreadyDeleted()
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+        Instant now = _clock.GetCurrentInstant();
 
         Leaderboard lb = new()
         {
             Name = "The Elder Scrolls V: Skyrim",
             Slug = "tesv-skyrim",
-            DeletedAt = _clock.GetCurrentInstant()
+            UpdatedAt = now,
+            DeletedAt = now
         };
 
         context.Leaderboards.Add(lb);
