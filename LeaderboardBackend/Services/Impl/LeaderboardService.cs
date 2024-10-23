@@ -47,7 +47,7 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
     public async Task<RestoreLeaderboardResult> RestoreLeaderboard(long id)
     {
         Leaderboard? lb = await applicationContext.Leaderboards.FindAsync(id);
-    
+
         if (lb == null)
         {
             return new LeaderboardNotFound();
@@ -65,7 +65,7 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
             await applicationContext.SaveChangesAsync();
         }
         catch (DbUpdateException e)
-            when(e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } pgEx)
+            when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } pgEx)
         {
             Leaderboard conflict = await applicationContext.Leaderboards.SingleAsync(c => c.Slug == lb.Slug && c.DeletedAt == null);
             return new RestoreLeaderboardConflict(conflict);
