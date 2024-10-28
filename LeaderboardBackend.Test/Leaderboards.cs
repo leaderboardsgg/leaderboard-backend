@@ -558,9 +558,11 @@ internal class Leaderboards
         IUserService userService = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<IUserService>();
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
 
+        string email = $"testuser.deletelb.{role}@example.com";
+
         RegisterRequest registerRequest = new()
         {
-            Email = $"testuser.deletelb.{role}@example.com",
+            Email = email,
             Password = "Passw0rd",
             Username = $"DeleteLBTest{role}"
         };
@@ -575,12 +577,18 @@ internal class Leaderboards
         context.Leaderboards.Add(lb);
         await context.SaveChangesAsync();
         LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+        User? user = await userService.GetUserByEmail(email);
+        user.Should().NotBeNull();
+        user!.Role = role;
+        context.Users.Update(user);
+        await context.SaveChangesAsync();
 
         await FluentActions.Awaiting(() => _apiClient.Delete(
             $"/leaderboard/{lb.Id}",
             new() { Jwt = res.Token }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
 
+        context.ChangeTracker.Clear();
         Leaderboard? found = await context.Leaderboards.FindAsync(lb.Id);
         found.Should().NotBeNull();
         found!.DeletedAt.Should().BeNull();
