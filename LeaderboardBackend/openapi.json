@@ -564,6 +564,16 @@
         ],
         "summary": "Gets all leaderboards.",
         "operationId": "listLeaderboards",
+        "parameters": [
+          {
+            "name": "includeDeleted",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
         "responses": {
           "400": {
             "description": "Bad Request",
