@@ -594,10 +594,11 @@ internal class Leaderboards
         found!.DeletedAt.Should().BeNull();
     }
 
-    [Test]
-    public async Task DeleteLeaderboard_NotFound() =>
+    [TestCase(long.MaxValue)]
+    [TestCase("sansundertale")]
+    public async Task DeleteLeaderboard_NotFound(object id) =>
         await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"/leaderboard/{long.MaxValue}",
+            $"/leaderboard/{id}",
             new() { Jwt = _jwt }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
 
