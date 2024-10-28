@@ -618,10 +618,17 @@ internal class Leaderboards
         context.Leaderboards.Add(lb);
         await context.SaveChangesAsync();
 
-        await FluentActions.Awaiting(() => _apiClient.Delete(
+        ExceptionAssertions<RequestFailureException> ex = await FluentActions.Awaiting(() => _apiClient.Delete(
             $"/leaderboard/{lb.Id}",
             new() { Jwt = _jwt }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+        ProblemDetails? problemDetails = await ex.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(
+            TestInitCommonFields.JsonSerializerOptions
+        );
+
+        problemDetails.Should().NotBeNull();
+        problemDetails!.Title.Should().Be("Already Deleted");
     }
 
     [Test]
