@@ -18,9 +18,11 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
             .FirstOrDefaultAsync(b => b.Slug == slug && b.DeletedAt == null);
 
     // FIXME: Paginate these
-    public async Task<List<Leaderboard>> ListLeaderboards() =>
-        await applicationContext.Leaderboards
-            .Where(lb => lb.DeletedAt == null).ToListAsync();
+    public async Task<List<Leaderboard>> ListLeaderboards(bool includeDeleted)
+    {
+        IQueryable<Leaderboard> lbs = applicationContext.Leaderboards;
+        return await (includeDeleted ? lbs : lbs.Where(lb => lb.DeletedAt == null)).ToListAsync();
+    }
 
     public async Task<CreateLeaderboardResult> CreateLeaderboard(CreateLeaderboardRequest request)
     {
