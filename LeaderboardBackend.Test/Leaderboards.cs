@@ -342,6 +342,7 @@ internal class Leaderboards
                 Name = "Link: The Faces of Evil",
                 Slug = "link-faces-of-evil",
                 Info = "Nobody should play this one.",
+                UpdatedAt = _clock.GetCurrentInstant(),
                 DeletedAt = _clock.GetCurrentInstant()
             }
         ];
@@ -350,6 +351,12 @@ internal class Leaderboards
         await context.SaveChangesAsync();
         LeaderboardViewModel[] returned = await _apiClient.Get<LeaderboardViewModel[]>("/api/leaderboards", new());
         returned.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
+
+        LeaderboardViewModel[] returned2 = await _apiClient.Get<LeaderboardViewModel[]>("/api/leaderboards?includeDeleted=false", new());
+        returned2.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
+
+        LeaderboardViewModel[] returned3 = await _apiClient.Get<LeaderboardViewModel[]>("/api/leaderboards?includeDeleted=true", new());
+        returned3.Should().BeEquivalentTo(boards, config => config.Excluding(lb => lb.Categories));
     }
 
     [Test]

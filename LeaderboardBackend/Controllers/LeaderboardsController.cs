@@ -51,11 +51,11 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
     [HttpGet("api/leaderboards")]
     [SwaggerOperation("Gets all leaderboards.", OperationId = "listLeaderboards")]
     [SwaggerResponse(200)]
-    public async Task<ActionResult<List<LeaderboardViewModel>>> GetLeaderboards()
+    public async Task<ActionResult<List<LeaderboardViewModel>>> GetLeaderboards([FromQuery] bool includeDeleted = false)
     {
         // TODO: Paginate.
 
-        List<Leaderboard> result = await leaderboardService.ListLeaderboards();
+        List<Leaderboard> result = await leaderboardService.ListLeaderboards(includeDeleted);
         return Ok(result.Select(LeaderboardViewModel.MapFrom));
     }
 
