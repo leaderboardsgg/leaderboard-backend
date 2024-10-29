@@ -1187,8 +1187,7 @@
             "example": "foo-bar"
           },
           "info": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false,
@@ -1257,7 +1256,6 @@
           "info": {
             "type": "string",
             "description": "The general information for the Leaderboard.",
-            "nullable": true,
             "example": "Timer starts on selecting New Game and ends when the final boss is beaten."
           },
           "createdAt": {

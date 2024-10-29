@@ -27,7 +27,10 @@ public record CreateLeaderboardRequest
     public string Slug { get; set; }
 
     /// <inheritdoc cref="Entities.Leaderboard.Info" />
-    public string? Info { get; set; }
+    /// <remarks>
+    /// If omitted, will result in an empty string.
+    /// </remarks>
+    public string Info { get; set; } = null;
 }
 
 public class CreateLeaderboardRequestValidator : AbstractValidator<CreateLeaderboardRequest>

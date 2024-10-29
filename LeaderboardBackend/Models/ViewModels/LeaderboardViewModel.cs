@@ -31,7 +31,7 @@ public record LeaderboardViewModel
     ///     The general information for the Leaderboard.
     /// </summary>
     /// <example>Timer starts on selecting New Game and ends when the final boss is beaten.</example>
-    public required string? Info { get; init; }
+    public required string Info { get; init; }
 
     /// <summary>
     ///     The time the Leaderboard was created.
