@@ -38,6 +38,6 @@ public class CreateLeaderboardRequestValidator : AbstractValidator<CreateLeaderb
     public CreateLeaderboardRequestValidator()
     {
         RuleFor(x => x.Name).NotEmpty();
-        RuleFor(x => x.Slug).Slug();
+        RuleFor(x => x.Slug).NotEmpty().Slug();
     }
 }
