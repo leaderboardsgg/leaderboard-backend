@@ -24,7 +24,7 @@ using NUnit.Framework;
 namespace LeaderboardBackend.Test;
 
 [TestFixture]
-internal class Leaderboards
+public class Leaderboards
 {
     private static TestApiClient _apiClient = null!;
     private static WebApplicationFactory<Program> _factory = null!;
