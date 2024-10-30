@@ -2,6 +2,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using OneOf;
+using OneOf.Types;
 
 namespace LeaderboardBackend.Services;
 
@@ -13,10 +14,11 @@ public interface ILeaderboardService
     Task<CreateLeaderboardResult> CreateLeaderboard(CreateLeaderboardRequest request);
     Task<RestoreLeaderboardResult> RestoreLeaderboard(long id);
     Task<DeleteResult> DeleteLeaderboard(long id);
+    Task<UpdateResult<Leaderboard>> UpdateLeaderboard(long id, UpdateLeaderboardRequest request);
 }
 
 [GenerateOneOf]
 public partial class CreateLeaderboardResult : OneOfBase<Leaderboard, Conflict<Leaderboard>>;
 
 [GenerateOneOf]
-public partial class RestoreLeaderboardResult : OneOfBase<Leaderboard, LeaderboardNotFound, LeaderboardNeverDeleted, RestoreLeaderboardConflict>;
+public partial class RestoreLeaderboardResult : OneOfBase<Leaderboard, NotFound, LeaderboardNeverDeleted, Conflict<Leaderboard>>;
