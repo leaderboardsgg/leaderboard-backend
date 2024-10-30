@@ -967,4 +967,41 @@ public class Leaderboards
         found.UpdatedAt.Should().NotBeNull();
         found.UpdatedAt!.Value.Should().Be(_clock.GetCurrentInstant());
     }
+
+    [Test]
+    public async Task UpdateLeaderboards_OK_Partial()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard lb = new()
+        {
+            Name = "Pokemon Yellow",
+            Slug = "pokemon-yelow",
+            Info = "This info is important and shouldn't be deleted."
+        };
+
+        context.Leaderboards.Add(lb);
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        string newSlug = "pokemon-yellow";
+
+        await _apiClient.Patch(
+            $"/leaderboard/{lb.Id}",
+            new()
+            {
+                Jwt = _jwt,
+                Body = new UpdateLeaderboardRequest()
+                {
+                    Slug = newSlug
+                }
+            }
+        );
+
+        Leaderboard updated = await context.Leaderboards.SingleAsync(l => l.Id == lb.Id);
+        updated.UpdatedAt.Should().NotBeNull();
+        updated.UpdatedAt!.Value.Should().Be(_clock.GetCurrentInstant());
+        updated.Name.Should().Be(lb.Name);
+        updated.Slug.Should().Be(newSlug);
+        updated.Info.Should().Be(lb.Info);
+    }
 }
