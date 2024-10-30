@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using FluentValidation;
 using LeaderboardBackend.Models.Validation;
 
@@ -31,6 +32,26 @@ public record CreateLeaderboardRequest
     /// If omitted, will result in an empty string.
     /// </remarks>
     public string Info { get; set; } = null;
+}
+
+public record UpdateLeaderboardRequest
+{
+    /// <inheritdoc cref="Entities.Leaderboard.Name" />
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Name { get; set; }
+
+    /// <inheritdoc cref="Entities.Leaderboard.Slug" />
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Slug { get; set; }
+
+    /// <inheritdoc cref="Entities.Leaderboard.Info" />
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Info { get; set; }
+}
+
+public class UpdateLeaderboardRequestValidator : AbstractValidator<UpdateLeaderboardRequest>
+{
+    public UpdateLeaderboardRequestValidator() => RuleFor(x => x).Must(ulr => ulr.Info is not null && ulr.Name is not null && ulr.Slug is not null);
 }
 
 public class CreateLeaderboardRequestValidator : AbstractValidator<CreateLeaderboardRequest>
