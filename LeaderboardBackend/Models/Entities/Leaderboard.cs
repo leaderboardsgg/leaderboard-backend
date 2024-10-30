@@ -18,7 +18,7 @@ public class Leaderboard : IHasUpdateTimestamp
     public long Id { get; set; }
 
     /// <summary>
-    ///     The display name of the `Leaderboard` to create.
+    ///     The display name of the `Leaderboard`.
     /// </summary>
     /// <example>Foo Bar</example>
     [Required]
