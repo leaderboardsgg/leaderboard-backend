@@ -663,4 +663,308 @@ public class Leaderboards
         found!.UpdatedAt.Should().NotBeNull();
         found!.UpdatedAt!.Value.Should().Be(_clock.GetCurrentInstant());
     }
+
+    [Test]
+    public async Task UpdateLeaderboard_Unauthenticated()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard lb = new()
+        {
+            Name = "Celeste",
+            Slug = "celest",
+        };
+
+        context.Add(lb);
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        _clock.AdvanceMinutes(1);
+
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"/leaderboard/{lb.Id}", new()
+            {
+                Body = new UpdateLeaderboardRequest()
+                {
+                    Slug = "celeste"
+                }
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+
+        Leaderboard? found = await context.Leaderboards.FindAsync(lb.Id);
+        found.Should().BeEquivalentTo(lb, config => config.Excluding(l => l.Categories));
+    }
+
+    [TestCase(UserRole.Banned)]
+    [TestCase(UserRole.Confirmed)]
+    [TestCase(UserRole.Registered)]
+    public async Task UpdateLeaderboard_BadRole(UserRole role)
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        string email = $"testuser.updatelb.{role}@example.com";
+
+        RegisterRequest registerRequest = new()
+        {
+            Email = email,
+            Password = "Passw0rd",
+            Username = $"UpdateLBTest{role}"
+        };
+
+        Leaderboard lb = new()
+        {
+            Name = "LB Update Bad Role Test Board",
+            Slug = $"lb-update-bad-role-test-{role}",
+        };
+
+        await userService.CreateUser(registerRequest);
+        context.Leaderboards.Add(lb);
+        await context.SaveChangesAsync();
+        LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+        User? user = await userService.GetUserByEmail(email);
+        user.Should().NotBeNull();
+        user!.Role = role;
+        context.Users.Update(user);
+        await context.SaveChangesAsync();
+        _clock.AdvanceMinutes(1);
+
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"/leaderboard/{lb.Id}",
+            new()
+            {
+                Body = new UpdateLeaderboardRequest()
+                {
+                    Slug = "amogus"
+                },
+                Jwt = res.Token
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+
+        context.ChangeTracker.Clear();
+        Leaderboard? found = await context.Leaderboards.FindAsync(lb.Id);
+        found.Should().NotBeNull();
+        found.Should().BeEquivalentTo(lb, config => config.Excluding(l => l.Categories));
+    }
+
+    [TestCase(long.MaxValue)]
+    [TestCase("partyrockersinthehousetonight")]
+    public async Task UpdateLeaderboard_NotFound(object id) =>
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"/leaderboard/{id}",
+            new()
+            {
+                Body = new UpdateLeaderboardRequest()
+                {
+                    Slug = "fnaf",
+                    Info = "Actually, it's \"party rock is in the house tonight.\""
+                },
+                Jwt = _jwt
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+    [Test]
+    public async Task UpdateLeaderboard_Deleted()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard lb = new()
+        {
+            Name = "Mario Teaches Typing",
+            Slug = "mario-teaches-typing",
+            UpdatedAt = _clock.GetCurrentInstant(),
+            DeletedAt = _clock.GetCurrentInstant()
+        };
+
+        context.Leaderboards.Add(lb);
+        await context.SaveChangesAsync();
+        _clock.AdvanceMinutes(1);
+
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"/leaderboard/{lb.Id}",
+            new()
+            {
+                Body = new UpdateLeaderboardRequest()
+                {
+                    Info = "Learn to type with Mario!"
+                },
+                Jwt = _jwt
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Test]
+    public async Task UpdateLeaderboard_NoFields()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard lb = new()
+        {
+            Name = "Hotel Mario",
+            Slug = "hotel-mario"
+        };
+
+        context.Leaderboards.Add(lb);
+        await context.SaveChangesAsync();
+
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"/leaderboard/{lb.Id}",
+            new()
+            {
+                Body = new UpdateLeaderboardRequest(),
+                Jwt = _jwt
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableContent);
+    }
+
+    [Test]
+    public async Task UpdateLeaderboard_SlugAlreadyUsed()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard lb = new()
+        {
+            Name = "Prey (2006)",
+            Slug = "prey"
+        };
+
+        Leaderboard lb2 = new()
+        {
+            Name = "Prey (2017)",
+            Slug = "prey-2017"
+        };
+
+        context.Leaderboards.AddRange(lb, lb2);
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"/leaderboard/{lb2.Id}",
+            new()
+            {
+                Jwt = _jwt,
+                Body = new UpdateLeaderboardRequest()
+                {
+                    Name = "Prey",
+                    Slug = "prey"
+                }
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Conflict);
+
+        Leaderboard found = await context.Leaderboards.SingleAsync(l => l.Id == lb2.Id);
+        found.Should().BeEquivalentTo(lb2, config => config.Excluding(l => l.Categories));
+    }
+
+    [TestCase("Grand Theft Auto Five", "Grand Theft Auto V", "gtav", "")]
+    [TestCase("n", "N", "n-2004", "n")]
+    [TestCase("Super Mario Brothers", "Super Mario Bros.", "super-mario-bros", "super mario bros")]
+    [TestCase("Super Smash Brothers Brawl", "Super Smash Bros. Brawl", "ssbb","super-smash-bros.-brawl")]
+    [TestCase(
+        "Dr. Langeskov, The Tiger, and The Terribly Cursed Emerald",
+        "Dr. Langeskov, The Tiger, and The Terribly Cursed Emerald: A Whirlwind Heist",
+        "dr-langeskov-the-tiger-and-the-terribly-cursed-emerald",
+        "dr-langeskov-the-tiger-and-the-terribly-cursed-emerald-a-whirlwind-heist-crows-crows-crows"
+    )]
+    [TestCase("The Legendary Starfy", "伝説のスタフィー", "densetsu-no-stafy", "デンセツノスタフィー")]
+    public async Task UpdateLeaderboar_BadData(string oldName, string newName, string oldSlug, string newSlug)
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard lb = new()
+        {
+            Name = oldName,
+            Slug = oldSlug
+        };
+
+        context.Leaderboards.Add(lb);
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"/leaderboard/{lb.Id}",
+            new()
+            {
+                Jwt = _jwt,
+                Body = new UpdateLeaderboardRequest()
+                {
+                    Name = newName,
+                    Slug = newSlug
+                }
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableContent);
+
+        Leaderboard found = await context.Leaderboards.SingleAsync(l => l.Id == lb.Id);
+        found.Should().BeEquivalentTo(lb, config => config.Excluding(l => l.Categories));
+    }
+
+    [Test]
+    public async Task UpdateLeaderboard_InvalidFields()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard lb = new()
+        {
+            Name = "Terraria",
+            Slug = "terraria"
+        };
+
+        context.Leaderboards.Add(lb);
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        Instant instant = _clock.GetCurrentInstant() - Duration.FromMinutes(1);
+
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"/leaderboard/{lb.Id}",
+            new()
+            {
+                Jwt = _jwt,
+                Body = new
+                {
+                    CreatedAt = instant,
+                    UpdatedAt = instant,
+                    DeletedAt = instant
+                }
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableContent);
+
+        Leaderboard found = await context.Leaderboards.SingleAsync(l => l.Id == lb.Id);
+        found.Should().BeEquivalentTo(lb, config => config.Excluding(l => l.Categories));
+    }
+
+    [Test]
+    public async Task UpdateLeaderboards_OK()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard lb = new()
+        {
+            Name = "The Witcher 3",
+            Slug = "witcher-3-wild-hunt"
+        };
+
+        context.Leaderboards.Add(lb);
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        UpdateLeaderboardRequest update = new()
+        {
+            Name = "The Witcher 3: Wild Hunt",
+            Slug = "witcher-3",
+            Info = "The best game evar!"
+        };
+
+        await _apiClient.Patch(
+            $"/leaderboard/{lb.Id}",
+            new()
+            {
+                Jwt = _jwt,
+                Body = update
+            }
+        );
+
+        Leaderboard found = await context.Leaderboards.SingleAsync(l => l.Id == lb.Id);
+        found.Should().BeEquivalentTo(update, config => config.ExcludingMissingMembers());
+        found.UpdatedAt.Should().NotBeNull();
+        found.UpdatedAt!.Value.Should().Be(_clock.GetCurrentInstant());
+    }
 }
