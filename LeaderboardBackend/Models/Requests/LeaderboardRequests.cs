@@ -51,7 +51,7 @@ public record UpdateLeaderboardRequest
 
 public class UpdateLeaderboardRequestValidator : AbstractValidator<UpdateLeaderboardRequest>
 {
-    public UpdateLeaderboardRequestValidator() => RuleFor(x => x).Must(ulr => ulr.Info is not null && ulr.Name is not null && ulr.Slug is not null);
+    public UpdateLeaderboardRequestValidator() => RuleFor(x => x).Must(ulr => ulr.Info is not null || ulr.Name is not null || ulr.Slug is not null);
 }
 
 public class CreateLeaderboardRequestValidator : AbstractValidator<CreateLeaderboardRequest>
