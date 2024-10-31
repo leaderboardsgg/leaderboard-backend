@@ -828,7 +828,7 @@ public class Leaderboards
     [TestCase("Grand Theft Auto Five", "Grand Theft Auto V", "gtav", "")]
     [TestCase("n", "N", "n-2004", "n")]
     [TestCase("Super Mario Brothers", "Super Mario Bros.", "super-mario-bros", "super mario bros")]
-    [TestCase("Super Smash Brothers Brawl", "Super Smash Bros. Brawl", "ssbb","super-smash-bros.-brawl")]
+    [TestCase("Super Smash Brothers Brawl", "Super Smash Bros. Brawl", "ssbb", "super-smash-bros.-brawl")]
     [TestCase(
         "Dr. Langeskov, The Tiger, and The Terribly Cursed Emerald",
         "Dr. Langeskov, The Tiger, and The Terribly Cursed Emerald: A Whirlwind Heist",

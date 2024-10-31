@@ -96,7 +96,8 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
         return new Success();
     }
 
-    public async Task<UpdateResult<Leaderboard>> UpdateLeaderboard(long id, UpdateLeaderboardRequest request){
+    public async Task<UpdateResult<Leaderboard>> UpdateLeaderboard(long id, UpdateLeaderboardRequest request)
+    {
         Leaderboard? lb = await applicationContext.Leaderboards.FindAsync(id);
 
         if (lb is null)
