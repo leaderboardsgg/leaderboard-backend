@@ -1,4 +1,3 @@
-using LeaderboardBackend.Models.Entities;
 using OneOf;
 using OneOf.Types;
 
@@ -22,4 +21,4 @@ public readonly record struct UserBanned;
 public partial class DeleteResult : OneOfBase<Success, NotFound, AlreadyDeleted>;
 
 [GenerateOneOf]
-public partial class UpdateResult<T> : OneOfBase<AlreadyUsed, Conflict<T>, Deleted ,NotFound, Success>;
+public partial class UpdateResult<T> : OneOfBase<Conflict<T>, Deleted, NotFound, Success>;
