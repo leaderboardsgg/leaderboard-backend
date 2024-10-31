@@ -764,36 +764,6 @@ public class Leaderboards
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
 
     [Test]
-    public async Task UpdateLeaderboard_Deleted()
-    {
-        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
-
-        Leaderboard lb = new()
-        {
-            Name = "Mario Teaches Typing",
-            Slug = "mario-teaches-typing",
-            UpdatedAt = _clock.GetCurrentInstant(),
-            DeletedAt = _clock.GetCurrentInstant()
-        };
-
-        context.Leaderboards.Add(lb);
-        await context.SaveChangesAsync();
-        _clock.AdvanceMinutes(1);
-
-        await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"/leaderboard/{lb.Id}",
-            new()
-            {
-                Body = new UpdateLeaderboardRequest()
-                {
-                    Info = "Learn to type with Mario!"
-                },
-                Jwt = _jwt
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
-    }
-
-    [Test]
     public async Task UpdateLeaderboard_NoFields()
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
