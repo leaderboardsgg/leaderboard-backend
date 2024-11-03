@@ -1604,16 +1604,13 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "slug": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "info": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false

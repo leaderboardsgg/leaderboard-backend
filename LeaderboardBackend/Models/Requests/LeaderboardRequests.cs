@@ -38,15 +38,15 @@ public record UpdateLeaderboardRequest
 {
     /// <inheritdoc cref="Entities.Leaderboard.Name" />
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Name { get; set; }
+    public string Name { get; set; }
 
     /// <inheritdoc cref="Entities.Leaderboard.Slug" />
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Slug { get; set; }
+    public string Slug { get; set; }
 
     /// <inheritdoc cref="Entities.Leaderboard.Info" />
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Info { get; set; }
+    public string Info { get; set; }
 }
 
 public class UpdateLeaderboardRequestValidator : AbstractValidator<UpdateLeaderboardRequest>
