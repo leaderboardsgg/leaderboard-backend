@@ -153,6 +153,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
         "The specified slug is already in use by another leaderboard. Returns the conflicting leaderboard.",
         typeof(LeaderboardViewModel)
     )]
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult> UpdateLeaderboard(
         [FromRoute] long id,
         [FromBody, SwaggerRequestBody(Required = true)] UpdateLeaderboardRequest request
