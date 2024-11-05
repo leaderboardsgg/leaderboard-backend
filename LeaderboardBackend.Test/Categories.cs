@@ -67,7 +67,6 @@ internal class Categories
                 {
                     Name = "Super Mario Bros.",
                     Slug = "super_mario_bros",
-                    Info = null
                 },
                 Jwt = _jwt
             }

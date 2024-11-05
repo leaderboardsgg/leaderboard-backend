@@ -42,5 +42,5 @@ public record CreateCategoryRequest
 
 public class CreateCategoryRequestValidator : AbstractValidator<CreateCategoryRequest>
 {
-    public CreateCategoryRequestValidator() => RuleFor(x => x.Slug).Slug();
+    public CreateCategoryRequestValidator() => RuleFor(x => x.Slug).NotEmpty().Slug();
 }

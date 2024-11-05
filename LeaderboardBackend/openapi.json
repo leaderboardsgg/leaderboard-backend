@@ -797,6 +797,88 @@
             }
           }
         }
+      },
+      "patch": {
+        "tags": [
+          "Leaderboards"
+        ],
+        "summary": "Updates a leaderboard with the specified new fields. This request is restricted to administrators. This operation is atomic; if an error occurs, the leaderboard will not be updated. All fields of the request body are optional but you must specify at least one.",
+        "operationId": "updateLeaderboard",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLeaderboardRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The specified slug is already in use by another leaderboard. Returns the conflicting leaderboard.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/run/{id}": {
@@ -1187,8 +1269,7 @@
             "example": "foo-bar"
           },
           "info": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false,
@@ -1257,7 +1338,6 @@
           "info": {
             "type": "string",
             "description": "The general information for the Leaderboard.",
-            "nullable": true,
             "example": "Timer starts on selecting New Game and ends when the final boss is beaten."
           },
           "createdAt": {
@@ -1529,6 +1609,21 @@
             "additionalProperties": false
           }
         ]
+      },
+      "UpdateLeaderboardRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "info": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
       },
       "UserRole": {
         "enum": [

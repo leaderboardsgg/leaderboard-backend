@@ -41,7 +41,6 @@ namespace LeaderboardBackend.Test
                     {
                         Name = "Super Mario 64",
                         Slug = "super_mario_64",
-                        Info = null
                     },
                     Jwt = _jwt,
                 }

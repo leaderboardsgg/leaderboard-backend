@@ -18,7 +18,7 @@ public class Leaderboard : IHasUpdateTimestamp
     public long Id { get; set; }
 
     /// <summary>
-    ///     The display name of the `Leaderboard` to create.
+    ///     The display name of the `Leaderboard`.
     /// </summary>
     /// <example>Foo Bar</example>
     [Required]
@@ -37,7 +37,7 @@ public class Leaderboard : IHasUpdateTimestamp
     ///     The general information for the Leaderboard.
     /// </summary>
     /// <example>Timer starts on selecting New Game and ends when the final boss is beaten.</example>
-    public string? Info { get; set; }
+    public string Info { get; set; } = null!;
 
     /// <summary>
     ///     The time the Leaderboard was created.
@@ -67,5 +67,8 @@ public class LeaderboardEntityTypeConfig : IEntityTypeConfiguration<Leaderboard>
         builder.HasIndex(l => l.Slug)
             .IsUnique()
             .HasFilter("deleted_at IS NULL");
+
+        builder.Property(l => l.Info)
+            .HasDefaultValue("");
     }
 }

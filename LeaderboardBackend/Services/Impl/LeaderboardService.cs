@@ -41,7 +41,7 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
         }
         catch (DbUpdateException e) when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
         {
-            return new CreateLeaderboardConflict();
+            return new Conflict<Leaderboard>();
         }
 
         return lb;
@@ -53,7 +53,7 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
 
         if (lb == null)
         {
-            return new LeaderboardNotFound();
+            return new NotFound();
         }
 
         if (lb.DeletedAt == null)
@@ -71,7 +71,7 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
             when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } pgEx)
         {
             Leaderboard conflict = await applicationContext.Leaderboards.SingleAsync(c => c.Slug == lb.Slug && c.DeletedAt == null);
-            return new RestoreLeaderboardConflict(conflict);
+            return new Conflict<Leaderboard>(conflict);
         }
 
         return lb;
@@ -93,6 +93,44 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
 
         lb.DeletedAt = clock.GetCurrentInstant();
         await applicationContext.SaveChangesAsync();
+        return new Success();
+    }
+
+    public async Task<UpdateResult<Leaderboard>> UpdateLeaderboard(long id, UpdateLeaderboardRequest request)
+    {
+        Leaderboard? lb = await applicationContext.Leaderboards.FindAsync(id);
+
+        if (lb is null)
+        {
+            return new NotFound();
+        }
+
+        if (request.Info is not null)
+        {
+            lb.Info = request.Info;
+        }
+
+        if (request.Name is not null)
+        {
+            lb.Name = request.Name;
+        }
+
+        if (request.Slug is not null)
+        {
+            lb.Slug = request.Slug;
+        }
+
+        try
+        {
+            await applicationContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException e)
+            when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            Leaderboard conflict = await applicationContext.Leaderboards.SingleAsync(c => c.Slug == lb.Slug && c.DeletedAt == null);
+            return new Conflict<Leaderboard>(conflict);
+        }
+
         return new Success();
     }
 }

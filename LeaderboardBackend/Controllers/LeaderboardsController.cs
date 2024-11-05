@@ -107,7 +107,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
             notFound => NotFound(),
             neverDeleted =>
                 NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Not Deleted")),
-            conflict => Conflict(LeaderboardViewModel.MapFrom(conflict.Board))
+            conflict => Conflict(LeaderboardViewModel.MapFrom(conflict.Conflicting))
         );
     }
 
@@ -133,6 +133,38 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
             success => NoContent(),
             notFound => NotFound(),
             alreadyDeleted => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Already Deleted"))
+        );
+    }
+
+    [Authorize(Policy = UserTypes.ADMINISTRATOR)]
+    [HttpPatch("/leaderboard/{id:long}")]
+    [SwaggerOperation(
+        "Updates a leaderboard with the specified new fields. This request is restricted to administrators. " +
+        "This operation is atomic; if an error occurs, the leaderboard will not be updated. " +
+        "All fields of the request body are optional but you must specify at least one.",
+        OperationId = "updateLeaderboard"
+    )]
+    [SwaggerResponse(204)]
+    [SwaggerResponse(401)]
+    [SwaggerResponse(403)]
+    [SwaggerResponse(404, Type = typeof(ProblemDetails))]
+    [SwaggerResponse(
+        409,
+        "The specified slug is already in use by another leaderboard. Returns the conflicting leaderboard.",
+        typeof(LeaderboardViewModel)
+    )]
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
+    public async Task<ActionResult> UpdateLeaderboard(
+        [FromRoute] long id,
+        [FromBody, SwaggerRequestBody(Required = true)] UpdateLeaderboardRequest request
+    )
+    {
+        UpdateResult<Leaderboard> result = await leaderboardService.UpdateLeaderboard(id, request);
+
+        return result.Match<ActionResult>(
+            conflict => Conflict(conflict.Conflicting),
+            notfound => NotFound(),
+            success => NoContent()
         );
     }
 }
