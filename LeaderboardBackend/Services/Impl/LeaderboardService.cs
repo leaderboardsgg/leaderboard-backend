@@ -18,8 +18,7 @@ public class LeaderboardService(ApplicationContext applicationContext) : ILeader
 
     // FIXME: Paginate these
     public async Task<List<Leaderboard>> ListLeaderboards() =>
-        await applicationContext.Leaderboards
-            .Where(lb => lb.DeletedAt == null).ToListAsync();
+        await applicationContext.Leaderboards.ToListAsync();
 
     public async Task<CreateLeaderboardResult> CreateLeaderboard(CreateLeaderboardRequest request)
     {
