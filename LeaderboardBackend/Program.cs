@@ -143,7 +143,7 @@ builder.Services
     {
         opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(null, false));
         opt.JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
         jsonSerializerOptions = opt.JsonSerializerOptions;
     });
