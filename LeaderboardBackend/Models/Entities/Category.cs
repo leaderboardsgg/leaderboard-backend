@@ -53,7 +53,7 @@ public class Category : IHasUpdateTimestamp
     ///     Information pertaining to the `Category`.
     /// </summary>
     /// <example>Video proof is required.</example>
-    public string? Info { get; set; }
+    public string Info { get; set; } = null!;
 
     /// <summary>
     ///     The direction used to rank runs belonging to this category.
@@ -89,5 +89,8 @@ public class CategoryEntityTypeConfig : IEntityTypeConfiguration<Category>
         builder.HasIndex(c => new { c.LeaderboardId, c.Slug })
             .IsUnique()
             .HasFilter("deleted_at IS NULL");
+
+        builder.Property(c => c.Info)
+            .HasDefaultValue("");
     }
 }
