@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using LeaderboardBackend.Models.Validation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
@@ -14,7 +15,6 @@ public enum SortDirection
 /// <summary>
 ///     Represents a `Category` tied to a `Leaderboard`.
 /// </summary>
-[Index(nameof(LeaderboardId), nameof(Slug), IsUnique = true)]
 public class Category : IHasUpdateTimestamp
 {
     /// <summary>
@@ -80,4 +80,14 @@ public class Category : IHasUpdateTimestamp
     ///     The time at which the Category was deleted, or <see langword="null" /> if the Category has not been deleted.
     /// </summary>
     public Instant? DeletedAt { get; set; }
+}
+
+public class CategoryEntityTypeConfig : IEntityTypeConfiguration<Category>
+{
+    public void Configure(EntityTypeBuilder<Category> builder)
+    {
+        builder.HasIndex(c => new { c.LeaderboardId, c.Slug })
+            .IsUnique()
+            .HasFilter("deleted_at IS NULL");
+    }
 }
