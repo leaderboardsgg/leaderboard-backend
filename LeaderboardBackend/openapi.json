@@ -1223,7 +1223,6 @@
       },
       "CreateCategoryRequest": {
         "required": [
-          "info",
           "leaderboardId",
           "name",
           "slug",
@@ -1233,11 +1232,13 @@
         "type": "object",
         "properties": {
           "name": {
+            "minLength": 1,
             "type": "string",
             "description": "The display name of the `Category`.",
             "example": "Foo Bar Baz%"
           },
           "slug": {
+            "minLength": 1,
             "type": "string",
             "description": "The URL-scoped unique identifier of the `Category`.\n\r\nMust be [2, 25] in length and consist only of alphanumeric characters and hyphens.",
             "example": "foo-bar-baz"

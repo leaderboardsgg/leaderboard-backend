@@ -2,6 +2,6 @@ namespace LeaderboardBackend.Models;
 
 public enum RunType
 {
-    Time,
+    Time = 1,
     Score
 }

@@ -8,7 +8,7 @@ namespace LeaderboardBackend.Models.Entities;
 
 public enum SortDirection
 {
-    Ascending,
+    Ascending = 1,
     Descending
 }
 
