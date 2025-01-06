@@ -42,5 +42,11 @@ public record CreateCategoryRequest
 
 public class CreateCategoryRequestValidator : AbstractValidator<CreateCategoryRequest>
 {
-    public CreateCategoryRequestValidator() => RuleFor(x => x.Slug).NotEmpty().Slug();
+    public CreateCategoryRequestValidator()
+    {
+        RuleFor(x => x.Name).NotEmpty();
+        RuleFor(x => x.Slug).NotEmpty().Slug();
+        RuleFor(x => x.SortDirection).IsInEnum();
+        RuleFor(x => x.Type).IsInEnum();
+    }
 }
