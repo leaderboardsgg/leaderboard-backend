@@ -77,7 +77,7 @@ internal class Categories
             Name = "1 Player",
             Slug = "1_player",
             LeaderboardId = createdLeaderboard.Id,
-            Info = null,
+            Info = "only one guy allowed",
             SortDirection = SortDirection.Ascending,
             Type = RunType.Time
         };
