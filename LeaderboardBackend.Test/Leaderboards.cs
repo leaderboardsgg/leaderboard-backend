@@ -839,7 +839,7 @@ public class Leaderboards
     )]
     [TestCase("The Legendary Starfy", "伝説のスタフィー", "densetsu-no-stafy", "デンセツノスタフィー")]
     [TestCase("Resident Evil", "", "resident-evil", null)]
-    public async Task UpdateLeaderboar_BadData(string oldName, string? newName, string oldSlug, string? newSlug)
+    public async Task UpdateLeaderboard_BadData(string oldName, string? newName, string oldSlug, string? newSlug)
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
 
