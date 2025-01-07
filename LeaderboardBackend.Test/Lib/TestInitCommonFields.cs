@@ -18,7 +18,7 @@ internal record TestInitCommonFields
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(null, false));
         JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
     }
 
