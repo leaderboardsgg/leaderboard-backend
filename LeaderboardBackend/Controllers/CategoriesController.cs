@@ -30,18 +30,20 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpPost("categories/create")]
-    [SwaggerOperation("Creates a new Category. This request is restricted to Moderators.", OperationId = "createCategory")]
+    [HttpPost("leaderboard/{id:long}/categories/create")]
+    [SwaggerOperation("Creates a new Category for a Leaderboard with ID `id`. This request is restricted to Administrators.", OperationId = "createCategory")]
     [SwaggerResponse(201)]
     [SwaggerResponse(401)]
     [SwaggerResponse(403, "The requesting `User` is unauthorized to create Categories.")]
-    [SwaggerResponse(409, "A Category with the specified slug already exists.", typeof(ValidationProblemDetails))]
+    [SwaggerResponse(404, "The Leaderboard with ID `id` could not be found.", typeof(ValidationProblemDetails))]
+    [SwaggerResponse(409, "A Category with the specified slug already exists.", typeof(CategoryViewModel))]
     [SwaggerResponse(422, $"The request contains errors. The following errors can occur: NotEmptyValidator, {SlugRule.SLUG_FORMAT}", typeof(ValidationProblemDetails))]
     public async Task<ActionResult<CategoryViewModel>> CreateCategory(
+        [FromRoute, SwaggerParameter(Required = true)] long id,
         [FromBody, SwaggerRequestBody(Required = true)] CreateCategoryRequest request
     )
     {
-        CreateCategoryResult r = await categoryService.CreateCategory(request);
+        CreateCategoryResult r = await categoryService.CreateCategory(id, request);
 
         return r.Match<ActionResult<CategoryViewModel>>(
             category => CreatedAtAction(
@@ -49,12 +51,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
                 new { id = category.Id },
                 CategoryViewModel.MapFrom(category)
             ),
-            conflict =>
-            {
-                ModelState.AddModelError(nameof(request.Slug), "SlugAlreadyUsed");
-
-                return Conflict(new ValidationProblemDetails(ModelState));
-            },
+            conflict => Conflict(conflict.Conflicting),
             notFound => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Leaderboard Not Found"))
         );
     }

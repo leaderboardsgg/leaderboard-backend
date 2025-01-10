@@ -47,15 +47,14 @@ namespace LeaderboardBackend.Test
             );
 
             CategoryViewModel createdCategory = await _apiClient.Post<CategoryViewModel>(
-                "/categories/create",
+                $"/leaderboard/{createdLeaderboard.Id}/categories/create",
                 new()
                 {
                     Body = new CreateCategoryRequest()
                     {
                         Name = "120 Stars",
                         Slug = "120_stars",
-                        LeaderboardId = createdLeaderboard.Id,
-                        Info = null,
+                        Info = "120 stars",
                         SortDirection = SortDirection.Ascending,
                         Type = RunType.Time
                     },

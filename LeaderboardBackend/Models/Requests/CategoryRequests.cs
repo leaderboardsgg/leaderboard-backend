@@ -31,13 +31,7 @@ public record CreateCategoryRequest
     ///     Information pertaining to the `Category`.
     /// </summary>
     /// <example>Video proof is required.</example>
-    public string? Info { get; set; }
-
-    /// <summary>
-    ///     The ID of the `Leaderboard` the `Category` is a part of.
-    /// </summary>
-    [Required]
-    public long LeaderboardId { get; set; }
+    public string Info { get; set; }
 
     /// <inheritdoc cref="Category.SortDirection" />
     [Required]

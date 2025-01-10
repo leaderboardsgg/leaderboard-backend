@@ -1,5 +1,6 @@
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -12,7 +13,7 @@ public class CategoryService(ApplicationContext applicationContext) : ICategoryS
     public async Task<Category?> GetCategory(long id) =>
         await applicationContext.Categories.FindAsync(id);
 
-    public async Task<CreateCategoryResult> CreateCategory(CreateCategoryRequest request)
+    public async Task<CreateCategoryResult> CreateCategory(long leaderboardId, CreateCategoryRequest request)
     {
         Category category =
             new()
@@ -20,7 +21,7 @@ public class CategoryService(ApplicationContext applicationContext) : ICategoryS
                 Name = request.Name,
                 Slug = request.Slug,
                 Info = request.Info,
-                LeaderboardId = request.LeaderboardId,
+                LeaderboardId = leaderboardId,
                 SortDirection = request.SortDirection,
                 Type = request.Type
             };
@@ -37,7 +38,8 @@ public class CategoryService(ApplicationContext applicationContext) : ICategoryS
         }
         catch (DbUpdateException e) when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } pgEx)
         {
-            return new Conflict<Category>();
+            Category conflict = await applicationContext.Categories.SingleAsync(c => c.Slug == category.Slug && c.DeletedAt == null);
+            return new Conflict<CategoryViewModel>(CategoryViewModel.MapFrom(conflict));
         }
 
         return category;

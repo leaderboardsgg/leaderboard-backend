@@ -81,14 +81,13 @@ internal class Categories
         {
             Name = "1 Player",
             Slug = "1_player",
-            LeaderboardId = _createdLeaderboard.Id,
             Info = "only one guy allowed",
             SortDirection = SortDirection.Ascending,
             Type = RunType.Time
         };
 
         CategoryViewModel createdCategory = await _apiClient.Post<CategoryViewModel>(
-            "/categories/create",
+            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
             new()
             {
                 Body = request,
@@ -102,7 +101,7 @@ internal class Categories
             $"/api/category/{createdCategory?.Id}", new() { }
         );
 
-        retrievedCategory.Should().BeEquivalentTo(request, opts => opts.Excluding(c => c.LeaderboardId));
+        retrievedCategory.Should().BeEquivalentTo(request);
     }
 
     [Test]
@@ -115,14 +114,13 @@ internal class Categories
         {
             Name = "1 Player",
             Slug = "1_player",
-            LeaderboardId = _createdLeaderboard.Id,
-            Info = null,
+            Info = "only one guy allowed",
             SortDirection = SortDirection.Ascending,
             Type = RunType.Time
         };
 
         await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
-            "/categories/create",
+            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
             new()
             {
                 Body = request,
@@ -155,14 +153,13 @@ internal class Categories
         {
             Name = "1 Player",
             Slug = "1_player",
-            LeaderboardId = _createdLeaderboard.Id,
-            Info = null,
+            Info = "only one guy allowed",
             SortDirection = SortDirection.Ascending,
             Type = RunType.Time
         };
 
         await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
-            "/categories/create",
+            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
             new()
             {
                 Body = request,
@@ -172,22 +169,83 @@ internal class Categories
     }
 
     [Test]
-    // TODO: To handle both exceptions of when the leaderboard ID is different,
-    // and when the original cat has been deleted.
-    public static async Task CreateCategory_SlugAlreadyUsedForLeaderboard()
+    public static async Task CreateCategory_LeaderboardNotFound()
+    {
+        CreateCategoryRequest request = new()
+        {
+            Name = "1 Player",
+            Slug = "1_player",
+            Info = "only one guy allowed",
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Time
+        };
+
+        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
+            "/leaderboard/1000/categories/create",
+            new()
+            {
+                Body = request,
+                Jwt = _jwt,
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+        problemDetails.Should().NotBeNull();
+        problemDetails!.Title.Should().Be("Leaderboard Not Found");
+    }
+
+    [Test]
+    public static async Task CreateCategory_NoConflictBecauseOldCatIsDeleted()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category cat = new()
+        {
+            Name = "First",
+            Slug = "should-not-conflict",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+            DeletedAt = _clock.GetCurrentInstant(),
+        };
+
+        context.Categories.Add(cat);
+        await context.SaveChangesAsync();
+        cat.Id.Should().NotBe(default);
+
+        CreateCategoryRequest request = new()
+        {
+            Name = "1 Player",
+            Slug = "should-not-conflict",
+            Info = "only one guy allowed",
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Time
+        };
+
+        await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
+            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
+            new()
+            {
+                Body = request,
+                Jwt = _jwt
+            }
+        )).Should().NotThrowAsync();
+    }
+
+    [Test]
+    public static async Task CreateCategory_Conflict()
     {
         CreateCategoryRequest request = new()
         {
             Name = "First",
             Slug = "repeated-slug",
-            LeaderboardId = _createdLeaderboard.Id,
-            Info = null,
+            Info = "only one guy allowed",
             SortDirection = SortDirection.Ascending,
             Type = RunType.Time
         };
 
-        await _apiClient.Post<CategoryViewModel>(
-            "/categories/create",
+        CategoryViewModel created = await _apiClient.Post<CategoryViewModel>(
+            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
             new()
             {
                 Body = request,
@@ -195,14 +253,17 @@ internal class Categories
             }
         );
 
-        await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
-            "/categories/create",
+        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
+            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
             new()
             {
                 Body = request,
                 Jwt = _jwt,
             }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Conflict);
+
+        CategoryViewModel? conflict = await exAssert.Which.Response.Content.ReadFromJsonAsync<CategoryViewModel>(TestInitCommonFields.JsonSerializerOptions);
+        conflict.Should().Be(created);
     }
 
     [TestCase(null, "1_player")]
@@ -213,8 +274,7 @@ internal class Categories
     {
         CreateCategoryRequest request = new()
         {
-            LeaderboardId = _createdLeaderboard.Id,
-            Info = null,
+            Info = "only one guy allowed",
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
         };
@@ -230,7 +290,7 @@ internal class Categories
         }
 
         ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
-            "/categories/create",
+            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
             new()
             {
                 Body = request,

@@ -406,13 +406,24 @@
         }
       }
     },
-    "/categories/create": {
+    "/leaderboard/{id}/categories/create": {
       "post": {
         "tags": [
           "Categories"
         ],
-        "summary": "Creates a new Category. This request is restricted to Moderators.",
+        "summary": "Creates a new Category for a Leaderboard with ID `id`. This request is restricted to Administrators.",
         "operationId": "createCategory",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -453,12 +464,22 @@
           "403": {
             "description": "The requesting `User` is unauthorized to create Categories."
           },
+          "404": {
+            "description": "The Leaderboard with ID `id` could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
           "409": {
             "description": "A Category with the specified slug already exists.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                  "$ref": "#/components/schemas/CategoryViewModel"
                 }
               }
             }
@@ -1223,7 +1244,6 @@
       },
       "CreateCategoryRequest": {
         "required": [
-          "leaderboardId",
           "name",
           "slug",
           "sortDirection",
@@ -1246,13 +1266,7 @@
           "info": {
             "type": "string",
             "description": "Information pertaining to the `Category`.",
-            "nullable": true,
             "example": "Video proof is required."
-          },
-          "leaderboardId": {
-            "type": "integer",
-            "description": "The ID of the `Leaderboard` the `Category` is a part of.",
-            "format": "int64"
           },
           "sortDirection": {
             "$ref": "#/components/schemas/SortDirection"
