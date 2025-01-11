@@ -107,7 +107,8 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
             notFound => NotFound(),
             neverDeleted =>
                 NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Not Deleted")),
-            conflict => {
+            conflict =>
+            {
                 ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict, "Conflict");
                 problemDetails.Extensions.Add("conflicting", LeaderboardViewModel.MapFrom(conflict.Conflicting));
                 return Conflict(problemDetails);
