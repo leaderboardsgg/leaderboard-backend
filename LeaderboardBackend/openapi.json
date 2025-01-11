@@ -733,11 +733,11 @@
             }
           },
           "409": {
-            "description": "Another `Leaderboard` with the same slug has been created since, and therefore can't be restored. Will include the conflicting board in the response.",
+            "description": "Another `Leaderboard` with the same slug has been created since and will be returned in the `conflicting` field, and therefore can't be restored.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LeaderboardViewModel"
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
