@@ -65,7 +65,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
     [SwaggerResponse(201)]
     [SwaggerResponse(401)]
     [SwaggerResponse(403, "The requesting `User` is unauthorized to create `Leaderboard`s.")]
-    [SwaggerResponse(409, "A Leaderboard with the specified slug already exists.", typeof(ValidationProblemDetails))]
+    [SwaggerResponse(409, "A Leaderboard with the specified slug already exists and will be returned in the `conflicting` field.", typeof(ProblemDetails))]
     [SwaggerResponse(422, $"The request contains errors. The following errors can occur: NotEmptyValidator, {SlugRule.SLUG_FORMAT}", Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<LeaderboardViewModel>> CreateLeaderboard(
         [FromBody, SwaggerRequestBody(Required = true)] CreateLeaderboardRequest request
@@ -81,9 +81,9 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
             ),
             conflict =>
             {
-                ModelState.AddModelError(nameof(request.Slug), "SlugAlreadyUsed");
-
-                return Conflict(new ValidationProblemDetails(ModelState));
+                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict, "Conflict");
+                problemDetails.Extensions.Add("conflicting", LeaderboardViewModel.MapFrom(conflict.Conflicting));
+                return Conflict(problemDetails);
             }
         );
     }

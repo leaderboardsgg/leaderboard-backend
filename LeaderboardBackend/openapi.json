@@ -652,11 +652,11 @@
             "description": "The requesting `User` is unauthorized to create `Leaderboard`s."
           },
           "409": {
-            "description": "A Leaderboard with the specified slug already exists.",
+            "description": "A Leaderboard with the specified slug already exists and will be returned in the `conflicting` field.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
