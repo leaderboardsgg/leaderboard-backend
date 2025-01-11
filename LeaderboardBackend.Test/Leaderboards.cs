@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions.Specialized;
 using LeaderboardBackend.Models.Entities;
@@ -527,11 +526,9 @@ public class Leaderboards
             )
         ).Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.Conflict);
 
-        ProblemDetails? model = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-        model.Should().NotBeNull();
-        JsonElement? conflictingJson = (JsonElement?)model!.Extensions["conflicting"];
-        conflictingJson.Should().NotBeNull();
-        LeaderboardViewModel? conflicting = conflictingJson!.Value.Deserialize<LeaderboardViewModel>(TestInitCommonFields.JsonSerializerOptions);
+        ConflictDetails<LeaderboardViewModel>? conflictDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ConflictDetails<LeaderboardViewModel>>(TestInitCommonFields.JsonSerializerOptions);
+        conflictDetails.Should().NotBeNull();
+        LeaderboardViewModel? conflicting = conflictDetails!.Conflicting;
         conflicting.Should().NotBeNull();
         conflicting!.Id.Should().Be(reclaimed.Id);
     }
