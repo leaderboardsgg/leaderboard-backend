@@ -1309,7 +1309,6 @@
       },
       "LeaderboardViewModel": {
         "required": [
-          "categories",
           "createdAt",
           "deletedAt",
           "id",
@@ -1359,13 +1358,6 @@
             "format": "date-time",
             "nullable": true,
             "example": "1984-01-01T00:00:00Z"
-          },
-          "categories": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CategoryViewModel"
-            },
-            "description": "A collection of `Category` entities for the `Leaderboard`."
           }
         },
         "additionalProperties": false,
