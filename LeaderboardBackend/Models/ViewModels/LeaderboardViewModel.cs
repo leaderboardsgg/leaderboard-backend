@@ -48,27 +48,14 @@ public record LeaderboardViewModel
     /// </summary>
     public required Instant? DeletedAt { get; set; }
 
-    /// <summary>
-    ///     A collection of `Category` entities for the `Leaderboard`.
-    /// </summary>
-    public required IList<CategoryViewModel> Categories { get; init; }
-
-    public static LeaderboardViewModel MapFrom(Leaderboard leaderboard)
+    public static LeaderboardViewModel MapFrom(Leaderboard leaderboard) => new()
     {
-        IList<CategoryViewModel>? categories = leaderboard.Categories
-            ?.Select(CategoryViewModel.MapFrom)
-            .ToList();
-
-        return new LeaderboardViewModel
-        {
-            Id = leaderboard.Id,
-            Name = leaderboard.Name,
-            Slug = leaderboard.Slug,
-            Info = leaderboard.Info,
-            CreatedAt = leaderboard.CreatedAt,
-            UpdatedAt = leaderboard.UpdatedAt,
-            DeletedAt = leaderboard.DeletedAt,
-            Categories = categories ?? Array.Empty<CategoryViewModel>(),
-        };
-    }
+        Id = leaderboard.Id,
+        Name = leaderboard.Name,
+        Slug = leaderboard.Slug,
+        Info = leaderboard.Info,
+        CreatedAt = leaderboard.CreatedAt,
+        UpdatedAt = leaderboard.UpdatedAt,
+        DeletedAt = leaderboard.DeletedAt,
+    };
 }
