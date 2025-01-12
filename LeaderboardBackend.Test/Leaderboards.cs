@@ -526,9 +526,11 @@ public class Leaderboards
             )
         ).Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.Conflict);
 
-        LeaderboardViewModel? model = await exAssert.Which.Response.Content.ReadFromJsonAsync<LeaderboardViewModel>(TestInitCommonFields.JsonSerializerOptions);
-        model.Should().NotBeNull();
-        model!.Id.Should().Be(reclaimed.Id);
+        ConflictDetails<LeaderboardViewModel>? conflictDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ConflictDetails<LeaderboardViewModel>>(TestInitCommonFields.JsonSerializerOptions);
+        conflictDetails.Should().NotBeNull();
+        LeaderboardViewModel? conflicting = conflictDetails!.Conflicting;
+        conflicting.Should().NotBeNull();
+        conflicting!.Id.Should().Be(reclaimed.Id);
     }
 
     [Test]

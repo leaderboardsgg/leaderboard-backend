@@ -652,11 +652,11 @@
             "description": "The requesting `User` is unauthorized to create `Leaderboard`s."
           },
           "409": {
-            "description": "A Leaderboard with the specified slug already exists.",
+            "description": "A Leaderboard with the specified slug already exists and will be returned in the `conflicting` field.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                  "$ref": "#/components/schemas/LeaderboardViewModelConflictDetails"
                 }
               }
             }
@@ -733,11 +733,11 @@
             }
           },
           "409": {
-            "description": "Another `Leaderboard` with the same slug has been created since, and therefore can't be restored. Will include the conflicting board in the response.",
+            "description": "Another `Leaderboard` with the same slug has been created since and will be returned in the `conflicting` field, and therefore can't be restored.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LeaderboardViewModel"
+                  "$ref": "#/components/schemas/LeaderboardViewModelConflictDetails"
                 }
               }
             }
@@ -1370,6 +1370,37 @@
         },
         "additionalProperties": false,
         "description": "Represents a collection of `Leaderboard` entities."
+      },
+      "LeaderboardViewModelConflictDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          },
+          "conflicting": {
+            "$ref": "#/components/schemas/LeaderboardViewModel"
+          }
+        },
+        "additionalProperties": { },
+        "description": "A fake ProblemDetails subclass used for deserialization and documentation. Do not instantiate!"
       },
       "LoginRequest": {
         "required": [

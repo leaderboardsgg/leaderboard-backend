@@ -41,7 +41,8 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
         }
         catch (DbUpdateException e) when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
         {
-            return new Conflict<Leaderboard>();
+            Leaderboard conflicting = await applicationContext.Leaderboards.SingleAsync(l => l.Slug == request.Slug && l.DeletedAt == null);
+            return new Conflict<Leaderboard>(conflicting);
         }
 
         return lb;
