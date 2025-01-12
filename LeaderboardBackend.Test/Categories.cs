@@ -1,6 +1,6 @@
-using System;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions.Specialized;
 using LeaderboardBackend.Models;
@@ -112,9 +112,9 @@ internal class Categories
 
         CreateCategoryRequest request = new()
         {
-            Name = "1 Player",
-            Slug = "1_player",
-            Info = "only one guy allowed",
+            Name = "Unauthenticated",
+            Slug = "unauthn",
+            Info = "",
             SortDirection = SortDirection.Ascending,
             Type = RunType.Time
         };
@@ -151,9 +151,9 @@ internal class Categories
 
         CreateCategoryRequest request = new()
         {
-            Name = "1 Player",
-            Slug = "1_player",
-            Info = "only one guy allowed",
+            Name = "Bad Role",
+            Slug = $"bad-role-{role}",
+            Info = "",
             SortDirection = SortDirection.Ascending,
             Type = RunType.Time
         };
@@ -173,9 +173,9 @@ internal class Categories
     {
         CreateCategoryRequest request = new()
         {
-            Name = "1 Player",
-            Slug = "1_player",
-            Info = "only one guy allowed",
+            Name = "404",
+            Slug = "404",
+            Info = "",
             SortDirection = SortDirection.Ascending,
             Type = RunType.Time
         };
@@ -215,9 +215,9 @@ internal class Categories
 
         CreateCategoryRequest request = new()
         {
-            Name = "1 Player",
+            Name = "Shouldn't conflict",
             Slug = "should-not-conflict",
-            Info = "only one guy allowed",
+            Info = "",
             SortDirection = SortDirection.Ascending,
             Type = RunType.Time
         };
@@ -239,7 +239,7 @@ internal class Categories
         {
             Name = "First",
             Slug = "repeated-slug",
-            Info = "only one guy allowed",
+            Info = "",
             SortDirection = SortDirection.Ascending,
             Type = RunType.Time
         };
@@ -262,19 +262,23 @@ internal class Categories
             }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Conflict);
 
-        CategoryViewModel? conflict = await exAssert.Which.Response.Content.ReadFromJsonAsync<CategoryViewModel>(TestInitCommonFields.JsonSerializerOptions);
-        conflict.Should().Be(created);
+        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+        problemDetails.Should().NotBeNull();
+        JsonElement serialised = problemDetails!.Extensions["conflict"].As<JsonElement>();
+        JsonSerializer
+            .Deserialize<CategoryViewModel>(serialised, TestInitCommonFields.JsonSerializerOptions)
+            .Should().Be(created);
     }
 
-    [TestCase(null, "1_player")]
-    [TestCase("1 Player", null)]
+    [TestCase(null, "bad-data")]
+    [TestCase("Bad Data", null)]
     // TODO: Figure out how to test against sort direction and run type. Passing
     // invalid values results in serialisation errors instead of 422s as expected.
     public static async Task CreateCategory_BadData(string? name, string? slug)
     {
         CreateCategoryRequest request = new()
         {
-            Info = "only one guy allowed",
+            Info = "",
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
         };

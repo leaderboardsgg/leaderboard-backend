@@ -1,6 +1,5 @@
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
-using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -39,7 +38,7 @@ public class CategoryService(ApplicationContext applicationContext) : ICategoryS
         catch (DbUpdateException e) when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } pgEx)
         {
             Category conflict = await applicationContext.Categories.SingleAsync(c => c.Slug == category.Slug && c.DeletedAt == null);
-            return new Conflict<CategoryViewModel>(CategoryViewModel.MapFrom(conflict));
+            return new Conflict<Category>(conflict);
         }
 
         return category;

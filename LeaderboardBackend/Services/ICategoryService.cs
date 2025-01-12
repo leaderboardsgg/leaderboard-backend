@@ -1,6 +1,5 @@
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
-using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Result;
 using OneOf;
 using OneOf.Types;
@@ -15,4 +14,4 @@ public interface ICategoryService
 }
 
 [GenerateOneOf]
-public partial class CreateCategoryResult : OneOfBase<Category, Conflict<CategoryViewModel>, NotFound>;
+public partial class CreateCategoryResult : OneOfBase<Category, Conflict<Category>, NotFound>;
