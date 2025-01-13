@@ -406,13 +406,24 @@
         }
       }
     },
-    "/categories/create": {
+    "/leaderboard/{id}/categories/create": {
       "post": {
         "tags": [
           "Categories"
         ],
-        "summary": "Creates a new Category. This request is restricted to Moderators.",
+        "summary": "Creates a new Category for a Leaderboard with ID `id`. This request is restricted to Administrators.",
         "operationId": "createCategory",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -420,7 +431,8 @@
                 "$ref": "#/components/schemas/CreateCategoryRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "400": {
@@ -446,11 +458,34 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "403": {
-            "description": "Forbidden"
+            "description": "The requesting `User` is unauthorized to create Categories."
+          },
+          "404": {
+            "description": "The Leaderboard with ID `id` could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A Category with the specified slug already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryViewModelConflictDetails"
+                }
+              }
+            }
           },
           "422": {
-            "description": "Unprocessable Content",
+            "description": "The request contains errors. The following errors can occur: NotEmptyValidator, SlugFormat",
             "content": {
               "application/json": {
                 "schema": {
@@ -1194,6 +1229,37 @@
         "additionalProperties": false,
         "description": "Represents a `Category` tied to a `Leaderboard`."
       },
+      "CategoryViewModelConflictDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          },
+          "conflicting": {
+            "$ref": "#/components/schemas/CategoryViewModel"
+          }
+        },
+        "additionalProperties": { },
+        "description": "A fake ProblemDetails subclass used for deserialization and documentation. Do not instantiate!"
+      },
       "ChangePasswordRequest": {
         "required": [
           "password"
@@ -1209,8 +1275,6 @@
       },
       "CreateCategoryRequest": {
         "required": [
-          "info",
-          "leaderboardId",
           "name",
           "slug",
           "sortDirection",
@@ -1219,11 +1283,13 @@
         "type": "object",
         "properties": {
           "name": {
+            "minLength": 1,
             "type": "string",
             "description": "The display name of the `Category`.",
             "example": "Foo Bar Baz%"
           },
           "slug": {
+            "minLength": 1,
             "type": "string",
             "description": "The URL-scoped unique identifier of the `Category`.\n\r\nMust be [2, 25] in length and consist only of alphanumeric characters and hyphens.",
             "example": "foo-bar-baz"
@@ -1231,13 +1297,7 @@
           "info": {
             "type": "string",
             "description": "Information pertaining to the `Category`.",
-            "nullable": true,
             "example": "Video proof is required."
-          },
-          "leaderboardId": {
-            "type": "integer",
-            "description": "The ID of the `Leaderboard` the `Category` is a part of.",
-            "format": "int64"
           },
           "sortDirection": {
             "$ref": "#/components/schemas/SortDirection"

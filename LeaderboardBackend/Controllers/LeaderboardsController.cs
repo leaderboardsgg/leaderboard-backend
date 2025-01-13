@@ -81,7 +81,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
             ),
             conflict =>
             {
-                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict, "Conflict");
+                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
                 problemDetails.Extensions.Add("conflicting", LeaderboardViewModel.MapFrom(conflict.Conflicting));
                 return Conflict(problemDetails);
             }

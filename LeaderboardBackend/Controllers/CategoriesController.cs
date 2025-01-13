@@ -1,6 +1,7 @@
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Models.Validation;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -29,32 +30,34 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpPost("categories/create")]
-    [SwaggerOperation("Creates a new Category. This request is restricted to Moderators.", OperationId = "createCategory")]
+    [HttpPost("leaderboard/{id:long}/categories/create")]
+    [SwaggerOperation("Creates a new Category for a Leaderboard with ID `id`. This request is restricted to Administrators.", OperationId = "createCategory")]
     [SwaggerResponse(201)]
-    [SwaggerResponse(403)]
-    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
+    [SwaggerResponse(401)]
+    [SwaggerResponse(403, "The requesting `User` is unauthorized to create Categories.")]
+    [SwaggerResponse(404, "The Leaderboard with ID `id` could not be found.", typeof(ProblemDetails))]
+    [SwaggerResponse(409, "A Category with the specified slug already exists.", typeof(ConflictDetails<CategoryViewModel>))]
+    [SwaggerResponse(422, $"The request contains errors. The following errors can occur: NotEmptyValidator, {SlugRule.SLUG_FORMAT}", typeof(ValidationProblemDetails))]
     public async Task<ActionResult<CategoryViewModel>> CreateCategory(
-        [FromBody] CreateCategoryRequest request
+        [FromRoute, SwaggerParameter(Required = true)] long id,
+        [FromBody, SwaggerRequestBody(Required = true)] CreateCategoryRequest request
     )
     {
-        Category category =
-            new()
-            {
-                Name = request.Name,
-                Slug = request.Slug,
-                Info = request.Info,
-                LeaderboardId = request.LeaderboardId,
-                SortDirection = request.SortDirection,
-                Type = request.Type
-            };
+        CreateCategoryResult r = await categoryService.CreateCategory(id, request);
 
-        await categoryService.CreateCategory(category);
-
-        return CreatedAtAction(
-            nameof(GetCategory),
-            new { id = category.Id },
-            CategoryViewModel.MapFrom(category)
+        return r.Match<ActionResult<CategoryViewModel>>(
+            category => CreatedAtAction(
+                nameof(GetCategory),
+                new { id = category.Id },
+                CategoryViewModel.MapFrom(category)
+            ),
+            conflict =>
+                {
+                    ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
+                    problemDetails.Extensions.Add("conflicting", CategoryViewModel.MapFrom(conflict.Conflicting));
+                    return Conflict(problemDetails);
+                },
+            notFound => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Leaderboard Not Found"))
         );
     }
 }

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions.Specialized;
 using LeaderboardBackend.Models.Entities;
@@ -130,10 +131,14 @@ public class Leaderboards
             Info = "This leaderboard should not be created."
         };
 
-        await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>(
+        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>(
             "/leaderboards/create",
             new() { Body = req, Jwt = _jwt }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Conflict);
+
+        ConflictDetails<LeaderboardViewModel>? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ConflictDetails<LeaderboardViewModel>>(TestInitCommonFields.JsonSerializerOptions);
+        problemDetails!.Title.Should().Be("Conflict");
+        problemDetails!.Conflicting!.Slug.Should().Be(req.Slug);
     }
 
     [Test]
@@ -839,7 +844,7 @@ public class Leaderboards
     )]
     [TestCase("The Legendary Starfy", "伝説のスタフィー", "densetsu-no-stafy", "デンセツノスタフィー")]
     [TestCase("Resident Evil", "", "resident-evil", null)]
-    public async Task UpdateLeaderboar_BadData(string oldName, string? newName, string oldSlug, string? newSlug)
+    public async Task UpdateLeaderboard_BadData(string oldName, string? newName, string oldSlug, string? newSlug)
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
 
