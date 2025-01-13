@@ -36,8 +36,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     [SwaggerResponse(401)]
     [SwaggerResponse(403, "The requesting `User` is unauthorized to create Categories.")]
     [SwaggerResponse(404, "The Leaderboard with ID `id` could not be found.", typeof(ProblemDetails))]
-    // TODO: Replace the type argument here with a bespoke type to be more accurate
-    [SwaggerResponse(409, "A Category with the specified slug already exists.", typeof(ProblemDetails))]
+    [SwaggerResponse(409, "A Category with the specified slug already exists.", typeof(ConflictDetails<CategoryViewModel>))]
     [SwaggerResponse(422, $"The request contains errors. The following errors can occur: NotEmptyValidator, {SlugRule.SLUG_FORMAT}", typeof(ValidationProblemDetails))]
     public async Task<ActionResult<CategoryViewModel>> CreateCategory(
         [FromRoute, SwaggerParameter(Required = true)] long id,
@@ -54,9 +53,9 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
             ),
             conflict =>
                 {
-                    ProblemDetails details = ProblemDetailsFactory.CreateProblemDetails(HttpContext, 409, "Category Already Exists");
-                    details.Extensions["conflict"] = CategoryViewModel.MapFrom(conflict.Conflicting);
-                    return Conflict(details);
+                    ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
+                    problemDetails.Extensions.Add("conflicting", CategoryViewModel.MapFrom(conflict.Conflicting));
+                    return Conflict(problemDetails);
                 },
             notFound => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Leaderboard Not Found"))
         );

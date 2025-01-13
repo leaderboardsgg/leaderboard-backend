@@ -74,9 +74,6 @@ internal class Categories
     [Test]
     public static async Task CreateCategory_GetCategory_OK()
     {
-        Instant now = Instant.FromUnixTimeSeconds(1);
-        _clock.Reset(now);
-
         CreateCategoryRequest request = new()
         {
             Name = "1 Player",
@@ -95,7 +92,7 @@ internal class Categories
             }
         );
 
-        createdCategory.CreatedAt.Should().Be(now);
+        createdCategory.CreatedAt.Should().Be(_clock.GetCurrentInstant());
 
         CategoryViewModel retrievedCategory = await _apiClient.Get<CategoryViewModel>(
             $"/api/category/{createdCategory?.Id}", new() { }
@@ -107,9 +104,6 @@ internal class Categories
     [Test]
     public static async Task CreateCategory_Unauthenticated()
     {
-        Instant now = Instant.FromUnixTimeSeconds(1);
-        _clock.Reset(now);
-
         CreateCategoryRequest request = new()
         {
             Name = "Unauthenticated",
@@ -137,7 +131,7 @@ internal class Categories
         IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
         ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
-        string email = $"testuser.updatelb.{role}@example.com";
+        string email = $"testuser.updatecat.{role}@example.com";
 
         RegisterRequest registerRequest = new()
         {
@@ -262,18 +256,13 @@ internal class Categories
             }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Conflict);
 
-        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-        problemDetails.Should().NotBeNull();
-        JsonElement serialised = problemDetails!.Extensions["conflict"].As<JsonElement>();
-        JsonSerializer
-            .Deserialize<CategoryViewModel>(serialised, TestInitCommonFields.JsonSerializerOptions)
-            .Should().Be(created);
+        ConflictDetails<CategoryViewModel>? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ConflictDetails<CategoryViewModel>>(TestInitCommonFields.JsonSerializerOptions);
+        problemDetails!.Title.Should().Be("Conflict");
+        problemDetails!.Conflicting.Should().Be(created);
     }
 
     [TestCase(null, "bad-data")]
     [TestCase("Bad Data", null)]
-    // TODO: Figure out how to test against sort direction and run type. Passing
-    // invalid values results in serialisation errors instead of 422s as expected.
     public static async Task CreateCategory_BadData(string? name, string? slug)
     {
         CreateCategoryRequest request = new()
@@ -305,5 +294,43 @@ internal class Categories
         ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
         problemDetails.Should().NotBeNull();
         problemDetails!.Title.Should().Be("One or more validation errors occurred.");
+    }
+
+    [Test]
+    // TODO: To update validation code to return invalid enums as 422s, and mush this test case
+    // with the one above.
+    public static async Task CreateCategory_BadRequest()
+    {
+        await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
+            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
+            new()
+            {
+                Body = new
+                {
+                    Info = "",
+                    Name = "Invalid Sort Direction",
+                    Slug = "invalid-sort-direction",
+                    SortDirection = "InvalidSortDirection",
+                    Type = RunType.Score,
+                },
+                Jwt = _jwt,
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.BadRequest);
+
+        await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
+            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
+            new()
+            {
+                Body = new
+                {
+                    Info = "",
+                    Name = "Invalid Run Type",
+                    Slug = "invalid-run-type",
+                    SortDirection = SortDirection.Ascending,
+                    Type = "Invalid Run Type",
+                },
+                Jwt = _jwt,
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.BadRequest);
     }
 }
