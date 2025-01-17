@@ -92,7 +92,7 @@ internal class Categories
             }
         );
 
-        createdCategory.CreatedAt.Should().BeEquivalentTo(_clock.GetCurrentInstant());
+        createdCategory.CreatedAt.Should().Be(_clock.GetCurrentInstant());
 
         CategoryViewModel retrievedCategory = await _apiClient.Get<CategoryViewModel>(
             $"/api/category/{createdCategory?.Id}", new() { }
@@ -261,18 +261,17 @@ internal class Categories
         problemDetails!.Conflicting.Should().BeEquivalentTo(created);
     }
 
-    [TestCase(null, "bad-data", null, null, HttpStatusCode.UnprocessableContent)]
-    [TestCase("Bad Data", null, null, null, HttpStatusCode.UnprocessableContent)]
-    [TestCase("Bad Request Invalid SortDirection", "invalid-sort-direction", "Invalid SortDirection", null, HttpStatusCode.BadRequest)]
-    [TestCase("Bad Request Invalid Type", "invalid-type", null, "Invalid Type", HttpStatusCode.BadRequest)]
-    public static async Task CreateCategory_BadData(string? name, string? slug, string? invalidSortDirection, string? invalidRunType, HttpStatusCode expectedCode)
+    [TestCase(null, "bad-data", SortDirection.Ascending, RunType.Score, HttpStatusCode.UnprocessableContent)]
+    [TestCase("Bad Data", null, SortDirection.Ascending, RunType.Score, HttpStatusCode.UnprocessableContent)]
+    [TestCase("Bad Request Invalid SortDirection", "invalid-sort-direction", "Invalid SortDirection", RunType.Score, HttpStatusCode.BadRequest)]
+    [TestCase("Bad Request Invalid Type", "invalid-type", SortDirection.Ascending, "Invalid Type", HttpStatusCode.BadRequest)]
+    public static async Task CreateCategory_BadData(string? name, string? slug, dynamic sortDirection, dynamic runType, HttpStatusCode expectedCode)
     {
         var request = new
         {
             Name = name,
-            Info = "",
-            SortDirection = invalidSortDirection ?? SortDirection.Ascending.ToString(),
-            Type = invalidRunType ?? RunType.Score.ToString(),
+            SortDirection = sortDirection,
+            Type = runType,
             Slug = slug,
         };
 
