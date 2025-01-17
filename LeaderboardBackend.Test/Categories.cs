@@ -265,7 +265,7 @@ internal class Categories
     [TestCase("Bad Data", null, SortDirection.Ascending, RunType.Score, HttpStatusCode.UnprocessableContent)]
     [TestCase("Bad Request Invalid SortDirection", "invalid-sort-direction", "Invalid SortDirection", RunType.Score, HttpStatusCode.BadRequest)]
     [TestCase("Bad Request Invalid Type", "invalid-type", SortDirection.Ascending, "Invalid Type", HttpStatusCode.BadRequest)]
-    public static async Task CreateCategory_BadData(string? name, string? slug, dynamic sortDirection, dynamic runType, HttpStatusCode expectedCode)
+    public static async Task CreateCategory_BadData(string? name, string? slug, object sortDirection, object runType, HttpStatusCode expectedCode)
     {
         var request = new
         {
