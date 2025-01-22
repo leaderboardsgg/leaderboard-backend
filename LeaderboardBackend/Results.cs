@@ -12,7 +12,7 @@ public readonly record struct ConfirmationNotFound;
 public record Conflict<T>(T Conflicting);
 public readonly record struct EmailFailed;
 public readonly record struct Expired;
-public readonly record struct LeaderboardNeverDeleted;
+public readonly record struct NeverDeleted;
 public readonly record struct UserNotFound;
 public readonly record struct UserBanned;
 
@@ -21,3 +21,6 @@ public partial class DeleteResult : OneOfBase<Success, NotFound, AlreadyDeleted>
 
 [GenerateOneOf]
 public partial class UpdateResult<T> : OneOfBase<Conflict<T>, NotFound, Success>;
+
+[GenerateOneOf]
+public partial class RestoreResult<T> : OneOfBase<T, NotFound, NeverDeleted, Conflict<T>>;

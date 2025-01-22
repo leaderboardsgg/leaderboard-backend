@@ -100,7 +100,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
         long id
     )
     {
-        RestoreLeaderboardResult r = await leaderboardService.RestoreLeaderboard(id);
+        RestoreResult<Leaderboard> r = await leaderboardService.RestoreLeaderboard(id);
 
         return r.Match<ActionResult<LeaderboardViewModel>>(
             board => Ok(LeaderboardViewModel.MapFrom(board)),

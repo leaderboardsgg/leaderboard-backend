@@ -66,4 +66,34 @@ public class CategoryService(ApplicationContext applicationContext, IClock clock
         await applicationContext.SaveChangesAsync();
         return new Success();
     }
+
+    public async Task<RestoreResult<Category>> RestoreCategory(long id)
+    {
+        Category? cat = await applicationContext.Categories.FindAsync(id);
+
+        if (cat == null)
+        {
+            return new NotFound();
+        }
+
+        if (cat.DeletedAt == null)
+        {
+            return new NeverDeleted();
+        }
+
+        cat.DeletedAt = null;
+
+        try
+        {
+            await applicationContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException e)
+            when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } pgEx)
+        {
+            Category conflict = await applicationContext.Categories.SingleAsync(c => c.Slug == cat.Slug && c.DeletedAt == null);
+            return new Conflict<Category>(conflict);
+        }
+
+        return cat;
+    }
 }
