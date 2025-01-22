@@ -2,12 +2,13 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 using Npgsql;
 using OneOf.Types;
 
 namespace LeaderboardBackend.Services;
 
-public class CategoryService(ApplicationContext applicationContext) : ICategoryService
+public class CategoryService(ApplicationContext applicationContext, IClock clock) : ICategoryService
 {
     public async Task<Category?> GetCategory(long id) =>
         await applicationContext.Categories.FindAsync(id);
@@ -46,4 +47,23 @@ public class CategoryService(ApplicationContext applicationContext) : ICategoryS
 
     public async Task<Category?> GetCategoryForRun(Run run) =>
         await applicationContext.Categories.FindAsync(run.CategoryId);
+
+    public async Task<DeleteResult> DeleteCategory(long id)
+    {
+        Category? category = await applicationContext.Categories.FindAsync(id);
+
+        if (category == null)
+        {
+            return new NotFound();
+        }
+
+        if (category.DeletedAt != null)
+        {
+            return new AlreadyDeleted();
+        }
+
+        category.DeletedAt = clock.GetCurrentInstant();
+        await applicationContext.SaveChangesAsync();
+        return new Success();
+    }
 }

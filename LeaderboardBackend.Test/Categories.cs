@@ -11,6 +11,7 @@ using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -287,5 +288,167 @@ internal class Categories
         ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
         problemDetails.Should().NotBeNull();
         problemDetails!.Title.Should().Be("One or more validation errors occurred.");
+    }
+
+    [Test]
+    public static async Task DeleteCategory_OK()
+    {
+        CreateCategoryRequest request = new()
+        {
+            Name = "First",
+            Slug = "delete-ok",
+            Info = "",
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Time
+        };
+
+        CategoryViewModel created = await _apiClient.Post<CategoryViewModel>(
+            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
+            new()
+            {
+                Body = request,
+                Jwt = _jwt
+            }
+        );
+
+        await _apiClient.Delete(
+            $"/category/{created.Id}",
+            new()
+            {
+                Body = request,
+                Jwt = _jwt
+            }
+        );
+
+        CategoryViewModel deleted = await _apiClient.Get<CategoryViewModel>(
+            $"/api/category/{created?.Id}",
+            new() { }
+        );
+
+        deleted.Should().NotBeNull();
+        deleted.DeletedAt.Should().Be(_clock.GetCurrentInstant());
+    }
+
+    [Test]
+    public static async Task DeleteCategory_Unauthenticated()
+    {
+        CreateCategoryRequest request = new()
+        {
+            Name = "Unauthenticated",
+            Slug = "deletecat-unauthn",
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+        };
+
+        CategoryViewModel created = await _apiClient.Post<CategoryViewModel>(
+            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
+            new()
+            {
+                Body = request,
+                Jwt = _jwt
+            }
+        );
+
+        created.Id.Should().NotBe(default);
+
+        await FluentActions.Awaiting(() => _apiClient.Delete(
+            $"/category/{created.Id}",
+            new() { }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+    }
+
+    [TestCase(UserRole.Banned)]
+    [TestCase(UserRole.Confirmed)]
+    [TestCase(UserRole.Registered)]
+    public static async Task DeleteCategory_BadRole(UserRole role)
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        string email = $"testuser.deletecat.{role}@example.com";
+
+        RegisterRequest registerRequest = new()
+        {
+            Email = email,
+            Password = "Passw0rd",
+            Username = $"DeleteCatTest{role}"
+        };
+
+        await userService.CreateUser(registerRequest);
+        LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+
+        CreateCategoryRequest createdRequest = new()
+        {
+            Name = "Bad Role",
+            Slug = $"bad-role-{role}",
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Time
+        };
+
+        CategoryViewModel created = await _apiClient.Post<CategoryViewModel>(
+            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
+            new()
+            {
+                Body = createdRequest,
+                Jwt = _jwt,
+            }
+        );
+
+        created.Id.Should().NotBe(default);
+
+        await FluentActions.Awaiting(() => _apiClient.Delete(
+            $"/category/{created.Id}",
+            new()
+            {
+                Jwt = res.Token
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+    }
+
+    [Test]
+    public static async Task DeleteCategory_NotFound()
+    {
+        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Delete(
+            $"/category/-1",
+            new()
+            {
+                Jwt = _jwt,
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+        ConflictDetails<CategoryViewModel>? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ConflictDetails<CategoryViewModel>>(TestInitCommonFields.JsonSerializerOptions);
+        problemDetails!.Title.Should().Be("Not Found");
+    }
+
+    [Test]
+    public static async Task DeleteCategory_NotFound_AlreadyDeleted()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category cat = new()
+        {
+            Name = "Deleted",
+            Slug = "deletedcat-already-deleted",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+            DeletedAt = _clock.GetCurrentInstant(),
+        };
+
+        context.Categories.Add(cat);
+        await context.SaveChangesAsync();
+        cat.Id.Should().NotBe(default);
+
+        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Delete(
+            $"/category/{cat.Id}",
+            new()
+            {
+                Jwt = _jwt,
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+        ConflictDetails<CategoryViewModel>? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ConflictDetails<CategoryViewModel>>(TestInitCommonFields.JsonSerializerOptions);
+        problemDetails!.Title.Should().Be("Already Deleted");
     }
 }
