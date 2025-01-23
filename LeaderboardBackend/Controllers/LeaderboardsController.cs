@@ -160,7 +160,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
     )]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult> UpdateLeaderboard(
-        [FromRoute] long id,
+        [FromRoute, SwaggerParameter(Required = true)] long id,
         [FromBody, SwaggerRequestBody(Required = true)] UpdateLeaderboardRequest request
     )
     {

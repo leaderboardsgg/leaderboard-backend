@@ -63,6 +63,39 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
+    [HttpPatch("category/{id:long}")]
+    [SwaggerOperation(
+        "Updates a category with the specified new fields. This request is restricted to administrators. " +
+        "Note: `type` cannot be updated." +
+        "This operation is atomic; if an error occurs, the category will not be updated. " +
+        "All fields of the request body are optional but you must specify at least one.",
+        OperationId = "updateCategory"
+    )]
+    [SwaggerResponse(204)]
+    [SwaggerResponse(401)]
+    [SwaggerResponse(403)]
+    [SwaggerResponse(404, Type = typeof(ProblemDetails))]
+    [SwaggerResponse(
+        409,
+        "The specified slug is already in use by another category. Returns the conflicting category.",
+        typeof(CategoryViewModel)
+    )]
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
+    public async Task<ActionResult> UpdateCategory(
+        [FromRoute, SwaggerParameter(Required = true)] long id,
+        [FromBody, SwaggerRequestBody(Required = true)] UpdateCategoryRequest request
+    )
+    {
+        UpdateResult<Category> res = await categoryService.UpdateCategory(id, request);
+
+        return res.Match<ActionResult>(
+            conflict => Conflict(conflict.Conflicting),
+            notFound => NotFound(),
+            success => NoContent()
+        );
+    }
+
+    [Authorize(Policy = UserTypes.ADMINISTRATOR)]
     [HttpDelete("category/{id:long}")]
     [SwaggerOperation("Deletes a Category. This request is restricted to Administrators.", OperationId = "deleteCategory")]
     [SwaggerResponse(204)]
