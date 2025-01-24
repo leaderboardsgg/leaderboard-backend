@@ -322,15 +322,38 @@ internal class Categories
         Category? deleted = await context.FindAsync<Category>(cat.Id);
 
         deleted.Should().NotBeNull();
+        deleted!.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
         deleted!.DeletedAt.Should().Be(_clock.GetCurrentInstant());
     }
 
     [Test]
-    public async Task DeleteCategory_Unauthenticated() =>
+    public async Task DeleteCategory_Unauthenticated()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category cat = new()
+        {
+            Name = "Delete Cat UnauthN",
+            Slug = "deletecat-unauthn",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+        };
+
+        context.Add(cat);
+        await context.SaveChangesAsync();
+        cat.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
+
         await FluentActions.Awaiting(() => _apiClient.Delete(
-            "/category/1",
+            $"category/{cat.Id}",
             new() { }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+
+        Category? retrieved = await context.FindAsync<Category>(cat.Id);
+        retrieved!.DeletedAt.Should().BeNull();
+    }
 
     [TestCase(UserRole.Banned)]
     [TestCase(UserRole.Confirmed)]
@@ -360,12 +383,12 @@ internal class Categories
             LeaderboardId = _createdLeaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Time,
-            DeletedAt = _clock.GetCurrentInstant(),
         };
 
         context.Add(cat);
         await context.SaveChangesAsync();
         cat.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
 
         await FluentActions.Awaiting(() => _apiClient.Delete(
             $"/category/{cat.Id}",
@@ -374,6 +397,9 @@ internal class Categories
                 Jwt = res.Token
             }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+
+        Category? retrieved = await context.FindAsync<Category>(cat.Id);
+        retrieved!.DeletedAt.Should().BeNull();
     }
 
     [Test]
@@ -409,6 +435,7 @@ internal class Categories
         context.Categories.Add(cat);
         await context.SaveChangesAsync();
         cat.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
 
         ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Delete(
             $"/category/{cat.Id}",
@@ -420,5 +447,8 @@ internal class Categories
 
         ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
         problemDetails!.Title.Should().Be("Already Deleted");
+
+        Category? retrieved = await context.FindAsync<Category>(cat.Id);
+        retrieved!.UpdatedAt.Should().BeNull();
     }
 }
