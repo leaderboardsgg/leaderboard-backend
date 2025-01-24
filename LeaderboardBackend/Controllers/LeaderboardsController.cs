@@ -18,7 +18,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
     [SwaggerOperation("Gets a leaderboard by its ID.", OperationId = "getLeaderboard")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
-    public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboard(long id)
+    public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboard([FromRoute] long id)
     {
         Leaderboard? leaderboard = await leaderboardService.GetLeaderboard(id);
 
@@ -97,7 +97,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
     [SwaggerResponse(404, "The `Leaderboard` was not found, or it wasn't deleted in the first place. Includes a field, `title`, which will be \"Not Found\" in the former case, and \"Not Deleted\" in the latter.", typeof(ProblemDetails))]
     [SwaggerResponse(409, "Another `Leaderboard` with the same slug has been created since and will be returned in the `conflicting` field, and therefore can't be restored.", typeof(ConflictDetails<LeaderboardViewModel>))]
     public async Task<ActionResult<LeaderboardViewModel>> RestoreLeaderboard(
-        long id
+        [FromRoute] long id
     )
     {
         RestoreResult<Leaderboard> r = await leaderboardService.RestoreLeaderboard(id);
@@ -130,7 +130,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
         """,
         typeof(ProblemDetails)
     )]
-    public async Task<ActionResult> DeleteLeaderboard([FromRoute, SwaggerParameter(Required = true)] long id)
+    public async Task<ActionResult> DeleteLeaderboard([FromRoute] long id)
     {
         DeleteResult res = await leaderboardService.DeleteLeaderboard(id);
 
@@ -160,7 +160,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
     )]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult> UpdateLeaderboard(
-        [FromRoute, SwaggerParameter(Required = true)] long id,
+        [FromRoute] long id,
         [FromBody, SwaggerRequestBody(Required = true)] UpdateLeaderboardRequest request
     )
     {
