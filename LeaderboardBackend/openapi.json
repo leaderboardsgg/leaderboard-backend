@@ -563,7 +563,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CategoryViewModel"
+                  "$ref": "#/components/schemas/CategoryConflictDetails"
                 }
               }
             }
@@ -1374,6 +1374,106 @@
   },
   "components": {
     "schemas": {
+      "Category": {
+        "required": [
+          "name",
+          "slug"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the `Category`.\n\r\nGenerated on creation.",
+            "format": "int64"
+          },
+          "leaderboardId": {
+            "type": "integer",
+            "description": "The ID of the `Leaderboard` the `Category` is a part of.",
+            "format": "int64"
+          },
+          "leaderboard": {
+            "$ref": "#/components/schemas/Leaderboard"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The display name of the `Category`.",
+            "example": "Foo Bar Baz%"
+          },
+          "slug": {
+            "maxLength": 80,
+            "minLength": 2,
+            "pattern": "^[a-zA-Z0-9\\-_]*$",
+            "type": "string",
+            "description": "The URL-scoped unique identifier of the `Category`.\n\r\nMust be [2, 25] in length and consist only of alphanumeric characters and hyphens.",
+            "example": "foo-bar-baz"
+          },
+          "info": {
+            "type": "string",
+            "description": "Information pertaining to the `Category`.",
+            "example": "Video proof is required."
+          },
+          "sortDirection": {
+            "$ref": "#/components/schemas/SortDirection"
+          },
+          "type": {
+            "$ref": "#/components/schemas/RunType"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The time the Category was created.",
+            "format": "date-time",
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "The last time the Category was updated or null.",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "deletedAt": {
+            "type": "string",
+            "description": "The time at which the Category was deleted, or null if the Category has not been deleted.",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a `Category` tied to a `Leaderboard`."
+      },
+      "CategoryConflictDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          },
+          "conflicting": {
+            "$ref": "#/components/schemas/Category"
+          }
+        },
+        "additionalProperties": { },
+        "description": "A fake ProblemDetails subclass used for deserialization and documentation. Do not instantiate!"
+      },
       "CategoryViewModel": {
         "required": [
           "createdAt",
@@ -1573,6 +1673,69 @@
         },
         "additionalProperties": false,
         "description": "This request object is sent when creating a `Run`."
+      },
+      "Leaderboard": {
+        "required": [
+          "name",
+          "slug"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the `Leaderboard`.\n\r\nGenerated on creation.",
+            "format": "int64"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The display name of the `Leaderboard`.",
+            "example": "Foo Bar"
+          },
+          "slug": {
+            "maxLength": 80,
+            "minLength": 2,
+            "pattern": "^[a-zA-Z0-9\\-_]*$",
+            "type": "string",
+            "description": "The URL-scoped unique identifier of the `Leaderboard`.\n\r\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
+            "example": "foo-bar"
+          },
+          "info": {
+            "type": "string",
+            "description": "The general information for the Leaderboard.",
+            "example": "Timer starts on selecting New Game and ends when the final boss is beaten."
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The time the Leaderboard was created.",
+            "format": "date-time",
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "The last time the Leaderboard was updated or null.",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "deletedAt": {
+            "type": "string",
+            "description": "The time at which the Leaderboard was deleted, or null if the Leaderboard has not been deleted.",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            },
+            "description": "A collection of `Category` entities for the `Leaderboard`.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a collection of `Category` entities."
       },
       "LeaderboardViewModel": {
         "required": [

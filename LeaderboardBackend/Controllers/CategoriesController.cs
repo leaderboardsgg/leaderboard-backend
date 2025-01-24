@@ -78,7 +78,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     [SwaggerResponse(
         409,
         "The specified slug is already in use by another category. Returns the conflicting category.",
-        typeof(CategoryViewModel)
+        typeof(ConflictDetails<Category>)
     )]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult> UpdateCategory(
@@ -89,7 +89,12 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
         UpdateResult<Category> res = await categoryService.UpdateCategory(id, request);
 
         return res.Match<ActionResult>(
-            conflict => Conflict(conflict.Conflicting),
+            conflict =>
+            {
+                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
+                problemDetails.Extensions.Add("conflicting", CategoryViewModel.MapFrom(conflict.Conflicting));
+                return Conflict(problemDetails);
+            },
             notFound => NotFound(),
             success => NoContent()
         );
