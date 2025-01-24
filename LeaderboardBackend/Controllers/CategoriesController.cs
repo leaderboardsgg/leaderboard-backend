@@ -40,7 +40,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     [SwaggerResponse(409, "A Category with the specified slug already exists.", typeof(ConflictDetails<CategoryViewModel>))]
     [SwaggerResponse(422, $"The request contains errors. The following errors can occur: NotEmptyValidator, {SlugRule.SLUG_FORMAT}", typeof(ValidationProblemDetails))]
     public async Task<ActionResult<CategoryViewModel>> CreateCategory(
-        [FromRoute, SwaggerParameter(Required = true)] long id,
+        [FromRoute] long id,
         [FromBody, SwaggerRequestBody(Required = true)] CreateCategoryRequest request
     )
     {
@@ -78,11 +78,11 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     [SwaggerResponse(
         409,
         "The specified slug is already in use by another category. Returns the conflicting category.",
-        typeof(ConflictDetails<Category>)
+        typeof(ConflictDetails<CategoryViewModel>)
     )]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult> UpdateCategory(
-        [FromRoute, SwaggerParameter(Required = true)] long id,
+        [FromRoute] long id,
         [FromBody, SwaggerRequestBody(Required = true)] UpdateCategoryRequest request
     )
     {
