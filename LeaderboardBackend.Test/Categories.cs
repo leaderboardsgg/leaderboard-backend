@@ -453,39 +453,25 @@ internal class Categories
     }
 
     [Test]
-    public static async Task RestoreCategory_OK()
+    public async Task RestoreCategory_OK()
     {
-        CategoryViewModel cat = await _apiClient.Post<CategoryViewModel>(
-            $"leaderboard/{_createdLeaderboard.Id}/categories/create",
-            new()
-            {
-                Body = new CreateCategoryRequest()
-                {
-                    Name = "Restore OK",
-                    Slug = "restorecat-ok",
-                    SortDirection = SortDirection.Ascending,
-                    Type = RunType.Score,
-                },
-                Jwt = _jwt,
-            }
-        );
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
+        Category cat = new()
+        {
+            Name = "Deleted",
+            Slug = "deletedcat-already-deleted",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+            DeletedAt = _clock.GetCurrentInstant(),
+        };
+
+        context.Categories.Add(cat);
+        await context.SaveChangesAsync();
         cat.Id.Should().NotBe(default);
-
-        await _apiClient.Delete(
-            $"category/{cat.Id}",
-            new()
-            {
-                Jwt = _jwt,
-            }
-        );
-
-        CategoryViewModel retrieved = await _apiClient.Get<CategoryViewModel>(
-            $"api/category/{cat.Id}",
-            new() { }
-        );
-
-        retrieved.DeletedAt.Should().Be(_clock.GetCurrentInstant());
+        context.ChangeTracker.Clear();
 
         CategoryViewModel restored = await _apiClient.Put<CategoryViewModel>(
             $"category/{cat.Id}/restore",
@@ -497,28 +483,63 @@ internal class Categories
 
         restored.DeletedAt.Should().BeNull();
 
-        CategoryViewModel verify = await _apiClient.Get<CategoryViewModel>(
-            $"api/category/{cat.Id}",
-            new() { }
-        );
-
-        verify.DeletedAt.Should().BeNull();
+        Category? verify = await context.FindAsync<Category>(cat.Id);
+        verify!.DeletedAt.Should().BeNull();
     }
 
     [Test]
-    public static async Task RestoreCategory_Unauthenticated() =>
+    public async Task RestoreCategory_Unauthenticated()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category cat = new()
+        {
+            Name = "Restore Cat UnauthN",
+            Slug = "restorecat-unauthn",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+            DeletedAt = _clock.GetCurrentInstant(),
+        };
+
+        context.Categories.Add(cat);
+        await context.SaveChangesAsync();
+        cat.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
+
         await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
             "category/1/restore",
             new() { }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
 
+        Category? verify = await context.FindAsync<Category>(cat.Id);
+        verify!.DeletedAt.Should().Be(_clock.GetCurrentInstant());
+    }
+
     [TestCase(UserRole.Banned)]
     [TestCase(UserRole.Confirmed)]
     [TestCase(UserRole.Registered)]
-    public static async Task RestoreCategory_BadRole(UserRole role)
+    public async Task RestoreCategory_BadRole(UserRole role)
     {
         IServiceScope scope = _factory.Services.CreateScope();
         IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category cat = new()
+        {
+            Name = "Restore Cat UnauthZ",
+            Slug = $"restorecat-unauthz-{role}",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+            DeletedAt = _clock.GetCurrentInstant(),
+        };
+
+        context.Categories.Add(cat);
+        await context.SaveChangesAsync();
+        cat.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
 
         string email = $"testuser.restorecat.{role}@example.com";
 
@@ -533,16 +554,19 @@ internal class Categories
         LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
 
         await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
-            "category/1/restore",
+            $"category/{cat.Id}/restore",
             new()
             {
                 Jwt = res.Token
             }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+
+        Category? retrieved = await context.FindAsync<Category>(cat.Id);
+        retrieved!.DeletedAt.Should().Be(_clock.GetCurrentInstant());
     }
 
     [Test]
-    public static async Task RestoreCategory_NotFound()
+    public async Task RestoreCategory_NotFound()
     {
         ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
             $"category/{int.MaxValue}/restore",
@@ -557,24 +581,24 @@ internal class Categories
     }
 
     [Test]
-    public static async Task RestoreCategory_NotFound_WasNeverDeleted()
+    public async Task RestoreCategory_NotFound_WasNeverDeleted()
     {
-        CategoryViewModel cat = await _apiClient.Post<CategoryViewModel>(
-            $"leaderboard/{_createdLeaderboard.Id}/categories/create",
-            new()
-            {
-                Body = new CreateCategoryRequest()
-                {
-                    Name = "Restore Cat Not Found Never Deleted",
-                    Slug = "restorecat-notfound-never-deleted",
-                    SortDirection = SortDirection.Ascending,
-                    Type = RunType.Score,
-                },
-                Jwt = _jwt,
-            }
-        );
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
+        Category cat = new()
+        {
+            Name = "Restore Cat Not Found Never Deleted",
+            Slug = "restorecat-notfound-never-deleted",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+        };
+
+        context.Categories.Add(cat);
+        await context.SaveChangesAsync();
         cat.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
 
         ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
             $"category/{cat.Id}/restore",
@@ -589,7 +613,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task RestoreCategory_Conflict()
+    public async Task RestoreCategory_Conflict()
     {
         IServiceScope scope = _factory.Services.CreateScope();
         ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
@@ -613,8 +637,7 @@ internal class Categories
             Type = RunType.Score,
         };
 
-        context.Categories.Add(deleted);
-        context.Categories.Add(conflicting);
+        context.Categories.AddRange(deleted, conflicting);
         await context.SaveChangesAsync();
         deleted.Id.Should().NotBe(default);
         conflicting.Id.Should().NotBe(default);
@@ -630,5 +653,9 @@ internal class Categories
         ConflictDetails<CategoryViewModel>? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ConflictDetails<CategoryViewModel>>(TestInitCommonFields.JsonSerializerOptions);
         problemDetails!.Title.Should().Be("Conflict");
         problemDetails!.Conflicting.Should().BeEquivalentTo(CategoryViewModel.MapFrom(conflicting));
+
+        Category? verify = await context.FindAsync<Category>(deleted.Id);
+        verify!.DeletedAt.Should().Be(_clock.GetCurrentInstant());
+        verify!.UpdatedAt.Should().BeNull();
     }
 }
