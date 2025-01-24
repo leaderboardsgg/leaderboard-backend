@@ -610,7 +610,7 @@
             }
           },
           "409": {
-            "description": "Another `Category` with the same slug has been created since and will be returned in the `conflicting` field, and therefore can't be restored.",
+            "description": "Another `Category` with the same slug has been created since, and therefore can't be restored. Said `Category` will be returned in the `conflicting` field in the response.",
             "content": {
               "application/json": {
                 "schema": {

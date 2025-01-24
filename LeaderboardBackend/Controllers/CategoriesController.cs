@@ -94,7 +94,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     [SwaggerResponse(401)]
     [SwaggerResponse(403, "The requesting `User` is unauthorized to restore `Category`s.")]
     [SwaggerResponse(404, "The `Category` was not found, or it wasn't deleted in the first place. Includes a field, `title`, which will be \"Not Found\" in the former case, and \"Not Deleted\" in the latter.", typeof(ProblemDetails))]
-    [SwaggerResponse(409, "Another `Category` with the same slug has been created since and will be returned in the `conflicting` field, and therefore can't be restored.", typeof(ConflictDetails<CategoryViewModel>))]
+    [SwaggerResponse(409, "Another `Category` with the same slug has been created since, and therefore can't be restored. Said `Category` will be returned in the `conflicting` field in the response.", typeof(ConflictDetails<CategoryViewModel>))]
     public async Task<ActionResult<CategoryViewModel>> RestoreCategory(
         long id
     )
