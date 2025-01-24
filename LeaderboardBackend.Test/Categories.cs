@@ -62,7 +62,7 @@ internal class Categories
     public void OneTimeTearDown() => _factory.Dispose();
 
     [Test]
-    public static async Task GetCategory_NotFound() =>
+    public async Task GetCategory_NotFound() =>
         await _apiClient.Awaiting(
             a => a.Get<CategoryViewModel>(
                 $"/api/cateogries/69",
@@ -73,7 +73,7 @@ internal class Categories
         .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
 
     [Test]
-    public static async Task CreateCategory_GetCategory_OK()
+    public async Task CreateCategory_GetCategory_OK()
     {
         CreateCategoryRequest request = new()
         {
@@ -103,7 +103,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task CreateCategory_Unauthenticated()
+    public async Task CreateCategory_Unauthenticated()
     {
         CreateCategoryRequest request = new()
         {
@@ -126,7 +126,7 @@ internal class Categories
     [TestCase(UserRole.Banned)]
     [TestCase(UserRole.Confirmed)]
     [TestCase(UserRole.Registered)]
-    public static async Task CreateCategory_BadRole(UserRole role)
+    public async Task CreateCategory_BadRole(UserRole role)
     {
         IServiceScope scope = _factory.Services.CreateScope();
         IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
@@ -164,7 +164,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task CreateCategory_LeaderboardNotFound()
+    public async Task CreateCategory_LeaderboardNotFound()
     {
         CreateCategoryRequest request = new()
         {
@@ -190,7 +190,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task CreateCategory_NoConflictBecauseOldCatIsDeleted()
+    public async Task CreateCategory_NoConflictBecauseOldCatIsDeleted()
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
 
@@ -228,7 +228,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task CreateCategory_Conflict()
+    public async Task CreateCategory_Conflict()
     {
         CreateCategoryRequest request = new()
         {
@@ -266,7 +266,7 @@ internal class Categories
     [TestCase("Bad Data", null, SortDirection.Ascending, RunType.Score, HttpStatusCode.UnprocessableContent)]
     [TestCase("Bad Request Invalid SortDirection", "invalid-sort-direction", "Invalid SortDirection", RunType.Score, HttpStatusCode.BadRequest)]
     [TestCase("Bad Request Invalid Type", "invalid-type", SortDirection.Ascending, "Invalid Type", HttpStatusCode.BadRequest)]
-    public static async Task CreateCategory_BadData(string? name, string? slug, object sortDirection, object runType, HttpStatusCode expectedCode)
+    public async Task CreateCategory_BadData(string? name, string? slug, object sortDirection, object runType, HttpStatusCode expectedCode)
     {
         var request = new
         {
@@ -291,7 +291,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task DeleteCategory_OK()
+    public async Task DeleteCategory_OK()
     {
         IServiceScope scope = _factory.Services.CreateScope();
         ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
@@ -326,7 +326,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task DeleteCategory_Unauthenticated() =>
+    public async Task DeleteCategory_Unauthenticated() =>
         await FluentActions.Awaiting(() => _apiClient.Delete(
             "/category/1",
             new() { }
@@ -335,7 +335,7 @@ internal class Categories
     [TestCase(UserRole.Banned)]
     [TestCase(UserRole.Confirmed)]
     [TestCase(UserRole.Registered)]
-    public static async Task DeleteCategory_BadRole(UserRole role)
+    public async Task DeleteCategory_BadRole(UserRole role)
     {
         IServiceScope scope = _factory.Services.CreateScope();
         IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
@@ -377,7 +377,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task DeleteCategory_NotFound()
+    public async Task DeleteCategory_NotFound()
     {
         ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Delete(
             $"/category/{int.MaxValue}",
@@ -392,7 +392,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task DeleteCategory_NotFound_AlreadyDeleted()
+    public async Task DeleteCategory_NotFound_AlreadyDeleted()
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
 
