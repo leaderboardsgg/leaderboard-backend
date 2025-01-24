@@ -503,7 +503,7 @@
           "Categories"
         ],
         "summary": "Deletes a Category. This request is restricted to Administrators.",
-        "operationId": "deleteLeaderboard",
+        "operationId": "deleteCategory",
         "parameters": [
           {
             "name": "id",

@@ -64,7 +64,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
     [HttpDelete("category/{id:long}")]
-    [SwaggerOperation("Deletes a Category. This request is restricted to Administrators.", OperationId = "deleteLeaderboard")]
+    [SwaggerOperation("Deletes a Category. This request is restricted to Administrators.", OperationId = "deleteCategory")]
     [SwaggerResponse(204)]
     [SwaggerResponse(401)]
     [SwaggerResponse(403)]
@@ -76,7 +76,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
         """,
         typeof(ProblemDetails)
     )]
-    public async Task<ActionResult> DeleteCategory([FromRoute, SwaggerParameter(Required = true)] long id)
+    public async Task<ActionResult> DeleteCategory([FromRoute] long id)
     {
         DeleteResult res = await categoryService.DeleteCategory(id);
 
