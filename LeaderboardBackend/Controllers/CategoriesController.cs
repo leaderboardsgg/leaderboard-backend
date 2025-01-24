@@ -102,7 +102,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
         RestoreResult<Category> r = await categoryService.RestoreCategory(id);
 
         return r.Match<ActionResult<CategoryViewModel>>(
-            board => Ok(CategoryViewModel.MapFrom(board)),
+            category => Ok(CategoryViewModel.MapFrom(category)),
             notFound => NotFound(),
             neverDeleted =>
                 NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Not Deleted")),

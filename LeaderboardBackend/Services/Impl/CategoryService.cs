@@ -90,7 +90,7 @@ public class CategoryService(ApplicationContext applicationContext, IClock clock
         catch (DbUpdateException e)
             when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } pgEx)
         {
-            Category conflict = await applicationContext.Categories.SingleAsync(c => c.Slug == cat.Slug && c.DeletedAt == null);
+            Category conflict = await applicationContext.Categories.SingleAsync(c => c.Slug == cat.Slug && c.DeletedAt == null && c.LeaderboardId == cat.LeaderboardId);
             return new Conflict<Category>(conflict);
         }
 

@@ -641,6 +641,7 @@ internal class Categories
         await context.SaveChangesAsync();
         deleted.Id.Should().NotBe(default);
         conflicting.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
 
         ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
             $"category/{deleted.Id}/restore",
@@ -657,5 +658,62 @@ internal class Categories
         Category? verify = await context.FindAsync<Category>(deleted.Id);
         verify!.DeletedAt.Should().Be(_clock.GetCurrentInstant());
         verify!.UpdatedAt.Should().BeNull();
+    }
+
+    [Test]
+    public async Task RestoreCategory_NoConflict_DifferentBoard()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category deleted = new()
+        {
+            Name = "Restore Cat Should Not Conflict",
+            Slug = "restorecat-should-not-conflict",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+            DeletedAt = _clock.GetCurrentInstant(),
+        };
+
+        Leaderboard board = new()
+        {
+            Name = "Restore Cat Board",
+            Slug = "restorecat-board",
+        };
+
+        context.AddRange(deleted, board);
+        await context.SaveChangesAsync();
+        deleted.Id.Should().NotBe(default);
+        deleted.Id.Should().NotBe(_createdLeaderboard.Id);
+        board.Id.Should().NotBe(default);
+
+        Category notConflicting = new()
+        {
+            Name = "Restore Cat Conflicting",
+            Slug = deleted.Slug,
+            LeaderboardId = board.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+            DeletedAt = _clock.GetCurrentInstant(),
+        };
+
+        context.Add(notConflicting);
+        await context.SaveChangesAsync();
+        notConflicting.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
+
+        CategoryViewModel restored = await _apiClient.Put<CategoryViewModel>(
+            $"category/{notConflicting.Id}/restore",
+            new()
+            {
+                Jwt = _jwt
+            }
+        );
+
+        restored.DeletedAt.Should().BeNull();
+
+        Category? verify = await context.FindAsync<Category>(notConflicting.Id);
+        verify!.DeletedAt.Should().BeNull();
     }
 }
