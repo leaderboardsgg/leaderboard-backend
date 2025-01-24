@@ -292,7 +292,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task UpdateCategory_OK()
+    public async Task UpdateCategory_OK()
     {
         IServiceScope scope = _factory.Services.CreateScope();
         ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
@@ -336,7 +336,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task UpdateCategory_Unauthenticated()
+    public async Task UpdateCategory_Unauthenticated()
     {
         IServiceScope scope = _factory.Services.CreateScope();
         ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
@@ -373,7 +373,7 @@ internal class Categories
     [TestCase(UserRole.Banned)]
     [TestCase(UserRole.Confirmed)]
     [TestCase(UserRole.Registered)]
-    public static async Task UpdateCategory_BadRole(UserRole role)
+    public async Task UpdateCategory_BadRole(UserRole role)
     {
         IServiceScope scope = _factory.Services.CreateScope();
         IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
@@ -422,7 +422,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task UpdateCategory_CategoryNotFound() =>
+    public async Task UpdateCategory_CategoryNotFound() =>
         await FluentActions.Awaiting(() => _apiClient.Patch(
             $"category/{int.MaxValue}",
             new()
@@ -436,7 +436,7 @@ internal class Categories
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
 
     [Test]
-    public static async Task UpdateCategory_Conflict()
+    public async Task UpdateCategory_Conflict()
     {
         IServiceScope scope = _factory.Services.CreateScope();
         ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
@@ -486,7 +486,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task UpdateCategory_NoConflictBecauseOldCatIsDeleted()
+    public async Task UpdateCategory_NoConflictBecauseOldCatIsDeleted()
     {
         IServiceScope scope = _factory.Services.CreateScope();
         ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
@@ -533,7 +533,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task UpdateCategory_NoConflictBecauseDifferentLeaderboard()
+    public async Task UpdateCategory_NoConflictBecauseDifferentLeaderboard()
     {
         IServiceScope scope = _factory.Services.CreateScope();
         ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
@@ -590,7 +590,7 @@ internal class Categories
     [TestCase(1, "b.b")]
     [TestCase(2, "b")]
     [TestCase(3, null)]
-    public static async Task UpdateCategory_BadData(int index, string? slug)
+    public async Task UpdateCategory_BadData(int index, string? slug)
     {
         IServiceScope scope = _factory.Services.CreateScope();
         ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
@@ -893,7 +893,7 @@ internal class Categories
         context.ChangeTracker.Clear();
 
         await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
-            "category/1/restore",
+            $"category/{cat.Id}/restore",
             new() { }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
 
@@ -1068,8 +1068,7 @@ internal class Categories
 
         context.AddRange(deleted, board);
         await context.SaveChangesAsync();
-        deleted.Id.Should().NotBe(default);
-        deleted.Id.Should().NotBe(_createdLeaderboard.Id);
+        deleted.Id.Should().NotBe(default).And.NotBe(_createdLeaderboard.Id);
         board.Id.Should().NotBe(default);
 
         Category notConflicting = new()
