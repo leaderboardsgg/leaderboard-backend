@@ -3,6 +3,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.Validation;
 using LeaderboardBackend.Models.ViewModels;
+using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -58,6 +59,31 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
                     return Conflict(problemDetails);
                 },
             notFound => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Leaderboard Not Found"))
+        );
+    }
+
+    [Authorize(Policy = UserTypes.ADMINISTRATOR)]
+    [HttpDelete("category/{id:long}")]
+    [SwaggerOperation("Deletes a Category. This request is restricted to Administrators.", OperationId = "deleteCategory")]
+    [SwaggerResponse(204)]
+    [SwaggerResponse(401)]
+    [SwaggerResponse(403)]
+    [SwaggerResponse(
+        404,
+        """
+        The Category does not exist (Not Found) or was already deleted (Already Deleted).
+        Use the `title` field of the response to differentiate between the two cases if necessary.
+        """,
+        typeof(ProblemDetails)
+    )]
+    public async Task<ActionResult> DeleteCategory([FromRoute] long id)
+    {
+        DeleteResult res = await categoryService.DeleteCategory(id);
+
+        return res.Match<ActionResult>(
+            success => NoContent(),
+            notFound => NotFound(),
+            alreadyDeleted => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Already Deleted"))
         );
     }
 }

@@ -1,6 +1,6 @@
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions.Specialized;
 using LeaderboardBackend.Models;
@@ -11,6 +11,7 @@ using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -61,7 +62,7 @@ internal class Categories
     public void OneTimeTearDown() => _factory.Dispose();
 
     [Test]
-    public static async Task GetCategory_NotFound() =>
+    public async Task GetCategory_NotFound() =>
         await _apiClient.Awaiting(
             a => a.Get<CategoryViewModel>(
                 $"/api/cateogries/69",
@@ -72,7 +73,7 @@ internal class Categories
         .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
 
     [Test]
-    public static async Task CreateCategory_GetCategory_OK()
+    public async Task CreateCategory_GetCategory_OK()
     {
         CreateCategoryRequest request = new()
         {
@@ -102,7 +103,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task CreateCategory_Unauthenticated()
+    public async Task CreateCategory_Unauthenticated()
     {
         CreateCategoryRequest request = new()
         {
@@ -125,7 +126,7 @@ internal class Categories
     [TestCase(UserRole.Banned)]
     [TestCase(UserRole.Confirmed)]
     [TestCase(UserRole.Registered)]
-    public static async Task CreateCategory_BadRole(UserRole role)
+    public async Task CreateCategory_BadRole(UserRole role)
     {
         IServiceScope scope = _factory.Services.CreateScope();
         IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
@@ -163,7 +164,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task CreateCategory_LeaderboardNotFound()
+    public async Task CreateCategory_LeaderboardNotFound()
     {
         CreateCategoryRequest request = new()
         {
@@ -189,7 +190,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task CreateCategory_NoConflictBecauseOldCatIsDeleted()
+    public async Task CreateCategory_NoConflictBecauseOldCatIsDeleted()
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
 
@@ -227,7 +228,7 @@ internal class Categories
     }
 
     [Test]
-    public static async Task CreateCategory_Conflict()
+    public async Task CreateCategory_Conflict()
     {
         CreateCategoryRequest request = new()
         {
@@ -265,7 +266,7 @@ internal class Categories
     [TestCase("Bad Data", null, SortDirection.Ascending, RunType.Score, HttpStatusCode.UnprocessableContent)]
     [TestCase("Bad Request Invalid SortDirection", "invalid-sort-direction", "Invalid SortDirection", RunType.Score, HttpStatusCode.BadRequest)]
     [TestCase("Bad Request Invalid Type", "invalid-type", SortDirection.Ascending, "Invalid Type", HttpStatusCode.BadRequest)]
-    public static async Task CreateCategory_BadData(string? name, string? slug, object sortDirection, object runType, HttpStatusCode expectedCode)
+    public async Task CreateCategory_BadData(string? name, string? slug, object sortDirection, object runType, HttpStatusCode expectedCode)
     {
         var request = new
         {
@@ -287,5 +288,167 @@ internal class Categories
         ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
         problemDetails.Should().NotBeNull();
         problemDetails!.Title.Should().Be("One or more validation errors occurred.");
+    }
+
+    [Test]
+    public async Task DeleteCategory_OK()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category cat = new()
+        {
+            Name = "Delete Cat OK",
+            Slug = "deletecat-ok",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Time
+        };
+
+        context.Add(cat);
+        await context.SaveChangesAsync();
+        cat.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
+
+        HttpResponseMessage response = await _apiClient.Delete(
+            $"/category/{cat.Id}",
+            new()
+            {
+                Jwt = _jwt
+            }
+        );
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        Category? deleted = await context.FindAsync<Category>(cat.Id);
+
+        deleted.Should().NotBeNull();
+        deleted!.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
+        deleted!.DeletedAt.Should().Be(_clock.GetCurrentInstant());
+    }
+
+    [Test]
+    public async Task DeleteCategory_Unauthenticated()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category cat = new()
+        {
+            Name = "Delete Cat UnauthN",
+            Slug = "deletecat-unauthn",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+        };
+
+        context.Add(cat);
+        await context.SaveChangesAsync();
+        cat.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
+
+        await FluentActions.Awaiting(() => _apiClient.Delete(
+            $"category/{cat.Id}",
+            new() { }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+
+        Category? retrieved = await context.FindAsync<Category>(cat.Id);
+        retrieved!.DeletedAt.Should().BeNull();
+    }
+
+    [TestCase(UserRole.Banned)]
+    [TestCase(UserRole.Confirmed)]
+    [TestCase(UserRole.Registered)]
+    public async Task DeleteCategory_BadRole(UserRole role)
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        string email = $"testuser.deletecat.{role}@example.com";
+
+        RegisterRequest registerRequest = new()
+        {
+            Email = email,
+            Password = "Passw0rd",
+            Username = $"DeleteCatTest{role}"
+        };
+
+        await userService.CreateUser(registerRequest);
+        LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+
+        Category cat = new()
+        {
+            Name = "Bad Role",
+            Slug = $"deletecat-bad-role-{role}",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Time,
+        };
+
+        context.Add(cat);
+        await context.SaveChangesAsync();
+        cat.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
+
+        await FluentActions.Awaiting(() => _apiClient.Delete(
+            $"/category/{cat.Id}",
+            new()
+            {
+                Jwt = res.Token
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+
+        Category? retrieved = await context.FindAsync<Category>(cat.Id);
+        retrieved!.DeletedAt.Should().BeNull();
+    }
+
+    [Test]
+    public async Task DeleteCategory_NotFound()
+    {
+        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Delete(
+            $"/category/{int.MaxValue}",
+            new()
+            {
+                Jwt = _jwt,
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+        problemDetails!.Title.Should().Be("Not Found");
+    }
+
+    [Test]
+    public async Task DeleteCategory_NotFound_AlreadyDeleted()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category cat = new()
+        {
+            Name = "Deleted",
+            Slug = "deletedcat-already-deleted",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+            DeletedAt = _clock.GetCurrentInstant(),
+        };
+
+        context.Categories.Add(cat);
+        await context.SaveChangesAsync();
+        cat.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
+
+        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Delete(
+            $"/category/{cat.Id}",
+            new()
+            {
+                Jwt = _jwt,
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+        problemDetails!.Title.Should().Be("Already Deleted");
+
+        Category? retrieved = await context.FindAsync<Category>(cat.Id);
+        retrieved!.UpdatedAt.Should().BeNull();
     }
 }
