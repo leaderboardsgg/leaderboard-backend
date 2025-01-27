@@ -108,7 +108,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
                 NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Not Deleted")),
             conflict =>
             {
-                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict, "Conflict");
+                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
                 problemDetails.Extensions.Add("conflicting", CategoryViewModel.MapFrom(conflict.Conflicting));
                 return Conflict(problemDetails);
             }
