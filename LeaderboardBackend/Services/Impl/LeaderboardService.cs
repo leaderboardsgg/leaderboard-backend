@@ -48,7 +48,7 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
         return lb;
     }
 
-    public async Task<RestoreLeaderboardResult> RestoreLeaderboard(long id)
+    public async Task<RestoreResult<Leaderboard>> RestoreLeaderboard(long id)
     {
         Leaderboard? lb = await applicationContext.Leaderboards.FindAsync(id);
 
@@ -59,7 +59,7 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
 
         if (lb.DeletedAt == null)
         {
-            return new LeaderboardNeverDeleted();
+            return new NeverDeleted();
         }
 
         lb.DeletedAt = null;

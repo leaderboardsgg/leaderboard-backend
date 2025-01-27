@@ -12,6 +12,7 @@ public interface ICategoryService
     Task<CreateCategoryResult> CreateCategory(long leaderboardId, CreateCategoryRequest request);
     Task<Category?> GetCategoryForRun(Run run);
     Task<DeleteResult> DeleteCategory(long id);
+    Task<RestoreResult<Category>> RestoreCategory(long id);
 }
 
 [GenerateOneOf]

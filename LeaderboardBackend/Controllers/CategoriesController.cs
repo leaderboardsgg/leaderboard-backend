@@ -86,4 +86,32 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
             alreadyDeleted => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Already Deleted"))
         );
     }
+
+    [Authorize(Policy = UserTypes.ADMINISTRATOR)]
+    [HttpPut("category/{id:long}/restore")]
+    [SwaggerOperation("Restores a deleted Category.", OperationId = "restoreCategory")]
+    [SwaggerResponse(200, "The restored `Category`s view model.", typeof(CategoryViewModel))]
+    [SwaggerResponse(401)]
+    [SwaggerResponse(403, "The requesting `User` is unauthorized to restore `Category`s.")]
+    [SwaggerResponse(404, "The `Category` was not found, or it wasn't deleted in the first place. Includes a field, `title`, which will be \"Not Found\" in the former case, and \"Not Deleted\" in the latter.", typeof(ProblemDetails))]
+    [SwaggerResponse(409, "Another `Category` with the same slug has been created since, and therefore can't be restored. Said `Category` will be returned in the `conflicting` field in the response.", typeof(ConflictDetails<CategoryViewModel>))]
+    public async Task<ActionResult<CategoryViewModel>> RestoreCategory(
+        long id
+    )
+    {
+        RestoreResult<Category> r = await categoryService.RestoreCategory(id);
+
+        return r.Match<ActionResult<CategoryViewModel>>(
+            category => Ok(CategoryViewModel.MapFrom(category)),
+            notFound => NotFound(),
+            neverDeleted =>
+                NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Not Deleted")),
+            conflict =>
+            {
+                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
+                problemDetails.Extensions.Add("conflicting", CategoryViewModel.MapFrom(conflict.Conflicting));
+                return Conflict(problemDetails);
+            }
+        );
+    }
 }
