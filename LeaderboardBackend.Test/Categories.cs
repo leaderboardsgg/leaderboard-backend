@@ -634,7 +634,7 @@ internal class Categories
         }
         else
         {
-            problemDetails!.Errors[""].ToArray().Should().Equal(["PredicateValidator"]);
+            problemDetails!.Errors[""].Should().Equal(["PredicateValidator"]);
         }
 
         Category? retrieved = await context.FindAsync<Category>(cat.Id);

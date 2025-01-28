@@ -66,7 +66,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     [HttpPatch("category/{id:long}")]
     [SwaggerOperation(
         "Updates a category with the specified new fields. This request is restricted to administrators. " +
-        "Note: `type` cannot be updated." +
+        "Note: `type` cannot be updated. " +
         "This operation is atomic; if an error occurs, the category will not be updated. " +
         "All fields of the request body are optional but you must specify at least one.",
         OperationId = "updateCategory"
