@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using FluentValidation;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Validation;
@@ -43,6 +44,25 @@ public record CreateCategoryRequest
     public RunType Type { get; set; }
 }
 
+public record UpdateCategoryRequest
+{
+    /// <inheritdoc cref="Entities.Category.Name" />
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string Name { get; set; }
+
+    /// <inheritdoc cref="Entities.Category.Slug" />
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string Slug { get; set; }
+
+    /// <inheritdoc cref="Entities.Category.Info" />
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string Info { get; set; }
+
+    /// <inheritdoc cref="Entities.Category.SortDirection" />
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public SortDirection? SortDirection { get; set; }
+}
+
 public class CreateCategoryRequestValidator : AbstractValidator<CreateCategoryRequest>
 {
     public CreateCategoryRequestValidator()
@@ -51,5 +71,20 @@ public class CreateCategoryRequestValidator : AbstractValidator<CreateCategoryRe
         RuleFor(x => x.Slug).NotEmpty().Slug();
         RuleFor(x => x.SortDirection).Cascade(CascadeMode.Stop).NotEmpty().IsInEnum();
         RuleFor(x => x.Type).Cascade(CascadeMode.Stop).NotEmpty().IsInEnum();
+    }
+}
+
+public class UpdateCategoryRequestValidator : AbstractValidator<UpdateCategoryRequest>
+{
+    public UpdateCategoryRequestValidator()
+    {
+        RuleFor(x => x).Must(
+            ucr => ucr.Info is not null ||
+            ucr.Name is not null ||
+            ucr.Slug is not null ||
+            ucr.SortDirection is not null);
+        RuleFor(x => x.Slug).Slug();
+        RuleFor(x => x.Name).MinimumLength(1);
+        RuleFor(x => x.SortDirection).IsInEnum();
     }
 }

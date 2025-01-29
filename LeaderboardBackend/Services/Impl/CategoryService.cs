@@ -48,6 +48,49 @@ public class CategoryService(ApplicationContext applicationContext, IClock clock
     public async Task<Category?> GetCategoryForRun(Run run) =>
         await applicationContext.Categories.FindAsync(run.CategoryId);
 
+    public async Task<UpdateResult<Category>> UpdateCategory(long id, UpdateCategoryRequest request)
+    {
+        Category? cat = await applicationContext.Categories.FindAsync(id);
+
+        if (cat is null)
+        {
+            return new NotFound();
+        }
+
+        if (request.Name is not null)
+        {
+            cat.Name = request.Name;
+        }
+
+        if (request.Slug is not null)
+        {
+            cat.Slug = request.Slug;
+        }
+
+        if (request.Info is not null)
+        {
+            cat.Info = request.Info;
+        }
+
+        if (request.SortDirection is not null)
+        {
+            cat.SortDirection = (SortDirection)request.SortDirection;
+        }
+
+        try
+        {
+            await applicationContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException e)
+            when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            Category conflict = await applicationContext.Categories.SingleAsync(c => c.Slug == cat.Slug && c.LeaderboardId == cat.LeaderboardId && c.DeletedAt == null);
+            return new Conflict<Category>(conflict);
+        }
+
+        return new Success();
+    }
+
     public async Task<DeleteResult> DeleteCategory(long id)
     {
         Category? category = await applicationContext.Categories.FindAsync(id);

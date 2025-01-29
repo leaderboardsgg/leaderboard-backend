@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -6,6 +7,7 @@ using FluentAssertions.Specialized;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Models.Validation;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Lib;
@@ -130,7 +132,6 @@ internal class Categories
     {
         IServiceScope scope = _factory.Services.CreateScope();
         IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
-        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
         string email = $"testuser.updatecat.{role}@example.com";
 
@@ -288,6 +289,389 @@ internal class Categories
         ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
         problemDetails.Should().NotBeNull();
         problemDetails!.Title.Should().Be("One or more validation errors occurred.");
+    }
+
+    [Test]
+    public async Task UpdateCategory_OK()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category created = new()
+        {
+            Name = "update ok",
+            Slug = "update-ok",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+        };
+
+        context.Add(created);
+        await context.SaveChangesAsync();
+        created.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
+
+        HttpResponseMessage response = await _apiClient.Patch(
+            $"category/{created.Id}",
+            new()
+            {
+                Body = new UpdateCategoryRequest()
+                {
+                    Name = "new update",
+                    Slug = "new-update",
+                    Info = "new info",
+                    SortDirection = SortDirection.Descending,
+                },
+                Jwt = _jwt,
+            }
+        );
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        Category? retrieved = await context.FindAsync<Category>(created.Id);
+        retrieved!.Name.Should().Be("new update");
+        retrieved!.Slug.Should().Be("new-update");
+        retrieved!.Info.Should().Be("new info");
+        retrieved!.SortDirection.Should().Be(SortDirection.Descending);
+        retrieved!.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
+    }
+
+    [Test]
+    public async Task UpdateCategory_Unauthenticated()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category cat = new()
+        {
+            Name = "Update Cat UnauthN",
+            Slug = "updatecat-unauth",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Time,
+        };
+
+        context.Add(cat);
+        context.SaveChanges();
+        cat.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
+
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"category/{cat.Id}",
+            new()
+            {
+                Body = new UpdateCategoryRequest
+                {
+                    Name = "should not work"
+                }
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+
+        Category? retrieved = await context.FindAsync<Category>(cat.Id);
+        retrieved!.Name.Should().Be("Update Cat UnauthN");
+    }
+
+    [TestCase(UserRole.Banned)]
+    [TestCase(UserRole.Confirmed)]
+    [TestCase(UserRole.Registered)]
+    public async Task UpdateCategory_BadRole(UserRole role)
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category cat = new()
+        {
+            Name = "Update Cat UnauthZ",
+            Slug = $"updatecat-unauthz-{role}",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Time,
+        };
+
+        context.Add(cat);
+        await context.SaveChangesAsync();
+        cat.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
+
+        string email = $"testuser.updatecat.{role}@example.com";
+
+        RegisterRequest registerRequest = new()
+        {
+            Email = email,
+            Password = "Passw0rd",
+            Username = $"UpdateCatTest{role}"
+        };
+
+        await userService.CreateUser(registerRequest);
+        LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"category/{cat.Id}",
+            new()
+            {
+                Body = new UpdateCategoryRequest
+                {
+                    Name = "should not work",
+                },
+                Jwt = res.Token,
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+
+        Category? retrieved = await context.FindAsync<Category>(cat.Id);
+        retrieved!.Name.Should().Be("Update Cat UnauthZ");
+    }
+
+    [Test]
+    public async Task UpdateCategory_CategoryNotFound() =>
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"category/{int.MaxValue}",
+            new()
+            {
+                Body = new UpdateCategoryRequest
+                {
+                    Name = "should not work",
+                },
+                Jwt = _jwt,
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+    [Test]
+    public async Task UpdateCategory_Conflict()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category first = new()
+        {
+            Name = "Update First",
+            Slug = "updatecat-first",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+        };
+
+        Category toConflict = new()
+        {
+            Name = "To conflict",
+            Slug = "updatecat-to-conflict",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+        };
+
+        context.AddRange(first, toConflict);
+        await context.SaveChangesAsync();
+        first.Id.Should().NotBe(default);
+        toConflict.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
+
+        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"category/{toConflict.Id}",
+            new()
+            {
+                Body = new UpdateCategoryRequest()
+                {
+                    Slug = "updatecat-first",
+                },
+                Jwt = _jwt,
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Conflict);
+
+        ConflictDetails<CategoryViewModel>? conflictDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ConflictDetails<CategoryViewModel>>(TestInitCommonFields.JsonSerializerOptions);
+        conflictDetails!.Title.Should().Be("Conflict");
+        conflictDetails!.Conflicting!.Id.Should().Be(first.Id);
+
+        Category? toConflictRetrieved = await context.FindAsync<Category>(toConflict.Id);
+        toConflictRetrieved!.Slug.Should().Be("updatecat-to-conflict");
+    }
+
+    [Test]
+    public async Task UpdateCategory_NoConflictBecauseOldCatIsDeleted()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category deleted = new()
+        {
+            Name = "Update Deleted",
+            Slug = "updatecat-deleted",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+            DeletedAt = _clock.GetCurrentInstant(),
+        };
+
+        Category toNotConflict = new()
+        {
+            Name = "Update Should Not Conflict Deleted",
+            Slug = "updatecat-no-conflict-deleted",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+        };
+
+        context.AddRange(deleted, toNotConflict);
+        await context.SaveChangesAsync();
+        deleted.Id.Should().NotBe(default);
+        toNotConflict.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
+
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"category/{toNotConflict.Id}",
+            new()
+            {
+                Body = new UpdateCategoryRequest()
+                {
+                    Slug = "updatecat-deleted"
+                },
+                Jwt = _jwt
+            }
+        )).Should().NotThrowAsync();
+
+        Category? toNotConflictRetrieved = await context.FindAsync<Category>(toNotConflict.Id);
+        toNotConflictRetrieved!.Slug.Should().Be("updatecat-deleted");
+    }
+
+    [Test]
+    public async Task UpdateCategory_NoConflictBecauseDifferentLeaderboard()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category first = new()
+        {
+            Name = "Update No Conflict",
+            Slug = "updatecat-no-conflict-different-board",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+        };
+
+        Leaderboard board = new()
+        {
+            Name = "Update Cat Different Board",
+            Slug = "updatecat-no-conflict-different-board",
+        };
+
+        context.AddRange(first, board);
+        await context.SaveChangesAsync();
+        first.Id.Should().NotBe(default);
+        board.Id.Should().NotBe(default);
+
+        Category toNotConflict = new()
+        {
+            Name = "Should Not Conflict",
+            Slug = "updatecat-should-not-conflict-different-board",
+            LeaderboardId = board.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+        };
+        context.Add(toNotConflict);
+        await context.SaveChangesAsync();
+        toNotConflict.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
+
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"category/{toNotConflict.Id}",
+            new()
+            {
+                Body = new UpdateCategoryRequest()
+                {
+                    Slug = first.Slug,
+                },
+                Jwt = _jwt,
+            }
+        )).Should().NotThrowAsync();
+
+        Category? toNotConflictRetrieved = await context.FindAsync<Category>(toNotConflict.Id);
+        toNotConflictRetrieved!.Slug.Should().Be(first.Slug);
+    }
+
+    [TestCase(1, "b.b")]
+    [TestCase(2, "b")]
+    [TestCase(3, null)]
+    public async Task UpdateCategory_BadData(int index, string? slug)
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category cat = new()
+        {
+            Name = "Update Bad Data",
+            Slug = $"updatecat-bad-data-{index}",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+        };
+
+        context.Add(cat);
+        await context.SaveChangesAsync();
+        cat.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
+
+        UpdateCategoryRequest updateRequest = new() { };
+
+        if (slug is not null)
+        {
+            updateRequest.Slug = slug;
+        }
+
+        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"category/{cat.Id}",
+            new()
+            {
+                Body = updateRequest,
+                Jwt = _jwt,
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableEntity);
+
+        ValidationProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ValidationProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+        problemDetails.Should().NotBeNull();
+
+        if (slug is not null)
+        {
+            problemDetails!.Errors["Slug"].Should().Equal([SlugRule.SLUG_FORMAT]);
+        }
+        else
+        {
+            problemDetails!.Errors[""].Should().Equal(["PredicateValidator"]);
+        }
+
+        Category? retrieved = await context.FindAsync<Category>(cat.Id);
+        retrieved!.Slug.Should().Be(cat.Slug);
+    }
+
+    [Test]
+    public async Task UpdateCategory_FieldNotAllowed()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category cat = new()
+        {
+            Name = "Update Field Not Allowed",
+            Slug = $"updatecat-field-not-allowed",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+        };
+
+        context.Add(cat);
+        await context.SaveChangesAsync();
+        cat.Id.Should().NotBe(default);
+        context.ChangeTracker.Clear();
+
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"category/{cat.Id}",
+            new()
+            {
+                Body = new
+                {
+                    Type = RunType.Time,
+                },
+                Jwt = _jwt,
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableEntity);
     }
 
     [Test]
@@ -509,7 +893,7 @@ internal class Categories
         context.ChangeTracker.Clear();
 
         await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
-            "category/1/restore",
+            $"category/{cat.Id}/restore",
             new() { }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
 
@@ -684,8 +1068,7 @@ internal class Categories
 
         context.AddRange(deleted, board);
         await context.SaveChangesAsync();
-        deleted.Id.Should().NotBe(default);
-        deleted.Id.Should().NotBe(_createdLeaderboard.Id);
+        deleted.Id.Should().NotBe(default).And.NotBe(_createdLeaderboard.Id);
         board.Id.Should().NotBe(default);
 
         Category notConflicting = new()
