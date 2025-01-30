@@ -18,7 +18,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     [SwaggerOperation("Gets a Category by its ID.", OperationId = "getCategory")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
-    public async Task<ActionResult<CategoryViewModel>> GetCategory(long id)
+    public async Task<ActionResult<CategoryViewModel>> GetCategory([FromRoute] long id)
     {
         Category? category = await categoryService.GetCategory(id);
 
@@ -134,7 +134,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     [SwaggerResponse(404, "The `Category` was not found, or it wasn't deleted in the first place. Includes a field, `title`, which will be \"Not Found\" in the former case, and \"Not Deleted\" in the latter.", typeof(ProblemDetails))]
     [SwaggerResponse(409, "Another `Category` with the same slug has been created since, and therefore can't be restored. Said `Category` will be returned in the `conflicting` field in the response.", typeof(ConflictDetails<CategoryViewModel>))]
     public async Task<ActionResult<CategoryViewModel>> RestoreCategory(
-        long id
+        [FromRoute] long id
     )
     {
         RestoreResult<Category> r = await categoryService.RestoreCategory(id);
