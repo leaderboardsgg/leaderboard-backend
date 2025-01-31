@@ -14,7 +14,7 @@ namespace LeaderboardBackend.Controllers;
 public class CategoriesController(ICategoryService categoryService) : ApiController
 {
     [AllowAnonymous]
-    [HttpGet("api/category/{id}")]
+    [HttpGet("api/category/{id:long}")]
     [SwaggerOperation("Gets a Category by its ID.", OperationId = "getCategory")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]

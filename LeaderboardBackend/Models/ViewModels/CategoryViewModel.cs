@@ -31,10 +31,14 @@ public record CategoryViewModel
     /// <example>Video proof is required.</example>
     public required string? Info { get; set; }
 
+    /// <inheritdoc cref="Category.Type" />
     public required RunType Type { get; set; }
 
     /// <inheritdoc cref="Category.SortDirection" />
     public required SortDirection SortDirection { get; set; }
+
+    /// <inheritdoc cref="Category.LeaderboardId" />
+    public required long LeaderboardId { get; set; }
 
     /// <inheritdoc cref="Category.CreatedAt" />
     public required Instant CreatedAt { get; set; }
@@ -53,6 +57,7 @@ public record CategoryViewModel
         Info = category.Info,
         SortDirection = category.SortDirection,
         Type = category.Type,
+        LeaderboardId = category.LeaderboardId,
         CreatedAt = category.CreatedAt,
         UpdatedAt = category.UpdatedAt,
         DeletedAt = category.DeletedAt

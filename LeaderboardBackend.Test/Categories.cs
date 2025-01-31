@@ -64,10 +64,52 @@ internal class Categories
     public void OneTimeTearDown() => _factory.Dispose();
 
     [Test]
-    public async Task GetCategory_NotFound() =>
+    public async Task GetCategory_OK()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category created = new()
+        {
+            Name = "get ok",
+            Slug = "getcategory-ok",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+        };
+
+        context.Add(created);
+        await context.SaveChangesAsync();
+        created.Id.Should().NotBe(default);
+
         await _apiClient.Awaiting(
             a => a.Get<CategoryViewModel>(
-                $"/api/category/69",
+                $"api/category/{created.Id}",
+                new() { }
+            )
+        ).Should()
+        .NotThrowAsync()
+        .WithResult(new()
+        {
+            Id = created.Id,
+            Name = "get ok",
+            Slug = "getcategory-ok",
+            Info = "",
+            Type = RunType.Score,
+            SortDirection = SortDirection.Ascending,
+            LeaderboardId = _createdLeaderboard.Id,
+            CreatedAt = _clock.GetCurrentInstant(),
+            UpdatedAt = null,
+            DeletedAt = null,
+        });
+    }
+
+    [TestCase("NotANumber")]
+    [TestCase("69")]
+    public async Task GetCategory_NotFound(object id) =>
+        await _apiClient.Awaiting(
+            a => a.Get<CategoryViewModel>(
+                $"/api/category/{id}",
                 new() { Jwt = _jwt }
             )
         ).Should()
