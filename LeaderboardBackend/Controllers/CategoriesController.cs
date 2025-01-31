@@ -30,6 +30,26 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
         return Ok(CategoryViewModel.MapFrom(category));
     }
 
+    [AllowAnonymous]
+    [HttpGet("api/leaderboard/{id:long}/category")]
+    [SwaggerOperation("Gets a Category of Leaderboard `id` by its slug. Will not return deleted Categories.", OperationId = "getCategoryBySlug")]
+    [SwaggerResponse(200)]
+    [SwaggerResponse(404)]
+    public async Task<ActionResult<CategoryViewModel>> GetCategoryBySlug(
+        [FromRoute] long id,
+        [FromQuery, SwaggerParameter(Required = true)] string slug
+    )
+    {
+        Category? category = await categoryService.GetCategoryBySlug(id, slug);
+
+        if (category == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(CategoryViewModel.MapFrom(category));
+    }
+
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
     [HttpPost("leaderboard/{id:long}/categories/create")]
     [SwaggerOperation("Creates a new Category for a Leaderboard with ID `id`. This request is restricted to Administrators.", OperationId = "createCategory")]

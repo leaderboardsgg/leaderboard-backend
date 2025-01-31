@@ -406,6 +406,62 @@
         }
       }
     },
+    "/api/leaderboard/{id}/category": {
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Gets a Category of Leaderboard `id` by its slug. Will not return deleted Categories.",
+        "operationId": "getCategoryBySlug",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryViewModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/leaderboard/{id}/categories/create": {
       "post": {
         "tags": [
@@ -757,7 +813,7 @@
         "tags": [
           "Leaderboards"
         ],
-        "summary": "Gets a leaderboard by its slug.",
+        "summary": "Gets a leaderboard by its slug. Will not return deleted boards.",
         "operationId": "getLeaderboardBySlug",
         "parameters": [
           {

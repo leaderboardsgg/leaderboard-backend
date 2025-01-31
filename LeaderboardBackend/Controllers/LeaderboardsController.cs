@@ -32,7 +32,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
 
     [AllowAnonymous]
     [HttpGet("api/leaderboard")]
-    [SwaggerOperation("Gets a leaderboard by its slug.", OperationId = "getLeaderboardBySlug")]
+    [SwaggerOperation("Gets a leaderboard by its slug. Will not return deleted boards.", OperationId = "getLeaderboardBySlug")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
     public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboardBySlug([FromQuery, SwaggerParameter(Required = true)] string slug)

@@ -9,6 +9,7 @@ namespace LeaderboardBackend.Services;
 public interface ICategoryService
 {
     Task<Category?> GetCategory(long id);
+    Task<Category?> GetCategoryBySlug(long leaderboardId, string slug);
     Task<CreateCategoryResult> CreateCategory(long leaderboardId, CreateCategoryRequest request);
     Task<Category?> GetCategoryForRun(Run run);
     Task<UpdateResult<Category>> UpdateCategory(long id, UpdateCategoryRequest request);
