@@ -1380,6 +1380,7 @@
           "deletedAt",
           "id",
           "info",
+          "leaderboardId",
           "name",
           "slug",
           "sortDirection",
@@ -1414,6 +1415,10 @@
           },
           "sortDirection": {
             "$ref": "#/components/schemas/SortDirection"
+          },
+          "leaderboardId": {
+            "type": "integer",
+            "format": "int64"
           },
           "createdAt": {
             "type": "string",
