@@ -229,6 +229,84 @@ internal class Categories
     }
 
     [Test]
+    public async Task GetCategoriesForLeaderboard_OK()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard board = new()
+        {
+            Name = "get cats ok",
+            Slug = "getcategories-ok",
+        };
+        context.Add(board);
+        await context.SaveChangesAsync();
+        board.Id.Should().NotBe(default);
+
+        Category[] created = [
+            new()
+            {
+                Name = "get cats ok",
+                Slug = "getcategories-ok",
+                LeaderboardId = board.Id,
+                SortDirection = SortDirection.Ascending,
+                Type = RunType.Score,
+            },
+            new()
+            {
+                Name = "get cats ok deleted",
+                Slug = "getcategories-ok-deleted",
+                LeaderboardId = board.Id,
+                SortDirection = SortDirection.Ascending,
+                Type = RunType.Score,
+                DeletedAt = _clock.GetCurrentInstant(),
+            },
+        ];
+
+        context.AddRange(created);
+        await context.SaveChangesAsync();
+        foreach (Category category in created)
+        {
+            category.Id.Should().NotBe(default);
+        }
+
+        context.ChangeTracker.Clear();
+
+        CategoryViewModel[]? resultSansDeleted = await _apiClient.Get<CategoryViewModel[]>(
+            $"api/leaderboard/{board.Id}/categories",
+            new() { }
+        );
+        resultSansDeleted!.Should().BeEquivalentTo([created[0]], options => options.ExcludingMissingMembers());
+
+        CategoryViewModel[]? resultWithDeleted = await _apiClient.Get<CategoryViewModel[]>(
+            $"api/leaderboard/{board.Id}/categories?includeDeleted=true",
+            new() { }
+        );
+        resultWithDeleted!.Should().BeEquivalentTo(created, options => options.ExcludingMissingMembers());
+
+        Category? toDelete = await context.FindAsync<Category>(created[0].Id);
+        toDelete!.DeletedAt = _clock.GetCurrentInstant();
+        await context.SaveChangesAsync();
+
+        CategoryViewModel[]? resultEmpty = await _apiClient.Get<CategoryViewModel[]>(
+            $"api/leaderboard/{board.Id}/categories",
+            new() { }
+        );
+        resultEmpty.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task GetCategoriesForLeaderboard_NotFound() =>
+        await _apiClient.Awaiting(
+            a => a.Get<CategoryViewModel>(
+                $"api/leaderboard/{short.MaxValue}/categories",
+                new() { }
+            )
+        ).Should()
+        .ThrowAsync<RequestFailureException>()
+        .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+    [Test]
     public async Task CreateCategory_GetCategory_OK()
     {
         CreateCategoryRequest request = new()
