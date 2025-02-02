@@ -34,7 +34,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     [HttpGet("api/leaderboard/{id:long}/category")]
     [SwaggerOperation("Gets a Category of Leaderboard `id` by its slug. Will not return deleted Categories.", OperationId = "getCategoryBySlug")]
     [SwaggerResponse(200)]
-    [SwaggerResponse(404)]
+    [SwaggerResponse(404, "The Category either doesn't exist for the Leaderboard, or it has been deleted.", typeof(ProblemDetails))]
     public async Task<ActionResult<CategoryViewModel>> GetCategoryBySlug(
         [FromRoute] long id,
         [FromQuery, SwaggerParameter(Required = true)] string slug

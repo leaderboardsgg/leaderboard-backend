@@ -457,7 +457,14 @@
             }
           },
           "404": {
-            "description": "Not Found"
+            "description": "The Category either doesn't exist for the Leaderboard, or it has been deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       }
