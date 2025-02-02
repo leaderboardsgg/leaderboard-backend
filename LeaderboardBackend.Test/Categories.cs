@@ -229,6 +229,71 @@ internal class Categories
     }
 
     [Test]
+    public async Task GetCategoriesForLeaderboard_OK()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard board = new()
+        {
+            Name = "get cats ok",
+            Slug = "getcategories-ok",
+            Categories = [
+                new()
+                {
+                    Name = "get cats ok",
+                    Slug = "getcategories-ok",
+                    SortDirection = SortDirection.Ascending,
+                    Type = RunType.Score,
+                },
+                new()
+                {
+                    Name = "get cats ok deleted",
+                    Slug = "getcategories-ok-deleted",
+                    SortDirection = SortDirection.Ascending,
+                    Type = RunType.Score,
+                    DeletedAt = _clock.GetCurrentInstant(),
+                },
+            ],
+        };
+        context.Add(board);
+        await context.SaveChangesAsync();
+        board.Id.Should().NotBe(default);
+
+        CategoryViewModel[]? resultSansDeleted = await _apiClient.Get<CategoryViewModel[]>(
+            $"api/leaderboard/{board.Id}/categories",
+            new() { }
+        );
+        resultSansDeleted!.Single().Should().BeEquivalentTo(board.Categories[0], opts => opts.ExcludingMissingMembers());
+
+        CategoryViewModel[]? resultWithDeleted = await _apiClient.Get<CategoryViewModel[]>(
+            $"api/leaderboard/{board.Id}/categories?includeDeleted=true",
+            new() { }
+        );
+        resultWithDeleted!.Should().BeEquivalentTo(board.Categories, options => options.ExcludingMissingMembers());
+
+        board.Categories[0].DeletedAt = _clock.GetCurrentInstant();
+        await context.SaveChangesAsync();
+
+        CategoryViewModel[]? resultEmpty = await _apiClient.Get<CategoryViewModel[]>(
+            $"api/leaderboard/{board.Id}/categories",
+            new() { }
+        );
+        resultEmpty.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task GetCategoriesForLeaderboard_NotFound() =>
+        await _apiClient.Awaiting(
+            a => a.Get<CategoryViewModel>(
+                $"api/leaderboard/{short.MaxValue}/categories",
+                new() { }
+            )
+        ).Should()
+        .ThrowAsync<RequestFailureException>()
+        .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+    [Test]
     public async Task CreateCategory_GetCategory_OK()
     {
         CreateCategoryRequest request = new()

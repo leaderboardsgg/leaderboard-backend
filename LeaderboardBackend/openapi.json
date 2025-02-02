@@ -469,6 +469,73 @@
         }
       }
     },
+    "/api/leaderboard/{id}/categories": {
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Gets all Categories of Leaderboard `id`.",
+        "operationId": "getCategoriesForLeaderboard",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "includeDeleted",
+            "in": "query",
+            "description": "Whether to include deleted Categories. Defaults to `false`.",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The Leaderboard with ID `id` could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/leaderboard/{id}/categories/create": {
       "post": {
         "tags": [
