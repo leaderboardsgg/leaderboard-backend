@@ -50,6 +50,24 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
         return Ok(CategoryViewModel.MapFrom(category));
     }
 
+    [AllowAnonymous]
+    [HttpGet("api/leaderboard/{id:long}/categories")]
+    [SwaggerOperation("Gets all Categories of Leaderboard `id`.", OperationId = "getCategoriesForLeaderboard")]
+    [SwaggerResponse(200)]
+    [SwaggerResponse(404, "The Leaderboard with ID `id` could not be found.", typeof(ProblemDetails))]
+    public async Task<ActionResult<CategoryViewModel[]>> GetCategoriesForLeaderboard(
+        [FromRoute] long id,
+        [FromQuery, SwaggerParameter(Description = "Whether to include deleted Categories. Defaults to `false`.")] bool includeDeleted = false
+    )
+    {
+        GetCategoriesForLeaderboardResult r = await categoryService.GetCategoriesForLeaderboard(id, includeDeleted);
+
+        return r.Match<ActionResult<CategoryViewModel[]>>(
+            categories => Ok(from cat in categories select CategoryViewModel.MapFrom(cat)),
+            notFound => NotFound()
+        );
+    }
+
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
     [HttpPost("leaderboard/{id:long}/categories/create")]
     [SwaggerOperation("Creates a new Category for a Leaderboard with ID `id`. This request is restricted to Administrators.", OperationId = "createCategory")]
