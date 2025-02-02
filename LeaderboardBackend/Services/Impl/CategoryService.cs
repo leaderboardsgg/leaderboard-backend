@@ -22,7 +22,7 @@ public class CategoryService(ApplicationContext applicationContext, IClock clock
         Leaderboard? board = await applicationContext.Leaderboards
             .Where(board => board.Id == leaderboardId)
             .Include(board => board.Categories)
-            .FirstOrDefaultAsync();
+            .SingleOrDefaultAsync();
 
         if (board is null)
         {
