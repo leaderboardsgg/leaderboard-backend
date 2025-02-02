@@ -13,6 +13,10 @@ public class CategoryService(ApplicationContext applicationContext, IClock clock
     public async Task<Category?> GetCategory(long id) =>
         await applicationContext.Categories.FindAsync(id);
 
+    public async Task<Category?> GetCategoryBySlug(long leaderboardId, string slug) =>
+        await applicationContext.Categories
+            .FirstOrDefaultAsync(c => c.Slug == slug && c.LeaderboardId == leaderboardId && c.DeletedAt == null);
+
     public async Task<CreateCategoryResult> CreateCategory(long leaderboardId, CreateCategoryRequest request)
     {
         Category category =

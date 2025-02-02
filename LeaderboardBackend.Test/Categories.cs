@@ -64,7 +64,7 @@ internal class Categories
     public void OneTimeTearDown() => _factory.Dispose();
 
     [Test]
-    public async Task GetCategory_OK()
+    public async Task GetCategoryByID_OK()
     {
         IServiceScope scope = _factory.Services.CreateScope();
         ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
@@ -106,7 +106,7 @@ internal class Categories
 
     [TestCase("NotANumber")]
     [TestCase("69")]
-    public async Task GetCategory_NotFound(object id) =>
+    public async Task GetCategoryByID_NotFound(object id) =>
         await _apiClient.Awaiting(
             a => a.Get<CategoryViewModel>(
                 $"/api/category/{id}",
@@ -115,6 +115,118 @@ internal class Categories
         ).Should()
         .ThrowAsync<RequestFailureException>()
         .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+    [Test]
+    public async Task GetCategoryBySlug_OK()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category created = new()
+        {
+            Name = "get slug ok",
+            Slug = "getcategory-slug-ok",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+        };
+
+        context.Add(created);
+        await context.SaveChangesAsync();
+        created.Id.Should().NotBe(default);
+
+        await _apiClient.Awaiting(
+            a => a.Get<CategoryViewModel>(
+                $"api/leaderboard/{_createdLeaderboard.Id}/category?slug=getcategory-slug-ok",
+                new() { }
+            )
+        ).Should()
+        .NotThrowAsync()
+        .WithResult(new()
+        {
+            Id = created.Id,
+            Name = "get slug ok",
+            Slug = "getcategory-slug-ok",
+            Info = "",
+            Type = RunType.Score,
+            SortDirection = SortDirection.Ascending,
+            LeaderboardId = _createdLeaderboard.Id,
+            CreatedAt = _clock.GetCurrentInstant(),
+            UpdatedAt = null,
+            DeletedAt = null,
+        });
+    }
+
+    [Test]
+    public async Task GetCategoryBySlug_NotFound_WrongSlug() =>
+        await _apiClient.Awaiting(
+            a => a.Get<CategoryViewModel>(
+                $"api/leaderboard/{_createdLeaderboard.Id}/category?slug=wrong-slug",
+                new() { }
+            )
+        ).Should()
+        .ThrowAsync<RequestFailureException>()
+        .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+    [Test]
+    public async Task GetCategoryBySlug_NotFound_WrongLeaderboardID()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category created = new()
+        {
+            Name = "get slug not found",
+            Slug = "getcategory-slug-wrong-board-id",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+            DeletedAt = _clock.GetCurrentInstant(),
+        };
+
+        context.Add(created);
+        await context.SaveChangesAsync();
+        created.Id.Should().NotBe(default);
+
+        await _apiClient.Awaiting(
+            a => a.Get<CategoryViewModel>(
+                $"api/leaderboard/{short.MaxValue}/category?slug={created.Slug}",
+                new() { }
+            )
+        ).Should()
+        .ThrowAsync<RequestFailureException>()
+        .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Test]
+    public async Task GetCategoryBySlug_NotFound_IsDeleted()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Category created = new()
+        {
+            Name = "get slug not found",
+            Slug = "getcategory-slug-deleted",
+            LeaderboardId = _createdLeaderboard.Id,
+            SortDirection = SortDirection.Ascending,
+            Type = RunType.Score,
+            DeletedAt = _clock.GetCurrentInstant(),
+        };
+
+        context.Add(created);
+        await context.SaveChangesAsync();
+        created.Id.Should().NotBe(default);
+
+        await _apiClient.Awaiting(
+            a => a.Get<CategoryViewModel>(
+                $"api/leaderboard/{_createdLeaderboard.Id}/category?slug={created.Slug}",
+                new() { }
+            )
+        ).Should()
+        .ThrowAsync<RequestFailureException>()
+        .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+    }
 
     [Test]
     public async Task CreateCategory_GetCategory_OK()
