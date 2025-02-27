@@ -1928,6 +1928,7 @@
           "deletedAt",
           "id",
           "info",
+          "playedOn",
           "updatedAt",
           "userId"
         ],
@@ -1945,6 +1946,12 @@
             "type": "string",
             "description": "User-provided details about the run.",
             "nullable": true
+          },
+          "playedOn": {
+            "type": "string",
+            "description": "User-provided details about the run.",
+            "format": "date",
+            "example": "2000-01-01"
           },
           "createdAt": {
             "type": "string",

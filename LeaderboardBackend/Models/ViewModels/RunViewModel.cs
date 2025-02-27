@@ -24,6 +24,11 @@ public record RunViewModel
     public required string? Info { get; set; }
 
     /// <summary>
+    ///     User-provided details about the run.
+    /// </summary>
+    public required LocalDate PlayedOn { get; set; }
+
+    /// <summary>
     ///     The time the run was created.
     /// </summary>
     public required Instant CreatedAt { get; set; }
@@ -55,6 +60,7 @@ public record RunViewModel
             Id = run.Id,
             CategoryId = run.CategoryId,
             UserId = run.UserId,
+            PlayedOn = run.PlayedOn,
             CreatedAt = run.CreatedAt,
             UpdatedAt = run.UpdatedAt,
             DeletedAt = run.DeletedAt,
@@ -66,6 +72,7 @@ public record RunViewModel
             Id = run.Id,
             CategoryId = run.CategoryId,
             UserId = run.UserId,
+            PlayedOn = run.PlayedOn,
             CreatedAt = run.CreatedAt,
             UpdatedAt = run.UpdatedAt,
             DeletedAt = run.DeletedAt,
