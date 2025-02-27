@@ -1681,8 +1681,7 @@
         "required": [
           "categoryId",
           "info",
-          "playedOn",
-          "timeOrScore"
+          "playedOn"
         ],
         "type": "object",
         "properties": {
@@ -1699,10 +1698,6 @@
           "categoryId": {
             "type": "integer",
             "description": "The ID of the `Category` for the `Run`.",
-            "format": "int64"
-          },
-          "timeOrScore": {
-            "type": "integer",
             "format": "int64"
           }
         },
