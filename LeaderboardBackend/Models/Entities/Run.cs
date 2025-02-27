@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
@@ -17,7 +19,7 @@ public class Run : IHasUpdateTimestamp
     /// <summary>
     ///     User-provided details about the run.
     /// </summary>
-    public string? Info { get; set; }
+    public string Info { get; set; } = null!;
 
     public RunType Type => Category.Type;
 
@@ -69,4 +71,11 @@ public class Run : IHasUpdateTimestamp
     ///     The User who submitted the run.
     /// </summary>
     public User User { get; set; } = null!;
+}
+
+public class RunEntityTypeConfig : IEntityTypeConfiguration<Run>
+{
+    public void Configure(EntityTypeBuilder<Run> builder) =>
+        builder.Property(l => l.Info)
+            .HasDefaultValue("");
 }
