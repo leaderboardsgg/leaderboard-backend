@@ -1,3 +1,4 @@
+using FluentValidation;
 using NodaTime;
 
 namespace LeaderboardBackend.Models.Requests;
@@ -19,4 +20,12 @@ public record CreateRunRequest
     /// 	The ID of the `Category` for the `Run`.
     /// </summary>
     public required long CategoryId { get; set; }
+
+    /// <inheritdoc cref="Entities.Run.TimeOrScore" />
+    public required long TimeOrScore { get; set; }
+}
+
+public class CreateRunRequestValidator : AbstractValidator<CreateRunRequest>
+{
+    public CreateRunRequestValidator() => RuleFor(x => x.CategoryId).NotEmpty();
 }
