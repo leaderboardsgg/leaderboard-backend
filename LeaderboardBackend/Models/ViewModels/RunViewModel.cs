@@ -24,12 +24,12 @@ public record RunViewModel
     public required string? Info { get; set; }
 
     /// <summary>
-    ///     User-provided details about the run.
+    ///     The date the run was done, *not* when it was submitted.
     /// </summary>
     public required LocalDate PlayedOn { get; set; }
 
     /// <summary>
-    ///     The time the run was created.
+    ///     The time the run was submitted to the DB.
     /// </summary>
     public required Instant CreatedAt { get; set; }
 
