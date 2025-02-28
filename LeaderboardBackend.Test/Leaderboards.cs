@@ -843,8 +843,8 @@ public class Leaderboards
         "dr-langeskov-the-tiger-and-the-terribly-cursed-emerald-a-whirlwind-heist-crows-crows-crows"
     )]
     [TestCase("The Legendary Starfy", "伝説のスタフィー", "densetsu-no-stafy", "デンセツノスタフィー")]
-    [TestCase("Resident Evil", "", "resident-evil", null)]
-    public async Task UpdateLeaderboard_BadData(string oldName, string? newName, string oldSlug, string? newSlug)
+    [TestCase("Resident Evil", "", "resident-evil", "")]
+    public async Task UpdateLeaderboard_BadData(string oldName, string newName, string oldSlug, string newSlug)
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
 
