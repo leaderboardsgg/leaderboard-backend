@@ -1681,8 +1681,7 @@
         "required": [
           "categoryId",
           "info",
-          "playedOn",
-          "timeOrScore"
+          "playedOn"
         ],
         "type": "object",
         "properties": {
@@ -1699,10 +1698,6 @@
           "categoryId": {
             "type": "integer",
             "description": "The ID of the `Category` for the `Run`.",
-            "format": "int64"
-          },
-          "timeOrScore": {
-            "type": "integer",
             "format": "int64"
           }
         },
@@ -1928,6 +1923,7 @@
           "deletedAt",
           "id",
           "info",
+          "playedOn",
           "updatedAt",
           "userId"
         ],
@@ -1946,9 +1942,15 @@
             "description": "User-provided details about the run.",
             "nullable": true
           },
+          "playedOn": {
+            "type": "string",
+            "description": "The date the run was done, *not* when it was submitted.",
+            "format": "date",
+            "example": "2000-01-01"
+          },
           "createdAt": {
             "type": "string",
-            "description": "The time the run was created.",
+            "description": "The time the run was submitted to the DB.",
             "format": "date-time",
             "example": "1984-01-01T00:00:00Z"
           },

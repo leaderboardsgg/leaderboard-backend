@@ -858,16 +858,24 @@ public class Leaderboards
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
+        UpdateLeaderboardRequest update = new();
+
+        if (newName != null)
+        {
+            update.Name = newName;
+        }
+
+        if (newSlug != null)
+        {
+            update.Slug = newSlug;
+        }
+
         await FluentActions.Awaiting(() => _apiClient.Patch(
             $"/leaderboard/{lb.Id}",
             new()
             {
                 Jwt = _jwt,
-                Body = new UpdateLeaderboardRequest()
-                {
-                    Name = newName,
-                    Slug = newSlug
-                }
+                Body = update,
             }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableContent);
 
