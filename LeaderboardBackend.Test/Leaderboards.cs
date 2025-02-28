@@ -843,8 +843,8 @@ public class Leaderboards
         "dr-langeskov-the-tiger-and-the-terribly-cursed-emerald-a-whirlwind-heist-crows-crows-crows"
     )]
     [TestCase("The Legendary Starfy", "伝説のスタフィー", "densetsu-no-stafy", "デンセツノスタフィー")]
-    [TestCase("Resident Evil", "", "resident-evil", "")]
-    public async Task UpdateLeaderboard_BadData(string oldName, string newName, string oldSlug, string newSlug)
+    [TestCase("Resident Evil", "", "resident-evil", null)]
+    public async Task UpdateLeaderboard_BadData(string oldName, string? newName, string oldSlug, string? newSlug)
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
 
@@ -858,16 +858,24 @@ public class Leaderboards
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
+        UpdateLeaderboardRequest update = new();
+
+        if (newName != null)
+        {
+            update.Name = newName;
+        }
+
+        if (newSlug != null)
+        {
+            update.Slug = newSlug;
+        }
+
         await FluentActions.Awaiting(() => _apiClient.Patch(
             $"/leaderboard/{lb.Id}",
             new()
             {
                 Jwt = _jwt,
-                Body = new UpdateLeaderboardRequest()
-                {
-                    Name = newName,
-                    Slug = newSlug
-                }
+                Body = update,
             }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableContent);
 
