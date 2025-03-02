@@ -44,30 +44,32 @@ public class RunsController(
     }
 
     [Authorize]
-    [HttpPost("runs/create")]
-    [SwaggerOperation("Creates a new Run.", OperationId = "createRun")]
+    [HttpPost("/category/{id:long}/runs/create")]
+    [SwaggerOperation("Creates a new Run for a Category with ID `id`. This request is restricted to confirmed Users and Administrators.", OperationId = "createRun")]
     [SwaggerResponse(201)]
-    [SwaggerResponse(401)]
-    [SwaggerResponse(403)]
+    [SwaggerResponse(401, "The client is not logged in.", typeof(ProblemDetails))]
+    [SwaggerResponse(403, "The requesting User is unauthorized to create Runs.", typeof(ProblemDetails))]
+    [SwaggerResponse(404, "The Category with ID `id` could not be found.", typeof(ProblemDetails))]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
-    public async Task<ActionResult> CreateRun([FromBody] CreateRunRequest request)
+    public async Task<ActionResult<RunViewModel>> CreateRun([FromRoute] long id, [FromBody, SwaggerRequestBody(Required = true)] JsonDocument request)
     {
-        // FIXME: Should return Task<ActionResult<Run>>! - Ero
-        // NOTE: Return NotFound for anything in here? - Ero
-
         GetUserResult res = await userService.GetUserFromClaims(HttpContext.User);
 
         if (res.TryPickT0(out User user, out OneOf<BadCredentials, UserNotFound> _))
         {
-            Run run = new()
+            CreateRunRequest? deserialised = JsonSerializer.Deserialize<CreateRunRequest>(request, options.Value.JsonSerializerOptions);
+            if (deserialised is null)
             {
-                PlayedOn = request.PlayedOn,
-                CategoryId = request.CategoryId,
-                User = user,
-            };
+                return UnprocessableEntity();
+            }
 
-            await runService.CreateRun(run);
-            return CreatedAtAction(nameof(GetRun), new { id = run.Id }, RunViewModel.MapFrom(run));
+            CreateRunResult r = await runService.CreateRun(user, id, deserialised);
+            return r.Match<ActionResult>(
+                run => CreatedAtAction(nameof(GetRun), new { id = run.Id }, RunViewModel.MapFrom(run)),
+                badRole => Forbid(),
+                notFound => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Category Not Found")),
+                unprocessable => UnprocessableEntity()
+            );
         }
 
         return Unauthorized();

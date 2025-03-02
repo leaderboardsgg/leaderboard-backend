@@ -1,9 +1,17 @@
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Result;
+using OneOf;
+using OneOf.Types;
 
 namespace LeaderboardBackend.Services;
 
 public interface IRunService
 {
     Task<Run?> GetRun(Guid id);
-    Task CreateRun(Run run);
+    Task<CreateRunResult> CreateRun(User user, long categoryId, CreateRunRequest request);
 }
+
+[GenerateOneOf]
+// TODO: May need more cases.
+public partial class CreateRunResult : OneOfBase<Run, BadRole, NotFound, Unprocessable>;
