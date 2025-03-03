@@ -16,16 +16,18 @@ public record CreateRunRequest
     public required string Info { get; set; }
 
     /// <summary>
-    ///     The date the `Run` was played on.
+    ///     The date the `Run` was played on. Must obey the format 'YYYY-MM-DD', with leading zeroes.
     /// </summary>
+    /// <example>2025-01-01</example>
     public required LocalDate PlayedOn { get; set; }
 }
 
 public record CreateTimedRunRequest : CreateRunRequest
 {
     /// <summary>
-    ///     The duration of the run.
+    ///     The duration of the run. Must obey the format 'HH:mm:ss.sss', with leading zeroes.
     /// </summary>
+    /// <example>00:12:34:56.999</example>
     public required Duration Time { get; set; }
 }
 
@@ -40,8 +42,8 @@ public record CreateScoredRunRequest : CreateRunRequest
 public class CreateRunRequestValidator : AbstractValidator<CreateRunRequest>
 {
     public CreateRunRequestValidator(IClock clock) =>
-        RuleFor(x => x.PlayedOn).Must(date => {
-            // TODO: This is likely wrong. Will need to convert timezones.
+        RuleFor(x => x.PlayedOn).Must(date =>
+        {
             LocalDate today = clock.GetCurrentInstant().InUtc().Date;
             return date <= today;
         });
@@ -59,9 +61,5 @@ public class CreateTimedRunRequestValidator : AbstractValidator<CreateTimedRunRe
 
 public class CreateScoredRunRequestValidator : AbstractValidator<CreateScoredRunRequest>
 {
-    public CreateScoredRunRequestValidator(IClock clock)
-    {
-        Include(new CreateRunRequestValidator(clock));
-        RuleFor(x => x.Score).GreaterThan(0);
-    }
+    public CreateScoredRunRequestValidator(IClock clock) => Include(new CreateRunRequestValidator(clock));
 }
