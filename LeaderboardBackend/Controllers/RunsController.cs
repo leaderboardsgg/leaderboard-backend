@@ -1,7 +1,6 @@
 using System.Net.Mime;
 using System.Text.Json;
 using LeaderboardBackend.Models.Entities;
-using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
@@ -50,25 +49,23 @@ public class RunsController(
     [SwaggerResponse(401, "The client is not logged in.", typeof(ProblemDetails))]
     [SwaggerResponse(403, "The requesting User is unauthorized to create Runs.", typeof(ProblemDetails))]
     [SwaggerResponse(404, "The Category with ID `id` could not be found.", typeof(ProblemDetails))]
-    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
+    [SwaggerResponse(422, "The request body is incorrect in some way. Read the `title` field to get more information.", Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<RunViewModel>> CreateRun([FromRoute] long id, [FromBody, SwaggerRequestBody(Required = true)] JsonDocument request)
     {
         GetUserResult res = await userService.GetUserFromClaims(HttpContext.User);
 
         if (res.TryPickT0(out User user, out OneOf<BadCredentials, UserNotFound> _))
         {
-            CreateRunRequest? deserialised = JsonSerializer.Deserialize<CreateRunRequest>(request, options.Value.JsonSerializerOptions);
-            if (deserialised is null)
-            {
-                return UnprocessableEntity();
-            }
-
-            CreateRunResult r = await runService.CreateRun(user, id, deserialised);
+            CreateRunResult r = await runService.CreateRun(user, id, request);
             return r.Match<ActionResult>(
-                run => CreatedAtAction(nameof(GetRun), new { id = run.Id }, RunViewModel.MapFrom(run)),
+                run =>
+                {
+                    CreatedAtActionResult result = CreatedAtAction(nameof(GetRun), new { id = run.Id.ToUrlSafeBase64String() }, RunViewModel.MapFrom(run));
+                    return result;
+                },
                 badRole => Forbid(),
                 notFound => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Category Not Found")),
-                unprocessable => UnprocessableEntity()
+                unprocessable => UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 422, unprocessable.Title))
             );
         }
 

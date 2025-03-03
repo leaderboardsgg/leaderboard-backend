@@ -1409,7 +1409,7 @@
             }
           },
           "422": {
-            "description": "Unprocessable Content",
+            "description": "The request body is incorrect in some way. Read the `title` field to get more information.",
             "content": {
               "application/json": {
                 "schema": {

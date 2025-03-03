@@ -1,19 +1,21 @@
+using System.Text.Json;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OneOf;
+using Microsoft.Extensions.Options;
 using OneOf.Types;
 
 namespace LeaderboardBackend.Services;
 
-public class RunService(ApplicationContext applicationContext) : IRunService
+public class RunService(ApplicationContext applicationContext, IOptions<JsonOptions> jsonOptions) : IRunService
 {
     public async Task<Run?> GetRun(Guid id) =>
         await applicationContext.Runs.Include(run => run.Category).SingleOrDefaultAsync(run => run.Id == id);
 
-    public async Task<CreateRunResult> CreateRun(User user, long categoryId, CreateRunRequest request)
+    public async Task<CreateRunResult> CreateRun(User user, long categoryId, JsonDocument request)
     {
         switch (user.Role)
         {
@@ -29,13 +31,15 @@ public class RunService(ApplicationContext applicationContext) : IRunService
             return new NotFound();
         }
 
-        switch (request)
+        if (c.Type == RunType.Time)
         {
-            case CreateTimedRunRequest timed:
+            try
             {
-                if (c.Type != RunType.Time)
+                CreateTimedRunRequest? timed = request.Deserialize<CreateTimedRunRequest>(jsonOptions.Value.JsonSerializerOptions);
+
+                if (timed == null)
                 {
-                    return new Unprocessable();
+                    return new Unprocessable("Incorrect Request Body");
                 }
 
                 Run run = new()
@@ -50,30 +54,36 @@ public class RunService(ApplicationContext applicationContext) : IRunService
                 applicationContext.SaveChanges();
                 return run;
             }
-            case CreateScoredRunRequest scored:
+            catch (JsonException)
             {
-                if (c.Type != RunType.Score)
-                {
-                    return new Unprocessable();
-                }
+                return new Unprocessable("Incorrect Request Body");
+            }
+        }
 
-                Run run = new()
-                {
-                    Category = c,
-                    Info = scored.Info ?? "",
-                    PlayedOn = scored.PlayedOn,
-                    TimeOrScore = scored.Score,
-                    User = user,
-                };
-                applicationContext.Add(run);
-                applicationContext.SaveChanges();
-                return run;
-            }
-            default:
+        try
+        {
+            CreateScoredRunRequest? scored = request.Deserialize<CreateScoredRunRequest>(jsonOptions.Value.JsonSerializerOptions);
+
+            if (scored == null)
             {
-                Console.WriteLine("It's here isn't it");
-                return new Unprocessable();
+                return new Unprocessable("Incorrect Request Body");
             }
+
+            Run run = new()
+            {
+                Category = c,
+                Info = scored.Info ?? "",
+                PlayedOn = scored.PlayedOn,
+                TimeOrScore = scored.Score,
+                User = user,
+            };
+            applicationContext.Add(run);
+            applicationContext.SaveChanges();
+            return run;
+        }
+        catch (JsonException)
+        {
+            return new Unprocessable("Incorrect Request Body");
         }
     }
 }

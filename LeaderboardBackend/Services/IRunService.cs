@@ -1,5 +1,5 @@
+using System.Text.Json;
 using LeaderboardBackend.Models.Entities;
-using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using OneOf;
 using OneOf.Types;
@@ -9,7 +9,7 @@ namespace LeaderboardBackend.Services;
 public interface IRunService
 {
     Task<Run?> GetRun(Guid id);
-    Task<CreateRunResult> CreateRun(User user, long categoryId, CreateRunRequest request);
+    Task<CreateRunResult> CreateRun(User user, long categoryId, JsonDocument request);
 }
 
 [GenerateOneOf]
