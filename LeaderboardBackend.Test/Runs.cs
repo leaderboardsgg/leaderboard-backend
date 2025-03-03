@@ -77,7 +77,7 @@ namespace LeaderboardBackend.Test
                     CategoryId = _categoryId,
                     Info = "",
                     PlayedOn = LocalDate.MinIsoValue,
-                    TimeOrScore = 1000,
+                    TimeOrScore = Duration.FromSeconds(390).ToInt64Nanoseconds(),
                     UserId = TestInitCommonFields.Admin.Id,
                 }
             );

@@ -21,7 +21,6 @@ public class RunsController(
     ) : ApiController
 {
     [AllowAnonymous]
-    // We expect an encoded GUID and not the GUID itself. Refer to GuidExtensions.cs.
     [HttpGet("api/run/{id}")]
     [SwaggerOperation("Gets a Run by its ID.", OperationId = "getRun")]
     [SwaggerResponse(200)]
