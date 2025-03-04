@@ -69,7 +69,7 @@ namespace LeaderboardBackend.Test
         }
 
         [Test]
-        public static async Task GetRun_OK()
+        public async Task GetRun_OK()
         {
             Run created = await CreateRun(
                 new()
@@ -82,7 +82,7 @@ namespace LeaderboardBackend.Test
                 }
             );
 
-            await _apiClient.Awaiting(a => a.Get<RunViewModel>(
+            await FluentActions.Awaiting(() => _apiClient.Get<RunViewModel>(
                 $"/api/run/{created.Id.ToUrlSafeBase64String()}",
                 new() { }
             )).Should()
@@ -122,7 +122,7 @@ namespace LeaderboardBackend.Test
         }
 
         [Test]
-        public static async Task GetCategoryForRun_OK()
+        public async Task GetCategoryForRun_OK()
         {
             Run createdRun = await CreateRun(
                 new()
