@@ -82,29 +82,17 @@ namespace LeaderboardBackend.Test
                 }
             );
 
-            await FluentActions.Awaiting(() => _apiClient.Get<TimedRunViewModel>(
+            await _apiClient.Awaiting(a => a.Get<RunViewModel>(
                 $"/api/run/{created.Id.ToUrlSafeBase64String()}",
                 new() { }
-            ))
-                .Should()
-                .NotThrowAsync()
-                .WithResult(new()
-                {
-                    Id = created.Id,
-                    Info = created.Info,
-                    PlayedOn = created.PlayedOn,
-                    CreatedAt = created.CreatedAt,
-                    UpdatedAt = created.UpdatedAt,
-                    DeletedAt = created.DeletedAt,
-                    CategoryId = created.CategoryId,
-                    UserId = created.UserId,
-                    Time = created.Time,
-                });
+            )).Should()
+            .NotThrowAsync()
+            .WithResult(RunViewModel.MapFrom(created));
         }
 
         [TestCase("1")]
         [TestCase("AAAAAA")]
-        public static async Task GetRun_NotFound(string id) =>
+        public async Task GetRun_NotFound(string id) =>
             await FluentActions.Awaiting(() =>
                 _apiClient.Get<RunViewModel>(
                 $"/api/run/{id}",
@@ -114,7 +102,7 @@ namespace LeaderboardBackend.Test
             .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
 
         [Test]
-        public static async Task CreateRun_OK()
+        public async Task CreateRun_OK()
         {
             Run created = await CreateRun(
                 new()
@@ -162,6 +150,7 @@ namespace LeaderboardBackend.Test
             ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
             await context.AddAsync(run);
             await context.SaveChangesAsync();
+            context.Entry(run).Reference(r => r.Category).Load();
             return run;
         }
 
