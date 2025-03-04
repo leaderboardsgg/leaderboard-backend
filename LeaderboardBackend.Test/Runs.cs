@@ -71,23 +71,29 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task GetRun_OK()
         {
-            Run created = await CreateRun(
-                new()
-                {
-                    CategoryId = _categoryId,
-                    Info = "",
-                    PlayedOn = LocalDate.MinIsoValue,
-                    TimeOrScore = Duration.FromSeconds(390).ToInt64Nanoseconds(),
-                    UserId = TestInitCommonFields.Admin.Id,
-                }
-            );
+            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+
+            Run run = new()
+            {
+                CategoryId = _categoryId,
+                Info = "",
+                PlayedOn = LocalDate.FromDateTime(new()),
+                TimeOrScore = Duration.FromSeconds(390).ToInt64Nanoseconds(),
+                UserId = TestInitCommonFields.Admin.Id,
+            };
+
+            context.Add(run);
+            await context.SaveChangesAsync();
+            // Needed for resolving the run type for viewmodel mapping
+            context.Entry(run).Reference(r => r.Category).Load();
+            context.ChangeTracker.Clear();
 
             await FluentActions.Awaiting(() => _apiClient.Get<RunViewModel>(
-                $"/api/run/{created.Id.ToUrlSafeBase64String()}",
+                $"/api/run/{run.Id.ToUrlSafeBase64String()}",
                 new() { }
             )).Should()
             .NotThrowAsync()
-            .WithResult(RunViewModel.MapFrom(created));
+            .WithResult(RunViewModel.MapFrom(run));
         }
 
         [TestCase("1")]
