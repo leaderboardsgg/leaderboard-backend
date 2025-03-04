@@ -3,13 +3,15 @@ using System.Net;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
-using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
+using NodaTime.Testing;
 using NUnit.Framework;
 
 namespace LeaderboardBackend.Test
@@ -18,55 +20,51 @@ namespace LeaderboardBackend.Test
     internal class Runs
     {
         private static TestApiClient _apiClient = null!;
-        private static TestApiFactory _factory = null!;
+        private static WebApplicationFactory<Program> _factory = null!;
         private static string _jwt = null!;
         private static long _categoryId;
+        private static readonly FakeClock _clock = new(new());
 
         [OneTimeSetUp]
-        public void OneTimeSetUp()
+        public async Task OneTimeSetUp()
         {
-            _factory = new TestApiFactory();
-            _apiClient = _factory.CreateTestApiClient();
-        }
+            _factory = new TestApiFactory().WithWebHostBuilder(builder =>
+                builder.ConfigureTestServices(services =>
+                    services.AddSingleton<IClock, FakeClock>(_ => _clock)
+                )
+            );
 
-        [SetUp]
-        public async Task SetUp()
-        {
-            _factory.ResetDatabase();
+            _apiClient = new TestApiClient(_factory.CreateClient());
+
+            PostgresDatabaseFixture.ResetDatabaseToTemplate();
 
             _jwt = (await _apiClient.LoginAdminUser()).Token;
 
-            LeaderboardViewModel createdLeaderboard = await _apiClient.Post<LeaderboardViewModel>(
-                "/leaderboards/create",
-                new()
-                {
-                    Body = new CreateLeaderboardRequest()
-                    {
-                        Name = "Super Mario 64",
-                        Slug = "super_mario_64",
-                    },
-                    Jwt = _jwt,
-                }
-            );
+            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+            Leaderboard board = new()
+            {
+                Name = "Super Mario 64",
+                Slug = "super_mario_64",
+            };
 
-            CategoryViewModel createdCategory = await _apiClient.Post<CategoryViewModel>(
-                $"/leaderboard/{createdLeaderboard.Id}/categories/create",
-                new()
-                {
-                    Body = new CreateCategoryRequest()
-                    {
-                        Name = "120 Stars",
-                        Slug = "120_stars",
-                        Info = "120 stars",
-                        SortDirection = SortDirection.Ascending,
-                        Type = RunType.Time
-                    },
-                    Jwt = _jwt,
-                }
-            );
+            Category category = new()
+            {
+                Name = "120 Stars",
+                Slug = "120_stars",
+                Info = "120 stars",
+                SortDirection = SortDirection.Ascending,
+                Type = RunType.Time,
+                Leaderboard = board,
+            };
 
-            _categoryId = createdCategory.Id;
+            context.AddRange(board, category);
+            context.SaveChanges();
+
+            _categoryId = category.Id;
         }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown() => _factory.Dispose();
 
         [Test]
         public async Task GetRun_OK()
@@ -88,12 +86,12 @@ namespace LeaderboardBackend.Test
             context.Entry(run).Reference(r => r.Category).Load();
             context.ChangeTracker.Clear();
 
-            await FluentActions.Awaiting(() => _apiClient.Get<RunViewModel>(
+            TimedRunViewModel retrieved = await _apiClient.Get<TimedRunViewModel>(
                 $"/api/run/{run.Id.ToUrlSafeBase64String()}",
                 new() { }
-            )).Should()
-            .NotThrowAsync()
-            .WithResult(RunViewModel.MapFrom(run));
+            );
+
+            retrieved.Should().BeEquivalentTo(RunViewModel.MapFrom(run));
         }
 
         [TestCase("1")]
