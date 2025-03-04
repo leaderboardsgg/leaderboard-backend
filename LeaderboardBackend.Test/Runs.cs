@@ -102,21 +102,12 @@ namespace LeaderboardBackend.Test
                 });
         }
 
-        [Test]
-        public static async Task GetRun_NotFound_BadRouteParamType() =>
+        [TestCase("1")]
+        [TestCase("AAAAAA")]
+        public static async Task GetRun_NotFound(string id) =>
             await FluentActions.Awaiting(() =>
                 _apiClient.Get<RunViewModel>(
-                "/api/run/1",
-                new() { }
-            )).Should()
-            .ThrowAsync<RequestFailureException>()
-            .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
-
-        [Test]
-        public static async Task GetRun_NotFound_RunDoesNotExist() =>
-            await FluentActions.Awaiting(() =>
-                _apiClient.Get<RunViewModel>(
-                $"/api/run/{Guid.Empty.ToUrlSafeBase64String()}",
+                $"/api/run/{id}",
                 new() { }
             )).Should()
             .ThrowAsync<RequestFailureException>()
