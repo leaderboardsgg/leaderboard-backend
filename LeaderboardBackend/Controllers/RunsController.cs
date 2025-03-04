@@ -72,6 +72,7 @@ public class RunsController(
         return Unauthorized();
     }
 
+    [AllowAnonymous]
     [HttpGet("/api/run/{id}/category")]
     [SwaggerOperation("Gets the category a run belongs to.", OperationId = "getRunCategory")]
     [SwaggerResponse(200)]

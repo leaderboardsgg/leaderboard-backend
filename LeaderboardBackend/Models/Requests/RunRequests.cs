@@ -41,6 +41,8 @@ public record CreateScoredRunRequest : CreateRunRequest
 
 public class CreateRunRequestValidator : AbstractValidator<CreateRunRequest>
 {
+    // TODO: This validator fails to trigger. We're able to create runs even when
+    // PlayedOn is far into the future.
     public CreateRunRequestValidator(IClock clock) =>
         RuleFor(x => x.PlayedOn).Must(date =>
         {
