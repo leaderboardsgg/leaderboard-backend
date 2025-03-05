@@ -1,3 +1,5 @@
+using System.Net.Mime;
+using System.Text.Json;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
@@ -5,6 +7,7 @@ using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using OneOf;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -13,15 +16,16 @@ namespace LeaderboardBackend.Controllers;
 public class RunsController(
     IRunService runService,
     ICategoryService categoryService,
-    IUserService userService
+    IUserService userService,
+    IOptions<JsonOptions> options
     ) : ApiController
 {
     [AllowAnonymous]
     [HttpGet("api/run/{id}")]
     [SwaggerOperation("Gets a Run by its ID.", OperationId = "getRun")]
     [SwaggerResponse(200)]
-    [SwaggerResponse(404)]
-    public async Task<ActionResult<RunViewModel>> GetRun(Guid id)
+    [SwaggerResponse(404, "The Run with ID `id` could not be found.", typeof(ProblemDetails))]
+    public async Task<ActionResult<RunViewModel>> GetRun([FromRoute] Guid id)
     {
         Run? run = await runService.GetRun(id);
 
@@ -30,7 +34,13 @@ public class RunsController(
             return NotFound();
         }
 
-        return Ok(RunViewModel.MapFrom(run));
+        // This is needed because of what we think is a bug with serialisation. The "$type" field
+        // doesn't show up in the response if we simply return Ok(RunViewModel.MapFrom(run)).
+        // And we want that field present for consumers to better discriminate what they're getting.
+        return Content(
+            JsonSerializer.Serialize(RunViewModel.MapFrom(run), options.Value.JsonSerializerOptions),
+            MediaTypeNames.Application.Json
+        );
     }
 
     [Authorize]

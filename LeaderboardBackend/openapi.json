@@ -1306,7 +1306,14 @@
             }
           },
           "404": {
-            "description": "Not Found"
+            "description": "The Run with ID `id` could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       }

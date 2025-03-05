@@ -1,12 +1,18 @@
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
+using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
+using NodaTime.Testing;
 using NUnit.Framework;
 
 namespace LeaderboardBackend.Test
@@ -15,69 +21,103 @@ namespace LeaderboardBackend.Test
     internal class Runs
     {
         private static TestApiClient _apiClient = null!;
-        private static TestApiFactory _factory = null!;
+        private static WebApplicationFactory<Program> _factory = null!;
         private static string _jwt = null!;
         private static long _categoryId;
+        private static readonly FakeClock _clock = new(new());
 
         [OneTimeSetUp]
-        public void OneTimeSetUp()
+        public async Task OneTimeSetUp()
         {
-            _factory = new TestApiFactory();
-            _apiClient = _factory.CreateTestApiClient();
-        }
+            _factory = new TestApiFactory().WithWebHostBuilder(builder =>
+                builder.ConfigureTestServices(services =>
+                    services.AddSingleton<IClock, FakeClock>(_ => _clock)
+                )
+            );
 
-        [SetUp]
-        public async Task SetUp()
-        {
-            _factory.ResetDatabase();
+            _apiClient = new TestApiClient(_factory.CreateClient());
+
+            PostgresDatabaseFixture.ResetDatabaseToTemplate();
 
             _jwt = (await _apiClient.LoginAdminUser()).Token;
 
-            LeaderboardViewModel createdLeaderboard = await _apiClient.Post<LeaderboardViewModel>(
-                "/leaderboards/create",
-                new()
-                {
-                    Body = new CreateLeaderboardRequest()
-                    {
-                        Name = "Super Mario 64",
-                        Slug = "super_mario_64",
-                    },
-                    Jwt = _jwt,
-                }
-            );
+            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+            Leaderboard board = new()
+            {
+                Name = "Super Mario 64",
+                Slug = "super_mario_64",
+            };
 
-            CategoryViewModel createdCategory = await _apiClient.Post<CategoryViewModel>(
-                $"/leaderboard/{createdLeaderboard.Id}/categories/create",
-                new()
-                {
-                    Body = new CreateCategoryRequest()
-                    {
-                        Name = "120 Stars",
-                        Slug = "120_stars",
-                        Info = "120 stars",
-                        SortDirection = SortDirection.Ascending,
-                        Type = RunType.Time
-                    },
-                    Jwt = _jwt,
-                }
-            );
+            Category category = new()
+            {
+                Name = "120 Stars",
+                Slug = "120_stars",
+                Info = "120 stars",
+                SortDirection = SortDirection.Ascending,
+                Type = RunType.Time,
+                Leaderboard = board,
+            };
 
-            _categoryId = createdCategory.Id;
+            context.Add(category);
+            context.SaveChanges();
+
+            _categoryId = category.Id;
         }
 
+        [OneTimeTearDown]
+        public void OneTimeTearDown() => _factory.Dispose();
+
         [Test]
-        public static async Task CreateRun_OK()
+        public async Task GetRun_OK()
+        {
+            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+
+            Run run = new()
+            {
+                CategoryId = _categoryId,
+                Info = "",
+                PlayedOn = LocalDate.FromDateTime(new()),
+                TimeOrScore = Duration.FromSeconds(390).ToInt64Nanoseconds(),
+                UserId = TestInitCommonFields.Admin.Id,
+            };
+
+            context.Add(run);
+            await context.SaveChangesAsync();
+            // Needed for resolving the run type for viewmodel mapping
+            context.Entry(run).Reference(r => r.Category).Load();
+
+            TimedRunViewModel retrieved = await _apiClient.Get<TimedRunViewModel>(
+                $"/api/run/{run.Id.ToUrlSafeBase64String()}",
+                new() { }
+            );
+
+            retrieved.Should().BeEquivalentTo(RunViewModel.MapFrom(run));
+        }
+
+        [TestCase("1")]
+        [TestCase("AAAAAAAAAAAAAAAAAAAAAA")]
+        public async Task GetRun_NotFound(string id) =>
+            await FluentActions.Awaiting(() =>
+                _apiClient.Get<RunViewModel>(
+                $"/api/run/{id}",
+                new() { }
+            )).Should()
+            .ThrowAsync<RequestFailureException>()
+            .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+        [Test]
+        public async Task CreateRun_OK()
         {
             RunViewModel created = await CreateRun();
 
-            RunViewModel retrieved = await GetRun(created.Id);
+            RunViewModel retrieved = await GetRun<RunViewModel>(created.Id);
 
             created.Should().NotBeNull();
             created.Id.Should().Be(retrieved.Id);
         }
 
         [Test]
-        public static async Task GetCategory_OK()
+        public async Task GetCategoryForRun_OK()
         {
             RunViewModel createdRun = await CreateRun();
 
@@ -105,8 +145,8 @@ namespace LeaderboardBackend.Test
                 }
             );
 
-        private static async Task<RunViewModel> GetRun(Guid id) =>
-            await _apiClient.Get<RunViewModel>(
+        private static async Task<T> GetRun<T>(Guid id) where T : RunViewModel =>
+            await _apiClient.Get<T>(
                 $"/api/run/{id.ToUrlSafeBase64String()}",
                 new() { Jwt = _jwt }
             );
