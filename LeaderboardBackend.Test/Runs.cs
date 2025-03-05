@@ -1,5 +1,5 @@
-using System;
 using System.Net;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using FluentAssertions.Specialized;
 using LeaderboardBackend.Models;
@@ -113,9 +113,9 @@ namespace LeaderboardBackend.Test
         {
             var request = new
             {
-                PlayedOn = LocalDate.MinIsoValue,
-                Info = "",
-                Time = "00:10:22.111",
+                playedOn = "2025-01-01",
+                info = "",
+                time = "00:10:22.111",
             };
 
             RunViewModel created = await _apiClient.Post<TimedRunViewModel>(
@@ -127,14 +127,17 @@ namespace LeaderboardBackend.Test
                 }
             );
 
-            TimedRunViewModel retrieved = await GetRun<TimedRunViewModel>(created.Id);
+            TimedRunViewModel retrieved = await _apiClient.Get<TimedRunViewModel>(
+                $"/api/run/{created.Id.ToUrlSafeBase64String()}",
+                new() { }
+            );
 
             retrieved.Should().BeEquivalentTo(created);
             retrieved.Should().BeEquivalentTo(
                 new
                 {
-                    PlayedOn = request.PlayedOn,
-                    Info = request.Info,
+                    PlayedOn = LocalDate.FromDateTime(new(2025, 1, 1)),
+                    Info = request.info,
                     Time = Duration.FromMilliseconds(622111),
                 }
             );
@@ -242,7 +245,19 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task GetCategoryForRun_OK()
         {
-            RunViewModel createdRun = await CreateRun();
+            TimedRunViewModel createdRun = await _apiClient.Post<TimedRunViewModel>(
+                $"/category/{_categoryId}/runs/create",
+                new()
+                {
+                    Body = new CreateTimedRunRequest
+                    {
+                        PlayedOn = LocalDate.MinIsoValue,
+                        Info = "",
+                        Time = Duration.FromMilliseconds(390000),
+                    },
+                    Jwt = _jwt
+                }
+            );
 
             CategoryViewModel category = await _apiClient.Get<CategoryViewModel>(
                 $"api/run/{createdRun.Id.ToUrlSafeBase64String()}/category",
@@ -252,26 +267,5 @@ namespace LeaderboardBackend.Test
             category.Should().NotBeNull();
             category.Id.Should().Be(_categoryId);
         }
-
-        // TODO: Remove this method. Directly call endpoint in tests.
-        private static async Task<RunViewModel> CreateRun() =>
-            await _apiClient.Post<RunViewModel>(
-                $"/category/{_categoryId}/runs/create",
-                new()
-                {
-                    Body = new CreateRunRequest
-                    {
-                        PlayedOn = LocalDate.MinIsoValue,
-                        Info = "",
-                    },
-                    Jwt = _jwt
-                }
-            );
-
-        private static async Task<T> GetRun<T>(Guid id) where T : RunViewModel =>
-            await _apiClient.Get<T>(
-                $"/api/run/{id.ToUrlSafeBase64String()}",
-                new() { }
-            );
     }
 }
