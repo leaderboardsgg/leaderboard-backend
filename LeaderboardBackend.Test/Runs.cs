@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
@@ -57,7 +58,7 @@ namespace LeaderboardBackend.Test
                 Leaderboard = board,
             };
 
-            context.AddRange(board, category);
+            context.Add(category);
             context.SaveChanges();
 
             _categoryId = category.Id;
@@ -84,7 +85,6 @@ namespace LeaderboardBackend.Test
             await context.SaveChangesAsync();
             // Needed for resolving the run type for viewmodel mapping
             context.Entry(run).Reference(r => r.Category).Load();
-            context.ChangeTracker.Clear();
 
             TimedRunViewModel retrieved = await _apiClient.Get<TimedRunViewModel>(
                 $"/api/run/{run.Id.ToUrlSafeBase64String()}",
@@ -96,6 +96,7 @@ namespace LeaderboardBackend.Test
 
         [TestCase("1")]
         [TestCase("AAAAAA")]
+        [TestCase("00000000-0000-0000-0000-000000000000")]
         public async Task GetRun_NotFound(string id) =>
             await FluentActions.Awaiting(() =>
                 _apiClient.Get<RunViewModel>(
@@ -108,16 +109,7 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task CreateRun_OK()
         {
-            Run created = await CreateRun(
-                new()
-                {
-                    CategoryId = _categoryId,
-                    Info = "",
-                    PlayedOn = LocalDate.MinIsoValue,
-                    TimeOrScore = 1000,
-                    UserId = TestInitCommonFields.Admin.Id,
-                }
-            );
+            RunViewModel created = await CreateRun();
 
             RunViewModel retrieved = await GetRun<RunViewModel>(created.Id);
 
@@ -128,16 +120,7 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task GetCategoryForRun_OK()
         {
-            Run createdRun = await CreateRun(
-                new()
-                {
-                    CategoryId = _categoryId,
-                    Info = "",
-                    PlayedOn = LocalDate.MinIsoValue,
-                    TimeOrScore = 1000,
-                    UserId = TestInitCommonFields.Admin.Id,
-                }
-            );
+            RunViewModel createdRun = await CreateRun();
 
             CategoryViewModel category = await _apiClient.Get<CategoryViewModel>(
                 $"api/run/{createdRun.Id.ToUrlSafeBase64String()}/category",
@@ -148,15 +131,20 @@ namespace LeaderboardBackend.Test
             category.Id.Should().Be(_categoryId);
         }
 
-        private static async Task<Run> CreateRun(Run run)
-        {
-            IServiceScope scope = _factory.Services.CreateScope();
-            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-            await context.AddAsync(run);
-            await context.SaveChangesAsync();
-            context.Entry(run).Reference(r => r.Category).Load();
-            return run;
-        }
+        private static async Task<RunViewModel> CreateRun() =>
+            await _apiClient.Post<RunViewModel>(
+                "/runs/create",
+                new()
+                {
+                    Body = new CreateRunRequest
+                    {
+                        PlayedOn = LocalDate.MinIsoValue,
+                        Info = null,
+                        CategoryId = _categoryId
+                    },
+                    Jwt = _jwt
+                }
+            );
 
         private static async Task<T> GetRun<T>(Guid id) where T : RunViewModel =>
             await _apiClient.Get<T>(
