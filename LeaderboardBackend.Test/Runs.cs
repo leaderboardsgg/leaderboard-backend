@@ -95,8 +95,7 @@ namespace LeaderboardBackend.Test
         }
 
         [TestCase("1")]
-        [TestCase("AAAAAA")]
-        [TestCase("00000000-0000-0000-0000-000000000000")]
+        [TestCase("AAAAAAAAAAAAAAAAAAAAAA")]
         public async Task GetRun_NotFound(string id) =>
             await FluentActions.Awaiting(() =>
                 _apiClient.Get<RunViewModel>(
