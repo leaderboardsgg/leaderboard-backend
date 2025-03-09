@@ -48,43 +48,58 @@ public class RunsController(
     [Authorize]
     [HttpPost("/category/{id:long}/runs/create")]
     [SwaggerOperation("Creates a new Run for a Category with ID `id`. This request is restricted to confirmed Users and Administrators.", OperationId = "createRun")]
-    [SwaggerOperationFilter(typeof(CustomRequestBodyFilter<CreateRunRequestBase>))]
+    [SwaggerOperationFilter(typeof(CustomRequestBodyFilter<CreateRunRequest>))]
     [SwaggerResponse(201)]
     [SwaggerResponse(401, "The client is not logged in.", typeof(ProblemDetails))]
+    [SwaggerResponse(400, null, typeof(ValidationProblemDetails))]
     [SwaggerResponse(403, "The requesting User is unauthorized to create Runs.", typeof(ProblemDetails))]
-    [SwaggerResponse(404, "The Category with ID `id` could not be found.", typeof(ProblemDetails))]
-    [SwaggerResponse(422, "The request body is incorrect in some way. Read the `detail` field, if present, to get more information.", Type = typeof(ValidationProblemDetails))]
-    public async Task<ActionResult<RunViewModel>> CreateRun([FromRoute] long id)
+    [SwaggerResponse(404, "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.", typeof(ProblemDetails))]
+    [SwaggerResponse(422, null, Type = typeof(ValidationProblemDetails))]
+    public async Task<ActionResult<RunViewModel>> CreateRun([FromRoute] long id, [FromBody] CreateRunRequest request)
     {
         GetUserResult res = await userService.GetUserFromClaims(HttpContext.User);
 
         if (res.TryPickT0(out User user, out OneOf<BadCredentials, UserNotFound> _))
         {
+            Category? category = await categoryService.GetCategory(id);
+
+            if (category is null)
+            {
+                return NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Category Not Found."));
+            }
+
+            if (category.DeletedAt is not null)
+            {
+                return NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Category Is Deleted."));
+            }
+
             try
             {
-                using StreamReader reader = new(Request.Body, Encoding.UTF8, true, 1024);
-                string bodyStr = await reader.ReadToEndAsync();
-                CreateRunRequest? request = ParseRunRequest(bodyStr);
-
                 if (request is null)
                 {
                     return UnprocessableEntity();
                 }
 
-                CreateRunResult r = await runService.CreateRun(user, id, request);
+                CreateRunResult r = await runService.CreateRun(user, category, request);
                 return r.Match<ActionResult>(
                     run =>
                     {
-                        CreatedAtActionResult result = CreatedAtAction(nameof(GetRun), new { id = run.Id.ToUrlSafeBase64String() }, RunViewModel.MapFrom(run));
+                        CreatedAtActionResult result = CreatedAtAction(
+                            nameof(GetRun),
+                            new { id = run.Id.ToUrlSafeBase64String() },
+                            RunViewModel.MapFrom(run)
+                        );
                         return result;
                     },
                     badRole => Forbid(),
-                    notFound => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Category Not Found")),
+                    notFound => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Category Not Found or Has Been Deleted")),
+                    // TODO: This needs to be a ValidationProblemDetails, with `Details` populating `errors`
                     unprocessable => UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 422, null, null, unprocessable.Detail))
                 );
             }
             catch (JsonException)
             {
+                // TODO: This needs to be a ValidationProblemDetails
                 return UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 422, null, null, "Make sure common and category-specific fields are present. E.g. 'time' for timed runs."));
             }
         }

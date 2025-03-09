@@ -9,9 +9,8 @@ namespace LeaderboardBackend.Services;
 public interface IRunService
 {
     Task<Run?> GetRun(Guid id);
-    Task<CreateRunResult> CreateRun(User user, long categoryId, CreateRunRequest request);
+    Task<CreateRunResult> CreateRun(User user, Category category, CreateRunRequest request);
 }
 
 [GenerateOneOf]
-// TODO: May need more cases.
 public partial class CreateRunResult : OneOfBase<Run, BadRole, NotFound, Unprocessable>;

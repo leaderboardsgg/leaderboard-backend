@@ -1,64 +1,63 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using FluentValidation;
 using NodaTime;
-using OneOf;
+
+#nullable disable warnings
 
 namespace LeaderboardBackend.Models.Requests;
 
 /// <summary>
-///     Request sent when creating a Run. This definition only shows fields
-///     common across all Categories. Depending on the specific category, an
-///     an extra field is expected:
-///
-///     * For timed Runs, a `time` field. It must have the format
-///       'HH:mm:ss.sss' with leading zeroes.
-///     * For scored Runs, a `score` field. It must be a number.
+///     Request sent when creating a Run. Set `runType` to `"Time"` for a timed
+///     request, and `"Score"` for a scored one, as well as
 /// </summary>
-[JsonPolymorphic]
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "runType")]
 [JsonDerivedType(typeof(CreateTimedRunRequest), "Time")]
 [JsonDerivedType(typeof(CreateScoredRunRequest), "Score")]
-public record CreateRunRequestBase
+public abstract class CreateRunRequest
 {
     /// <inheritdoc cref="Entities.Run.Info" />
-    public required string Info { get; set; }
+    public string Info { get; set; }
 
     /// <summary>
     ///     The date the `Run` was played on. Must obey the format 'YYYY-MM-DD', with leading zeroes.
     /// </summary>
     /// <example>2025-01-01</example>
+    [Required]
     public required LocalDate PlayedOn { get; set; }
 }
 
-public record CreateTimedRunRequest : CreateRunRequestBase
+/// <summary>
+///     `runType: "Time"`
+/// </summary>
+public class CreateTimedRunRequest : CreateRunRequest
 {
     /// <summary>
     ///     The duration of the run. Must obey the format 'HH:mm:ss.sss', with leading zeroes.
     /// </summary>
     /// <example>00:12:34:56.999</example>
+    [Required]
     public required Duration Time { get; set; }
 }
 
-public record CreateScoredRunRequest : CreateRunRequestBase
+/// <summary>
+///     `runType: "Score"`
+/// </summary>
+public class CreateScoredRunRequest : CreateRunRequest
 {
     /// <summary>
     ///     The score achieved during the run.
     /// </summary>
+    [Required]
     public required long Score { get; set; }
 }
 
-[GenerateOneOf]
-public partial class CreateRunRequest : OneOfBase<CreateTimedRunRequest, CreateScoredRunRequest>;
-
-public class CreateRunRequestValidator : AbstractValidator<CreateRunRequestBase>
+public class CreateRunRequestValidator : AbstractValidator<CreateRunRequest>
 {
-    // TODO: This validator fails to trigger. We're able to create runs even when
-    // PlayedOn is far into the future.
     public CreateRunRequestValidator(IClock clock) =>
-        RuleFor(x => x.PlayedOn).Must(date =>
-        {
-            LocalDate today = clock.GetCurrentInstant().InUtc().Date;
-            return date <= today;
-        });
+        RuleFor(x => x.PlayedOn)
+            .LessThanOrEqualTo(date => clock.GetCurrentInstant().InUtc().Date)
+            .WithMessage("{PropertyName} must not be set in the future.");
 }
 
 public class CreateTimedRunRequestValidator : AbstractValidator<CreateTimedRunRequest>
@@ -66,8 +65,9 @@ public class CreateTimedRunRequestValidator : AbstractValidator<CreateTimedRunRe
     public CreateTimedRunRequestValidator(IClock clock)
     {
         Include(new CreateRunRequestValidator(clock));
-        // TODO: There must be a better way than using a regex.
-        RuleFor(x => x.Time).GreaterThanOrEqualTo(Duration.Zero);
+        RuleFor(x => x.Time)
+            .GreaterThanOrEqualTo(Duration.Zero)
+            .WithMessage("{PropertyName} must be positive.");
     }
 }
 

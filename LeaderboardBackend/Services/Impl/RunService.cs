@@ -12,7 +12,7 @@ public class RunService(ApplicationContext applicationContext) : IRunService
     public async Task<Run?> GetRun(Guid id) =>
         await applicationContext.Runs.Include(run => run.Category).SingleOrDefaultAsync(run => run.Id == id);
 
-    public async Task<CreateRunResult> CreateRun(User user, long categoryId, CreateRunRequest request)
+    public async Task<CreateRunResult> CreateRun(User user, Category category, CreateRunRequest request)
     {
         switch (user.Role)
         {
@@ -21,57 +21,52 @@ public class RunService(ApplicationContext applicationContext) : IRunService
                 return new BadRole();
         }
 
-        Category? c = await applicationContext.FindAsync<Category>(categoryId);
-
-        if (c == null)
+        if (request is CreateTimedRunRequest timed)
         {
-            return new NotFound();
+            if (category.Type != RunType.Time)
+            {
+                return new Unprocessable(
+                    "A timed run submission request was received for a non-timed category. " +
+                    """Ensure "runType" is set to "Time", and a "time" field is present."""
+                );
+            }
+
+            Run run = new()
+            {
+                Category = category,
+                Info = timed.Info ?? "",
+                PlayedOn = timed.PlayedOn,
+                Time = timed.Time,
+                User = user,
+            };
+            applicationContext.Add(run);
+            await applicationContext.SaveChangesAsync();
+            return run;
         }
 
-        return request.Match<CreateRunResult>(
-            timed =>
+        if (request is CreateScoredRunRequest scored)
+        {
+            if (category.Type != RunType.Score)
             {
-                if (c.Type != RunType.Time)
-                {
-                    return new Unprocessable(
-                        "A timed run request was passed to a non-timed category. " +
-                        "Remove the 'time' field, and only include necessary fields."
-                    );
-                }
-
-                Run run = new()
-                {
-                    Category = c,
-                    Info = timed.Info ?? "",
-                    PlayedOn = timed.PlayedOn,
-                    Time = timed.Time,
-                    User = user,
-                };
-                applicationContext.Add(run);
-                applicationContext.SaveChanges();
-                return run;
-            },
-            scored =>
-            {
-                if (c.Type != RunType.Score)
-                {
-                    return new Unprocessable(
-                        "A scored run request was passed to a non-scoring category. " +
-                        "Remove the 'score' field, and only include necessary fields.");
-                }
-
-                Run run = new()
-                {
-                    Category = c,
-                    Info = scored.Info ?? "",
-                    PlayedOn = scored.PlayedOn,
-                    TimeOrScore = scored.Score,
-                    User = user,
-                };
-                applicationContext.Add(run);
-                applicationContext.SaveChanges();
-                return run;
+                return new Unprocessable(
+                    "A scored run submission request was received for a non-scored category. " +
+                    """Ensure "runType" is set to "Score", and a "score" field is present."""
+                );
             }
-        );
+
+            Run run = new()
+            {
+                Category = category,
+                Info = scored.Info ?? "",
+                PlayedOn = scored.PlayedOn,
+                TimeOrScore = scored.Score,
+                User = user,
+            };
+            applicationContext.Add(run);
+            await applicationContext.SaveChangesAsync();
+            return run;
+        }
+
+        return new Unprocessable("Invalid run submission request received.");
     }
 }
