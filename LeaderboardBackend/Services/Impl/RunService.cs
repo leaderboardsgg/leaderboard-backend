@@ -1,21 +1,18 @@
-using System.Text.Json;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using OneOf.Types;
 
 namespace LeaderboardBackend.Services;
 
-public class RunService(ApplicationContext applicationContext, IOptions<JsonOptions> jsonOptions) : IRunService
+public class RunService(ApplicationContext applicationContext) : IRunService
 {
     public async Task<Run?> GetRun(Guid id) =>
         await applicationContext.Runs.Include(run => run.Category).SingleOrDefaultAsync(run => run.Id == id);
 
-    public async Task<CreateRunResult> CreateRun(User user, long categoryId, JsonDocument request)
+    public async Task<CreateRunResult> CreateRun(User user, long categoryId, CreateRunRequest request)
     {
         switch (user.Role)
         {
@@ -31,16 +28,15 @@ public class RunService(ApplicationContext applicationContext, IOptions<JsonOpti
             return new NotFound();
         }
 
-        if (c.Type == RunType.Time)
-        {
-            try
+        return request.Match<CreateRunResult>(
+            timed =>
             {
-                CreateTimedRunRequest? timed = request.Deserialize<CreateTimedRunRequest>(jsonOptions.Value.JsonSerializerOptions);
-
-                if (timed == null)
+                if (c.Type != RunType.Time)
                 {
-                    // TODO: Write a more descriptive error message (also don't uppercase every word)
-                    return new Unprocessable("Incorrect Request Body");
+                    return new Unprocessable(
+                        "A timed run request was passed to a non-timed category. " +
+                        "Remove the 'time' field, and only include necessary fields."
+                    );
                 }
 
                 Run run = new()
@@ -54,37 +50,28 @@ public class RunService(ApplicationContext applicationContext, IOptions<JsonOpti
                 applicationContext.Add(run);
                 applicationContext.SaveChanges();
                 return run;
-            }
-            catch (JsonException)
+            },
+            scored =>
             {
-                return new Unprocessable("Incorrect Request Body");
+                if (c.Type != RunType.Score)
+                {
+                    return new Unprocessable(
+                        "A scored run request was passed to a non-scoring category. " +
+                        "Remove the 'score' field, and only include necessary fields.");
+                }
+
+                Run run = new()
+                {
+                    Category = c,
+                    Info = scored.Info ?? "",
+                    PlayedOn = scored.PlayedOn,
+                    TimeOrScore = scored.Score,
+                    User = user,
+                };
+                applicationContext.Add(run);
+                applicationContext.SaveChanges();
+                return run;
             }
-        }
-
-        try
-        {
-            CreateScoredRunRequest? scored = request.Deserialize<CreateScoredRunRequest>(jsonOptions.Value.JsonSerializerOptions);
-
-            if (scored == null)
-            {
-                return new Unprocessable("Incorrect Request Body");
-            }
-
-            Run run = new()
-            {
-                Category = c,
-                Info = scored.Info ?? "",
-                PlayedOn = scored.PlayedOn,
-                TimeOrScore = scored.Score,
-                User = user,
-            };
-            applicationContext.Add(run);
-            applicationContext.SaveChanges();
-            return run;
-        }
-        catch (JsonException)
-        {
-            return new Unprocessable("Incorrect Request Body");
-        }
+        );
     }
 }

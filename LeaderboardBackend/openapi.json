@@ -1339,10 +1339,11 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { }
+              "schema": {
+                "$ref": "#/components/schemas/CreateRunRequestBase"
+              }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "400": {
@@ -1409,7 +1410,7 @@
             }
           },
           "422": {
-            "description": "The request body is incorrect in some way. Read the `title` field to get more information.",
+            "description": "The request body is incorrect in some way. Read the `detail` field, if present, to get more information.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1734,6 +1735,26 @@
         },
         "additionalProperties": false,
         "description": "This request object is sent when creating a `Leaderboard`."
+      },
+      "CreateRunRequestBase": {
+        "required": [
+          "info",
+          "playedOn"
+        ],
+        "type": "object",
+        "properties": {
+          "info": {
+            "type": "string"
+          },
+          "playedOn": {
+            "type": "string",
+            "description": "The date the `Run` was played on. Must obey the format 'YYYY-MM-DD', with leading zeroes.",
+            "format": "date",
+            "example": "2025-01-01"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request sent when creating a Run. This definition only shows fields\r\ncommon across all Categories. Depending on the specific category, an\r\nan extra field is expected:\r\n            \r\n* For timed Runs, a `time` field. It must have the format\r\n  'HH:mm:ss.sss' with leading zeroes.\r\n* For scored Runs, a `score` field. It must be a number."
       },
       "LeaderboardViewModel": {
         "required": [

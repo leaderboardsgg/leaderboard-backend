@@ -1,16 +1,23 @@
 using System.Text.Json.Serialization;
 using FluentValidation;
 using NodaTime;
+using OneOf;
 
 namespace LeaderboardBackend.Models.Requests;
 
 /// <summary>
-///     This request object is sent when creating a `Run`.
+///     Request sent when creating a Run. This definition only shows fields
+///     common across all Categories. Depending on the specific category, an
+///     an extra field is expected:
+///
+///     * For timed Runs, a `time` field. It must have the format
+///       'HH:mm:ss.sss' with leading zeroes.
+///     * For scored Runs, a `score` field. It must be a number.
 /// </summary>
-[JsonDerivedType(typeof(CreateRunRequest), "Base")]
+[JsonPolymorphic]
 [JsonDerivedType(typeof(CreateTimedRunRequest), "Time")]
 [JsonDerivedType(typeof(CreateScoredRunRequest), "Score")]
-public record CreateRunRequest
+public record CreateRunRequestBase
 {
     /// <inheritdoc cref="Entities.Run.Info" />
     public required string Info { get; set; }
@@ -22,7 +29,7 @@ public record CreateRunRequest
     public required LocalDate PlayedOn { get; set; }
 }
 
-public record CreateTimedRunRequest : CreateRunRequest
+public record CreateTimedRunRequest : CreateRunRequestBase
 {
     /// <summary>
     ///     The duration of the run. Must obey the format 'HH:mm:ss.sss', with leading zeroes.
@@ -31,7 +38,7 @@ public record CreateTimedRunRequest : CreateRunRequest
     public required Duration Time { get; set; }
 }
 
-public record CreateScoredRunRequest : CreateRunRequest
+public record CreateScoredRunRequest : CreateRunRequestBase
 {
     /// <summary>
     ///     The score achieved during the run.
@@ -39,7 +46,10 @@ public record CreateScoredRunRequest : CreateRunRequest
     public required long Score { get; set; }
 }
 
-public class CreateRunRequestValidator : AbstractValidator<CreateRunRequest>
+[GenerateOneOf]
+public partial class CreateRunRequest : OneOfBase<CreateTimedRunRequest, CreateScoredRunRequest>;
+
+public class CreateRunRequestValidator : AbstractValidator<CreateRunRequestBase>
 {
     // TODO: This validator fails to trigger. We're able to create runs even when
     // PlayedOn is far into the future.

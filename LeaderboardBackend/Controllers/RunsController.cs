@@ -1,6 +1,9 @@
 using System.Net.Mime;
+using System.Text;
 using System.Text.Json;
+using LeaderboardBackend.Filters;
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
@@ -45,28 +48,45 @@ public class RunsController(
     [Authorize]
     [HttpPost("/category/{id:long}/runs/create")]
     [SwaggerOperation("Creates a new Run for a Category with ID `id`. This request is restricted to confirmed Users and Administrators.", OperationId = "createRun")]
+    [SwaggerOperationFilter(typeof(CustomRequestBodyFilter<CreateRunRequestBase>))]
     [SwaggerResponse(201)]
     [SwaggerResponse(401, "The client is not logged in.", typeof(ProblemDetails))]
     [SwaggerResponse(403, "The requesting User is unauthorized to create Runs.", typeof(ProblemDetails))]
     [SwaggerResponse(404, "The Category with ID `id` could not be found.", typeof(ProblemDetails))]
-    [SwaggerResponse(422, "The request body is incorrect in some way. Read the `title` field to get more information.", Type = typeof(ValidationProblemDetails))]
-    public async Task<ActionResult<RunViewModel>> CreateRun([FromRoute] long id, [FromBody, SwaggerRequestBody(Required = true)] JsonDocument request)
+    [SwaggerResponse(422, "The request body is incorrect in some way. Read the `detail` field, if present, to get more information.", Type = typeof(ValidationProblemDetails))]
+    public async Task<ActionResult<RunViewModel>> CreateRun([FromRoute] long id)
     {
         GetUserResult res = await userService.GetUserFromClaims(HttpContext.User);
 
         if (res.TryPickT0(out User user, out OneOf<BadCredentials, UserNotFound> _))
         {
-            CreateRunResult r = await runService.CreateRun(user, id, request);
-            return r.Match<ActionResult>(
-                run =>
+            try
+            {
+                using StreamReader reader = new(Request.Body, Encoding.UTF8, true, 1024);
+                string bodyStr = await reader.ReadToEndAsync();
+                CreateRunRequest? request = ParseRunRequest(bodyStr);
+
+                if (request is null)
                 {
-                    CreatedAtActionResult result = CreatedAtAction(nameof(GetRun), new { id = run.Id.ToUrlSafeBase64String() }, RunViewModel.MapFrom(run));
-                    return result;
-                },
-                badRole => Forbid(),
-                notFound => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Category Not Found")),
-                unprocessable => UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 422, unprocessable.Title))
-            );
+                    return UnprocessableEntity();
+                }
+
+                CreateRunResult r = await runService.CreateRun(user, id, request);
+                return r.Match<ActionResult>(
+                    run =>
+                    {
+                        CreatedAtActionResult result = CreatedAtAction(nameof(GetRun), new { id = run.Id.ToUrlSafeBase64String() }, RunViewModel.MapFrom(run));
+                        return result;
+                    },
+                    badRole => Forbid(),
+                    notFound => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Category Not Found")),
+                    unprocessable => UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 422, null, null, unprocessable.Detail))
+                );
+            }
+            catch (JsonException)
+            {
+                return UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 422, null, null, "Make sure common and category-specific fields are present. E.g. 'time' for timed runs."));
+            }
         }
 
         return Unauthorized();
@@ -94,5 +114,18 @@ public class RunsController(
         }
 
         return Ok(CategoryViewModel.MapFrom(category));
+    }
+
+    /// <summary>Throws exceptions from JsonSerializer.Deserialize.</summary>
+    private CreateRunRequest? ParseRunRequest(string bodyStr)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<CreateTimedRunRequest>(bodyStr, options.Value.JsonSerializerOptions);
+        }
+        catch
+        {
+            return JsonSerializer.Deserialize<CreateScoredRunRequest>(bodyStr, options.Value.JsonSerializerOptions);
+        }
     }
 }
