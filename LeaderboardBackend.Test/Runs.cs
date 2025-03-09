@@ -1,13 +1,16 @@
-using System;
 using System.Net;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
+using FluentAssertions.Specialized;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
+using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -106,20 +109,155 @@ namespace LeaderboardBackend.Test
             .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
 
         [Test]
-        public async Task CreateRun_OK()
+        public async Task CreateRun_GetRun_OK()
         {
-            RunViewModel created = await CreateRun();
+            var request = new
+            {
+                playedOn = "2025-01-01",
+                info = "",
+                time = "00:10:22.111",
+            };
 
-            RunViewModel retrieved = await GetRun<RunViewModel>(created.Id);
+            RunViewModel created = await _apiClient.Post<TimedRunViewModel>(
+                $"/category/{_categoryId}/runs/create",
+                new()
+                {
+                    Body = request,
+                    Jwt = _jwt
+                }
+            );
 
-            created.Should().NotBeNull();
-            created.Id.Should().Be(retrieved.Id);
+            TimedRunViewModel retrieved = await _apiClient.Get<TimedRunViewModel>(
+                $"/api/run/{created.Id.ToUrlSafeBase64String()}",
+                new() { }
+            );
+
+            retrieved.Should().BeEquivalentTo(created);
+            retrieved.Should().BeEquivalentTo(
+                new
+                {
+                    PlayedOn = LocalDate.FromDateTime(new(2025, 1, 1)),
+                    Info = request.info,
+                    Time = Duration.FromMilliseconds(622111),
+                }
+            );
+        }
+
+        [Test]
+        public async Task CreateRun_Unauthenticated() =>
+            await _apiClient.Awaiting(a => a.Post<RunViewModel>(
+                $"/category/{_categoryId}/runs/create",
+                new()
+                {
+                    Body = new
+                    {
+                        PlayedOn = "2025-01-01",
+                        Info = "",
+                    }
+                }
+            )).Should()
+            .ThrowAsync<RequestFailureException>()
+            .Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+
+        [TestCase(UserRole.Banned)]
+        [TestCase(UserRole.Registered)]
+        public async Task CreateRun_BadRole(UserRole role)
+        {
+            IServiceScope scope = _factory.Services.CreateScope();
+            IUserService service = scope.ServiceProvider.GetRequiredService<IUserService>();
+
+            await service.CreateUser(new()
+            {
+                Email = $"testuser.createrun.{role}@example.com",
+                Password = "P4ssword",
+                Username = $"CreateRunTest{role}"
+            });
+
+            LoginResponse user = await _apiClient.LoginUser($"testuser.createrun.{role}@example.com", "P4ssword");
+
+            await _apiClient.Awaiting(a => a.Post<RunViewModel>(
+                $"/category/{_categoryId}/runs/create",
+                new()
+                {
+                    Body = new
+                    {
+                        PlayedOn = "2025-01-01",
+                        Info = "",
+                    },
+                    Jwt = user.Token,
+                }
+            )).Should()
+            .ThrowAsync<RequestFailureException>()
+            .Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+        }
+
+        [Test]
+        public async Task CreateRun_CategoryNotFound()
+        {
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
+                $"/category/0/runs/create",
+                new()
+                {
+                    Body = new
+                    {
+                        PlayedOn = "2025-01-01",
+                        Info = "",
+                    },
+                    Jwt = _jwt,
+                }
+            )).Should()
+            .ThrowAsync<RequestFailureException>()
+            .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails.Should().NotBeNull();
+            problemDetails!.Title.Should().Be("Category Not Found");
+        }
+
+        [TestCase("", "", "00:10:30.111", HttpStatusCode.UnprocessableContent)]
+        // TODO: This test fails. See TODO in RunRequests
+        [TestCase("9999-12-31", "", "00:10:30.111", HttpStatusCode.UnprocessableContent)]
+        [TestCase(null, "", "00:10:30.111", HttpStatusCode.UnprocessableContent)]
+        [TestCase("2025-01-01", "", "aaaa", HttpStatusCode.UnprocessableContent)]
+        [TestCase("2025-01-01", "", "123123", HttpStatusCode.UnprocessableContent)]
+        [TestCase("2025-01-01", "", null, HttpStatusCode.UnprocessableContent)]
+        public async Task CreateCategory_BadData(string? playedOn, string info, string? time, HttpStatusCode expectedCode)
+        {
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<TimedRunViewModel>(
+                $"/category/{_categoryId}/runs/create",
+                new()
+                {
+                    Body = new
+                    {
+                        playedOn = playedOn,
+                        info = info,
+                        time = time,
+                    },
+                    Jwt = _jwt,
+                }
+            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == expectedCode);
+
+            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails.Should().NotBeNull();
+            problemDetails!.Title.Should().Be("Incorrect Request Body");
         }
 
         [Test]
         public async Task GetCategoryForRun_OK()
         {
-            RunViewModel createdRun = await CreateRun();
+            TimedRunViewModel createdRun = await _apiClient.Post<TimedRunViewModel>(
+                $"/category/{_categoryId}/runs/create",
+                new()
+                {
+                    Body = new CreateTimedRunRequest
+                    {
+                        PlayedOn = LocalDate.MinIsoValue,
+                        Info = "",
+                        Time = Duration.FromMilliseconds(390000),
+                    },
+                    Jwt = _jwt
+                }
+            );
 
             CategoryViewModel category = await _apiClient.Get<CategoryViewModel>(
                 $"api/run/{createdRun.Id.ToUrlSafeBase64String()}/category",
@@ -129,26 +267,5 @@ namespace LeaderboardBackend.Test
             category.Should().NotBeNull();
             category.Id.Should().Be(_categoryId);
         }
-
-        private static async Task<RunViewModel> CreateRun() =>
-            await _apiClient.Post<RunViewModel>(
-                "/runs/create",
-                new()
-                {
-                    Body = new CreateRunRequest
-                    {
-                        PlayedOn = LocalDate.MinIsoValue,
-                        Info = null,
-                        CategoryId = _categoryId
-                    },
-                    Jwt = _jwt
-                }
-            );
-
-        private static async Task<T> GetRun<T>(Guid id) where T : RunViewModel =>
-            await _apiClient.Get<T>(
-                $"/api/run/{id.ToUrlSafeBase64String()}",
-                new() { Jwt = _jwt }
-            );
     }
 }
