@@ -1,6 +1,8 @@
 using System.Net.Mime;
-using System.Text;
 using System.Text.Json;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using FluentValidation.Results;
 using LeaderboardBackend.Filters;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
@@ -9,6 +11,7 @@ using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
 using OneOf;
 using Swashbuckle.AspNetCore.Annotations;
@@ -36,7 +39,7 @@ public class RunsController(
             return NotFound();
         }
 
-        // This is needed because of what we think is a bug with serialisation. The "$type" field
+        // This is needed because of what we think is a bug with serialisation. The "runType" field
         // doesn't show up in the response if we simply return Ok(RunViewModel.MapFrom(run)).
         // And we want that field present for consumers to better discriminate what they're getting.
         return Content(
@@ -55,7 +58,10 @@ public class RunsController(
     [SwaggerResponse(403, "The requesting User is unauthorized to create Runs.", typeof(ProblemDetails))]
     [SwaggerResponse(404, "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.", typeof(ProblemDetails))]
     [SwaggerResponse(422, null, Type = typeof(ValidationProblemDetails))]
-    public async Task<ActionResult<RunViewModel>> CreateRun([FromRoute] long id, [FromBody] CreateRunRequest request)
+    public async Task<ActionResult<RunViewModel>> CreateRun(
+        [FromRoute] long id,
+        [FromServices] IValidator<CreateRunRequest> validator
+    )
     {
         GetUserResult res = await userService.GetUserFromClaims(HttpContext.User);
 
@@ -65,19 +71,52 @@ public class RunsController(
 
             if (category is null)
             {
-                return NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Category Not Found."));
+                return NotFound(
+                    ProblemDetailsFactory
+                        .CreateProblemDetails(
+                            HttpContext,
+                            404,
+                            "Category Not Found."
+                        )
+                    );
             }
 
             if (category.DeletedAt is not null)
             {
-                return NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Category Is Deleted."));
+                return NotFound(
+                    ProblemDetailsFactory
+                        .CreateProblemDetails(
+                            HttpContext,
+                            404,
+                            "Category Is Deleted."
+                        )
+                    );
             }
 
             try
             {
+                CreateRunRequest? request = await JsonSerializer
+                    .DeserializeAsync<CreateRunRequest>(
+                        Request.Body,
+                        options.Value.JsonSerializerOptions
+                    );
+
                 if (request is null)
                 {
                     return UnprocessableEntity();
+                }
+
+                ValidationResult validationResult = await validator.ValidateAsync(request);
+                if (!validationResult.IsValid)
+                {
+                    ModelStateDictionary dictionary = new();
+                    validationResult.AddToModelState(dictionary);
+                    return UnprocessableEntity(
+                        ProblemDetailsFactory.CreateValidationProblemDetails(
+                            HttpContext,
+                            dictionary
+                        )
+                    );
                 }
 
                 CreateRunResult r = await runService.CreateRun(user, category, request);
@@ -94,13 +133,20 @@ public class RunsController(
                     badRole => Forbid(),
                     notFound => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Category Not Found or Has Been Deleted")),
                     // TODO: This needs to be a ValidationProblemDetails, with `Details` populating `errors`
-                    unprocessable => UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 422, null, null, unprocessable.Detail))
+                    unprocessable => UnprocessableEntity(
+                        ProblemDetailsFactory.CreateProblemDetails(
+                            HttpContext,
+                            null,
+                            null,
+                            null,
+                            unprocessable.Detail
+                        )
+                    )
                 );
             }
             catch (JsonException)
             {
-                // TODO: This needs to be a ValidationProblemDetails
-                return UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 422, null, null, "Make sure common and category-specific fields are present. E.g. 'time' for timed runs."));
+                return UnprocessableEntity();
             }
         }
 

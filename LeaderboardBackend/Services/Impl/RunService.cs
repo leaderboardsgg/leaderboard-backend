@@ -34,7 +34,7 @@ public class RunService(ApplicationContext applicationContext) : IRunService
             Run run = new()
             {
                 Category = category,
-                Info = timed.Info ?? "",
+                Info = timed.Info,
                 PlayedOn = timed.PlayedOn,
                 Time = timed.Time,
                 User = user,
@@ -57,7 +57,7 @@ public class RunService(ApplicationContext applicationContext) : IRunService
             Run run = new()
             {
                 Category = category,
-                Info = scored.Info ?? "",
+                Info = scored.Info,
                 PlayedOn = scored.PlayedOn,
                 TimeOrScore = scored.Score,
                 User = user,

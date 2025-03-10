@@ -9,11 +9,12 @@ namespace LeaderboardBackend.Models.Requests;
 
 /// <summary>
 ///     Request sent when creating a Run. Set `runType` to `"Time"` for a timed
-///     request, and `"Score"` for a scored one, as well as
+///     request, and `"Score"` for a scored one. `runType` *must* be at the top
+///     of the request object.
 /// </summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "runType")]
-[JsonDerivedType(typeof(CreateTimedRunRequest), "Time")]
-[JsonDerivedType(typeof(CreateScoredRunRequest), "Score")]
+[JsonDerivedType(typeof(CreateTimedRunRequest), nameof(RunType.Time))]
+[JsonDerivedType(typeof(CreateScoredRunRequest), nameof(RunType.Score))]
 public abstract class CreateRunRequest
 {
     /// <inheritdoc cref="Entities.Run.Info" />
@@ -35,7 +36,7 @@ public class CreateTimedRunRequest : CreateRunRequest
     /// <summary>
     ///     The duration of the run. Must obey the format 'HH:mm:ss.sss', with leading zeroes.
     /// </summary>
-    /// <example>00:12:34:56.999</example>
+    /// <example>12:34:56.999</example>
     [Required]
     public required Duration Time { get; set; }
 }

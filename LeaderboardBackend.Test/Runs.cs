@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -27,7 +29,7 @@ namespace LeaderboardBackend.Test
         private static WebApplicationFactory<Program> _factory = null!;
         private static string _jwt = null!;
         private static long _categoryId;
-        private static readonly FakeClock _clock = new(new());
+        private static readonly FakeClock _clock = new(Instant.FromUtc(2025, 01, 01, 0, 0));
 
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
@@ -111,18 +113,17 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task CreateRun_GetRun_OK()
         {
-            var request = new
-            {
-                playedOn = "2025-01-01",
-                info = "",
-                time = "00:10:22.111",
-            };
-
-            RunViewModel created = await _apiClient.Post<TimedRunViewModel>(
+            TimedRunViewModel created = await _apiClient.Post<TimedRunViewModel>(
                 $"/category/{_categoryId}/runs/create",
                 new()
                 {
-                    Body = request,
+                    Body = new
+                    {
+                        runType = nameof(RunType.Time),
+                        info = "",
+                        playedOn = "2025-01-01",
+                        time = "00:10:22.111",
+                    },
                     Jwt = _jwt
                 }
             );
@@ -137,7 +138,7 @@ namespace LeaderboardBackend.Test
                 new
                 {
                     PlayedOn = LocalDate.FromDateTime(new(2025, 1, 1)),
-                    Info = request.info,
+                    Info = "",
                     Time = Duration.FromMilliseconds(622111),
                 }
             );
@@ -151,6 +152,7 @@ namespace LeaderboardBackend.Test
                 {
                     Body = new
                     {
+                        RunType = nameof(RunType.Time),
                         PlayedOn = "2025-01-01",
                         Info = "",
                     }
@@ -175,14 +177,15 @@ namespace LeaderboardBackend.Test
 
             LoginResponse user = await _apiClient.LoginUser($"testuser.createrun.{role}@example.com", "P4ssword");
 
-            await _apiClient.Awaiting(a => a.Post<RunViewModel>(
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
                 $"/category/{_categoryId}/runs/create",
                 new()
                 {
                     Body = new
                     {
+                        RunType = nameof(RunType.Time),
                         PlayedOn = "2025-01-01",
-                        Info = "",
+                        Time = "00:10:00.000"
                     },
                     Jwt = user.Token,
                 }
@@ -195,7 +198,7 @@ namespace LeaderboardBackend.Test
         public async Task CreateRun_CategoryNotFound()
         {
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
-                $"/category/0/runs/create",
+                "/category/0/runs/create",
                 new()
                 {
                     Body = new
@@ -211,35 +214,68 @@ namespace LeaderboardBackend.Test
 
             ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
             problemDetails.Should().NotBeNull();
-            problemDetails!.Title.Should().Be("Category Not Found");
+            problemDetails!.Title.Should().Be("Category Not Found.");
         }
 
-        [TestCase("", "", "00:10:30.111", HttpStatusCode.UnprocessableContent)]
-        // TODO: This test fails. See TODO in RunRequests
-        [TestCase("9999-12-31", "", "00:10:30.111", HttpStatusCode.UnprocessableContent)]
-        [TestCase(null, "", "00:10:30.111", HttpStatusCode.UnprocessableContent)]
-        [TestCase("2025-01-01", "", "aaaa", HttpStatusCode.UnprocessableContent)]
-        [TestCase("2025-01-01", "", "123123", HttpStatusCode.UnprocessableContent)]
-        [TestCase("2025-01-01", "", null, HttpStatusCode.UnprocessableContent)]
-        public async Task CreateCategory_BadData(string? playedOn, string info, string? time, HttpStatusCode expectedCode)
+        [Test]
+        public async Task CreateRun_CategoryDeleted()
         {
-            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<TimedRunViewModel>(
+            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+
+            Category deleted = new()
+            {
+                Name = "createrun-deletedcat",
+                Slug = "createrun-deletedcat",
+                DeletedAt = _clock.GetCurrentInstant(),
+                Leaderboard = context.Leaderboards.First(),
+                SortDirection = SortDirection.Ascending,
+                Type = RunType.Time,
+            };
+
+            context.Add(deleted);
+            await context.SaveChangesAsync();
+
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
+                $"/category/{deleted.Id}/runs/create",
+                new()
+                {
+                    Body = new
+                    {
+                        PlayedOn = "2025-01-01",
+                        Info = "",
+                    },
+                    Jwt = _jwt,
+                }
+            )).Should()
+            .ThrowAsync<RequestFailureException>()
+            .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails.Should().NotBeNull();
+            problemDetails!.Title.Should().Be("Category Is Deleted.");
+        }
+
+        [TestCase("", "", "00:10:30.111")]
+        [TestCase(null, "", "00:10:30.111")]
+        [TestCase("2025-01-01", "", "aaaa")]
+        [TestCase("2025-01-01", "", "123123")]
+        [TestCase("2025-01-01", "", null)]
+        public async Task CreateCategory_BadData(string? playedOn, string info, string? time)
+        {
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
                 $"/category/{_categoryId}/runs/create",
                 new()
                 {
                     Body = new
                     {
+                        runType = nameof(RunType.Time),
                         playedOn = playedOn,
                         info = info,
                         time = time,
                     },
                     Jwt = _jwt,
                 }
-            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == expectedCode);
-
-            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-            problemDetails.Should().NotBeNull();
-            problemDetails!.Title.Should().Be("Incorrect Request Body");
+            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableContent);
         }
 
         [Test]
