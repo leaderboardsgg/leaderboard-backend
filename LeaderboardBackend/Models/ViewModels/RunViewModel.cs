@@ -1,15 +1,12 @@
 using System.Text.Json.Serialization;
 using LeaderboardBackend.Models.Entities;
 using NodaTime;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Models.ViewModels;
 
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "runType")]
 [JsonDerivedType(typeof(TimedRunViewModel), "Time")]
 [JsonDerivedType(typeof(ScoredRunViewModel), "Score")]
-[SwaggerSubType(typeof(TimedRunViewModel), DiscriminatorValue = "Time")]
-[SwaggerSubType(typeof(ScoredRunViewModel), DiscriminatorValue = "Score")]
-[SwaggerDiscriminator("$type")]
 public record RunViewModel
 {
     /// <summary>
