@@ -24,7 +24,8 @@ public class RunService(ApplicationContext applicationContext) : IRunService
 
         switch (request)
         {
-            case CreateTimedRunRequest timed: {
+            case CreateTimedRunRequest timed:
+            {
                 if (category.Type != RunType.Time)
                 {
                     return new BadRunType();
@@ -42,7 +43,8 @@ public class RunService(ApplicationContext applicationContext) : IRunService
                 break;
             }
 
-            case CreateScoredRunRequest scored: {
+            case CreateScoredRunRequest scored:
+            {
                 if (category.Type != RunType.Score)
                 {
                     return new BadRunType();
