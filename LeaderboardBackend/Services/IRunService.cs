@@ -13,4 +13,4 @@ public interface IRunService
 }
 
 [GenerateOneOf]
-public partial class CreateRunResult : OneOfBase<Run, BadRole, NotFound, Unprocessable>;
+public partial class CreateRunResult : OneOfBase<Run, BadRole, BadRunType>;

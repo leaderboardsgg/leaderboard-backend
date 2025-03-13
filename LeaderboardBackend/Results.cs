@@ -13,7 +13,7 @@ public record Conflict<T>(T Conflicting);
 public readonly record struct EmailFailed;
 public readonly record struct Expired;
 public readonly record struct NeverDeleted;
-public readonly record struct Unprocessable(string? Detail = null);
+public readonly record struct BadRunType;
 public readonly record struct UserNotFound;
 public readonly record struct UserBanned;
 

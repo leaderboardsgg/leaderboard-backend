@@ -15,7 +15,7 @@ namespace LeaderboardBackend.Models.Requests;
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "runType")]
 [JsonDerivedType(typeof(CreateTimedRunRequest), nameof(RunType.Time))]
 [JsonDerivedType(typeof(CreateScoredRunRequest), nameof(RunType.Score))]
-public abstract class CreateRunRequest
+public abstract record CreateRunRequest
 {
     /// <inheritdoc cref="Entities.Run.Info" />
     public string Info { get; set; }
@@ -25,54 +25,30 @@ public abstract class CreateRunRequest
     /// </summary>
     /// <example>2025-01-01</example>
     [Required]
-    public required LocalDate PlayedOn { get; set; }
+    public LocalDate PlayedOn { get; set; }
 }
 
 /// <summary>
 ///     `runType: "Time"`
 /// </summary>
-public class CreateTimedRunRequest : CreateRunRequest
+public record CreateTimedRunRequest : CreateRunRequest
 {
     /// <summary>
     ///     The duration of the run. Must obey the format 'HH:mm:ss.sss', with leading zeroes.
     /// </summary>
     /// <example>12:34:56.999</example>
     [Required]
-    public required Duration Time { get; set; }
+    public Duration Time { get; set; }
 }
 
 /// <summary>
 ///     `runType: "Score"`
 /// </summary>
-public class CreateScoredRunRequest : CreateRunRequest
+public record CreateScoredRunRequest : CreateRunRequest
 {
     /// <summary>
     ///     The score achieved during the run.
     /// </summary>
     [Required]
-    public required long Score { get; set; }
-}
-
-public class CreateRunRequestValidator : AbstractValidator<CreateRunRequest>
-{
-    public CreateRunRequestValidator(IClock clock) =>
-        RuleFor(x => x.PlayedOn)
-            .LessThanOrEqualTo(date => clock.GetCurrentInstant().InUtc().Date)
-            .WithMessage("{PropertyName} must not be set in the future.");
-}
-
-public class CreateTimedRunRequestValidator : AbstractValidator<CreateTimedRunRequest>
-{
-    public CreateTimedRunRequestValidator(IClock clock)
-    {
-        Include(new CreateRunRequestValidator(clock));
-        RuleFor(x => x.Time)
-            .GreaterThanOrEqualTo(Duration.Zero)
-            .WithMessage("{PropertyName} must be positive.");
-    }
-}
-
-public class CreateScoredRunRequestValidator : AbstractValidator<CreateScoredRunRequest>
-{
-    public CreateScoredRunRequestValidator(IClock clock) => Include(new CreateRunRequestValidator(clock));
+    public long Score { get; set; }
 }

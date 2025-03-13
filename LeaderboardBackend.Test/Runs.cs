@@ -203,8 +203,10 @@ namespace LeaderboardBackend.Test
                 {
                     Body = new
                     {
+                        RunType = nameof(RunType.Time),
                         PlayedOn = "2025-01-01",
                         Info = "",
+                        Time = Duration.FromMinutes(12)
                     },
                     Jwt = _jwt,
                 }
@@ -241,8 +243,10 @@ namespace LeaderboardBackend.Test
                 {
                     Body = new
                     {
+                        RunType = nameof(RunType.Time),
                         PlayedOn = "2025-01-01",
                         Info = "",
+                        Time = Duration.FromMinutes(39)
                     },
                     Jwt = _jwt,
                 }
@@ -260,7 +264,7 @@ namespace LeaderboardBackend.Test
         [TestCase("2025-01-01", "", "aaaa")]
         [TestCase("2025-01-01", "", "123123")]
         [TestCase("2025-01-01", "", null)]
-        public async Task CreateCategory_BadData(string? playedOn, string info, string? time)
+        public async Task CreateRun_BadData(string? playedOn, string info, string? time)
         {
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
                 $"/category/{_categoryId}/runs/create",
@@ -275,7 +279,7 @@ namespace LeaderboardBackend.Test
                     },
                     Jwt = _jwt,
                 }
-            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableContent);
+            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.BadRequest);
         }
 
         [Test]

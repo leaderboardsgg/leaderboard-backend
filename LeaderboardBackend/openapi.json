@@ -1292,9 +1292,6 @@
                 "schema": {
                   "oneOf": [
                     {
-                      "$ref": "#/components/schemas/RunViewModel"
-                    },
-                    {
                       "$ref": "#/components/schemas/TimedRunViewModel"
                     },
                     {
@@ -1373,9 +1370,6 @@
               "application/json": {
                 "schema": {
                   "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/RunViewModel"
-                    },
                     {
                       "$ref": "#/components/schemas/TimedRunViewModel"
                     },
@@ -2044,7 +2038,7 @@
         "type": "object",
         "properties": {
           "runType": {
-            "type": "string"
+            "$ref": "#/components/schemas/RunType"
           },
           "id": {
             "pattern": "^[a-zA-Z0-9-_]{22}$",

@@ -3,7 +3,6 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
-using OneOf.Types;
 
 namespace LeaderboardBackend.Services;
 
@@ -21,52 +20,52 @@ public class RunService(ApplicationContext applicationContext) : IRunService
                 return new BadRole();
         }
 
-        if (request is CreateTimedRunRequest timed)
+        Run run;
+
+        switch (request)
         {
-            if (category.Type != RunType.Time)
-            {
-                return new Unprocessable(
-                    "A timed run submission request was received for a non-timed category. " +
-                    """Ensure "runType" is set to "Time", and a "time" field is present."""
-                );
+            case CreateTimedRunRequest timed: {
+                if (category.Type != RunType.Time)
+                {
+                    return new BadRunType();
+                }
+
+                run = new()
+                {
+                    Category = category,
+                    Info = timed.Info,
+                    PlayedOn = timed.PlayedOn,
+                    Time = timed.Time,
+                    User = user,
+                };
+
+                break;
             }
 
-            Run run = new()
-            {
-                Category = category,
-                Info = timed.Info,
-                PlayedOn = timed.PlayedOn,
-                Time = timed.Time,
-                User = user,
-            };
-            applicationContext.Add(run);
-            await applicationContext.SaveChangesAsync();
-            return run;
-        }
+            case CreateScoredRunRequest scored: {
+                if (category.Type != RunType.Score)
+                {
+                    return new BadRunType();
+                }
 
-        if (request is CreateScoredRunRequest scored)
-        {
-            if (category.Type != RunType.Score)
-            {
-                return new Unprocessable(
-                    "A scored run submission request was received for a non-scored category. " +
-                    """Ensure "runType" is set to "Score", and a "score" field is present."""
-                );
+                run = new()
+                {
+                    Category = category,
+                    Info = scored.Info,
+                    PlayedOn = scored.PlayedOn,
+                    TimeOrScore = scored.Score,
+                    User = user,
+                };
+
+                break;
             }
 
-            Run run = new()
-            {
-                Category = category,
-                Info = scored.Info,
-                PlayedOn = scored.PlayedOn,
-                TimeOrScore = scored.Score,
-                User = user,
-            };
-            applicationContext.Add(run);
-            await applicationContext.SaveChangesAsync();
-            return run;
+            default:
+                throw new ArgumentException("Invalid request type: not one of [CreateTimedRunRequest, CreateScoredRunRequest]", nameof(request));
         }
 
-        return new Unprocessable("Invalid run submission request received.");
+        applicationContext.Add(run);
+        await applicationContext.SaveChangesAsync();
+        return run;
     }
 }
