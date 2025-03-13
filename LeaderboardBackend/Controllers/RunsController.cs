@@ -39,10 +39,10 @@ public class RunsController(
     [SwaggerResponse(400, Type = typeof(ValidationProblemDetails))]
     [SwaggerResponse(403, "The requesting User is unauthorized to create Runs.", typeof(ProblemDetails))]
     [SwaggerResponse(404, "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.", typeof(ProblemDetails))]
-    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
+    [SwaggerResponse(422, Type = typeof(ProblemDetails))]
     public async Task<ActionResult<RunViewModel>> CreateRun(
         [FromRoute] long id,
-        [FromBody] CreateRunRequest request
+        [FromBody, SwaggerRequestBody(Required = true)] CreateRunRequest request
     )
     {
         GetUserResult res = await userService.GetUserFromClaims(HttpContext.User);

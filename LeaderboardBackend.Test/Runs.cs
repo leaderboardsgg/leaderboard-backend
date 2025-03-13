@@ -110,9 +110,27 @@ namespace LeaderboardBackend.Test
             .ThrowAsync<RequestFailureException>()
             .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
 
-        [Test]
-        public async Task CreateRun_GetRun_OK()
+        [TestCase(UserRole.Confirmed)]
+        [TestCase(UserRole.Administrator)]
+        public async Task CreateRun_GetRun_OK(UserRole role)
         {
+            IUserService service = _factory.Services.GetRequiredService<IUserService>();
+            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+
+            CreateUserResult result = await service.CreateUser(new()
+            {
+                Email = $"testuser.createrun.{role}@example.com",
+                Password = "P4ssword",
+                Username = $"CreateRunTest{role}",
+            });
+
+            User? user = await context.FindAsync<User>(result.AsT0.Id);
+            user!.Role = role;
+
+            await context.SaveChangesAsync();
+
+            LoginResponse login = await _apiClient.LoginUser($"testuser.createrun.{role}@example.com", "P4ssword");
+
             TimedRunViewModel created = await _apiClient.Post<TimedRunViewModel>(
                 $"/category/{_categoryId}/runs/create",
                 new()
@@ -124,7 +142,7 @@ namespace LeaderboardBackend.Test
                         playedOn = "2025-01-01",
                         time = "00:10:22.111",
                     },
-                    Jwt = _jwt
+                    Jwt = login.Token,
                 }
             );
 

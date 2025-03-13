@@ -23,7 +23,6 @@ public abstract record CreateRunRequest
     /// <summary>
     ///     The date the `Run` was played on. Must obey the format 'YYYY-MM-DD', with leading zeroes.
     /// </summary>
-    /// <example>2025-01-01</example>
     [Required]
     public LocalDate PlayedOn { get; set; }
 }

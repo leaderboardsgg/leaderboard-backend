@@ -1348,7 +1348,8 @@
                 "description": "Request sent when creating a Run. Set `runType` to `\"Time\"` for a timed\r\nrequest, and `\"Score\"` for a scored one. `runType` *must* be at the top\r\nof the request object."
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "400": {
@@ -1416,7 +1417,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -1755,7 +1756,7 @@
             "type": "string",
             "description": "The date the `Run` was played on. Must obey the format 'YYYY-MM-DD', with leading zeroes.",
             "format": "date",
-            "example": "2025-01-01"
+            "example": "2000-01-01"
           }
         },
         "additionalProperties": false,
