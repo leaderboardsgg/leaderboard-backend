@@ -158,6 +158,7 @@ namespace LeaderboardBackend.Test
                     PlayedOn = LocalDate.FromDateTime(new(2025, 1, 1)),
                     Info = "",
                     Time = Duration.FromMilliseconds(622111),
+                    UserId = user.Id,
                 }
             );
         }
