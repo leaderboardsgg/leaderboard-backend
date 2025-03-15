@@ -1,22 +1,21 @@
 using System.Text.Json.Serialization;
 using LeaderboardBackend.Models.Entities;
 using NodaTime;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Models.ViewModels;
 
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "runType")]
 [JsonDerivedType(typeof(TimedRunViewModel), "Time")]
 [JsonDerivedType(typeof(ScoredRunViewModel), "Score")]
-[SwaggerSubType(typeof(TimedRunViewModel), DiscriminatorValue = "Time")]
-[SwaggerSubType(typeof(ScoredRunViewModel), DiscriminatorValue = "Score")]
-[SwaggerDiscriminator("$type")]
-public record RunViewModel
+public abstract record RunViewModel
 {
     /// <summary>
     ///     The unique identifier of the `Run`.<br/>
     ///     Generated on creation.
     /// </summary>
     public required Guid Id { get; set; }
+
+    public required RunType RunType { get; set; }
 
     /// <summary>
     ///     User-provided details about the run.
@@ -65,7 +64,8 @@ public record RunViewModel
             UpdatedAt = run.UpdatedAt,
             DeletedAt = run.DeletedAt,
             Info = run.Info,
-            Time = run.Time
+            Time = run.Time,
+            RunType = run.Type
         },
         RunType.Score => new ScoredRunViewModel
         {
@@ -77,7 +77,8 @@ public record RunViewModel
             UpdatedAt = run.UpdatedAt,
             DeletedAt = run.DeletedAt,
             Info = run.Info,
-            Score = run.TimeOrScore
+            Score = run.TimeOrScore,
+            RunType = run.Type
         },
         _ => throw new NotImplementedException(),
     };

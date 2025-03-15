@@ -1,13 +1,18 @@
 using System;
+using System.Linq;
 using System.Net;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
+using FluentAssertions.Specialized;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
+using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +29,7 @@ namespace LeaderboardBackend.Test
         private static WebApplicationFactory<Program> _factory = null!;
         private static string _jwt = null!;
         private static long _categoryId;
-        private static readonly FakeClock _clock = new(new());
+        private static readonly FakeClock _clock = new(Instant.FromUtc(2025, 01, 01, 0, 0));
 
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
@@ -105,21 +110,213 @@ namespace LeaderboardBackend.Test
             .ThrowAsync<RequestFailureException>()
             .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
 
-        [Test]
-        public async Task CreateRun_OK()
+        [TestCase(UserRole.Confirmed)]
+        [TestCase(UserRole.Administrator)]
+        public async Task CreateRun_GetRun_OK(UserRole role)
         {
-            RunViewModel created = await CreateRun();
+            IUserService service = _factory.Services.GetRequiredService<IUserService>();
+            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
 
-            RunViewModel retrieved = await GetRun<RunViewModel>(created.Id);
+            CreateUserResult result = await service.CreateUser(new()
+            {
+                Email = $"testuser.createrun.{role}@example.com",
+                Password = "P4ssword",
+                Username = $"CreateRunTest{role}",
+            });
 
-            created.Should().NotBeNull();
-            created.Id.Should().Be(retrieved.Id);
+            User? user = await context.FindAsync<User>(result.AsT0.Id);
+            user!.Role = role;
+
+            await context.SaveChangesAsync();
+
+            LoginResponse login = await _apiClient.LoginUser($"testuser.createrun.{role}@example.com", "P4ssword");
+
+            TimedRunViewModel created = await _apiClient.Post<TimedRunViewModel>(
+                $"/category/{_categoryId}/runs/create",
+                new()
+                {
+                    Body = new
+                    {
+                        runType = nameof(RunType.Time),
+                        info = "",
+                        playedOn = "2025-01-01",
+                        time = "00:10:22.111",
+                    },
+                    Jwt = login.Token,
+                }
+            );
+
+            TimedRunViewModel retrieved = await _apiClient.Get<TimedRunViewModel>(
+                $"/api/run/{created.Id.ToUrlSafeBase64String()}",
+                new() { }
+            );
+
+            retrieved.Should().BeEquivalentTo(created);
+            retrieved.Should().BeEquivalentTo(
+                new
+                {
+                    PlayedOn = LocalDate.FromDateTime(new(2025, 1, 1)),
+                    Info = "",
+                    Time = Duration.FromMilliseconds(622111),
+                    UserId = user.Id,
+                }
+            );
+        }
+
+        [Test]
+        public async Task CreateRun_Unauthenticated() =>
+            await _apiClient.Awaiting(a => a.Post<RunViewModel>(
+                $"/category/{_categoryId}/runs/create",
+                new()
+                {
+                    Body = new
+                    {
+                        RunType = nameof(RunType.Time),
+                        PlayedOn = "2025-01-01",
+                        Info = "",
+                    }
+                }
+            )).Should()
+            .ThrowAsync<RequestFailureException>()
+            .Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+
+        [TestCase(UserRole.Banned)]
+        [TestCase(UserRole.Registered)]
+        public async Task CreateRun_BadRole(UserRole role)
+        {
+            IServiceScope scope = _factory.Services.CreateScope();
+            IUserService service = scope.ServiceProvider.GetRequiredService<IUserService>();
+
+            await service.CreateUser(new()
+            {
+                Email = $"testuser.createrun.{role}@example.com",
+                Password = "P4ssword",
+                Username = $"CreateRunTest{role}"
+            });
+
+            LoginResponse user = await _apiClient.LoginUser($"testuser.createrun.{role}@example.com", "P4ssword");
+
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
+                $"/category/{_categoryId}/runs/create",
+                new()
+                {
+                    Body = new
+                    {
+                        RunType = nameof(RunType.Time),
+                        PlayedOn = "2025-01-01",
+                        Time = "00:10:00.000"
+                    },
+                    Jwt = user.Token,
+                }
+            )).Should()
+            .ThrowAsync<RequestFailureException>()
+            .Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+        }
+
+        [Test]
+        public async Task CreateRun_CategoryNotFound()
+        {
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
+                "/category/0/runs/create",
+                new()
+                {
+                    Body = new
+                    {
+                        RunType = nameof(RunType.Time),
+                        PlayedOn = "2025-01-01",
+                        Info = "",
+                        Time = Duration.FromMinutes(12)
+                    },
+                    Jwt = _jwt,
+                }
+            )).Should()
+            .ThrowAsync<RequestFailureException>()
+            .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails.Should().NotBeNull();
+            problemDetails!.Title.Should().Be("Category Not Found.");
+        }
+
+        [Test]
+        public async Task CreateRun_CategoryDeleted()
+        {
+            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+
+            Category deleted = new()
+            {
+                Name = "createrun-deletedcat",
+                Slug = "createrun-deletedcat",
+                DeletedAt = _clock.GetCurrentInstant(),
+                Leaderboard = context.Leaderboards.First(),
+                SortDirection = SortDirection.Ascending,
+                Type = RunType.Time,
+            };
+
+            context.Add(deleted);
+            await context.SaveChangesAsync();
+
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
+                $"/category/{deleted.Id}/runs/create",
+                new()
+                {
+                    Body = new
+                    {
+                        RunType = nameof(RunType.Time),
+                        PlayedOn = "2025-01-01",
+                        Info = "",
+                        Time = Duration.FromMinutes(39)
+                    },
+                    Jwt = _jwt,
+                }
+            )).Should()
+            .ThrowAsync<RequestFailureException>()
+            .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails.Should().NotBeNull();
+            problemDetails!.Title.Should().Be("Category Is Deleted.");
+        }
+
+        [TestCase("", "", "00:10:30.111")]
+        [TestCase(null, "", "00:10:30.111")]
+        [TestCase("2025-01-01", "", "aaaa")]
+        [TestCase("2025-01-01", "", "123123")]
+        [TestCase("2025-01-01", "", null)]
+        public async Task CreateRun_BadData(string? playedOn, string info, string? time)
+        {
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
+                $"/category/{_categoryId}/runs/create",
+                new()
+                {
+                    Body = new
+                    {
+                        runType = nameof(RunType.Time),
+                        playedOn = playedOn,
+                        info = info,
+                        time = time,
+                    },
+                    Jwt = _jwt,
+                }
+            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.BadRequest);
         }
 
         [Test]
         public async Task GetCategoryForRun_OK()
         {
-            RunViewModel createdRun = await CreateRun();
+            TimedRunViewModel createdRun = await _apiClient.Post<TimedRunViewModel>(
+                $"/category/{_categoryId}/runs/create",
+                new()
+                {
+                    Body = new CreateTimedRunRequest
+                    {
+                        PlayedOn = LocalDate.MinIsoValue,
+                        Info = "",
+                        Time = Duration.FromMilliseconds(390000),
+                    },
+                    Jwt = _jwt
+                }
+            );
 
             CategoryViewModel category = await _apiClient.Get<CategoryViewModel>(
                 $"api/run/{createdRun.Id.ToUrlSafeBase64String()}/category",
@@ -129,26 +326,5 @@ namespace LeaderboardBackend.Test
             category.Should().NotBeNull();
             category.Id.Should().Be(_categoryId);
         }
-
-        private static async Task<RunViewModel> CreateRun() =>
-            await _apiClient.Post<RunViewModel>(
-                "/runs/create",
-                new()
-                {
-                    Body = new CreateRunRequest
-                    {
-                        PlayedOn = LocalDate.MinIsoValue,
-                        Info = null,
-                        CategoryId = _categoryId
-                    },
-                    Jwt = _jwt
-                }
-            );
-
-        private static async Task<T> GetRun<T>(Guid id) where T : RunViewModel =>
-            await _apiClient.Get<T>(
-                $"/api/run/{id.ToUrlSafeBase64String()}",
-                new() { Jwt = _jwt }
-            );
     }
 }

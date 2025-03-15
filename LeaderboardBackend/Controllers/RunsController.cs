@@ -1,14 +1,9 @@
-using System.Net.Mime;
-using System.Text.Json;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
-using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using OneOf;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Controllers;
@@ -16,8 +11,7 @@ namespace LeaderboardBackend.Controllers;
 public class RunsController(
     IRunService runService,
     ICategoryService categoryService,
-    IUserService userService,
-    IOptions<JsonOptions> options
+    IUserService userService
     ) : ApiController
 {
     [AllowAnonymous]
@@ -34,45 +28,81 @@ public class RunsController(
             return NotFound();
         }
 
-        // This is needed because of what we think is a bug with serialisation. The "$type" field
-        // doesn't show up in the response if we simply return Ok(RunViewModel.MapFrom(run)).
-        // And we want that field present for consumers to better discriminate what they're getting.
-        return Content(
-            JsonSerializer.Serialize(RunViewModel.MapFrom(run), options.Value.JsonSerializerOptions),
-            MediaTypeNames.Application.Json
-        );
+        return Ok(RunViewModel.MapFrom(run));
     }
 
     [Authorize]
-    [HttpPost("runs/create")]
-    [SwaggerOperation("Creates a new Run.", OperationId = "createRun")]
+    [HttpPost("/category/{id:long}/runs/create")]
+    [SwaggerOperation("Creates a new Run for a Category with ID `id`. This request is restricted to confirmed Users and Administrators.", OperationId = "createRun")]
     [SwaggerResponse(201)]
-    [SwaggerResponse(401)]
-    [SwaggerResponse(403)]
-    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
-    public async Task<ActionResult> CreateRun([FromBody] CreateRunRequest request)
+    [SwaggerResponse(401, "The client is not logged in.", typeof(ProblemDetails))]
+    [SwaggerResponse(400, Type = typeof(ValidationProblemDetails))]
+    [SwaggerResponse(403, "The requesting User is unauthorized to create Runs.", typeof(ProblemDetails))]
+    [SwaggerResponse(404, "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.", typeof(ProblemDetails))]
+    [SwaggerResponse(422, Type = typeof(ProblemDetails))]
+    public async Task<ActionResult<RunViewModel>> CreateRun(
+        [FromRoute] long id,
+        [FromBody, SwaggerRequestBody(Required = true)] CreateRunRequest request
+    )
     {
-        // FIXME: Should return Task<ActionResult<Run>>! - Ero
-        // NOTE: Return NotFound for anything in here? - Ero
-
         GetUserResult res = await userService.GetUserFromClaims(HttpContext.User);
 
-        if (res.TryPickT0(out User user, out OneOf<BadCredentials, UserNotFound> _))
+        if (!res.IsT0)
         {
-            Run run = new()
-            {
-                PlayedOn = request.PlayedOn,
-                CategoryId = request.CategoryId,
-                User = user,
-            };
-
-            await runService.CreateRun(run);
-            return CreatedAtAction(nameof(GetRun), new { id = run.Id }, RunViewModel.MapFrom(run));
+            return Unauthorized();
         }
 
-        return Unauthorized();
+        Category? category = await categoryService.GetCategory(id);
+
+        if (category is null)
+        {
+            return NotFound(
+                ProblemDetailsFactory.CreateProblemDetails(
+                    HttpContext,
+                    404,
+                    "Category Not Found."
+                )
+            );
+        }
+
+        if (category.DeletedAt is not null)
+        {
+            return NotFound(
+                ProblemDetailsFactory.CreateProblemDetails(
+                    HttpContext,
+                    404,
+                    "Category Is Deleted."
+                )
+            );
+        }
+
+        CreateRunResult r = await runService.CreateRun(res.AsT0, category, request);
+
+        return r.Match<ActionResult>(
+            run =>
+            {
+                CreatedAtActionResult result = CreatedAtAction(
+                    nameof(GetRun),
+                    new { id = run.Id.ToUrlSafeBase64String() },
+                    RunViewModel.MapFrom(run)
+                );
+                return result;
+            },
+            badRole => Forbid(),
+            // TODO: This needs to be a ValidationProblemDetails, with `Details` populating `errors`
+            badRunType => UnprocessableEntity(
+                ProblemDetailsFactory.CreateProblemDetails(
+                    HttpContext,
+                    422,
+                    null,
+                    null,
+                    "The Run's runType did not match the category's."
+                )
+            )
+        );
     }
 
+    [AllowAnonymous]
     [HttpGet("/api/run/{id}/category")]
     [SwaggerOperation("Gets the category a run belongs to.", OperationId = "getRunCategory")]
     [SwaggerResponse(200)]

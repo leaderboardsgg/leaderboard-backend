@@ -1292,9 +1292,6 @@
                 "schema": {
                   "oneOf": [
                     {
-                      "$ref": "#/components/schemas/RunViewModel"
-                    },
-                    {
                       "$ref": "#/components/schemas/TimedRunViewModel"
                     },
                     {
@@ -1318,21 +1315,41 @@
         }
       }
     },
-    "/runs/create": {
+    "/category/{id}/runs/create": {
       "post": {
         "tags": [
           "Runs"
         ],
-        "summary": "Creates a new Run.",
+        "summary": "Creates a new Run for a Category with ID `id`. This request is restricted to confirmed Users and Administrators.",
         "operationId": "createRun",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateRunRequest"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateTimedRunRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CreateScoredRunRequest"
+                  }
+                ],
+                "description": "Request sent when creating a Run. Set `runType` to `\"Time\"` for a timed\r\nrequest, and `\"Score\"` for a scored one. `runType` *must* be at the top\r\nof the request object."
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "400": {
@@ -1340,7 +1357,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -1349,20 +1366,58 @@
             "description": "Internal Server Error"
           },
           "201": {
-            "description": "Created"
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/TimedRunViewModel"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScoredRunViewModel"
+                    }
+                  ]
+                }
+              }
+            }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "The client is not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           },
           "403": {
-            "description": "Forbidden"
+            "description": "The requesting User is unauthorized to create Runs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           },
           "422": {
             "description": "Unprocessable Content",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -1686,30 +1741,77 @@
       },
       "CreateRunRequest": {
         "required": [
-          "categoryId",
-          "info",
-          "playedOn"
+          "playedOn",
+          "runType"
         ],
         "type": "object",
         "properties": {
+          "runType": {
+            "type": "string"
+          },
           "info": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "playedOn": {
             "type": "string",
-            "description": "The date the `Run` was played on.",
+            "description": "The date the `Run` was played on. Must obey the format 'YYYY-MM-DD', with leading zeroes.",
             "format": "date",
             "example": "2000-01-01"
-          },
-          "categoryId": {
-            "type": "integer",
-            "description": "The ID of the `Category` for the `Run`.",
-            "format": "int64"
           }
         },
         "additionalProperties": false,
-        "description": "This request object is sent when creating a `Run`."
+        "description": "Request sent when creating a Run. Set `runType` to `\"Time\"` for a timed\r\nrequest, and `\"Score\"` for a scored one. `runType` *must* be at the top\r\nof the request object.",
+        "discriminator": {
+          "propertyName": "runType",
+          "mapping": {
+            "Time": "#/components/schemas/CreateTimedRunRequest",
+            "Score": "#/components/schemas/CreateScoredRunRequest"
+          }
+        }
+      },
+      "CreateScoredRunRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CreateRunRequest"
+          },
+          {
+            "required": [
+              "score"
+            ],
+            "type": "object",
+            "properties": {
+              "score": {
+                "type": "integer",
+                "description": "The score achieved during the run.",
+                "format": "int64"
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "description": "`runType: \"Score\"`"
+      },
+      "CreateTimedRunRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CreateRunRequest"
+          },
+          {
+            "required": [
+              "time"
+            ],
+            "type": "object",
+            "properties": {
+              "time": {
+                "type": "string",
+                "description": "The duration of the run. Must obey the format 'HH:mm:ss.sss', with leading zeroes.",
+                "example": "12:34:56.999"
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "description": "`runType: \"Time\"`"
       },
       "LeaderboardViewModel": {
         "required": [
@@ -1924,20 +2026,20 @@
       },
       "RunViewModel": {
         "required": [
-          "$type",
           "categoryId",
           "createdAt",
           "deletedAt",
           "id",
           "info",
           "playedOn",
+          "runType",
           "updatedAt",
           "userId"
         ],
         "type": "object",
         "properties": {
-          "$type": {
-            "type": "string"
+          "runType": {
+            "$ref": "#/components/schemas/RunType"
           },
           "id": {
             "pattern": "^[a-zA-Z0-9-_]{22}$",
@@ -1988,7 +2090,7 @@
         },
         "additionalProperties": false,
         "discriminator": {
-          "propertyName": "$type",
+          "propertyName": "runType",
           "mapping": {
             "Time": "#/components/schemas/TimedRunViewModel",
             "Score": "#/components/schemas/ScoredRunViewModel"
