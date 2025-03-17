@@ -6,10 +6,7 @@ public class UrlSafeBase64GuidBinder : IModelBinder
 {
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext, nameof(bindingContext));
 
         string modelName = bindingContext.ModelName;
         ValueProviderResult valueProviderResult = bindingContext.ValueProvider.GetValue(modelName);
@@ -44,10 +41,7 @@ public class UrlSafeBase64GuidBinderProvider : IModelBinderProvider
 {
     public IModelBinder? GetBinder(ModelBinderProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context, nameof(context));
 
         if (context.Metadata.ModelType == typeof(Guid))
         {
