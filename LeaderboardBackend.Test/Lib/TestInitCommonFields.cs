@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using LeaderboardBackend.Converters;
 using LeaderboardBackend.Models.Entities;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
@@ -19,6 +20,7 @@ internal record TestInitCommonFields
         };
 
         JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(null, false));
+        JsonSerializerOptions.Converters.Add(new GuidJsonConverter());
         JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
     }
 
