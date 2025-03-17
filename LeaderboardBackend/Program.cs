@@ -9,6 +9,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using LeaderboardBackend;
 using LeaderboardBackend.Authorization;
+using LeaderboardBackend.Converters;
 using LeaderboardBackend.Filters;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
@@ -144,6 +145,7 @@ builder.Services
         opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(null, false));
+        opt.JsonSerializerOptions.Converters.Add(new GuidJsonConverter());
         opt.JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
         jsonSerializerOptions = opt.JsonSerializerOptions;
     });
