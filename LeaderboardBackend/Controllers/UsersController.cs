@@ -10,7 +10,7 @@ namespace LeaderboardBackend.Controllers;
 public class UsersController(IUserService userService) : ApiController
 {
     [AllowAnonymous]
-    [HttpGet("api/user/{id:guid}")]
+    [HttpGet("api/user/{id}")]
     [SwaggerOperation("Gets a User by their ID.", OperationId = "getUser")]
     [SwaggerResponse(200, "The `User` was found and returned successfully.")]
     [SwaggerResponse(404, "No `User` with the requested ID could be found.")]
