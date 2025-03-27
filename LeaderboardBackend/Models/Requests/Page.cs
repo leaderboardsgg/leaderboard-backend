@@ -32,7 +32,7 @@ public class PageValidator : AbstractValidator<Page>
         {
             HttpContext context = contextAccessor.HttpContext!;
             string resource = context.GetRouteValue("controller")!.ToString()!;
-            LimitConfig limitConfig = config.Value.Limits.GetValueOrDefault(resource, config.Value.Limits["default"]);
+            LimitConfig limitConfig = config.Value.Limits.GetValueOrDefault(resource, config.Value.Limits["Default"]);
 
             RuleFor(x => x.Limit).GreaterThanOrEqualTo(0).LessThanOrEqualTo(limitConfig.Max);
         });
