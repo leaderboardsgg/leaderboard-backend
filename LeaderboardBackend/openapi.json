@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.0.4",
   "info": {
     "title": "LeaderboardBackend",
     "version": "v1"
@@ -938,6 +938,25 @@
         "operationId": "listLeaderboards",
         "parameters": [
           {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of records to return. Fewer records may be returned.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The zero-based index at which to begin selecting records to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
             "name": "includeDeleted",
             "in": "query",
             "schema": {
@@ -965,10 +984,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/LeaderboardViewModel"
-                  }
+                  "$ref": "#/components/schemas/LeaderboardViewModelListView"
                 }
               }
             }
@@ -1345,7 +1361,7 @@
                     "$ref": "#/components/schemas/CreateScoredRunRequest"
                   }
                 ],
-                "description": "Request sent when creating a Run. Set `runType` to `\"Time\"` for a timed\r\nrequest, and `\"Score\"` for a scored one. `runType` *must* be at the top\r\nof the request object."
+                "description": "Request sent when creating a Run. Set `runType` to `\"Time\"` for a timed\nrequest, and `\"Score\"` for a scored one. `runType` *must* be at the top\nof the request object."
               }
             }
           },
@@ -1695,7 +1711,7 @@
           "slug": {
             "minLength": 1,
             "type": "string",
-            "description": "The URL-scoped unique identifier of the `Category`.\n\r\nMust be [2, 25] in length and consist only of alphanumeric characters and hyphens.",
+            "description": "The URL-scoped unique identifier of the `Category`.\n\nMust be [2, 25] in length and consist only of alphanumeric characters and hyphens.",
             "example": "foo-bar-baz"
           },
           "info": {
@@ -1729,7 +1745,7 @@
           "slug": {
             "minLength": 1,
             "type": "string",
-            "description": "The URL-scoped unique identifier of the `Leaderboard`.\n\r\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
+            "description": "The URL-scoped unique identifier of the `Leaderboard`.\n\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
             "example": "foo-bar"
           },
           "info": {
@@ -1760,7 +1776,7 @@
           }
         },
         "additionalProperties": false,
-        "description": "Request sent when creating a Run. Set `runType` to `\"Time\"` for a timed\r\nrequest, and `\"Score\"` for a scored one. `runType` *must* be at the top\r\nof the request object.",
+        "description": "Request sent when creating a Run. Set `runType` to `\"Time\"` for a timed\nrequest, and `\"Score\"` for a scored one. `runType` *must* be at the top\nof the request object.",
         "discriminator": {
           "propertyName": "runType",
           "mapping": {
@@ -1827,7 +1843,7 @@
         "properties": {
           "id": {
             "type": "integer",
-            "description": "The unique identifier of the `Leaderboard`.\n\r\nGenerated on creation.",
+            "description": "The unique identifier of the `Leaderboard`.\n\nGenerated on creation.",
             "format": "int64"
           },
           "name": {
@@ -1837,7 +1853,7 @@
           },
           "slug": {
             "type": "string",
-            "description": "The URL-scoped unique identifier of the `Leaderboard`.\n\r\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
+            "description": "The URL-scoped unique identifier of the `Leaderboard`.\n\nMust be [2, 80] in length and consist only of alphanumeric characters and hyphens.",
             "example": "foo-bar"
           },
           "info": {
@@ -1900,6 +1916,39 @@
         "additionalProperties": { },
         "description": "A fake ProblemDetails subclass used for deserialization and documentation. Do not instantiate!"
       },
+      "LeaderboardViewModelListView": {
+        "required": [
+          "data",
+          "limitDefault",
+          "limitMax",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LeaderboardViewModel"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "description": "The total number of records matching the given criteria that\nexist in the database, NOT the total number of records returned.",
+            "format": "int64"
+          },
+          "limitDefault": {
+            "type": "integer",
+            "description": "The default limit that will be applied for this resource type\nif the client does not specify one in the query string.",
+            "format": "int32"
+          },
+          "limitMax": {
+            "type": "integer",
+            "description": "The maximum value the client is allowed to specify as a limt for\nendpoints return a paginated list of resources of this type.\nExceeding this value will result in an error.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "LoginRequest": {
         "required": [
           "email",
@@ -1917,7 +1966,7 @@
           "password": {
             "minLength": 1,
             "type": "string",
-            "description": "The `User`'s password. It:\r\n<ul><li>supports Unicode;</li><li>must be [8, 80] in length;</li><li>must have at least:</li><ul><li>one uppercase letter;</li><li>one lowercase letter; and</li><li>one number.</li></ul></ul>",
+            "description": "The `User`'s password. It:\n<ul><li>supports Unicode;</li><li>must be [8, 80] in length;</li><li>must have at least:</li><ul><li>one uppercase letter;</li><li>one lowercase letter; and</li><li>one number.</li></ul></ul>",
             "example": "P4ssword"
           }
         },
@@ -1998,7 +2047,7 @@
           "username": {
             "minLength": 1,
             "type": "string",
-            "description": "The username of the `User`. It:\r\n<ul><li>must be [2, 25] in length;</li><li>must be made up of letters sandwiching zero or one of:</li><ul><li>hyphen;</li><li>underscore; or</li><li>apostrophe</li></ul></ul>\r\nUsernames are saved case-sensitively, but matched against case-insensitively.\r\nA `User` may not register with the name 'Cool' when another `User` with the name 'cool'\r\nexists.",
+            "description": "The username of the `User`. It:\n<ul><li>must be [2, 25] in length;</li><li>must be made up of letters sandwiching zero or one of:</li><ul><li>hyphen;</li><li>underscore; or</li><li>apostrophe</li></ul></ul>\nUsernames are saved case-sensitively, but matched against case-insensitively.\nA `User` may not register with the name 'Cool' when another `User` with the name 'cool'\nexists.",
             "example": "J'on-Doe"
           },
           "email": {
@@ -2010,7 +2059,7 @@
           "password": {
             "minLength": 1,
             "type": "string",
-            "description": "The `User`'s password. It:\r\n<ul><li>supports Unicode;</li><li>must be [8, 80] in length;</li><li>must have at least:</li><ul><li>one uppercase letter;</li><li>one lowercase letter; and</li><li>one number.</li></ul></ul>",
+            "description": "The `User`'s password. It:\n<ul><li>supports Unicode;</li><li>must be [8, 80] in length;</li><li>must have at least:</li><ul><li>one uppercase letter;</li><li>one lowercase letter; and</li><li>one number.</li></ul></ul>",
             "example": "P4ssword"
           }
         },
@@ -2044,7 +2093,7 @@
           "id": {
             "pattern": "^[a-zA-Z0-9-_]{22}$",
             "type": "string",
-            "description": "The unique identifier of the `Run`.\n\r\nGenerated on creation."
+            "description": "The unique identifier of the `Run`.\n\nGenerated on creation."
           },
           "info": {
             "type": "string",
@@ -2200,11 +2249,11 @@
           "id": {
             "pattern": "^[a-zA-Z0-9-_]{22}$",
             "type": "string",
-            "description": "The unique identifier of the `User`.\n\r\nGenerated on creation."
+            "description": "The unique identifier of the `User`.\n\nGenerated on creation."
           },
           "username": {
             "type": "string",
-            "description": "The username of the `User`. It:\r\n<ul><li>must be [2, 25] in length;</li><li>must be made up of alphanumeric characters around zero or one of:</li><ul><li>hyphen;</li><li>underscore; or</li><li>apostrophe</li></ul></ul>\r\nUsernames are saved case-sensitively, but matcehd against case-insensitively.\r\nA `User` may not register with the name 'Cool' when another `User` with the name 'cool'\r\nexists.",
+            "description": "The username of the `User`. It:\n<ul><li>must be [2, 25] in length;</li><li>must be made up of alphanumeric characters around zero or one of:</li><ul><li>hyphen;</li><li>underscore; or</li><li>apostrophe</li></ul></ul>\nUsernames are saved case-sensitively, but matcehd against case-insensitively.\nA `User` may not register with the name 'Cool' when another `User` with the name 'cool'\nexists.",
             "example": "J'on-Doe"
           },
           "role": {
