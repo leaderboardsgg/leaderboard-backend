@@ -17,11 +17,17 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
         await applicationContext.Leaderboards
             .FirstOrDefaultAsync(b => b.Slug == slug && b.DeletedAt == null);
 
-    // FIXME: Paginate these
-    public async Task<List<Leaderboard>> ListLeaderboards(bool includeDeleted)
+    public async Task<ListResult<Leaderboard>> ListLeaderboards(bool includeDeleted, Page page)
     {
         IQueryable<Leaderboard> lbs = applicationContext.Leaderboards;
-        return await (includeDeleted ? lbs : lbs.Where(lb => lb.DeletedAt == null)).ToListAsync();
+        IQueryable<Leaderboard> query = includeDeleted ? lbs : lbs.Where(lb => lb.DeletedAt == null);
+        long count = await query.LongCountAsync();
+
+        // Ordering by ID is necessary, otherwise pagination breaks completely because the records won't
+        // be returned in a specific order.
+
+        List<Leaderboard> items = await query.OrderBy(lb => lb.Id).Skip(page.Offset).Take(page.Limit).ToListAsync();
+        return new ListResult<Leaderboard>(items, count);
     }
 
     public async Task<CreateLeaderboardResult> CreateLeaderboard(CreateLeaderboardRequest request)

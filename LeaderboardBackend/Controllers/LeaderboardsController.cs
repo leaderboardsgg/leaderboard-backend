@@ -7,11 +7,14 @@ using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Controllers;
 
-public class LeaderboardsController(ILeaderboardService leaderboardService) : ApiController
+public class LeaderboardsController(
+    ILeaderboardService leaderboardService,
+    IOptions<AppConfig> config) : ApiController
 {
     [AllowAnonymous]
     [HttpGet("api/leaderboard/{id:long}")]
@@ -51,12 +54,24 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
     [HttpGet("api/leaderboards")]
     [SwaggerOperation("Gets all leaderboards.", OperationId = "listLeaderboards")]
     [SwaggerResponse(200)]
-    public async Task<ActionResult<List<LeaderboardViewModel>>> GetLeaderboards([FromQuery] bool includeDeleted = false)
+    public async Task<ActionResult<ListView<LeaderboardViewModel>>> GetLeaderboards([FromQuery] Page page, [FromQuery] bool includeDeleted = false)
     {
-        // TODO: Paginate.
+        string resource = HttpContext.GetRouteValue("controller")!.ToString()!;
+        LimitConfig limitConfig = config.Value.Limits.GetValueOrDefault(resource, config.Value.Limits["default"]);
 
-        List<Leaderboard> result = await leaderboardService.ListLeaderboards(includeDeleted);
-        return Ok(result.Select(LeaderboardViewModel.MapFrom));
+        if (!page.LimitSet)
+        {
+            page.Limit = limitConfig.Default;
+        }
+
+        ListResult<Leaderboard> result = await leaderboardService.ListLeaderboards(includeDeleted, page);
+        return Ok(new ListView<LeaderboardViewModel>()
+        {
+            Data = result.Items.Select(LeaderboardViewModel.MapFrom).ToList(),
+            Total = result.ItemsTotal,
+            LimitDefault = limitConfig.Default,
+            LimitMax = limitConfig.Max
+        });
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
