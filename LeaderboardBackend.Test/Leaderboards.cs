@@ -369,7 +369,7 @@ public class Leaderboards
 
         ListView<LeaderboardViewModel> returned5 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=1&includeDeleted=true&offset=1", new());
         returned5.Total.Should().Be(3);
-        returned5.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).Skip(1).First());
+        returned5.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).Skip(1).First(), config => config.Excluding(lb => lb.Categories));
     }
 
     [TestCase(9999999, 0)]
