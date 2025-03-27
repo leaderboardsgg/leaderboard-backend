@@ -54,6 +54,7 @@ public class LeaderboardsController(
     [HttpGet("api/leaderboards")]
     [SwaggerOperation("Gets all leaderboards.", OperationId = "listLeaderboards")]
     [SwaggerResponse(200)]
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<ListView<LeaderboardViewModel>>> GetLeaderboards([FromQuery] Page page, [FromQuery] bool includeDeleted = false)
     {
         string resource = HttpContext.GetRouteValue("controller")!.ToString()!;
