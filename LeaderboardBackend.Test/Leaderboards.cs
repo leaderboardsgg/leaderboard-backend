@@ -354,14 +354,14 @@ public class Leaderboards
 
         context.Leaderboards.AddRange(boards);
         await context.SaveChangesAsync();
-        LeaderboardViewModel[] returned = await _apiClient.Get<LeaderboardViewModel[]>("/api/leaderboards", new());
-        returned.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
+        ListView<LeaderboardViewModel> returned = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=1024", new());
+        returned.Data.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
 
-        LeaderboardViewModel[] returned2 = await _apiClient.Get<LeaderboardViewModel[]>("/api/leaderboards?includeDeleted=false", new());
-        returned2.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
+        ListView<LeaderboardViewModel> returned2 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?includeDeleted=false&limit=1024", new());
+        returned2.Data.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
 
-        LeaderboardViewModel[] returned3 = await _apiClient.Get<LeaderboardViewModel[]>("/api/leaderboards?includeDeleted=true", new());
-        returned3.Should().BeEquivalentTo(boards, config => config.Excluding(lb => lb.Categories));
+        ListView<LeaderboardViewModel> returned3 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?includeDeleted=true&limit=1024", new());
+        returned3.Data.Should().BeEquivalentTo(boards, config => config.Excluding(lb => lb.Categories));
     }
 
     [Test]
