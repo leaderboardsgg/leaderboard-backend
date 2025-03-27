@@ -57,7 +57,7 @@ public class LeaderboardsController(
     public async Task<ActionResult<ListView<LeaderboardViewModel>>> GetLeaderboards([FromQuery] Page page, [FromQuery] bool includeDeleted = false)
     {
         string resource = HttpContext.GetRouteValue("controller")!.ToString()!;
-        LimitConfig limitConfig = config.Value.Limits.GetValueOrDefault(resource, config.Value.Limits["default"]);
+        LimitConfig limitConfig = config.Value.Limits.GetValueOrDefault(resource, config.Value.Limits["Default"]);
 
         if (!page.LimitSet)
         {
