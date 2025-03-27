@@ -12,6 +12,7 @@ public readonly record struct ConfirmationNotFound;
 public record Conflict<T>(T Conflicting);
 public readonly record struct EmailFailed;
 public readonly record struct Expired;
+public readonly record struct ListResult<T>(List<T> Items, long ItemsTotal);
 public readonly record struct NeverDeleted;
 public readonly record struct BadRunType;
 public readonly record struct UserNotFound;
