@@ -356,12 +356,16 @@ public class Leaderboards
         await context.SaveChangesAsync();
         ListView<LeaderboardViewModel> returned = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=9999999", new());
         returned.Data.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
+        returned.Total.Should().Be(2);
+        returned.LimitDefault.Should().Be(64);
 
         ListView<LeaderboardViewModel> returned2 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?includeDeleted=false&limit=1024", new());
         returned2.Data.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
+        returned2.Total.Should().Be(2);
 
         ListView<LeaderboardViewModel> returned3 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?includeDeleted=true&limit=1024", new());
         returned3.Data.Should().BeEquivalentTo(boards, config => config.Excluding(lb => lb.Categories));
+        returned3.Total.Should().Be(3);
 
         ListView<LeaderboardViewModel> returned4 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=1", new());
         returned4.Total.Should().Be(2);
