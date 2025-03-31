@@ -1,4 +1,5 @@
 using LeaderboardBackend.Authorization;
+using LeaderboardBackend.Filters;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.Validation;
@@ -7,14 +8,13 @@ using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Controllers;
 
 public class LeaderboardsController(
-    ILeaderboardService leaderboardService,
-    IOptions<AppConfig> config) : ApiController
+    ILeaderboardService leaderboardService
+) : ApiController
 {
     [AllowAnonymous]
     [HttpGet("api/leaderboard/{id:long}")]
@@ -52,26 +52,17 @@ public class LeaderboardsController(
 
     [AllowAnonymous]
     [HttpGet("api/leaderboards")]
+    [Paginated]
     [SwaggerOperation("Gets all leaderboards.", OperationId = "listLeaderboards")]
     [SwaggerResponse(200)]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<ListView<LeaderboardViewModel>>> GetLeaderboards([FromQuery] Page page, [FromQuery] bool includeDeleted = false)
     {
-        string resource = HttpContext.GetRouteValue("controller")!.ToString()!;
-        LimitConfig limitConfig = config.Value.Limits.GetValueOrDefault(resource, config.Value.Limits["Default"]);
-
-        if (!page.LimitSet)
-        {
-            page.Limit = limitConfig.Default;
-        }
-
         ListResult<Leaderboard> result = await leaderboardService.ListLeaderboards(includeDeleted, page);
         return Ok(new ListView<LeaderboardViewModel>()
         {
             Data = result.Items.Select(LeaderboardViewModel.MapFrom).ToList(),
-            Total = result.ItemsTotal,
-            LimitDefault = limitConfig.Default,
-            LimitMax = limitConfig.Max
+            Total = result.ItemsTotal
         });
     }
 

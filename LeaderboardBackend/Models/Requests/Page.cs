@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.Options;
 
 namespace LeaderboardBackend.Models.Requests;
 
@@ -34,17 +33,9 @@ public record Page
 
 public class PageValidator : AbstractValidator<Page>
 {
-    public PageValidator(IOptions<AppConfig> config, IHttpContextAccessor contextAccessor)
+    public PageValidator()
     {
-        When(page => page.LimitSet, () =>
-        {
-            HttpContext context = contextAccessor.HttpContext!;
-            string resource = context.GetRouteValue("controller")!.ToString()!;
-            LimitConfig limitConfig = config.Value.Limits.GetValueOrDefault(resource, config.Value.Limits["Default"]);
-
-            RuleFor(x => x.Limit).GreaterThanOrEqualTo(0).LessThanOrEqualTo(limitConfig.Max);
-        });
-
+        RuleFor(x => x.Limit).GreaterThanOrEqualTo(0);
         RuleFor(x => x.Offset).GreaterThanOrEqualTo(0);
     }
 }
