@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LeaderboardBackend.Models.ViewModels;
 
-public record ListView<T>
+public record ListView<T> : IListView
 {
     public required IList<T> Data { get; set; }
 
