@@ -354,7 +354,7 @@ public class Leaderboards
 
         context.Leaderboards.AddRange(boards);
         await context.SaveChangesAsync();
-        ListView<LeaderboardViewModel> returned = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=1024", new());
+        ListView<LeaderboardViewModel> returned = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=9999999", new());
         returned.Data.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
 
         ListView<LeaderboardViewModel> returned2 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?includeDeleted=false&limit=1024", new());
@@ -372,7 +372,6 @@ public class Leaderboards
         returned5.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).Skip(1).First(), config => config.Excluding(lb => lb.Categories));
     }
 
-    [TestCase(9999999, 0)]
     [TestCase(-1, 0)]
     [TestCase(1024, -1)]
     public async Task GetLeaderboards_BadPageData(int limit, int offset)
