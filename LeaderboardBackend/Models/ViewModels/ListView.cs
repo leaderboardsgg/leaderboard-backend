@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace LeaderboardBackend.Models.ViewModels;
 
 public record ListView<T>
@@ -14,12 +16,22 @@ public record ListView<T>
     ///     The default limit that will be applied for this resource type
     ///     if the client does not specify one in the query string.
     /// </summary>
-    public required int LimitDefault { get; set; }
+    /// <remarks>
+    ///     This property will be set automatically when this object is returned in an object result
+    ///     of a controller action annotated with <see cref="Filters.PaginatedAttribute"/>.
+    /// </remarks>
+    [Required]
+    public int LimitDefault { get; set; }
 
     /// <summary>
     ///     The maximum value the client is allowed to specify as a limt for
     ///     endpoints return a paginated list of resources of this type.
     ///     Exceeding this value will result in an error.
     /// </summary>
-    public required int LimitMax { get; set; }
+    /// <remarks>
+    ///     This property will be set automatically when this object is returned in an object result
+    ///     of a controller action annotated with <see cref="Filters.PaginatedAttribute"/>.
+    /// </remarks>
+    [Required]
+    public int LimitMax { get; set; }
 }
