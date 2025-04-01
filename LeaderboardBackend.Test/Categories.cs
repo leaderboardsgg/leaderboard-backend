@@ -248,6 +248,13 @@ internal class Categories
                 },
                 new()
                 {
+                    Name = "get cats ok RTA",
+                    Slug = "getcategories-ok-rta",
+                    SortDirection = SortDirection.Ascending,
+                    Type = RunType.Time
+                },
+                new()
+                {
                     Name = "get cats ok deleted",
                     Slug = "getcategories-ok-deleted",
                     SortDirection = SortDirection.Ascending,
@@ -256,30 +263,44 @@ internal class Categories
                 },
             ],
         };
+
         context.Add(board);
         await context.SaveChangesAsync();
         board.Id.Should().NotBe(default);
 
-        CategoryViewModel[]? resultSansDeleted = await _apiClient.Get<CategoryViewModel[]>(
-            $"api/leaderboard/{board.Id}/categories",
+        ListView<CategoryViewModel> resultSansDeleted = await _apiClient.Get<ListView<CategoryViewModel>>(
+            $"api/leaderboard/{board.Id}/categories?limit=99999999",
             new() { }
         );
-        resultSansDeleted!.Single().Should().BeEquivalentTo(board.Categories[0], opts => opts.ExcludingMissingMembers());
+        resultSansDeleted.Data.Should().BeEquivalentTo(board.Categories.Take(2), opts => opts.ExcludingMissingMembers());
+        resultSansDeleted.Total.Should().Be(2);
+        resultSansDeleted.LimitDefault.Should().Be(64);
 
-        CategoryViewModel[]? resultWithDeleted = await _apiClient.Get<CategoryViewModel[]>(
+        ListView<CategoryViewModel> resultWithDeleted = await _apiClient.Get<ListView<CategoryViewModel>>(
             $"api/leaderboard/{board.Id}/categories?includeDeleted=true",
             new() { }
         );
-        resultWithDeleted!.Should().BeEquivalentTo(board.Categories, options => options.ExcludingMissingMembers());
 
+        resultWithDeleted.Data.Should().BeEquivalentTo(board.Categories, options => options.ExcludingMissingMembers());
+        resultWithDeleted.Total.Should().Be(3);
         board.Categories[0].DeletedAt = _clock.GetCurrentInstant();
+        board.Categories[1].DeletedAt = _clock.GetCurrentInstant();
         await context.SaveChangesAsync();
 
-        CategoryViewModel[]? resultEmpty = await _apiClient.Get<CategoryViewModel[]>(
+        ListView<CategoryViewModel> resultEmpty = await _apiClient.Get<ListView<CategoryViewModel>>(
             $"api/leaderboard/{board.Id}/categories",
             new() { }
         );
-        resultEmpty.Should().BeEmpty();
+
+        resultEmpty.Data.Should().BeEmpty();
+    }
+
+    [TestCase(-1, 0)]
+    [TestCase(1024, -1)]
+    public async Task GetCategoriesForLeaderboard_BadPageData(int limit, int offset)
+    {
+        await FluentActions.Awaiting(() => _apiClient.Get<ListView<CategoryViewModel>>($"/api/leaderboard/54/categories?limit={limit}&offset={offset}", new()))
+            .Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
     }
 
     [Test]
