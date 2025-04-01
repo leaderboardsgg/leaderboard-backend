@@ -487,6 +487,25 @@
             }
           },
           {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of records to return. Fewer records may be returned.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The zero-based index at which to begin selecting records to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
             "name": "includeDeleted",
             "in": "query",
             "description": "Whether to include deleted Categories. Defaults to `false`.",
@@ -515,10 +534,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CategoryViewModel"
-                  }
+                  "$ref": "#/components/schemas/CategoryViewModelListView"
                 }
               }
             }
@@ -529,6 +545,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -1689,6 +1715,39 @@
         },
         "additionalProperties": { },
         "description": "A fake ProblemDetails subclass used for deserialization and documentation. Do not instantiate!"
+      },
+      "CategoryViewModelListView": {
+        "required": [
+          "data",
+          "limitDefault",
+          "limitMax",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryViewModel"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "description": "The total number of records matching the given criteria that\nexist in the database, NOT the total number of records returned.",
+            "format": "int64"
+          },
+          "limitDefault": {
+            "type": "integer",
+            "description": "The default limit that will be applied for this resource type\nif the client does not specify one in the query string.",
+            "format": "int32"
+          },
+          "limitMax": {
+            "type": "integer",
+            "description": "The maximum value the client is allowed to specify as a limt for\nendpoints return a paginated list of resources of this type.\nExceeding this value will result in an error.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
       },
       "ChangePasswordRequest": {
         "required": [
