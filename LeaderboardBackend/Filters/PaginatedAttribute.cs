@@ -32,8 +32,7 @@ public class PaginatedAttribute : TypeFilterAttribute
     ///     Set this value to override the default or per-resource default limit.
     /// </summary>
     /// <remarks>
-    ///     The value returned when this property is access will be only what it was
-    ///     set to, or zero if it has not been set.
+    ///     This property will return zero if it hasn't been set explicitly.
     /// </remarks>
     public int LimitDefault
     {
@@ -45,8 +44,7 @@ public class PaginatedAttribute : TypeFilterAttribute
     ///     Set this value to override the default or per-resource max limit.
     /// </summary>
     /// <remarks>
-    ///     The value returned when this property is access will be only what it was
-    ///     set to, or zero if it has not been set.
+    ///     This property will return zero if it hasn't been set explicitly.
     /// </remarks>
     public int LimitMax
     {
