@@ -147,7 +147,7 @@ namespace LeaderboardBackend.Test
             context.AddRange(runs);
             await context.SaveChangesAsync();
 
-            foreach(Run run in runs)
+            foreach (Run run in runs)
             {
                 // Needed for resolving the run type for viewmodel mapping
                 context.Entry(run).Reference(r => r.Category).Load();
@@ -162,7 +162,7 @@ namespace LeaderboardBackend.Test
             returned2.Total.Should().Be(2);
 
             ListView<TimedRunViewModel> returned3 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?includeDeleted=true&limit=1024", new());
-            returned3.Data.Should().BeEquivalentTo(new Run[]{runs[0], runs[2], runs[1]}.Select(RunViewModel.MapFrom));
+            returned3.Data.Should().BeEquivalentTo(new Run[] { runs[0], runs[2], runs[1] }.Select(RunViewModel.MapFrom));
             returned3.Total.Should().Be(3);
 
             ListView<TimedRunViewModel> returned4 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?limit=1", new());
