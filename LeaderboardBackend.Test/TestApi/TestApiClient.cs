@@ -16,25 +16,15 @@ public record HttpRequestInit
     public HttpMethod Method { get; init; } = HttpMethod.Get;
 }
 
-internal sealed class RequestFailureException : Exception
+internal sealed class RequestFailureException(HttpResponseMessage response)
+    : Exception($"The attempted request failed with status code {response.StatusCode}")
 {
-    public HttpResponseMessage Response { get; private set; }
-
-    public RequestFailureException(HttpResponseMessage response)
-        : base($"The attempted request failed with status code {response.StatusCode}")
-    {
-        Response = response;
-    }
+    public HttpResponseMessage Response { get; private set; } = response;
 }
 
-public class TestApiClient
+public class TestApiClient(HttpClient client)
 {
-    private readonly HttpClient _client;
-
-    public TestApiClient(HttpClient client)
-    {
-        _client = client;
-    }
+    private readonly HttpClient _client = client;
 
     public async Task<TResponse> Get<TResponse>(string endpoint, HttpRequestInit init) =>
         await SendAndRead<TResponse>(endpoint, init with { Method = HttpMethod.Get });
