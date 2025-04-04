@@ -52,14 +52,12 @@ public class PaginatedAttribute : TypeFilterAttribute
         set => _limitMax = value;
     }
 
-    public PaginatedAttribute() : base(typeof(PageFilter))
-    {
+    public PaginatedAttribute() : base(typeof(PageFilter)) =>
         Arguments = [new LimitConfigNullable()
         {
             Default = _limitDefault,
             Max = _limitMax
         }];
-    }
 
     private record LimitConfigNullable
     {
@@ -67,19 +65,13 @@ public class PaginatedAttribute : TypeFilterAttribute
         public int? Max { get; init; }
     }
 
-    private class PageFilter : IAsyncActionFilter
+    private class PageFilter(
+        IOptions<AppConfig> config,
+        LimitConfigNullable limitConfigNullable
+    ) : IAsyncActionFilter
     {
-        private readonly AppConfig _config;
-        private readonly LimitConfigNullable _limitConfigNullable;
-
-        public PageFilter(
-            IOptions<AppConfig> config,
-            LimitConfigNullable limitConfigNullable
-        )
-        {
-            _config = config.Value;
-            _limitConfigNullable = limitConfigNullable;
-        }
+        private readonly AppConfig _config = config.Value;
+        private readonly LimitConfigNullable _limitConfigNullable = limitConfigNullable;
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {

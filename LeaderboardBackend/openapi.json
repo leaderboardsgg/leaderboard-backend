@@ -1477,6 +1477,90 @@
         }
       }
     },
+    "/api/category/{id}/runs": {
+      "get": {
+        "tags": [
+          "Runs"
+        ],
+        "summary": "Gets the Runs for a Category.",
+        "operationId": "getRunsForCategory",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of records to return. Fewer records may be returned.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The zero-based index at which to begin selecting records to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "includeDeleted",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunViewModelListView"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information."
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/run/{id}/category": {
       "get": {
         "tags": [
@@ -2214,6 +2298,46 @@
             "Score": "#/components/schemas/ScoredRunViewModel"
           }
         }
+      },
+      "RunViewModelListView": {
+        "required": [
+          "data",
+          "limitDefault",
+          "limitMax",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/TimedRunViewModel"
+                },
+                {
+                  "$ref": "#/components/schemas/ScoredRunViewModel"
+                }
+              ]
+            }
+          },
+          "total": {
+            "type": "integer",
+            "description": "The total number of records matching the given criteria that\nexist in the database, NOT the total number of records returned.",
+            "format": "int64"
+          },
+          "limitDefault": {
+            "type": "integer",
+            "description": "The default limit that will be applied for this resource type\nif the client does not specify one in the query string.",
+            "format": "int32"
+          },
+          "limitMax": {
+            "type": "integer",
+            "description": "The maximum value the client is allowed to specify as a limt for\nendpoints return a paginated list of resources of this type.\nExceeding this value will result in an error.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
       },
       "ScoredRunViewModel": {
         "allOf": [

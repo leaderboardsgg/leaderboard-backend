@@ -1,3 +1,4 @@
+using LeaderboardBackend.Filters;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
@@ -97,6 +98,44 @@ public class RunsController(
                     null,
                     null,
                     "The Run's runType did not match the category's."
+                )
+            )
+        );
+    }
+
+    [AllowAnonymous]
+    [HttpGet("/api/category/{id:long}/runs")]
+    [Paginated]
+    [SwaggerOperation("Gets the Runs for a Category.", OperationId = "getRunsForCategory")]
+    [SwaggerResponse(200)]
+    [SwaggerResponse(404, "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.")]
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
+    public async Task<ActionResult<ListView<RunViewModel>>> GetRunsForCategory(
+        long id,
+        [FromQuery] Page page,
+        [FromQuery] bool includeDeleted
+    )
+    {
+        GetRunsForCategoryResult result = await runService.GetRunsForCategory(id, page, includeDeleted);
+
+        return result.Match<ActionResult>(
+            runs => Ok(new ListView<RunViewModel>()
+            {
+                Data = runs.Items.Select(RunViewModel.MapFrom).ToList(),
+                Total = runs.ItemsTotal
+            }),
+            notFound => NotFound(
+                ProblemDetailsFactory.CreateProblemDetails(
+                    HttpContext,
+                    404,
+                    "Category Not Found."
+                )
+            ),
+            alreadyDeleted => NotFound(
+                ProblemDetailsFactory.CreateProblemDetails(
+                    HttpContext,
+                    404,
+                    "Category Is Deleted."
                 )
             )
         );
