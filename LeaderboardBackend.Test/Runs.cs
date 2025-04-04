@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
@@ -15,6 +14,7 @@ using LeaderboardBackend.Test.TestApi.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
 using NodaTime.Testing;
@@ -109,6 +109,131 @@ namespace LeaderboardBackend.Test
             )).Should()
             .ThrowAsync<RequestFailureException>()
             .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+        [Test]
+        public async Task GetRunsForCategory_OK()
+        {
+            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+            await context.Runs.ExecuteDeleteAsync();
+
+            Run[] runs = [
+                new()
+                {
+                    CategoryId = _categoryId,
+                    Info = "",
+                    PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().ToDateTimeUtc()),
+                    TimeOrScore = Duration.FromSeconds(390).ToInt64Nanoseconds(),
+                    UserId = TestInitCommonFields.Admin.Id,
+                },
+                new()
+                {
+                    CategoryId = _categoryId,
+                    Info = "",
+                    PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().Plus(Duration.FromDays(1)).ToDateTimeUtc()),
+                    TimeOrScore = Duration.FromSeconds(400).ToInt64Nanoseconds(),
+                    UserId = TestInitCommonFields.Admin.Id,
+                },
+                new()
+                {
+                    CategoryId = _categoryId,
+                    Info = "",
+                    PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().Plus(Duration.FromDays(2)).ToDateTimeUtc()),
+                    TimeOrScore = Duration.FromSeconds(390).ToInt64Nanoseconds(),
+                    UserId = TestInitCommonFields.Admin.Id,
+                    DeletedAt = _clock.GetCurrentInstant(),
+                },
+            ];
+
+            context.AddRange(runs);
+            await context.SaveChangesAsync();
+
+            foreach(Run run in runs)
+            {
+                // Needed for resolving the run type for viewmodel mapping
+                context.Entry(run).Reference(r => r.Category).Load();
+            }
+
+            ListView<TimedRunViewModel> returned = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?limit=9999999", new());
+            returned.Data.Should().BeEquivalentTo(runs.Take(2).Select(RunViewModel.MapFrom));
+            returned.Total.Should().Be(2);
+
+            ListView<TimedRunViewModel> returned2 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?includeDeleted=false&limit=1024", new());
+            returned2.Data.Should().BeEquivalentTo(runs.Take(2).Select(RunViewModel.MapFrom));
+            returned2.Total.Should().Be(2);
+
+            ListView<TimedRunViewModel> returned3 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?includeDeleted=true&limit=1024", new());
+            returned3.Data.Should().BeEquivalentTo(new Run[]{runs[0], runs[2], runs[1]}.Select(RunViewModel.MapFrom));
+            returned3.Total.Should().Be(3);
+
+            ListView<TimedRunViewModel> returned4 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?limit=1", new());
+            returned4.Data.Single().Should().BeEquivalentTo(RunViewModel.MapFrom(runs[0]));
+            returned4.Total.Should().Be(2);
+
+            ListView<TimedRunViewModel> returned5 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?limit=1&includeDeleted=true&offset=1", new());
+            returned5.Data.Single().Should().BeEquivalentTo(RunViewModel.MapFrom(runs[2]));
+            returned5.Total.Should().Be(3);
+        }
+
+        [TestCase(-1, 0)]
+        [TestCase(1024, -1)]
+        public async Task GetRunsForCategory_BadPageData(int limit, int offset) =>
+            await _apiClient.Awaiting(
+                a => a.Get<RunViewModel>(
+                    $"/api/category/{_categoryId}/runs?limit={limit}&offset={offset}",
+                    new()
+                )
+            ).Should()
+            .ThrowAsync<RequestFailureException>()
+            .Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
+
+        [Test]
+        public async Task GetRunsForCategory_CategoryNotFound()
+        {
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(
+                a => a.Get<RunViewModel>(
+                    "/api/category/0/runs",
+                    new()
+                )
+            ).Should()
+            .ThrowAsync<RequestFailureException>()
+            .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails.Should().NotBeNull();
+            problemDetails!.Title.Should().Be("Category Not Found.");
+        }
+
+        [Test]
+        public async Task GetRunsForCategory_CategoryDeleted()
+        {
+            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+
+            Category deleted = new()
+            {
+                Name = "getrunsforcat-deletedcat",
+                Slug = "getrunsforcat-deletedcat",
+                DeletedAt = _clock.GetCurrentInstant(),
+                Leaderboard = context.Leaderboards.First(),
+                SortDirection = SortDirection.Ascending,
+                Type = RunType.Time,
+            };
+
+            context.Add(deleted);
+            await context.SaveChangesAsync();
+
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(
+                a => a.Get<RunViewModel>(
+                    $"/api/category/{deleted.Id}/runs",
+                    new()
+                )
+            ).Should()
+            .ThrowAsync<RequestFailureException>()
+            .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails.Should().NotBeNull();
+            problemDetails!.Title.Should().Be("Category Is Deleted.");
+        }
 
         [TestCase(UserRole.Confirmed)]
         [TestCase(UserRole.Administrator)]
