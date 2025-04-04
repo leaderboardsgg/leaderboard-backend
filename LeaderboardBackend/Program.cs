@@ -258,6 +258,8 @@ builder.Services.AddSingleton<ValidationFilter>();
 
 // Enable feature management.
 builder.Services.AddFeatureManagement(builder.Configuration.GetSection("Feature"));
+
+builder.Services.AddHttpContextAccessor();
 #endregion
 
 #region WebApplication

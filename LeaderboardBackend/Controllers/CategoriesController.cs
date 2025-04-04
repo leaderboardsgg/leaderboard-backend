@@ -1,4 +1,5 @@
 using LeaderboardBackend.Authorization;
+using LeaderboardBackend.Filters;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.Validation;
@@ -52,18 +53,25 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
 
     [AllowAnonymous]
     [HttpGet("api/leaderboard/{id:long}/categories")]
+    [Paginated]
     [SwaggerOperation("Gets all Categories of Leaderboard `id`.", OperationId = "getCategoriesForLeaderboard")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404, "The Leaderboard with ID `id` could not be found.", typeof(ProblemDetails))]
-    public async Task<ActionResult<CategoryViewModel[]>> GetCategoriesForLeaderboard(
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
+    public async Task<ActionResult<ListView<CategoryViewModel>>> GetCategoriesForLeaderboard(
         [FromRoute] long id,
+        [FromQuery] Page page,
         [FromQuery, SwaggerParameter(Description = "Whether to include deleted Categories. Defaults to `false`.")] bool includeDeleted = false
     )
     {
-        GetCategoriesForLeaderboardResult r = await categoryService.GetCategoriesForLeaderboard(id, includeDeleted);
+        GetCategoriesForLeaderboardResult r = await categoryService.GetCategoriesForLeaderboard(id, includeDeleted, page);
 
-        return r.Match<ActionResult<CategoryViewModel[]>>(
-            categories => Ok(from cat in categories select CategoryViewModel.MapFrom(cat)),
+        return r.Match<ActionResult<ListView<CategoryViewModel>>>(
+            categories => Ok(new ListView<CategoryViewModel>
+            {
+                Data = categories.Items.Select(CategoryViewModel.MapFrom).ToList(),
+                Total = categories.ItemsTotal
+            }),
             notFound => NotFound()
         );
     }

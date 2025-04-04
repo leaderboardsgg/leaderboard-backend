@@ -10,7 +10,7 @@ public interface ICategoryService
 {
     Task<Category?> GetCategory(long id);
     Task<Category?> GetCategoryBySlug(long leaderboardId, string slug);
-    Task<GetCategoriesForLeaderboardResult> GetCategoriesForLeaderboard(long leaderboardId, bool includeDeleted);
+    Task<GetCategoriesForLeaderboardResult> GetCategoriesForLeaderboard(long leaderboardId, bool includeDeleted, Page page);
     Task<CreateCategoryResult> CreateCategory(long leaderboardId, CreateCategoryRequest request);
     Task<Category?> GetCategoryForRun(Run run);
     Task<UpdateResult<Category>> UpdateCategory(long id, UpdateCategoryRequest request);
@@ -22,4 +22,4 @@ public interface ICategoryService
 public partial class CreateCategoryResult : OneOfBase<Category, Conflict<Category>, NotFound>;
 
 [GenerateOneOf]
-public partial class GetCategoriesForLeaderboardResult : OneOfBase<Category[], NotFound>;
+public partial class GetCategoriesForLeaderboardResult : OneOfBase<ListResult<Category>, NotFound>;

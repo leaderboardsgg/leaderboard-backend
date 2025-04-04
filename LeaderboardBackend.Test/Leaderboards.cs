@@ -324,7 +324,7 @@ public class Leaderboards
     }
 
     [Test]
-    public async Task GetLeaderboards()
+    public async Task GetLeaderboards_OK()
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
         await context.Leaderboards.ExecuteDeleteAsync();
@@ -354,14 +354,34 @@ public class Leaderboards
 
         context.Leaderboards.AddRange(boards);
         await context.SaveChangesAsync();
-        LeaderboardViewModel[] returned = await _apiClient.Get<LeaderboardViewModel[]>("/api/leaderboards", new());
-        returned.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
+        ListView<LeaderboardViewModel> returned = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=9999999", new());
+        returned.Data.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
+        returned.Total.Should().Be(2);
+        returned.LimitDefault.Should().Be(64);
 
-        LeaderboardViewModel[] returned2 = await _apiClient.Get<LeaderboardViewModel[]>("/api/leaderboards?includeDeleted=false", new());
-        returned2.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
+        ListView<LeaderboardViewModel> returned2 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?includeDeleted=false&limit=1024", new());
+        returned2.Data.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
+        returned2.Total.Should().Be(2);
 
-        LeaderboardViewModel[] returned3 = await _apiClient.Get<LeaderboardViewModel[]>("/api/leaderboards?includeDeleted=true", new());
-        returned3.Should().BeEquivalentTo(boards, config => config.Excluding(lb => lb.Categories));
+        ListView<LeaderboardViewModel> returned3 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?includeDeleted=true&limit=1024", new());
+        returned3.Data.Should().BeEquivalentTo(boards, config => config.Excluding(lb => lb.Categories));
+        returned3.Total.Should().Be(3);
+
+        ListView<LeaderboardViewModel> returned4 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=1", new());
+        returned4.Total.Should().Be(2);
+        returned4.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).First(), config => config.Excluding(lb => lb.Categories));
+
+        ListView<LeaderboardViewModel> returned5 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=1&includeDeleted=true&offset=1", new());
+        returned5.Total.Should().Be(3);
+        returned5.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).Skip(1).First(), config => config.Excluding(lb => lb.Categories));
+    }
+
+    [TestCase(-1, 0)]
+    [TestCase(1024, -1)]
+    public async Task GetLeaderboards_BadPageData(int limit, int offset)
+    {
+        await FluentActions.Awaiting(() => _apiClient.Get<ListView<LeaderboardViewModel>>($"/api/leaderboards?limit={limit}&offset={offset}", new()))
+            .Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
     }
 
     [Test]

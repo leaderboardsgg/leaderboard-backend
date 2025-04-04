@@ -17,7 +17,7 @@ public class CategoryService(ApplicationContext applicationContext, IClock clock
         await applicationContext.Categories
             .FirstOrDefaultAsync(c => c.Slug == slug && c.LeaderboardId == leaderboardId && c.DeletedAt == null);
 
-    public async Task<GetCategoriesForLeaderboardResult> GetCategoriesForLeaderboard(long leaderboardId, bool includeDeleted)
+    public async Task<GetCategoriesForLeaderboardResult> GetCategoriesForLeaderboard(long leaderboardId, bool includeDeleted, Page page)
     {
         Leaderboard? board = await applicationContext.Leaderboards
             .Where(board => board.Id == leaderboardId)
@@ -29,9 +29,10 @@ public class CategoryService(ApplicationContext applicationContext, IClock clock
             return new NotFound();
         }
 
-        return board.Categories!
-            .Where(cat => includeDeleted || cat.DeletedAt == null)
-            .ToArray();
+        IEnumerable<Category> cats = board.Categories!.Where(cat => includeDeleted || cat.DeletedAt == null);
+        long count = cats.LongCount();
+        List<Category> items = cats.OrderBy(cat => cat.Id).Skip(page.Offset).Take(page.Limit).ToList();
+        return new ListResult<Category>(items, count);
     }
 
     public async Task<CreateCategoryResult> CreateCategory(long leaderboardId, CreateCategoryRequest request)

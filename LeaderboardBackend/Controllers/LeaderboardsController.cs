@@ -1,4 +1,5 @@
 using LeaderboardBackend.Authorization;
+using LeaderboardBackend.Filters;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.Validation;
@@ -11,7 +12,9 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Controllers;
 
-public class LeaderboardsController(ILeaderboardService leaderboardService) : ApiController
+public class LeaderboardsController(
+    ILeaderboardService leaderboardService
+) : ApiController
 {
     [AllowAnonymous]
     [HttpGet("api/leaderboard/{id:long}")]
@@ -49,14 +52,18 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Ap
 
     [AllowAnonymous]
     [HttpGet("api/leaderboards")]
+    [Paginated]
     [SwaggerOperation("Gets all leaderboards.", OperationId = "listLeaderboards")]
     [SwaggerResponse(200)]
-    public async Task<ActionResult<List<LeaderboardViewModel>>> GetLeaderboards([FromQuery] bool includeDeleted = false)
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
+    public async Task<ActionResult<ListView<LeaderboardViewModel>>> GetLeaderboards([FromQuery] Page page, [FromQuery] bool includeDeleted = false)
     {
-        // TODO: Paginate.
-
-        List<Leaderboard> result = await leaderboardService.ListLeaderboards(includeDeleted);
-        return Ok(result.Select(LeaderboardViewModel.MapFrom));
+        ListResult<Leaderboard> result = await leaderboardService.ListLeaderboards(includeDeleted, page);
+        return Ok(new ListView<LeaderboardViewModel>()
+        {
+            Data = result.Items.Select(LeaderboardViewModel.MapFrom).ToList(),
+            Total = result.ItemsTotal
+        });
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
