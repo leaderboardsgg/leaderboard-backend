@@ -39,15 +39,16 @@ public class RunService(ApplicationContext applicationContext) : IRunService
 
         if (cat.SortDirection == SortDirection.Descending)
         {
-            query.OrderByDescending(run => run.TimeOrScore);
+            query = query.OrderByDescending(run => run.TimeOrScore)
+                .ThenBy(run => run.PlayedOn);
         }
         else
         {
-            query.OrderBy(run => run.TimeOrScore);
+            query = query.OrderBy(run => run.TimeOrScore)
+                .ThenBy(run => run.PlayedOn);
         }
 
-        List<Run> items = await query.OrderBy(run => run.CreatedAt)
-            .Skip(page.Offset)
+        List<Run> items = await query.Skip(page.Offset)
             .Take(page.Limit)
             .ToListAsync();
 
