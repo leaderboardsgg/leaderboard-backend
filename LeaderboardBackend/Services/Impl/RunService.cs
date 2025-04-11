@@ -3,6 +3,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
+using OneOf.Types;
 
 namespace LeaderboardBackend.Services;
 
@@ -10,6 +11,49 @@ public class RunService(ApplicationContext applicationContext) : IRunService
 {
     public async Task<Run?> GetRun(Guid id) =>
         await applicationContext.Runs.Include(run => run.Category).SingleOrDefaultAsync(run => run.Id == id);
+
+    public async Task<GetRunsForCategoryResult> GetRunsForCategory(
+        long id,
+        Page page,
+        bool includeDeleted = false
+    )
+    {
+        Category? cat = await applicationContext.FindAsync<Category>(id);
+        if (cat is null)
+        {
+            return new NotFound();
+        }
+
+        IQueryable<Run> query = applicationContext.Runs
+            .Include(run => run.Category)
+            .Where(run =>
+                run.CategoryId == id && (includeDeleted || run.DeletedAt == null)
+            );
+
+        long count = await query.LongCountAsync();
+
+        // TODO: To spin a Redis instance to calculate and store ranks for runs.
+        // Then we can simply fetch data from it, instead of calculating this
+        // here.
+        if (cat.SortDirection == SortDirection.Descending)
+        {
+            query = query.OrderByDescending(run => run.TimeOrScore)
+                .ThenBy(run => run.PlayedOn)
+                .ThenBy(run => run.CreatedAt);
+        }
+        else
+        {
+            query = query.OrderBy(run => run.TimeOrScore)
+                .ThenBy(run => run.PlayedOn)
+                .ThenBy(run => run.CreatedAt);
+        }
+
+        List<Run> items = await query.Skip(page.Offset)
+            .Take(page.Limit)
+            .ToListAsync();
+
+        return new ListResult<Run>(items, count);
+    }
 
     public async Task<CreateRunResult> CreateRun(User user, Category category, CreateRunRequest request)
     {
