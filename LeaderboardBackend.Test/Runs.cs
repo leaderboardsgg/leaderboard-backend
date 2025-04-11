@@ -162,7 +162,7 @@ namespace LeaderboardBackend.Test
             returned2.Total.Should().Be(2);
 
             ListView<TimedRunViewModel> returned3 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?includeDeleted=true&limit=1024", new());
-            returned3.Data.Should().BeEquivalentTo(new Run[] { runs[0], runs[2], runs[1] }.Select(RunViewModel.MapFrom));
+            returned3.Data.Should().BeEquivalentTo(new Run[] { runs[0], runs[2], runs[1] }.Select(RunViewModel.MapFrom), config => config.WithStrictOrdering());
             returned3.Total.Should().Be(3);
 
             ListView<TimedRunViewModel> returned4 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?limit=1", new());
@@ -201,38 +201,6 @@ namespace LeaderboardBackend.Test
             ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
             problemDetails.Should().NotBeNull();
             problemDetails!.Title.Should().Be("Category Not Found.");
-        }
-
-        [Test]
-        public async Task GetRunsForCategory_CategoryDeleted()
-        {
-            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
-
-            Category deleted = new()
-            {
-                Name = "getrunsforcat-deletedcat",
-                Slug = "getrunsforcat-deletedcat",
-                DeletedAt = _clock.GetCurrentInstant(),
-                Leaderboard = context.Leaderboards.First(),
-                SortDirection = SortDirection.Ascending,
-                Type = RunType.Time,
-            };
-
-            context.Add(deleted);
-            await context.SaveChangesAsync();
-
-            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(
-                a => a.Get<RunViewModel>(
-                    $"/api/category/{deleted.Id}/runs",
-                    new()
-                )
-            ).Should()
-            .ThrowAsync<RequestFailureException>()
-            .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
-
-            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-            problemDetails.Should().NotBeNull();
-            problemDetails!.Title.Should().Be("Category Is Deleted.");
         }
 
         [TestCase(UserRole.Confirmed)]

@@ -70,16 +70,13 @@ public class PaginatedAttribute : TypeFilterAttribute
         LimitConfigNullable limitConfigNullable
     ) : IAsyncActionFilter
     {
-        private readonly AppConfig _config = config.Value;
-        private readonly LimitConfigNullable _limitConfigNullable = limitConfigNullable;
-
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             string resource = context.RouteData.Values["controller"]!.ToString()!;
-            LimitConfig limitConfig = _config.Limits.GetValueOrDefault(resource, _config.Limits["Default"]);
+            LimitConfig limitConfig = config.Value.Limits.GetValueOrDefault(resource, config.Value.Limits["Default"]);
 
-            int limitDefault = _limitConfigNullable.Default ?? limitConfig.Default;
-            int limitMax = _limitConfigNullable.Max ?? limitConfig.Max;
+            int limitDefault = limitConfigNullable.Default ?? limitConfig.Default;
+            int limitMax = limitConfigNullable.Max ?? limitConfig.Max;
 
             Page page = (Page)context.ActionArguments.Single(arg => arg.Value!.GetType() == typeof(Page)).Value!;
 

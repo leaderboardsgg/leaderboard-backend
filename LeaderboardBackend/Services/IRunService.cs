@@ -17,4 +17,4 @@ public interface IRunService
 public partial class CreateRunResult : OneOfBase<Run, BadRole, BadRunType>;
 
 [GenerateOneOf]
-public partial class GetRunsForCategoryResult : OneOfBase<ListResult<Run>, NotFound, AlreadyDeleted>;
+public partial class GetRunsForCategoryResult : OneOfBase<ListResult<Run>, NotFound>;

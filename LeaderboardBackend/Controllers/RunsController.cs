@@ -111,9 +111,9 @@ public class RunsController(
     [SwaggerResponse(404, "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.")]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<ListView<RunViewModel>>> GetRunsForCategory(
-        long id,
+        [FromRoute] long id,
         [FromQuery] Page page,
-        [FromQuery] bool includeDeleted
+        [FromQuery, SwaggerParameter(Required = false, Description = "Whether to include deleted runs. Defaults false.")] bool includeDeleted = false
     )
     {
         GetRunsForCategoryResult result = await runService.GetRunsForCategory(id, page, includeDeleted);
@@ -129,13 +129,6 @@ public class RunsController(
                     HttpContext,
                     404,
                     "Category Not Found."
-                )
-            ),
-            alreadyDeleted => NotFound(
-                ProblemDetailsFactory.CreateProblemDetails(
-                    HttpContext,
-                    404,
-                    "Category Is Deleted."
                 )
             )
         );

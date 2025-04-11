@@ -24,11 +24,6 @@ public class RunService(ApplicationContext applicationContext) : IRunService
             return new NotFound();
         }
 
-        if (cat.DeletedAt is not null)
-        {
-            return new AlreadyDeleted();
-        }
-
         IQueryable<Run> query = applicationContext.Runs
             .Include(run => run.Category)
             .Where(run =>
@@ -37,15 +32,20 @@ public class RunService(ApplicationContext applicationContext) : IRunService
 
         long count = await query.LongCountAsync();
 
+        // TODO: To spin a Redis instance to calculate and store ranks for runs.
+        // Then we can simply fetch data from it, instead of calculating this
+        // here.
         if (cat.SortDirection == SortDirection.Descending)
         {
             query = query.OrderByDescending(run => run.TimeOrScore)
-                .ThenBy(run => run.PlayedOn);
+                .ThenBy(run => run.PlayedOn)
+                .ThenBy(run => run.CreatedAt);
         }
         else
         {
             query = query.OrderBy(run => run.TimeOrScore)
-                .ThenBy(run => run.PlayedOn);
+                .ThenBy(run => run.PlayedOn)
+                .ThenBy(run => run.CreatedAt);
         }
 
         List<Run> items = await query.Skip(page.Offset)

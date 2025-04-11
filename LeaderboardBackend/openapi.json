@@ -1516,8 +1516,10 @@
           {
             "name": "includeDeleted",
             "in": "query",
+            "description": "Whether to include deleted runs. Defaults false.",
             "schema": {
-              "type": "boolean"
+              "type": "boolean",
+              "default": false
             }
           }
         ],
