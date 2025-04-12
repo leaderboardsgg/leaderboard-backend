@@ -51,3 +51,62 @@ public record CreateScoredRunRequest : CreateRunRequest
     [Required]
     public long Score { get; set; }
 }
+
+/// <summary>
+///     Request sent when updating a run.
+///     All fields are optional but you must specify at least one.
+/// </summary>
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "runType")]
+[JsonDerivedType(typeof(UpdateTimedRunRequest), nameof(RunType.Time))]
+[JsonDerivedType(typeof(UpdateScoredRunRequest), nameof(RunType.Score))]
+public abstract record UpdateRunRequest
+{
+    /// <inheritdoc cref="Entities.Run.Info" />
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string Info { get; set; }
+
+    /// <inheritdoc cref="CreateRunRequest.PlayedOn" />
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LocalDate? PlayedOn { get; set; }
+}
+
+public record UpdateTimedRunRequest : UpdateRunRequest
+{
+    /// <inheritdoc cref="CreateTimedRunRequest.Time" />
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Duration? Time { get; set; }
+}
+
+public record UpdateScoredRunRequest : UpdateRunRequest
+{
+    /// <inheritdoc cref="CreateScoredRunRequest.Score" />
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public long? Score { get; set; }
+}
+
+public class UpdateRunRequestValidator : AbstractValidator<UpdateRunRequest>
+{
+    public UpdateRunRequestValidator() =>
+        RuleFor(x => x).SetInheritanceValidator(v =>
+            v.Add<UpdateTimedRunRequest>(new UpdateTimedRunRequestValidator())
+            .Add<UpdateScoredRunRequest>(new UpdateScoredRunRequestValidator())
+        );
+}
+
+public class UpdateTimedRunRequestValidator : AbstractValidator<UpdateTimedRunRequest>
+{
+    public UpdateTimedRunRequestValidator() =>
+        RuleFor(x => x).Must(
+            utrr => utrr.Info is not null ||
+            utrr.PlayedOn is not null ||
+            utrr.Time is not null);
+}
+
+public class UpdateScoredRunRequestValidator : AbstractValidator<UpdateScoredRunRequest>
+{
+    public UpdateScoredRunRequestValidator() =>
+        RuleFor(x => x).Must(
+            usrr => usrr.Info is not null ||
+            usrr.PlayedOn is not null ||
+            usrr.Score is not null);
+}

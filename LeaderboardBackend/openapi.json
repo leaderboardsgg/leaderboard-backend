@@ -1611,6 +1611,88 @@
         }
       }
     },
+    "/run/{id}": {
+      "patch": {
+        "tags": [
+          "Runs"
+        ],
+        "summary": "Updates a run with the specified new fields. This request is restricted to administrators. Note: `runType` cannot be updated. This operation is atomic; if an error occurs, the run will not be updated. All fields of the request body are optional but you must specify at least one.",
+        "operationId": "updateRun",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-zA-Z0-9-_]{22}$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateTimedRunRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/UpdateScoredRunRequest"
+                  }
+                ],
+                "description": "Request sent when updating a run.\nAll fields are optional but you must specify at least one."
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/user/{id}": {
       "get": {
         "tags": [
@@ -2422,6 +2504,71 @@
           }
         },
         "additionalProperties": false
+      },
+      "UpdateRunRequest": {
+        "required": [
+          "runType"
+        ],
+        "type": "object",
+        "properties": {
+          "runType": {
+            "type": "string"
+          },
+          "info": {
+            "type": "string"
+          },
+          "playedOn": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "example": "2000-01-01"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request sent when updating a run.\nAll fields are optional but you must specify at least one.",
+        "discriminator": {
+          "propertyName": "runType",
+          "mapping": {
+            "Time": "#/components/schemas/UpdateTimedRunRequest",
+            "Score": "#/components/schemas/UpdateScoredRunRequest"
+          }
+        }
+      },
+      "UpdateScoredRunRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UpdateRunRequest"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "score": {
+                "type": "integer",
+                "format": "int64",
+                "nullable": true
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "UpdateTimedRunRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UpdateRunRequest"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "time": {
+                "type": "string",
+                "nullable": true,
+                "example": "25:01:01.001"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
       },
       "UserRole": {
         "enum": [

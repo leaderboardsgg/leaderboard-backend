@@ -1,3 +1,4 @@
+using System.Net;
 using LeaderboardBackend.Filters;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
@@ -156,5 +157,51 @@ public class RunsController(
         }
 
         return Ok(CategoryViewModel.MapFrom(category));
+    }
+
+    // TODO: Replace UserTypes with UserRole, i.e. reconfigure authZ policy infra
+    [Authorize]
+    [HttpPatch("run/{id}")]
+    [SwaggerOperation(
+        "Updates a run with the specified new fields. This request is restricted to administrators. " +
+        "Note: `runType` cannot be updated. " +
+        "This operation is atomic; if an error occurs, the run will not be updated. " +
+        "All fields of the request body are optional but you must specify at least one.",
+        OperationId = "updateRun"
+    )]
+    [SwaggerResponse(204)]
+    [SwaggerResponse(401)]
+    [SwaggerResponse(403)]
+    [SwaggerResponse(404, Type = typeof(ProblemDetails))]
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
+    public async Task<ActionResult> UpdateRun(
+        [FromRoute] Guid id,
+        [FromBody, SwaggerRequestBody(Required = true)] UpdateRunRequest request
+    )
+    {
+        GetUserResult userRes = await userService.GetUserFromClaims(HttpContext.User);
+
+        if (!userRes.IsT0)
+        {
+            return Unauthorized();
+        }
+
+        UpdateRunResult res = await runService.UpdateRun(userRes.AsT0, id, request);
+
+        return res.Match<ActionResult>(
+            badRole => Forbid(),
+            notFound => NotFound(
+                ProblemDetailsFactory.CreateProblemDetails(
+                    HttpContext,
+                    404,
+                    "Run Not Found"
+                    )
+                ),
+            badRunType => {
+                ModelState.AddModelError("runType", "Bad run type");
+                return UnprocessableEntity(new ValidationProblemDetails(ModelState));
+            },
+            success => NoContent()
+        );
     }
 }

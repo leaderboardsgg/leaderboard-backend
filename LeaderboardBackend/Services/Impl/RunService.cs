@@ -3,6 +3,8 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
+using Npgsql;
 using OneOf.Types;
 
 namespace LeaderboardBackend.Services;
@@ -113,5 +115,68 @@ public class RunService(ApplicationContext applicationContext) : IRunService
         applicationContext.Add(run);
         await applicationContext.SaveChangesAsync();
         return run;
+    }
+
+    public async Task<UpdateRunResult> UpdateRun(User user, Guid id, UpdateRunRequest request)
+    {
+        if (user.Role is not UserRole.Administrator)
+        {
+            return new BadRole();
+        }
+
+        Run? run = await applicationContext.Runs
+            .Include(run => run.Category)
+            .Where(run => run.Id == id)
+            .SingleOrDefaultAsync();
+
+        if (run is null)
+        {
+            return new NotFound();
+        }
+
+        if (request.Info is not null)
+        {
+            run.Info = request.Info;
+        }
+
+        if (request.PlayedOn is not null)
+        {
+            run.PlayedOn = (LocalDate)request.PlayedOn;
+        }
+
+        switch (request)
+        {
+            case UpdateTimedRunRequest timed:
+            {
+                if (run.Category.Type != RunType.Time)
+                {
+                    return new BadRunType();
+                }
+
+                if (timed.Time is not null)
+                {
+                    run.Time = (Duration)timed.Time;
+                }
+
+                break;
+            }
+            case UpdateScoredRunRequest scored:
+            {
+                if (run.Category.Type != RunType.Score)
+                {
+                    return new BadRunType();
+                }
+
+                if (scored.Score is not null)
+                {
+                    run.TimeOrScore = (long)scored.Score;
+                }
+
+                break;
+            }
+        }
+
+        await applicationContext.SaveChangesAsync();
+        return new Success();
     }
 }
