@@ -128,7 +128,7 @@ public class RunsController(
                 ProblemDetailsFactory.CreateProblemDetails(
                     HttpContext,
                     404,
-                    "Category Not Found."
+                    "Category Not Found"
                 )
             )
         );

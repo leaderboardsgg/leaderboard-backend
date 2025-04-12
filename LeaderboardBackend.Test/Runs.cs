@@ -200,7 +200,7 @@ namespace LeaderboardBackend.Test
 
             ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
             problemDetails.Should().NotBeNull();
-            problemDetails!.Title.Should().Be("Category Not Found.");
+            problemDetails!.Title.Should().Be("Category Not Found");
         }
 
         [TestCase(UserRole.Confirmed)]
