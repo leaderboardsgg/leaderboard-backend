@@ -328,7 +328,7 @@ namespace LeaderboardBackend.Test
 
             ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
             problemDetails.Should().NotBeNull();
-            problemDetails!.Title.Should().Be("Category Not Found.");
+            problemDetails!.Title.Should().Be("Category Not Found");
         }
 
         [Test]
@@ -368,7 +368,7 @@ namespace LeaderboardBackend.Test
 
             ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
             problemDetails.Should().NotBeNull();
-            problemDetails!.Title.Should().Be("Category Is Deleted.");
+            problemDetails!.Title.Should().Be("Category Is Deleted");
         }
 
         [TestCase("", "", "00:10:30.111")]

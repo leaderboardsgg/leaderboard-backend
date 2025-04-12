@@ -61,7 +61,7 @@ public class RunsController(
                 ProblemDetailsFactory.CreateProblemDetails(
                     HttpContext,
                     404,
-                    "Category Not Found."
+                    "Category Not Found"
                 )
             );
         }
@@ -72,7 +72,7 @@ public class RunsController(
                 ProblemDetailsFactory.CreateProblemDetails(
                     HttpContext,
                     404,
-                    "Category Is Deleted."
+                    "Category Is Deleted"
                 )
             );
         }
@@ -145,14 +145,14 @@ public class RunsController(
 
         if (run is null)
         {
-            return NotFound("Run not found");
+            return NotFound("Run Not Found");
         }
 
         Category? category = await categoryService.GetCategoryForRun(run);
 
         if (category is null)
         {
-            return NotFound("Category not found");
+            return NotFound("Category Not Found");
         }
 
         return Ok(CategoryViewModel.MapFrom(category));
