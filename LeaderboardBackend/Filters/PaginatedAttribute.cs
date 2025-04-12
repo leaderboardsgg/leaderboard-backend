@@ -52,14 +52,12 @@ public class PaginatedAttribute : TypeFilterAttribute
         set => _limitMax = value;
     }
 
-    public PaginatedAttribute() : base(typeof(PageFilter))
-    {
+    public PaginatedAttribute() : base(typeof(PageFilter)) =>
         Arguments = [new LimitConfigNullable()
         {
             Default = _limitDefault,
             Max = _limitMax
         }];
-    }
 
     private record LimitConfigNullable
     {
@@ -67,27 +65,18 @@ public class PaginatedAttribute : TypeFilterAttribute
         public int? Max { get; init; }
     }
 
-    private class PageFilter : IAsyncActionFilter
+    private class PageFilter(
+        IOptions<AppConfig> config,
+        LimitConfigNullable limitConfigNullable
+    ) : IAsyncActionFilter
     {
-        private readonly AppConfig _config;
-        private readonly LimitConfigNullable _limitConfigNullable;
-
-        public PageFilter(
-            IOptions<AppConfig> config,
-            LimitConfigNullable limitConfigNullable
-        )
-        {
-            _config = config.Value;
-            _limitConfigNullable = limitConfigNullable;
-        }
-
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             string resource = context.RouteData.Values["controller"]!.ToString()!;
-            LimitConfig limitConfig = _config.Limits.GetValueOrDefault(resource, _config.Limits["Default"]);
+            LimitConfig limitConfig = config.Value.Limits.GetValueOrDefault(resource, config.Value.Limits["Default"]);
 
-            int limitDefault = _limitConfigNullable.Default ?? limitConfig.Default;
-            int limitMax = _limitConfigNullable.Max ?? limitConfig.Max;
+            int limitDefault = limitConfigNullable.Default ?? limitConfig.Default;
+            int limitMax = limitConfigNullable.Max ?? limitConfig.Max;
 
             Page page = (Page)context.ActionArguments.Single(arg => arg.Value!.GetType() == typeof(Page)).Value!;
 

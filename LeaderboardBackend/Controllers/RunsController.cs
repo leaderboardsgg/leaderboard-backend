@@ -1,3 +1,4 @@
+using LeaderboardBackend.Filters;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
@@ -60,7 +61,7 @@ public class RunsController(
                 ProblemDetailsFactory.CreateProblemDetails(
                     HttpContext,
                     404,
-                    "Category Not Found."
+                    "Category Not Found"
                 )
             );
         }
@@ -71,7 +72,7 @@ public class RunsController(
                 ProblemDetailsFactory.CreateProblemDetails(
                     HttpContext,
                     404,
-                    "Category Is Deleted."
+                    "Category Is Deleted"
                 )
             );
         }
@@ -103,6 +104,37 @@ public class RunsController(
     }
 
     [AllowAnonymous]
+    [HttpGet("/api/category/{id:long}/runs")]
+    [Paginated]
+    [SwaggerOperation("Gets the Runs for a Category.", OperationId = "getRunsForCategory")]
+    [SwaggerResponse(200)]
+    [SwaggerResponse(404, "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.")]
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
+    public async Task<ActionResult<ListView<RunViewModel>>> GetRunsForCategory(
+        [FromRoute] long id,
+        [FromQuery] Page page,
+        [FromQuery, SwaggerParameter(Required = false, Description = "Whether to include deleted runs. Defaults false.")] bool includeDeleted = false
+    )
+    {
+        GetRunsForCategoryResult result = await runService.GetRunsForCategory(id, page, includeDeleted);
+
+        return result.Match<ActionResult>(
+            runs => Ok(new ListView<RunViewModel>()
+            {
+                Data = runs.Items.Select(RunViewModel.MapFrom).ToList(),
+                Total = runs.ItemsTotal
+            }),
+            notFound => NotFound(
+                ProblemDetailsFactory.CreateProblemDetails(
+                    HttpContext,
+                    404,
+                    "Category Not Found"
+                )
+            )
+        );
+    }
+
+    [AllowAnonymous]
     [HttpGet("/api/run/{id}/category")]
     [SwaggerOperation("Gets the category a run belongs to.", OperationId = "getRunCategory")]
     [SwaggerResponse(200)]
@@ -113,14 +145,14 @@ public class RunsController(
 
         if (run is null)
         {
-            return NotFound("Run not found");
+            return NotFound("Run Not Found");
         }
 
         Category? category = await categoryService.GetCategoryForRun(run);
 
         if (category is null)
         {
-            return NotFound("Category not found");
+            return NotFound("Category Not Found");
         }
 
         return Ok(CategoryViewModel.MapFrom(category));
