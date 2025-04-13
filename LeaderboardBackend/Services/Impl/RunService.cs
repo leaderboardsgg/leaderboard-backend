@@ -3,11 +3,12 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 using OneOf.Types;
 
 namespace LeaderboardBackend.Services;
 
-public class RunService(ApplicationContext applicationContext) : IRunService
+public class RunService(ApplicationContext applicationContext, IClock clock) : IRunService
 {
     public async Task<Run?> GetRun(Guid id) =>
         await applicationContext.Runs.Include(run => run.Category).SingleOrDefaultAsync(run => run.Id == id);
@@ -113,5 +114,24 @@ public class RunService(ApplicationContext applicationContext) : IRunService
         applicationContext.Add(run);
         await applicationContext.SaveChangesAsync();
         return run;
+    }
+
+    public async Task<DeleteResult> DeleteRun(Guid id)
+    {
+        Run? run = await applicationContext.FindAsync<Run>(id);
+
+        if (run is null)
+        {
+            return new NotFound();
+        }
+
+        if (run.DeletedAt is not null)
+        {
+            return new AlreadyDeleted();
+        }
+
+        run.DeletedAt = clock.GetCurrentInstant();
+        await applicationContext.SaveChangesAsync();
+        return new Success();
     }
 }
