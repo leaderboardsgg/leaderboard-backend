@@ -197,7 +197,8 @@ public class RunsController(
                     "Run Not Found"
                     )
                 ),
-            badRunType => {
+            badRunType =>
+            {
                 ModelState.AddModelError("runType", "Bad run type");
                 return UnprocessableEntity(new ValidationProblemDetails(ModelState));
             },
