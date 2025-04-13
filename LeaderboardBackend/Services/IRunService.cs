@@ -11,6 +11,7 @@ public interface IRunService
     Task<Run?> GetRun(Guid id);
     Task<GetRunsForCategoryResult> GetRunsForCategory(long id, Page page, bool includeDeleted = false);
     Task<CreateRunResult> CreateRun(User user, Category category, CreateRunRequest request);
+    Task<DeleteResult> DeleteRun(Guid id);
 }
 
 [GenerateOneOf]

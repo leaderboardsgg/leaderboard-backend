@@ -1,7 +1,9 @@
+using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Filters;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
+using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -156,5 +158,31 @@ public class RunsController(
         }
 
         return Ok(CategoryViewModel.MapFrom(category));
+    }
+
+    // TODO: To replace UserTypes with UserRole
+    [Authorize(Policy = UserTypes.ADMINISTRATOR)]
+    [HttpDelete("/run/{id}")]
+    [SwaggerOperation("Deletes a Run.", OperationId = "deleteRun")]
+    [SwaggerResponse(204)]
+    [SwaggerResponse(401)]
+    [SwaggerResponse(403)]
+    [SwaggerResponse(
+        404,
+        """
+        The run does not exist (Not Found) or was already deleted (Already Deleted).
+        Use the `title` field of the response to differentiate between the two cases if necessary.
+        """,
+        typeof(ProblemDetails)
+    )]
+    public async Task<ActionResult> DeleteRun(Guid id)
+    {
+        DeleteResult res = await runService.DeleteRun(id);
+
+        return res.Match<ActionResult>(
+            success => NoContent(),
+            notFound => NotFound(),
+            alreadyDeleted => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Already Deleted"))
+        );
     }
 }
