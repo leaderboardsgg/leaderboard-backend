@@ -4,7 +4,6 @@ using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
-using Npgsql;
 using OneOf.Types;
 
 namespace LeaderboardBackend.Services;
@@ -119,11 +118,6 @@ public class RunService(ApplicationContext applicationContext) : IRunService
 
     public async Task<UpdateRunResult> UpdateRun(User user, Guid id, UpdateRunRequest request)
     {
-        if (user.Role is not UserRole.Administrator)
-        {
-            return new BadRole();
-        }
-
         Run? run = await applicationContext.Runs
             .Include(run => run.Category)
             .Where(run => run.Id == id)
@@ -132,6 +126,23 @@ public class RunService(ApplicationContext applicationContext) : IRunService
         if (run is null)
         {
             return new NotFound();
+        }
+
+        switch (user.Role)
+        {
+            case UserRole.Confirmed:
+            {
+                if (run.UserId == user.Id)
+                {
+                    break;
+                }
+
+                return new BadRole();
+            }
+            case UserRole.Administrator:
+                break;
+            default:
+                return new BadRole();
         }
 
         if (request.Info is not null)
