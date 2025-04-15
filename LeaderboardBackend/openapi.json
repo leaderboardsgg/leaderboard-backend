@@ -1616,7 +1616,7 @@
         "tags": [
           "Runs"
         ],
-        "summary": "Updates a run with the specified new fields. This request is restricted to administrators. Note: `runType` cannot be updated. This operation is atomic; if an error occurs, the run will not be updated. All fields of the request body are optional but you must specify at least one.",
+        "summary": "Updates a run with the specified new fields. This request is restricted to administrators or users updating their own runs. Note: `runType` cannot be updated. This operation is atomic; if an error occurs, the run will not be updated. All fields of the request body are optional but you must specify at least one.",
         "operationId": "updateRun",
         "parameters": [
           {
@@ -1668,7 +1668,7 @@
             "description": "Unauthorized"
           },
           "403": {
-            "description": "Forbidden"
+            "description": "The user attempted to update another user's run, or the user isn't an admin."
           },
           "404": {
             "description": "Not Found",
@@ -2000,7 +2000,7 @@
         "type": "object",
         "properties": {
           "runType": {
-            "type": "string"
+            "$ref": "#/components/schemas/RunType"
           },
           "info": {
             "type": "string"
@@ -2512,7 +2512,7 @@
         "type": "object",
         "properties": {
           "runType": {
-            "type": "string"
+            "$ref": "#/components/schemas/RunType"
           },
           "info": {
             "type": "string"
