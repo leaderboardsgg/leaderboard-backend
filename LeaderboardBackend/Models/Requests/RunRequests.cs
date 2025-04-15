@@ -17,6 +17,9 @@ namespace LeaderboardBackend.Models.Requests;
 [JsonDerivedType(typeof(CreateScoredRunRequest), nameof(RunType.Score))]
 public abstract record CreateRunRequest
 {
+    [Required]
+    public RunType RunType { get; set; }
+
     /// <inheritdoc cref="Entities.Run.Info" />
     public string Info { get; set; }
 
@@ -61,6 +64,9 @@ public record CreateScoredRunRequest : CreateRunRequest
 [JsonDerivedType(typeof(UpdateScoredRunRequest), nameof(RunType.Score))]
 public abstract record UpdateRunRequest
 {
+    [Required]
+    public RunType RunType { get; set; }
+
     /// <inheritdoc cref="Entities.Run.Info" />
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string Info { get; set; }
