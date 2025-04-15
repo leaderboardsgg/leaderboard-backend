@@ -163,7 +163,8 @@ public class RunsController(
     [Authorize]
     [HttpPatch("run/{id}")]
     [SwaggerOperation(
-        "Updates a run with the specified new fields. This request is restricted to administrators. " +
+        "Updates a run with the specified new fields. This request is restricted to administrators " +
+        "or users updating their own runs. " +
         "Note: `runType` cannot be updated. " +
         "This operation is atomic; if an error occurs, the run will not be updated. " +
         "All fields of the request body are optional but you must specify at least one.",
@@ -171,7 +172,7 @@ public class RunsController(
     )]
     [SwaggerResponse(204)]
     [SwaggerResponse(401)]
-    [SwaggerResponse(403)]
+    [SwaggerResponse(403, "The user attempted to update another user's run, or the user isn't an admin.")]
     [SwaggerResponse(404, Type = typeof(ProblemDetails))]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult> UpdateRun(
@@ -190,13 +191,7 @@ public class RunsController(
 
         return res.Match<ActionResult>(
             badRole => Forbid(),
-            notFound => NotFound(
-                ProblemDetailsFactory.CreateProblemDetails(
-                    HttpContext,
-                    404,
-                    "Run Not Found"
-                    )
-                ),
+            notFound => NotFound(),
             badRunType =>
             {
                 ModelState.AddModelError("runType", "Bad run type");
