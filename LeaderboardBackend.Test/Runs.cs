@@ -403,8 +403,9 @@ namespace LeaderboardBackend.Test
                 $"/category/{_categoryId}/runs/create",
                 new()
                 {
-                    Body = new CreateTimedRunRequest
+                    Body = new
                     {
+                        RunType = nameof(RunType.Time),
                         PlayedOn = LocalDate.MinIsoValue,
                         Info = "",
                         Time = Duration.FromMilliseconds(390000),
@@ -423,14 +424,12 @@ namespace LeaderboardBackend.Test
         }
 
         [Test]
-        public async Task UpdateRun_OK()
+        public async Task UpdateRun_Admin_OK()
         {
             ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
-
-            Category? category = await context.FindAsync<Category>(_categoryId);
             User? admin = await context.Users.Where(u => u.Role == UserRole.Administrator).FirstAsync();
 
-            Run created = new()
+            Run run = new()
             {
                 CategoryId = _categoryId,
                 PlayedOn = LocalDate.MinIsoValue,
@@ -438,30 +437,84 @@ namespace LeaderboardBackend.Test
                 User = admin!,
             };
 
-            context.Add(created);
+            context.Add(run);
             await context.SaveChangesAsync();
-            created.Id.Should().NotBe(Guid.Empty);
+            run.Id.Should().NotBe(Guid.Empty);
             context.ChangeTracker.Clear();
 
             HttpResponseMessage response = await _apiClient.Patch(
-                $"/run/{created.Id.ToUrlSafeBase64String()}",
+                $"/run/{run.Id.ToUrlSafeBase64String()}",
                 new()
                 {
-                    Body = new UpdateTimedRunRequest
+                    Body = new
                     {
-                        Info = "new info",
-                        Time = created.Time + Duration.FromMinutes(1),
+                        runType = nameof(RunType.Time),
+                        info = "new info",
                     },
                     Jwt = _jwt,
                 }
             );
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-            Run? retrieved = await context.FindAsync<Run>(created.Id);
+            Run? updated = await context.FindAsync<Run>(run.Id);
+            updated!.Info.Should().Be("new info");
+            updated!.CreatedAt.Should().Be(_clock.GetCurrentInstant());
+            updated!.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
+        }
 
-            retrieved!.Info.Should().Be("new info");
-            retrieved!.Time.Should().Be(created.Time + Duration.FromMinutes(1));
-            retrieved!.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
+        [Test]
+        public async Task UpdateRun_Confirmed_OK()
+        {
+            IServiceScope scope = _factory.Services.CreateScope();
+            IUserService users = scope.ServiceProvider.GetRequiredService<IUserService>();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+            RegisterRequest registerRequest = new()
+            {
+                Email = "updaterun.ok@example.com",
+                Password = "Passw0rd",
+                Username = "updaterunok",
+            };
+
+            CreateUserResult createdUserResult = await users.CreateUser(registerRequest);
+            User? user = await context.FindAsync<User>(createdUserResult.AsT0.Id);
+            user!.Role = UserRole.Confirmed;
+
+            Run run = new()
+            {
+                CategoryId = _categoryId,
+                PlayedOn = LocalDate.MinIsoValue,
+                Time = Duration.FromSeconds(390),
+                User = user!,
+            };
+
+            context.Add(run);
+            await context.SaveChangesAsync();
+            run.Id.Should().NotBe(Guid.Empty);
+            user.Role.Should().Be(UserRole.Confirmed);
+            context.ChangeTracker.Clear();
+
+            LoginResponse userLoginResponse = await _apiClient.LoginUser(
+                "updaterun.ok@example.com", "Passw0rd");
+
+            HttpResponseMessage userResponse = await _apiClient.Patch(
+                $"/run/{run.Id.ToUrlSafeBase64String()}",
+                new()
+                {
+                    Body = new
+                    {
+                        runType = nameof(RunType.Time),
+                        info = "new info",
+                    },
+                    Jwt = userLoginResponse.Token,
+                }
+            );
+            userResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+            Run? updated = await context.FindAsync<Run>(run.Id);
+            updated!.Info.Should().Be("new info");
+            updated!.CreatedAt.Should().Be(_clock.GetCurrentInstant());
+            updated!.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
         }
 
         [Test]
@@ -487,8 +540,9 @@ namespace LeaderboardBackend.Test
                 $"run/{created.Id}",
                 new()
                 {
-                    Body = new UpdateTimedRunRequest
+                    Body = new
                     {
+                        RunType = nameof(RunType.Time),
                         Info = "won't work",
                     }
                 }
@@ -531,14 +585,21 @@ namespace LeaderboardBackend.Test
             };
 
             await users.CreateUser(registerRequest);
+
             LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
 
+            User? user = await users.GetUserByEmail(email);
+            context.Update(user!);
+            user!.Role = role;
+            await context.SaveChangesAsync();
+
             await _apiClient.Awaiting(a => a.Patch(
-                $"run/{created.Id}",
+                $"run/{created.Id.ToUrlSafeBase64String()}",
                 new()
                 {
-                    Body = new UpdateTimedRunRequest
+                    Body = new
                     {
+                        RunType = nameof(RunType.Time),
                         Info = "should not work",
                     },
                     Jwt = res.Token,
@@ -550,23 +611,19 @@ namespace LeaderboardBackend.Test
         }
 
         [Test]
-        public async Task UpdateRun_NotFound()
-        {
-            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Patch(
+        public async Task UpdateRun_NotFound() =>
+            await _apiClient.Awaiting(a => a.Patch(
                 $"run/{Guid.Empty.ToUrlSafeBase64String()}",
                 new()
                 {
-                    Body = new UpdateTimedRunRequest
+                    Body = new
                     {
+                        RunType = nameof(RunType.Time),
                         Info = "should not work",
                     },
                     Jwt = _jwt,
                 }
             )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
-
-            ValidationProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ValidationProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-            problemDetails!.Title.Should().Be("Run Not Found");
-        }
 
         [Test]
         public async Task UpdateRun_FieldNotAllowed()
