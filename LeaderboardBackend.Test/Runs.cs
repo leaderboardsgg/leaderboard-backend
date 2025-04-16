@@ -657,8 +657,8 @@ namespace LeaderboardBackend.Test
                     }
                 )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableEntity);
 
-            ValidationProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ValidationProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-            problemDetails!.Errors["runType"].Single().Should().Be("Bad run type");
+            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails!.Detail.Should().Be("The request's runType does not match the category's.");
         }
     }
 }

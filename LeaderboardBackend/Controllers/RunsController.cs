@@ -91,14 +91,13 @@ public class RunsController(
                 return result;
             },
             badRole => Forbid(),
-            // TODO: This needs to be a ValidationProblemDetails, with `Details` populating `errors`
             badRunType => UnprocessableEntity(
                 ProblemDetailsFactory.CreateProblemDetails(
                     HttpContext,
                     422,
                     null,
                     null,
-                    "The Run's runType did not match the category's."
+                    "The request's runType does not match the category's."
                 )
             )
         );
@@ -174,7 +173,7 @@ public class RunsController(
     [SwaggerResponse(401)]
     [SwaggerResponse(403, "The user attempted to update another user's run, or the user isn't an admin.")]
     [SwaggerResponse(404, Type = typeof(ProblemDetails))]
-    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
+    [SwaggerResponse(422, Type = typeof(ProblemDetails))]
     public async Task<ActionResult> UpdateRun(
         [FromRoute] Guid id,
         [FromBody, SwaggerRequestBody(Required = true)] UpdateRunRequest request
@@ -193,10 +192,15 @@ public class RunsController(
             badRole => Forbid(),
             notFound => NotFound(),
             badRunType =>
-            {
-                ModelState.AddModelError("runType", "Bad run type");
-                return UnprocessableEntity(new ValidationProblemDetails(ModelState));
-            },
+                UnprocessableEntity(
+                    ProblemDetailsFactory.CreateProblemDetails(
+                        HttpContext,
+                        422,
+                        null,
+                        null,
+                        "The request's runType does not match the category's."
+                    )
+                ),
             success => NoContent()
         );
     }
