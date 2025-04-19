@@ -427,14 +427,13 @@ namespace LeaderboardBackend.Test
         public async Task UpdateRun_Admin_OK()
         {
             ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
-            User? admin = await context.Users.Where(u => u.Role == UserRole.Administrator).FirstAsync();
 
             Run run = new()
             {
                 CategoryId = _categoryId,
                 PlayedOn = LocalDate.MinIsoValue,
                 Time = Duration.FromSeconds(390),
-                User = admin!,
+                UserId = TestInitCommonFields.Admin.Id,
             };
 
             context.Add(run);
@@ -521,14 +520,13 @@ namespace LeaderboardBackend.Test
         public async Task UpdateRun_Unauthenticated()
         {
             ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
-            User? admin = await context.Users.Where(u => u.Role == UserRole.Administrator).FirstAsync();
 
             Run created = new()
             {
                 CategoryId = _categoryId,
                 PlayedOn = LocalDate.MinIsoValue,
                 Time = Duration.FromSeconds(390),
-                User = admin!,
+                UserId = TestInitCommonFields.Admin.Id,
             };
 
             context.Add(created);
@@ -560,14 +558,13 @@ namespace LeaderboardBackend.Test
             IServiceScope scope = _factory.Services.CreateScope();
             IUserService users = scope.ServiceProvider.GetRequiredService<IUserService>();
             ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-            User? admin = await context.Users.Where(u => u.Role == UserRole.Administrator).FirstAsync();
 
             Run created = new()
             {
                 CategoryId = _categoryId,
                 PlayedOn = LocalDate.MinIsoValue,
                 Time = Duration.FromSeconds(390),
-                User = admin!,
+                UserId = TestInitCommonFields.Admin.Id,
             };
 
             context.Add(created);
@@ -629,13 +626,12 @@ namespace LeaderboardBackend.Test
         public async Task UpdateRun_FieldNotAllowed()
         {
             ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
-            User? admin = await context.Users.Where(u => u.Role == UserRole.Administrator).FirstAsync();
 
             Run created = new()
             {
                 CategoryId = _categoryId,
                 PlayedOn = LocalDate.MinIsoValue,
-                User = admin!,
+                UserId = TestInitCommonFields.Admin.Id,
             };
 
             context.Add(created);
