@@ -1,5 +1,7 @@
+using System;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using FluentAssertions.Specialized;
@@ -401,8 +403,9 @@ namespace LeaderboardBackend.Test
                 $"/category/{_categoryId}/runs/create",
                 new()
                 {
-                    Body = new CreateTimedRunRequest
+                    Body = new
                     {
+                        RunType = nameof(RunType.Time),
                         PlayedOn = LocalDate.MinIsoValue,
                         Info = "",
                         Time = Duration.FromMilliseconds(390000),
@@ -418,6 +421,240 @@ namespace LeaderboardBackend.Test
 
             category.Should().NotBeNull();
             category.Id.Should().Be(_categoryId);
+        }
+
+        [Test]
+        public async Task UpdateRun_Admin_OK()
+        {
+            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+
+            Run run = new()
+            {
+                CategoryId = _categoryId,
+                PlayedOn = LocalDate.MinIsoValue,
+                Time = Duration.FromSeconds(390),
+                UserId = TestInitCommonFields.Admin.Id,
+            };
+
+            context.Add(run);
+            await context.SaveChangesAsync();
+            run.Id.Should().NotBe(Guid.Empty);
+            context.ChangeTracker.Clear();
+
+            HttpResponseMessage response = await _apiClient.Patch(
+                $"/run/{run.Id.ToUrlSafeBase64String()}",
+                new()
+                {
+                    Body = new
+                    {
+                        runType = nameof(RunType.Time),
+                        info = "new info",
+                    },
+                    Jwt = _jwt,
+                }
+            );
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+            Run? updated = await context.FindAsync<Run>(run.Id);
+            updated!.Info.Should().Be("new info");
+            updated!.CreatedAt.Should().Be(_clock.GetCurrentInstant());
+            updated!.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
+        }
+
+        [Test]
+        public async Task UpdateRun_Confirmed_OK()
+        {
+            IServiceScope scope = _factory.Services.CreateScope();
+            IUserService users = scope.ServiceProvider.GetRequiredService<IUserService>();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+            RegisterRequest registerRequest = new()
+            {
+                Email = "updaterun.ok@example.com",
+                Password = "Passw0rd",
+                Username = "updaterunok",
+            };
+
+            CreateUserResult createdUserResult = await users.CreateUser(registerRequest);
+            User? user = await context.FindAsync<User>(createdUserResult.AsT0.Id);
+            user!.Role = UserRole.Confirmed;
+
+            Run run = new()
+            {
+                CategoryId = _categoryId,
+                PlayedOn = LocalDate.MinIsoValue,
+                Time = Duration.FromSeconds(390),
+                User = user!,
+            };
+
+            context.Add(run);
+            await context.SaveChangesAsync();
+            run.Id.Should().NotBe(Guid.Empty);
+            user.Role.Should().Be(UserRole.Confirmed);
+            context.ChangeTracker.Clear();
+
+            LoginResponse userLoginResponse = await _apiClient.LoginUser(
+                "updaterun.ok@example.com", "Passw0rd");
+
+            HttpResponseMessage userResponse = await _apiClient.Patch(
+                $"/run/{run.Id.ToUrlSafeBase64String()}",
+                new()
+                {
+                    Body = new
+                    {
+                        runType = nameof(RunType.Time),
+                        info = "new info",
+                    },
+                    Jwt = userLoginResponse.Token,
+                }
+            );
+            userResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+            Run? updated = await context.FindAsync<Run>(run.Id);
+            updated!.Info.Should().Be("new info");
+            updated!.CreatedAt.Should().Be(_clock.GetCurrentInstant());
+            updated!.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
+        }
+
+        [Test]
+        public async Task UpdateRun_Unauthenticated()
+        {
+            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+
+            Run created = new()
+            {
+                CategoryId = _categoryId,
+                PlayedOn = LocalDate.MinIsoValue,
+                Time = Duration.FromSeconds(390),
+                UserId = TestInitCommonFields.Admin.Id,
+            };
+
+            context.Add(created);
+            await context.SaveChangesAsync();
+            created.Id.Should().NotBe(Guid.Empty);
+            context.ChangeTracker.Clear();
+
+            await _apiClient.Awaiting(a => a.Patch(
+                $"run/{created.Id}",
+                new()
+                {
+                    Body = new
+                    {
+                        RunType = nameof(RunType.Time),
+                        Info = "won't work",
+                    }
+                }
+            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+
+            Run? retrieved = await context.FindAsync<Run>(created.Id);
+            retrieved!.Info.Should().BeEmpty();
+        }
+
+        [TestCase(UserRole.Banned)]
+        [TestCase(UserRole.Registered)]
+        [TestCase(UserRole.Confirmed)]
+        public async Task UpdateRun_BadRole(UserRole role)
+        {
+            IServiceScope scope = _factory.Services.CreateScope();
+            IUserService users = scope.ServiceProvider.GetRequiredService<IUserService>();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+            Run created = new()
+            {
+                CategoryId = _categoryId,
+                PlayedOn = LocalDate.MinIsoValue,
+                Time = Duration.FromSeconds(390),
+                UserId = TestInitCommonFields.Admin.Id,
+            };
+
+            context.Add(created);
+            await context.SaveChangesAsync();
+            created.Id.Should().NotBe(Guid.Empty);
+            context.ChangeTracker.Clear();
+
+            string email = $"testuser.updaterun.{role}@example.com";
+
+            RegisterRequest registerRequest = new()
+            {
+                Email = email,
+                Password = "Passw0rd",
+                Username = $"UpdateCatTest{role}"
+            };
+
+            await users.CreateUser(registerRequest);
+
+            LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+
+            User? user = await users.GetUserByEmail(email);
+            context.Update(user!);
+            user!.Role = role;
+            await context.SaveChangesAsync();
+
+            await _apiClient.Awaiting(a => a.Patch(
+                $"run/{created.Id.ToUrlSafeBase64String()}",
+                new()
+                {
+                    Body = new
+                    {
+                        RunType = nameof(RunType.Time),
+                        Info = "should not work",
+                    },
+                    Jwt = res.Token,
+                }
+            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+
+            Run? retrieved = await context.FindAsync<Run>(created.Id);
+            retrieved!.Info.Should().BeEmpty();
+        }
+
+        [Test]
+        public async Task UpdateRun_NotFound() =>
+            await _apiClient.Awaiting(a => a.Patch(
+                $"run/{Guid.Empty.ToUrlSafeBase64String()}",
+                new()
+                {
+                    Body = new
+                    {
+                        RunType = nameof(RunType.Time),
+                        Info = "should not work",
+                    },
+                    Jwt = _jwt,
+                }
+            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+        [Test]
+        public async Task UpdateRun_FieldNotAllowed()
+        {
+            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+
+            Run created = new()
+            {
+                CategoryId = _categoryId,
+                PlayedOn = LocalDate.MinIsoValue,
+                UserId = TestInitCommonFields.Admin.Id,
+            };
+
+            context.Add(created);
+            await context.SaveChangesAsync();
+            created.Id.Should().NotBe(Guid.Empty);
+            context.ChangeTracker.Clear();
+
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(
+                a => a.Patch(
+                    $"run/{created.Id.ToUrlSafeBase64String()}",
+                    new()
+                    {
+                        Body = new
+                        {
+                            RunType = nameof(RunType.Score),
+                            Score = 1L,
+                        },
+                        Jwt = _jwt,
+                    }
+                )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableEntity);
+
+            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails!.Detail.Should().Be("The request's runType does not match the category's.");
         }
     }
 }

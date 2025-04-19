@@ -1,3 +1,4 @@
+using System.Net;
 using LeaderboardBackend.Filters;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
@@ -90,14 +91,13 @@ public class RunsController(
                 return result;
             },
             badRole => Forbid(),
-            // TODO: This needs to be a ValidationProblemDetails, with `Details` populating `errors`
             badRunType => UnprocessableEntity(
                 ProblemDetailsFactory.CreateProblemDetails(
                     HttpContext,
                     422,
                     null,
                     null,
-                    "The Run's runType did not match the category's."
+                    "The request's runType does not match the category's."
                 )
             )
         );
@@ -156,5 +156,52 @@ public class RunsController(
         }
 
         return Ok(CategoryViewModel.MapFrom(category));
+    }
+
+    // TODO: Replace UserTypes with UserRole, i.e. reconfigure authZ policy infra
+    [Authorize]
+    [HttpPatch("run/{id}")]
+    [SwaggerOperation(
+        "Updates a run with the specified new fields. This request is restricted to administrators " +
+        "or users updating their own runs. " +
+        "Note: `runType` cannot be updated. " +
+        "This operation is atomic; if an error occurs, the run will not be updated. " +
+        "All fields of the request body are optional but you must specify at least one.",
+        OperationId = "updateRun"
+    )]
+    [SwaggerResponse(204)]
+    [SwaggerResponse(401)]
+    [SwaggerResponse(403, "The user attempted to update another user's run, or the user isn't an admin.")]
+    [SwaggerResponse(404, Type = typeof(ProblemDetails))]
+    [SwaggerResponse(422, Type = typeof(ProblemDetails))]
+    public async Task<ActionResult> UpdateRun(
+        [FromRoute] Guid id,
+        [FromBody, SwaggerRequestBody(Required = true)] UpdateRunRequest request
+    )
+    {
+        GetUserResult userRes = await userService.GetUserFromClaims(HttpContext.User);
+
+        if (!userRes.IsT0)
+        {
+            return Unauthorized();
+        }
+
+        UpdateRunResult res = await runService.UpdateRun(userRes.AsT0, id, request);
+
+        return res.Match<ActionResult>(
+            badRole => Forbid(),
+            notFound => NotFound(),
+            badRunType =>
+                UnprocessableEntity(
+                    ProblemDetailsFactory.CreateProblemDetails(
+                        HttpContext,
+                        422,
+                        null,
+                        null,
+                        "The request's runType does not match the category's."
+                    )
+                ),
+            success => NoContent()
+        );
     }
 }
