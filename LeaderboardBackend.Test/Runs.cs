@@ -581,14 +581,15 @@ namespace LeaderboardBackend.Test
                 Username = $"UpdateCatTest{role}"
             };
 
-            await users.CreateUser(registerRequest);
+            User user = (await users.CreateUser(registerRequest)).AsT0;
 
-            LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+            // Log user in first to get their token before updating their role.
+            LoginResponse res = await _apiClient.LoginUser(user.Email, user.Password);
 
-            User? user = await users.GetUserByEmail(email);
             context.Update(user!);
             user!.Role = role;
             await context.SaveChangesAsync();
+
 
             await _apiClient.Awaiting(a => a.Patch(
                 $"run/{created.Id.ToUrlSafeBase64String()}",
@@ -632,6 +633,7 @@ namespace LeaderboardBackend.Test
                 CategoryId = _categoryId,
                 PlayedOn = LocalDate.MinIsoValue,
                 UserId = TestInitCommonFields.Admin.Id,
+                Time = Duration.FromSeconds(390),
             };
 
             context.Add(created);
