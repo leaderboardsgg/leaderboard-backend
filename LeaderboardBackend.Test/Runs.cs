@@ -590,7 +590,6 @@ namespace LeaderboardBackend.Test
             user!.Role = role;
             await context.SaveChangesAsync();
 
-
             await _apiClient.Awaiting(a => a.Patch(
                 $"run/{created.Id.ToUrlSafeBase64String()}",
                 new()
