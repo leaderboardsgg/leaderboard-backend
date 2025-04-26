@@ -15,7 +15,7 @@ public enum SortDirection
 /// <summary>
 ///     Represents a `Category` tied to a `Leaderboard`.
 /// </summary>
-public class Category : IHasUpdateTimestamp
+public class Category : IHasUpdateTimestamp, IHasDeletionTimestamp
 {
     /// <summary>
     ///     The unique identifier of the `Category`.<br/>
