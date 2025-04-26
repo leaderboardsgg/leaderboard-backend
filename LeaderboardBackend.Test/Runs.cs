@@ -159,11 +159,11 @@ namespace LeaderboardBackend.Test
             returned.Data.Should().BeEquivalentTo(runs.Take(2).Select(RunViewModel.MapFrom));
             returned.Total.Should().Be(2);
 
-            ListView<TimedRunViewModel> returned2 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?includeDeleted=false&limit=1024", new());
+            ListView<TimedRunViewModel> returned2 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?status=published&limit=1024", new());
             returned2.Data.Should().BeEquivalentTo(runs.Take(2).Select(RunViewModel.MapFrom));
             returned2.Total.Should().Be(2);
 
-            ListView<TimedRunViewModel> returned3 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?includeDeleted=true&limit=1024", new());
+            ListView<TimedRunViewModel> returned3 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?status=any&limit=1024", new());
             returned3.Data.Should().BeEquivalentTo(new Run[] { runs[0], runs[2], runs[1] }.Select(RunViewModel.MapFrom), config => config.WithStrictOrdering());
             returned3.Total.Should().Be(3);
 
@@ -171,7 +171,7 @@ namespace LeaderboardBackend.Test
             returned4.Data.Single().Should().BeEquivalentTo(RunViewModel.MapFrom(runs[0]));
             returned4.Total.Should().Be(2);
 
-            ListView<TimedRunViewModel> returned5 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?limit=1&includeDeleted=true&offset=1", new());
+            ListView<TimedRunViewModel> returned5 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?limit=1&status=any&offset=1", new());
             returned5.Data.Single().Should().BeEquivalentTo(RunViewModel.MapFrom(runs[2]));
             returned5.Total.Should().Be(3);
         }
