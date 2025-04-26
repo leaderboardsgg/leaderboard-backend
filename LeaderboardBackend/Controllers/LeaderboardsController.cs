@@ -56,9 +56,9 @@ public class LeaderboardsController(
     [SwaggerOperation("Gets all leaderboards.", OperationId = "listLeaderboards")]
     [SwaggerResponse(200)]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
-    public async Task<ActionResult<ListView<LeaderboardViewModel>>> GetLeaderboards([FromQuery] Page page, [FromQuery] bool includeDeleted = false)
+    public async Task<ActionResult<ListView<LeaderboardViewModel>>> GetLeaderboards([FromQuery] Page page, [FromQuery] StatusFilter status = StatusFilter.Published)
     {
-        ListResult<Leaderboard> result = await leaderboardService.ListLeaderboards(includeDeleted, page);
+        ListResult<Leaderboard> result = await leaderboardService.ListLeaderboards(status, page);
         return Ok(new ListView<LeaderboardViewModel>()
         {
             Data = result.Items.Select(LeaderboardViewModel.MapFrom).ToList(),
