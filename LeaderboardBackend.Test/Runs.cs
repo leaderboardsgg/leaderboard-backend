@@ -25,7 +25,7 @@ using NUnit.Framework;
 namespace LeaderboardBackend.Test
 {
     [TestFixture]
-    internal class Runs
+    public class Runs
     {
         private static TestApiClient _apiClient = null!;
         private static WebApplicationFactory<Program> _factory = null!;
@@ -570,22 +570,21 @@ namespace LeaderboardBackend.Test
             context.Add(created);
             await context.SaveChangesAsync();
             created.Id.Should().NotBe(Guid.Empty);
-            context.ChangeTracker.Clear();
-
             string email = $"testuser.updaterun.{role}@example.com";
 
             RegisterRequest registerRequest = new()
             {
                 Email = email,
                 Password = "Passw0rd",
-                Username = $"UpdateCatTest{role}"
+                Username = $"UpdateRunTest{role}"
             };
 
-            User user = (await users.CreateUser(registerRequest)).AsT0;
+            CreateUserResult result = await users.CreateUser(registerRequest);
+            result.IsT0.Should().BeTrue();
 
             // Log user in first to get their token before updating their role.
-            LoginResponse res = await _apiClient.LoginUser(user.Email, user.Password);
-
+            LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+            User user = result.AsT0;
             context.Update(user!);
             user!.Role = role;
             await context.SaveChangesAsync();
@@ -603,6 +602,7 @@ namespace LeaderboardBackend.Test
                 }
             )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
 
+            context.ChangeTracker.Clear();
             Run? retrieved = await context.FindAsync<Run>(created.Id);
             retrieved!.Info.Should().BeEmpty();
         }
