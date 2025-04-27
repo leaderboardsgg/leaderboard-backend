@@ -552,7 +552,6 @@ namespace LeaderboardBackend.Test
 
         [TestCase(UserRole.Banned)]
         [TestCase(UserRole.Registered)]
-        [TestCase(UserRole.Confirmed)]
         public async Task UpdateRun_BadRole(UserRole role)
         {
             IServiceScope scope = _factory.Services.CreateScope();
@@ -608,6 +607,58 @@ namespace LeaderboardBackend.Test
         }
 
         [Test]
+        public async Task UpdateRun_UserDoesNotOwnRun()
+        {
+            IServiceScope scope = _factory.Services.CreateScope();
+            IUserService users = scope.ServiceProvider.GetRequiredService<IUserService>();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+            RegisterRequest registerRequest = new()
+            {
+                Email = "testuser.updaterun.doesnotown@example.com",
+                Password = "Passw0rd",
+                Username = $"UpdateRunTestDoesNotOwnRun"
+            };
+
+            CreateUserResult result = await users.CreateUser(registerRequest);
+            result.IsT0.Should().BeTrue();
+            User user = result.AsT0;
+            context.Update(user!);
+            user!.Role = UserRole.Confirmed;
+
+            Run created = new()
+            {
+                CategoryId = _categoryId,
+                PlayedOn = LocalDate.MinIsoValue,
+                Time = Duration.FromSeconds(390),
+                UserId = TestInitCommonFields.Admin.Id,
+            };
+
+            context.Add(created);
+            await context.SaveChangesAsync();
+            created.Id.Should().NotBe(Guid.Empty);
+
+            LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Patch(
+                $"run/{created.Id.ToUrlSafeBase64String()}",
+                new()
+                {
+                    Body = new
+                    {
+                        RunType = nameof(RunType.Time),
+                        Info = "should not work",
+                    },
+                    Jwt = res.Token,
+                }
+            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+
+            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails.Should().NotBeNull();
+            problemDetails!.Title.Should().Be("User Does Not Own Run");
+        }
+
+        [Test]
         public async Task UpdateRun_NotFound() =>
             await _apiClient.Awaiting(a => a.Patch(
                 $"run/{Guid.Empty.ToUrlSafeBase64String()}",
@@ -621,6 +672,59 @@ namespace LeaderboardBackend.Test
                     Jwt = _jwt,
                 }
             )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+        [Test]
+        public async Task UpdateRun_AlreadyDeleted()
+        {
+            IServiceScope scope = _factory.Services.CreateScope();
+            IUserService users = scope.ServiceProvider.GetRequiredService<IUserService>();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+            string email = "testuser.updaterun.alreadydeleted@example.com";
+
+            RegisterRequest registerRequest = new()
+            {
+                Email = email,
+                Password = "Passw0rd",
+                Username = "UpdateRunTestAlreadyDeleted",
+            };
+
+            CreateUserResult result = await users.CreateUser(registerRequest);
+            result.IsT0.Should().BeTrue();
+            User user = result.AsT0;
+            context.Update(user!);
+            user!.Role = UserRole.Confirmed;
+
+            Run created = new()
+            {
+                CategoryId = _categoryId,
+                PlayedOn = LocalDate.MinIsoValue,
+                UserId = user!.Id,
+                Time = Duration.FromSeconds(390),
+                DeletedAt = _clock.GetCurrentInstant(),
+            };
+
+            context.Add(created);
+            await context.SaveChangesAsync();
+            created.Id.Should().NotBe(Guid.Empty);
+
+            LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Patch(
+                $"run/{created.Id.ToUrlSafeBase64String()}",
+                new()
+                {
+                    Body = new
+                    {
+                        RunType = nameof(RunType.Time),
+                        Info = "should not work",
+                    },
+                    Jwt = res.Token,
+                }
+            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails!.Title.Should().Be("Run Is Deleted");
+        }
 
         [Test]
         public async Task UpdateRun_FieldNotAllowed()
@@ -655,7 +759,7 @@ namespace LeaderboardBackend.Test
                 )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableEntity);
 
             ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-            problemDetails!.Detail.Should().Be("The request's runType does not match the category's.");
+            problemDetails!.Title.Should().Be("Incorrect Run Type");
         }
     }
 }

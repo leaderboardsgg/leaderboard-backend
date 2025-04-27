@@ -1548,7 +1548,14 @@
             }
           },
           "404": {
-            "description": "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information."
+            "description": "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           },
           "422": {
             "description": "Unprocessable Content",
@@ -1668,10 +1675,17 @@
             "description": "Unauthorized"
           },
           "403": {
-            "description": "The user attempted to update another user's run, or the user isn't an admin."
+            "description": "The user attempted to update another user's run, or the user is banned or not yet confirmed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           },
           "404": {
-            "description": "Not Found",
+            "description": "The Run with ID `id` could not be found, or has been deleted. Read `title` for more information.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1681,7 +1695,7 @@
             }
           },
           "422": {
-            "description": "Unprocessable Content",
+            "description": "Response can be a `ProblemDetails` for a request that doesn't match the run type of a category or if the run's already deleted, or a `ValidationProblemDetails` otherwise.",
             "content": {
               "application/json": {
                 "schema": {

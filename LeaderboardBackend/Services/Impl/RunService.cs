@@ -132,12 +132,17 @@ public class RunService(ApplicationContext applicationContext) : IRunService
         {
             case UserRole.Confirmed:
             {
-                if (run.UserId == user.Id)
+                if (run.UserId != user.Id)
                 {
-                    break;
+                    return new UserDoesNotOwnRun();
                 }
 
-                return new BadRole();
+                if (run.DeletedAt != null)
+                {
+                    return new AlreadyDeleted();
+                }
+
+                break;
             }
             case UserRole.Administrator:
                 break;

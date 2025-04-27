@@ -108,7 +108,7 @@ public class RunsController(
     [Paginated]
     [SwaggerOperation("Gets the Runs for a Category.", OperationId = "getRunsForCategory")]
     [SwaggerResponse(200)]
-    [SwaggerResponse(404, "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.")]
+    [SwaggerResponse(404, "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.", Type = typeof(ProblemDetails))]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<ListView<RunViewModel>>> GetRunsForCategory(
         [FromRoute] long id,
@@ -171,9 +171,15 @@ public class RunsController(
     )]
     [SwaggerResponse(204)]
     [SwaggerResponse(401)]
-    [SwaggerResponse(403, "The user attempted to update another user's run, or the user isn't an admin.")]
-    [SwaggerResponse(404, Type = typeof(ProblemDetails))]
-    [SwaggerResponse(422, Type = typeof(ProblemDetails))]
+    [SwaggerResponse(403, "The user attempted to update another user's run, or the user is banned or not yet confirmed.", Type = typeof(ProblemDetails))]
+    [SwaggerResponse(404, "The Run with ID `id` could not be found, or has been deleted. Read `title` for more information.", Type = typeof(ProblemDetails))]
+    [SwaggerResponse(
+        422,
+        "Response can be a `ProblemDetails` for a request that doesn't match " +
+        "the run type of a category or if the run's already deleted, or a " +
+        "`ValidationProblemDetails` otherwise.",
+        Type = typeof(ProblemDetails)
+    )]
     public async Task<ActionResult> UpdateRun(
         [FromRoute] Guid id,
         [FromBody, SwaggerRequestBody(Required = true)] UpdateRunRequest request
@@ -190,15 +196,32 @@ public class RunsController(
 
         return res.Match<ActionResult>(
             badRole => Forbid(),
-            notFound => NotFound(),
+            userDoesNotOwnRun => Problem(
+                null,
+                null,
+                403,
+                "User Does Not Own Run"
+            ),
+            notFound => NotFound(
+                ProblemDetailsFactory.CreateProblemDetails(
+                    HttpContext,
+                    404,
+                    "Run Not Found"
+                )
+            ),
+            alreadyDeleted => NotFound(
+                ProblemDetailsFactory.CreateProblemDetails(
+                    HttpContext,
+                    404,
+                    "Run Is Deleted"
+                )
+            ),
             badRunType =>
                 UnprocessableEntity(
                     ProblemDetailsFactory.CreateProblemDetails(
                         HttpContext,
                         422,
-                        null,
-                        null,
-                        "The request's runType does not match the category's."
+                        "Incorrect Run Type"
                     )
                 ),
             success => NoContent()
