@@ -209,13 +209,33 @@ public class RunsController(
                     "Run Not Found"
                 )
             ),
-            alreadyDeleted => NotFound(
-                ProblemDetailsFactory.CreateProblemDetails(
-                    HttpContext,
-                    404,
-                    "Run Is Deleted"
-                )
-            ),
+            alreadyDeleted =>
+            {
+                string title;
+
+                if (alreadyDeleted.deletedEntity == typeof(Category))
+                {
+                    title = "Category Is Deleted";
+                }
+
+                else if (alreadyDeleted.deletedEntity == typeof(Leaderboard))
+                {
+                    title = "Leaderboard Is Deleted";
+                }
+
+                else
+                {
+                    title = "Run Is Deleted";
+                }
+
+                return NotFound(
+                    ProblemDetailsFactory.CreateProblemDetails(
+                        HttpContext,
+                        404,
+                        title
+                    )
+                );
+            },
             badRunType =>
                 UnprocessableEntity(
                     ProblemDetailsFactory.CreateProblemDetails(

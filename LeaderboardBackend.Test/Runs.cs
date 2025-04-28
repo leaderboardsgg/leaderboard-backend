@@ -674,7 +674,7 @@ namespace LeaderboardBackend.Test
             )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
 
         [Test]
-        public async Task UpdateRun_AlreadyDeleted()
+        public async Task UpdateRun_RunAlreadyDeleted()
         {
             IServiceScope scope = _factory.Services.CreateScope();
             IUserService users = scope.ServiceProvider.GetRequiredService<IUserService>();
@@ -724,6 +724,74 @@ namespace LeaderboardBackend.Test
 
             ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
             problemDetails!.Title.Should().Be("Run Is Deleted");
+        }
+
+        [Test]
+        public async Task UpdateRun_LeaderboardAlreadyDeleted()
+        {
+            IServiceScope scope = _factory.Services.CreateScope();
+            IUserService users = scope.ServiceProvider.GetRequiredService<IUserService>();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+            string email = "testuser.updaterun.boardalreadydeleted@example.com";
+
+            RegisterRequest registerRequest = new()
+            {
+                Email = email,
+                Password = "Passw0rd",
+                Username = "UpdateRunTestBoardAlreadyDeleted",
+            };
+
+            CreateUserResult result = await users.CreateUser(registerRequest);
+            result.IsT0.Should().BeTrue();
+            User user = result.AsT0;
+            context.Update(user!);
+            user!.Role = UserRole.Confirmed;
+
+            Leaderboard leaderboard = new()
+            {
+                Name = "UpdateRunDeletedBoardBoard",
+                Slug = "update-run-deleted-board-board",
+                DeletedAt = _clock.GetCurrentInstant(),
+            };
+
+            Category category = new()
+            {
+                Name = "UpdateRunDeletedBoardCat",
+                Slug = "update-run-deleted-board-cat",
+                SortDirection = SortDirection.Ascending,
+                Type = RunType.Time,
+                Leaderboard = leaderboard,
+            };
+
+            Run created = new()
+            {
+                Category = category,
+                PlayedOn = LocalDate.MinIsoValue,
+                UserId = user!.Id,
+                Time = Duration.FromSeconds(390),
+            };
+
+            context.AddRange(leaderboard, category, created);
+            await context.SaveChangesAsync();
+            created.Id.Should().NotBe(Guid.Empty);
+
+            LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Patch(
+                $"run/{created.Id.ToUrlSafeBase64String()}",
+                new()
+                {
+                    Body = new
+                    {
+                        RunType = nameof(RunType.Time),
+                        Info = "should not work",
+                    },
+                    Jwt = res.Token,
+                }
+            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails!.Title.Should().Be("Leaderboard Is Deleted");
         }
 
         [Test]

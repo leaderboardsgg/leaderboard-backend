@@ -120,6 +120,7 @@ public class RunService(ApplicationContext applicationContext) : IRunService
     {
         Run? run = await applicationContext.Runs
             .Include(run => run.Category)
+            .ThenInclude(cat => cat.Leaderboard)
             .Where(run => run.Id == id)
             .SingleOrDefaultAsync();
 
@@ -140,6 +141,16 @@ public class RunService(ApplicationContext applicationContext) : IRunService
                 if (run.DeletedAt != null)
                 {
                     return new AlreadyDeleted();
+                }
+
+                if (run.Category.DeletedAt != null)
+                {
+                    return new AlreadyDeleted(typeof(Category));
+                }
+
+                if (run.Category.Leaderboard!.DeletedAt != null)
+                {
+                    return new AlreadyDeleted(typeof(Leaderboard));
                 }
 
                 break;

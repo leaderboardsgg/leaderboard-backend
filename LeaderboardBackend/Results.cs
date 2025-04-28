@@ -4,7 +4,15 @@ using OneOf.Types;
 namespace LeaderboardBackend.Result;
 
 public readonly record struct AccountConfirmed;
-public readonly record struct AlreadyDeleted;
+/// <summary>
+/// <param name="deletedEntity">
+/// The entity that is deleted. Useful for when an action on an entity can't be
+/// done because a relation is deleted, and we want to point out the offending
+/// entity in response to clients. For example: a Run can't be updated because
+/// its Leaderboard is deleted, and we want to let clients know that.
+/// </param>
+/// </summary>
+public readonly record struct AlreadyDeleted(Type? deletedEntity = null);
 public readonly record struct AlreadyUsed;
 public readonly record struct BadCredentials;
 public readonly record struct BadRole;
