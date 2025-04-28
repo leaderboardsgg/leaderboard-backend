@@ -213,12 +213,12 @@ public class RunsController(
             {
                 string title;
 
-                if (alreadyDeleted.deletedEntity == typeof(Category))
+                if (alreadyDeleted.DeletedEntity == typeof(Category))
                 {
                     title = "Category Is Deleted";
                 }
 
-                else if (alreadyDeleted.deletedEntity == typeof(Leaderboard))
+                else if (alreadyDeleted.DeletedEntity == typeof(Leaderboard))
                 {
                     title = "Leaderboard Is Deleted";
                 }
