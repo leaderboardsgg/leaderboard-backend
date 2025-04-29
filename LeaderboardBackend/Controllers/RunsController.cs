@@ -176,8 +176,8 @@ public class RunsController(
     [SwaggerResponse(
         422,
         "Response can be a `ProblemDetails` for a request that doesn't match " +
-        "the run type of a category or if the run's already deleted, or a " +
-        "`ValidationProblemDetails` otherwise.",
+        "the run type of a category, or a `ValidationProblemDetails` " +
+        "otherwise.",
         Type = typeof(ProblemDetails)
     )]
     public async Task<ActionResult> UpdateRun(
@@ -202,12 +202,11 @@ public class RunsController(
                 403,
                 "User Does Not Own Run"
             ),
-            notFound => NotFound(
-                ProblemDetailsFactory.CreateProblemDetails(
-                    HttpContext,
-                    404,
-                    "Run Not Found"
-                )
+            notFound => Problem(
+                null,
+                null,
+                404,
+                "Run Not Found"
             ),
             alreadyDeleted =>
             {
@@ -228,12 +227,11 @@ public class RunsController(
                     title = "Run Is Deleted";
                 }
 
-                return NotFound(
-                    ProblemDetailsFactory.CreateProblemDetails(
-                        HttpContext,
-                        404,
-                        title
-                    )
+                return Problem(
+                    null,
+                    null,
+                    404,
+                    title
                 );
             },
             badRunType =>

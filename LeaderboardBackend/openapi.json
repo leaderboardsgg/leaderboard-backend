@@ -1695,7 +1695,7 @@
             }
           },
           "422": {
-            "description": "Response can be a `ProblemDetails` for a request that doesn't match the run type of a category or if the run's already deleted, or a `ValidationProblemDetails` otherwise.",
+            "description": "Response can be a `ProblemDetails` for a request that doesn't match the run type of a category, or a `ValidationProblemDetails` otherwise.",
             "content": {
               "application/json": {
                 "schema": {
