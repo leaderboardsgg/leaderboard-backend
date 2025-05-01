@@ -235,12 +235,11 @@ public class RunsController(
                 );
             },
             badRunType =>
-                UnprocessableEntity(
-                    ProblemDetailsFactory.CreateProblemDetails(
-                        HttpContext,
-                        422,
-                        "Incorrect Run Type"
-                    )
+                Problem(
+                    null,
+                    null,
+                    422,
+                    "Incorrect Run Type"
                 ),
             success => NoContent()
         );
