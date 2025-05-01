@@ -3,6 +3,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 using OneOf.Types;
 
 namespace LeaderboardBackend.Services;
@@ -113,5 +114,96 @@ public class RunService(ApplicationContext applicationContext) : IRunService
         applicationContext.Add(run);
         await applicationContext.SaveChangesAsync();
         return run;
+    }
+
+    public async Task<UpdateRunResult> UpdateRun(User user, Guid id, UpdateRunRequest request)
+    {
+        Run? run = await applicationContext.Runs
+            .Include(run => run.Category)
+            .ThenInclude(cat => cat.Leaderboard)
+            .Where(run => run.Id == id)
+            .SingleOrDefaultAsync();
+
+        if (run is null)
+        {
+            return new NotFound();
+        }
+
+        switch (user.Role)
+        {
+            case UserRole.Confirmed:
+            {
+                if (run.UserId != user.Id)
+                {
+                    return new UserDoesNotOwnRun();
+                }
+
+                if (run.DeletedAt != null)
+                {
+                    return new AlreadyDeleted();
+                }
+
+                if (run.Category.DeletedAt != null)
+                {
+                    return new AlreadyDeleted(typeof(Category));
+                }
+
+                if (run.Category.Leaderboard!.DeletedAt != null)
+                {
+                    return new AlreadyDeleted(typeof(Leaderboard));
+                }
+
+                break;
+            }
+            case UserRole.Administrator:
+                break;
+            default:
+                return new BadRole();
+        }
+
+        if (request.Info is not null)
+        {
+            run.Info = request.Info;
+        }
+
+        if (request.PlayedOn is not null)
+        {
+            run.PlayedOn = (LocalDate)request.PlayedOn;
+        }
+
+        switch (request)
+        {
+            case UpdateTimedRunRequest timed:
+            {
+                if (run.Category.Type != RunType.Time)
+                {
+                    return new BadRunType();
+                }
+
+                if (timed.Time is not null)
+                {
+                    run.Time = (Duration)timed.Time;
+                }
+
+                break;
+            }
+            case UpdateScoredRunRequest scored:
+            {
+                if (run.Category.Type != RunType.Score)
+                {
+                    return new BadRunType();
+                }
+
+                if (scored.Score is not null)
+                {
+                    run.TimeOrScore = (long)scored.Score;
+                }
+
+                break;
+            }
+        }
+
+        await applicationContext.SaveChangesAsync();
+        return new Success();
     }
 }
