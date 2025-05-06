@@ -907,8 +907,9 @@ namespace LeaderboardBackend.Test
                 Username = $"DeleteRunTest{role}",
             });
 
-            User? user = await context.FindAsync<User>(createUserResult.AsT0.Id);
-            user!.Role = role;
+            User user = createUserResult.AsT0;
+            context.Update(user);
+            user.Role = role;
 
             LoginResponse res = await _apiClient.LoginUser(email, "Passw0rd");
 
@@ -920,8 +921,6 @@ namespace LeaderboardBackend.Test
                 Time = Duration.FromSeconds(390),
             };
 
-            // `user` doesn't need to be added as another argument to .Add; it
-            // is already being tracked, and doing so will throw an exception.
             context.Add(run);
 
             await context.SaveChangesAsync();
