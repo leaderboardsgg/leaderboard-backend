@@ -43,6 +43,7 @@ public interface IRunService
     ///     </list>
     /// </returns>
     Task<UpdateRunResult> UpdateRun(User user, Guid id, UpdateRunRequest request);
+    Task<DeleteResult> DeleteRun(Guid id);
 }
 
 [GenerateOneOf]

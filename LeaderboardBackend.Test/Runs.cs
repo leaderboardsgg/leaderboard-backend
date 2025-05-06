@@ -829,5 +829,161 @@ namespace LeaderboardBackend.Test
             ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
             problemDetails!.Title.Should().Be("Incorrect Run Type");
         }
+
+        [Test]
+        public async Task DeleteRun_OK()
+        {
+            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+
+            Run created = new()
+            {
+                CategoryId = _categoryId,
+                PlayedOn = LocalDate.MinIsoValue,
+                UserId = TestInitCommonFields.Admin.Id,
+                Time = Duration.FromSeconds(390),
+            };
+
+            context.Add(created);
+            await context.SaveChangesAsync();
+            created.Id.Should().NotBe(Guid.Empty);
+            context.ChangeTracker.Clear();
+
+            HttpResponseMessage message = await _apiClient.Delete(
+                $"run/{created.Id.ToUrlSafeBase64String()}",
+                new()
+                {
+                    Jwt = _jwt,
+                }
+            );
+
+            message.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+            Run? deleted = await context.FindAsync<Run>(created.Id);
+            deleted!.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
+            deleted!.DeletedAt.Should().Be(_clock.GetCurrentInstant());
+        }
+
+        [Test]
+        public async Task DeleteRun_Unauthenticated()
+        {
+            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+
+            Run run = new()
+            {
+                CategoryId = _categoryId,
+                PlayedOn = LocalDate.MinIsoValue,
+                UserId = TestInitCommonFields.Admin.Id,
+                Time = Duration.FromSeconds(390),
+            };
+
+            context.Add(run);
+            await context.SaveChangesAsync();
+            run.Id.Should().NotBe(Guid.Empty);
+            context.ChangeTracker.Clear();
+
+            await _apiClient.Awaiting(a => a.Delete(
+                $"run/{run.Id.ToUrlSafeBase64String()}",
+                new() { }
+            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+
+            Run? retrieved = await context.FindAsync<Run>(run.Id);
+            retrieved!.DeletedAt.Should().BeNull();
+        }
+
+        [TestCase(UserRole.Banned)]
+        [TestCase(UserRole.Confirmed)]
+        [TestCase(UserRole.Registered)]
+        public async Task DeleteRun_BadRole(UserRole role)
+        {
+            IServiceScope scope = _factory.Services.CreateScope();
+            IUserService users = scope.ServiceProvider.GetRequiredService<IUserService>();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+            string email = $"deleterun.badrole.{role}@example.com";
+            CreateUserResult createUserResult = await users.CreateUser(new()
+            {
+                Email = email,
+                Password = "Passw0rd",
+                Username = $"DeleteRunTest{role}",
+            });
+
+            User user = createUserResult.AsT0;
+            context.Update(user);
+            user.Role = role;
+
+            LoginResponse res = await _apiClient.LoginUser(email, "Passw0rd");
+
+            Run run = new()
+            {
+                CategoryId = _categoryId,
+                PlayedOn = LocalDate.MinIsoValue,
+                UserId = TestInitCommonFields.Admin.Id,
+                Time = Duration.FromSeconds(390),
+            };
+
+            context.Add(run);
+
+            await context.SaveChangesAsync();
+            run.Id.Should().NotBe(Guid.Empty);
+            context.ChangeTracker.Clear();
+
+            await _apiClient.Awaiting(a => a.Delete(
+                $"run/{run.Id.ToUrlSafeBase64String()}",
+                new() { Jwt = res.Token }
+            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+
+            Run? retrieved = await context.FindAsync<Run>(run.Id);
+            retrieved!.DeletedAt.Should().BeNull();
+        }
+
+        [Test]
+        public async Task DeleteRun_NotFound()
+        {
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Delete(
+                $"run/{Guid.Empty.ToUrlSafeBase64String()}",
+                new()
+                {
+                    Jwt = _jwt,
+                }
+            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails!.Title.Should().Be("Not Found");
+        }
+
+        [Test]
+        public async Task DeleteRun_NotFound_AlreadyDeleted()
+        {
+            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+
+            Run run = new()
+            {
+                CategoryId = _categoryId,
+                PlayedOn = LocalDate.MinIsoValue,
+                DeletedAt = _clock.GetCurrentInstant(),
+                UserId = TestInitCommonFields.Admin.Id,
+                Time = Duration.FromSeconds(390),
+            };
+
+            context.Add(run);
+            await context.SaveChangesAsync();
+            run.Id.Should().NotBe(Guid.Empty);
+            run.DeletedAt.Should().NotBeNull();
+            context.ChangeTracker.Clear();
+
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Delete(
+                $"run/{run.Id.ToUrlSafeBase64String()}",
+                new()
+                {
+                    Jwt = _jwt,
+                }
+            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails!.Title.Should().Be("Already Deleted");
+
+            Run? retrieved = await context.FindAsync<Run>(run.Id);
+            retrieved!.UpdatedAt.Should().BeNull();
+        }
     }
 }
