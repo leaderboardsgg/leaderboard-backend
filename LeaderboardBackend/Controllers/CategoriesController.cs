@@ -104,7 +104,12 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
                     problemDetails.Extensions.Add("conflicting", CategoryViewModel.MapFrom(conflict.Conflicting));
                     return Conflict(problemDetails);
                 },
-            notFound => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Leaderboard Not Found"))
+            notFound => Problem(
+                null,
+                null,
+                404,
+                "Leaderboard Not Found"
+            )
         );
     }
 
@@ -167,7 +172,12 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
         return res.Match<ActionResult>(
             success => NoContent(),
             notFound => NotFound(),
-            alreadyDeleted => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Already Deleted"))
+            alreadyDeleted => Problem(
+                null,
+                null,
+                404,
+                "Already Deleted"
+            )
         );
     }
 
@@ -188,8 +198,12 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
         return r.Match<ActionResult<CategoryViewModel>>(
             category => Ok(CategoryViewModel.MapFrom(category)),
             notFound => NotFound(),
-            neverDeleted =>
-                NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Not Deleted")),
+            neverDeleted => Problem(
+                null,
+                null,
+                404,
+                "Not Deleted"
+            ),
             conflict =>
             {
                 ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
