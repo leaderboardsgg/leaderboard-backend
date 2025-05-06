@@ -371,9 +371,10 @@ internal class Categories
     public async Task CreateCategory_BadRole(UserRole role)
     {
         IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
 
-        string email = $"testuser.updatecat.{role}@example.com";
+        string email = $"testuser.createcat.{role}@example.com";
 
         RegisterRequest registerRequest = new()
         {
@@ -382,8 +383,14 @@ internal class Categories
             Username = $"CreateCatTest{role}"
         };
 
-        await userService.CreateUser(registerRequest);
+        CreateUserResult createUserResult = await userService.CreateUser(registerRequest);
         LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+
+        createUserResult.IsT0.Should().BeTrue();
+        User user = createUserResult.AsT0;
+        context.Update(user);
+        user.Role = role;
+        await context.SaveChangesAsync();
 
         CreateCategoryRequest request = new()
         {
@@ -642,8 +649,14 @@ internal class Categories
             Username = $"UpdateCatTest{role}"
         };
 
-        await userService.CreateUser(registerRequest);
+        CreateUserResult createUserResult = await userService.CreateUser(registerRequest);
         LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+
+        createUserResult.IsT0.Should().BeTrue();
+        User user = createUserResult.AsT0;
+        context.Update(user);
+        user.Role = role;
+        await context.SaveChangesAsync();
 
         await FluentActions.Awaiting(() => _apiClient.Patch(
             $"category/{cat.Id}",
@@ -997,8 +1010,13 @@ internal class Categories
             Username = $"DeleteCatTest{role}"
         };
 
-        await userService.CreateUser(registerRequest);
+        CreateUserResult createUserResult = await userService.CreateUser(registerRequest);
         LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+
+        createUserResult.IsT0.Should().BeTrue();
+        User user = createUserResult.AsT0;
+        context.Update(user);
+        user.Role = role;
 
         Category cat = new()
         {
@@ -1174,8 +1192,14 @@ internal class Categories
             Username = $"RestoreCatTest{role}"
         };
 
-        await userService.CreateUser(registerRequest);
+        CreateUserResult createUserResult = await userService.CreateUser(registerRequest);
         LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+
+        createUserResult.IsT0.Should().BeTrue();
+        User user = createUserResult.AsT0;
+        context.Update(user);
+        user.Role = role;
+        await context.SaveChangesAsync();
 
         await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
             $"category/{cat.Id}/restore",
