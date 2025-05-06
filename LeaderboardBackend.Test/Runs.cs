@@ -834,13 +834,13 @@ namespace LeaderboardBackend.Test
         public async Task DeleteRun_OK()
         {
             ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
-            User? admin = await context.Users.Where(u => u.Role == UserRole.Administrator).FirstAsync();
 
             Run created = new()
             {
                 CategoryId = _categoryId,
                 PlayedOn = LocalDate.MinIsoValue,
-                User = admin!,
+                UserId = TestInitCommonFields.Admin.Id,
+                Time = Duration.FromSeconds(390),
             };
 
             context.Add(created);
@@ -867,13 +867,13 @@ namespace LeaderboardBackend.Test
         public async Task DeleteRun_Unauthenticated()
         {
             ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
-            User? admin = await context.Users.Where(u => u.Role == UserRole.Administrator).FirstAsync();
 
             Run run = new()
             {
                 CategoryId = _categoryId,
                 PlayedOn = LocalDate.MinIsoValue,
-                User = admin!,
+                UserId = TestInitCommonFields.Admin.Id,
+                Time = Duration.FromSeconds(390),
             };
 
             context.Add(run);
@@ -900,23 +900,30 @@ namespace LeaderboardBackend.Test
             ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
             string email = $"deleterun.badrole.{role}@example.com";
-            await users.CreateUser(new()
+            CreateUserResult createUserResult = await users.CreateUser(new()
             {
                 Email = email,
                 Password = "Passw0rd",
                 Username = $"DeleteCatTest{role}",
             });
+
+            User? user = await context.FindAsync<User>(createUserResult.AsT0.Id);
+            user!.Role = role;
+
             LoginResponse res = await _apiClient.LoginUser(email, "Passw0rd");
 
-            User? admin = await context.Users.Where(u => u.Role == UserRole.Administrator).FirstAsync();
             Run run = new()
             {
                 CategoryId = _categoryId,
                 PlayedOn = LocalDate.MinIsoValue,
-                User = admin!,
+                UserId = TestInitCommonFields.Admin.Id,
+                Time = Duration.FromSeconds(390),
             };
 
+            // `user` doesn't need to be added as another argument to .Add; it
+            // is already being tracked, and doing so will throw an exception.
             context.Add(run);
+
             await context.SaveChangesAsync();
             run.Id.Should().NotBe(Guid.Empty);
             context.ChangeTracker.Clear();
@@ -949,14 +956,14 @@ namespace LeaderboardBackend.Test
         public async Task DeleteRun_NotFound_AlreadyDeleted()
         {
             ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
-            User? admin = await context.Users.Where(u => u.Role == UserRole.Administrator).FirstAsync();
 
             Run run = new()
             {
                 CategoryId = _categoryId,
                 PlayedOn = LocalDate.MinIsoValue,
                 DeletedAt = _clock.GetCurrentInstant(),
-                User = admin!,
+                UserId = TestInitCommonFields.Admin.Id,
+                Time = Duration.FromSeconds(390),
             };
 
             context.Add(run);

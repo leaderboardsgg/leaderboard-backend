@@ -269,7 +269,12 @@ public class RunsController(
         return res.Match<ActionResult>(
             success => NoContent(),
             notFound => NotFound(),
-            alreadyDeleted => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Already Deleted"))
+            alreadyDeleted => Problem(
+                null,
+                null,
+                404,
+                "Already Deleted"
+            )
         );
     }
 }
