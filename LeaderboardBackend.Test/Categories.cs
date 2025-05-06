@@ -297,11 +297,15 @@ internal class Categories
 
     [TestCase(-1, 0)]
     [TestCase(1024, -1)]
-    public async Task GetCategoriesForLeaderboard_BadPageData(int limit, int offset)
-    {
-        await FluentActions.Awaiting(() => _apiClient.Get<ListView<CategoryViewModel>>($"/api/leaderboard/54/categories?limit={limit}&offset={offset}", new()))
-            .Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
-    }
+    public async Task GetCategoriesForLeaderboard_BadPageData(int limit, int offset) =>
+        await _apiClient.Awaiting(
+            a => a.Get<ListView<CategoryViewModel>>(
+                $"/api/leaderboard/54/categories?limit={limit}&offset={offset}",
+                new()
+            )
+        ).Should()
+        .ThrowAsync<RequestFailureException>()
+        .Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
 
     [Test]
     public async Task GetCategoriesForLeaderboard_NotFound() =>
