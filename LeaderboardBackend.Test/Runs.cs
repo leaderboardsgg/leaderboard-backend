@@ -904,7 +904,7 @@ namespace LeaderboardBackend.Test
             {
                 Email = email,
                 Password = "Passw0rd",
-                Username = $"DeleteCatTest{role}",
+                Username = $"DeleteRunTest{role}",
             });
 
             User? user = await context.FindAsync<User>(createUserResult.AsT0.Id);
