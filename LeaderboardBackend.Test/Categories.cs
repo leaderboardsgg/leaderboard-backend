@@ -101,6 +101,7 @@ internal class Categories
             CreatedAt = _clock.GetCurrentInstant(),
             UpdatedAt = null,
             DeletedAt = null,
+            Status = Status.Published
         });
     }
 
@@ -154,6 +155,7 @@ internal class Categories
             CreatedAt = _clock.GetCurrentInstant(),
             UpdatedAt = null,
             DeletedAt = null,
+            Status = Status.Published
         });
     }
 
@@ -277,7 +279,7 @@ internal class Categories
         resultSansDeleted.LimitDefault.Should().Be(64);
 
         ListView<CategoryViewModel> resultWithDeleted = await _apiClient.Get<ListView<CategoryViewModel>>(
-            $"api/leaderboard/{board.Id}/categories?includeDeleted=true",
+            $"api/leaderboard/{board.Id}/categories?status=any",
             new() { }
         );
 

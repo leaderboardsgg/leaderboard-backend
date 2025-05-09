@@ -49,6 +49,8 @@ public record CategoryViewModel
     /// <inheritdoc cref="Category.DeletedAt" />
     public required Instant? DeletedAt { get; set; }
 
+    public required Status Status { get; set; }
+
     public static CategoryViewModel MapFrom(Category category) => new()
     {
         Id = category.Id,
@@ -60,6 +62,7 @@ public record CategoryViewModel
         LeaderboardId = category.LeaderboardId,
         CreatedAt = category.CreatedAt,
         UpdatedAt = category.UpdatedAt,
-        DeletedAt = category.DeletedAt
+        DeletedAt = category.DeletedAt,
+        Status = category.Status()
     };
 }

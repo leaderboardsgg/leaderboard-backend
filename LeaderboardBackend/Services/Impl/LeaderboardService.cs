@@ -17,10 +17,9 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
         await applicationContext.Leaderboards
             .FirstOrDefaultAsync(b => b.Slug == slug && b.DeletedAt == null);
 
-    public async Task<ListResult<Leaderboard>> ListLeaderboards(bool includeDeleted, Page page)
+    public async Task<ListResult<Leaderboard>> ListLeaderboards(StatusFilter statusFilter, Page page)
     {
-        IQueryable<Leaderboard> lbs = applicationContext.Leaderboards;
-        IQueryable<Leaderboard> query = includeDeleted ? lbs : lbs.Where(lb => lb.DeletedAt == null);
+        IQueryable<Leaderboard> query = applicationContext.Leaderboards.FilterByStatus(statusFilter);
         long count = await query.LongCountAsync();
 
         // Ordering by ID is necessary, otherwise pagination breaks completely because the records won't

@@ -115,10 +115,10 @@ public class RunsController(
     public async Task<ActionResult<ListView<RunViewModel>>> GetRunsForCategory(
         [FromRoute] long id,
         [FromQuery] Page page,
-        [FromQuery, SwaggerParameter(Required = false, Description = "Whether to include deleted runs. Defaults false.")] bool includeDeleted = false
+        [FromQuery] StatusFilter status = StatusFilter.Published
     )
     {
-        GetRunsForCategoryResult result = await runService.GetRunsForCategory(id, page, includeDeleted);
+        GetRunsForCategoryResult result = await runService.GetRunsForCategory(id, status, page);
 
         return result.Match<ActionResult>(
             runs => Ok(new ListView<RunViewModel>()

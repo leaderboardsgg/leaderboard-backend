@@ -52,6 +52,8 @@ public abstract record RunViewModel
     /// </summary>
     public required Guid UserId { get; set; }
 
+    public required Status Status { get; set; }
+
     public static RunViewModel MapFrom(Run run) => run.Type switch
     {
         RunType.Time => new TimedRunViewModel
@@ -65,7 +67,8 @@ public abstract record RunViewModel
             DeletedAt = run.DeletedAt,
             Info = run.Info,
             Time = run.Time,
-            RunType = run.Type
+            RunType = run.Type,
+            Status = run.Status()
         },
         RunType.Score => new ScoredRunViewModel
         {
@@ -78,7 +81,8 @@ public abstract record RunViewModel
             DeletedAt = run.DeletedAt,
             Info = run.Info,
             Score = run.TimeOrScore,
-            RunType = run.Type
+            RunType = run.Type,
+            Status = run.Status()
         },
         _ => throw new NotImplementedException(),
     };
