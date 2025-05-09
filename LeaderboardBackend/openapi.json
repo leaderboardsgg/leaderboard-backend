@@ -2142,7 +2142,11 @@
         "type": "object",
         "properties": {
           "runType": {
-            "$ref": "#/components/schemas/RunType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunType"
+              }
+            ]
           },
           "info": {
             "type": "string"
@@ -2700,7 +2704,11 @@
         "type": "object",
         "properties": {
           "runType": {
-            "$ref": "#/components/schemas/RunType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunType"
+              }
+            ]
           },
           "info": {
             "type": "string"
