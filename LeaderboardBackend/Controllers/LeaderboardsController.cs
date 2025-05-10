@@ -1,3 +1,4 @@
+using System.Net;
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Filters;
 using LeaderboardBackend.Models.Entities;
@@ -112,8 +113,12 @@ public class LeaderboardsController(
         return r.Match<ActionResult<LeaderboardViewModel>>(
             board => Ok(LeaderboardViewModel.MapFrom(board)),
             notFound => NotFound(),
-            neverDeleted =>
-                NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Not Deleted")),
+            neverDeleted => Problem(
+                null,
+                null,
+                404,
+                "Not Deleted"
+            ),
             conflict =>
             {
                 ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
@@ -144,7 +149,12 @@ public class LeaderboardsController(
         return res.Match<ActionResult>(
             success => NoContent(),
             notFound => NotFound(),
-            alreadyDeleted => NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Already Deleted"))
+            alreadyDeleted => Problem(
+                null,
+                null,
+                404,
+                "Already Deleted"
+            )
         );
     }
 

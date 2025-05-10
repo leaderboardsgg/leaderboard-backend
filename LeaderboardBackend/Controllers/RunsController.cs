@@ -60,23 +60,21 @@ public class RunsController(
 
         if (category is null)
         {
-            return NotFound(
-                ProblemDetailsFactory.CreateProblemDetails(
-                    HttpContext,
-                    404,
-                    "Category Not Found"
-                )
+            return Problem(
+                null,
+                null,
+                404,
+                "Category Not Found"
             );
         }
 
         if (category.DeletedAt is not null)
         {
-            return NotFound(
-                ProblemDetailsFactory.CreateProblemDetails(
-                    HttpContext,
-                    404,
-                    "Category Is Deleted"
-                )
+            return Problem(
+                null,
+                null,
+                404,
+                "Category Is Deleted"
             );
         }
 
@@ -93,14 +91,11 @@ public class RunsController(
                 return result;
             },
             badRole => Forbid(),
-            badRunType => UnprocessableEntity(
-                ProblemDetailsFactory.CreateProblemDetails(
-                    HttpContext,
-                    422,
-                    null,
-                    null,
-                    "The request's runType does not match the category's."
-                )
+            badRunType => Problem(
+                null,
+                null,
+                422,
+                "The request's runType does not match the category's."
             )
         );
     }
@@ -126,12 +121,11 @@ public class RunsController(
                 Data = runs.Items.Select(RunViewModel.MapFrom).ToList(),
                 Total = runs.ItemsTotal
             }),
-            notFound => NotFound(
-                ProblemDetailsFactory.CreateProblemDetails(
-                    HttpContext,
-                    404,
-                    "Category Not Found"
-                )
+            notFound => Problem(
+                null,
+                null,
+                404,
+                "Category Not Found"
             )
         );
     }
