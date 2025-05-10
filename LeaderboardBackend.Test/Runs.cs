@@ -219,7 +219,9 @@ namespace LeaderboardBackend.Test
                 Username = $"CreateRunTest{role}",
             });
 
-            User? user = await context.FindAsync<User>(result.AsT0.Id);
+            result.IsT0.Should().BeTrue();
+            User user = result.AsT0;
+            context.Update(user);
             user!.Role = role;
 
             await context.SaveChangesAsync();
@@ -280,16 +282,24 @@ namespace LeaderboardBackend.Test
         public async Task CreateRun_BadRole(UserRole role)
         {
             IServiceScope scope = _factory.Services.CreateScope();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
             IUserService service = scope.ServiceProvider.GetRequiredService<IUserService>();
 
-            await service.CreateUser(new()
+            CreateUserResult createUserResult = await service.CreateUser(new()
             {
                 Email = $"testuser.createrun.{role}@example.com",
                 Password = "P4ssword",
                 Username = $"CreateRunTest{role}"
             });
 
-            LoginResponse user = await _apiClient.LoginUser($"testuser.createrun.{role}@example.com", "P4ssword");
+            // Log in to get a token first, then update the user's role
+            LoginResponse res = await _apiClient.LoginUser($"testuser.createrun.{role}@example.com", "P4ssword");
+
+            createUserResult.IsT0.Should().BeTrue();
+            User user = createUserResult.AsT0;
+            context.Update(user);
+            user.Role = role;
+            await context.SaveChangesAsync();
 
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
                 $"/category/{_categoryId}/runs/create",
@@ -301,7 +311,7 @@ namespace LeaderboardBackend.Test
                         PlayedOn = "2025-01-01",
                         Time = "00:10:00.000"
                     },
-                    Jwt = user.Token,
+                    Jwt = res.Token,
                 }
             )).Should()
             .ThrowAsync<RequestFailureException>()
@@ -475,8 +485,10 @@ namespace LeaderboardBackend.Test
                 Username = "updaterunok",
             };
 
-            CreateUserResult createdUserResult = await users.CreateUser(registerRequest);
-            User? user = await context.FindAsync<User>(createdUserResult.AsT0.Id);
+            CreateUserResult createUserResult = await users.CreateUser(registerRequest);
+            createUserResult.IsT0.Should().BeTrue();
+            User user = createUserResult.AsT0;
+            context.Update(user);
             user!.Role = UserRole.Confirmed;
 
             Run run = new()
@@ -584,8 +596,8 @@ namespace LeaderboardBackend.Test
             // Log user in first to get their token before updating their role.
             LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
             User user = result.AsT0;
-            context.Update(user!);
-            user!.Role = role;
+            context.Update(user);
+            user.Role = role;
             await context.SaveChangesAsync();
 
             await _apiClient.Awaiting(a => a.Patch(
@@ -623,8 +635,8 @@ namespace LeaderboardBackend.Test
             CreateUserResult result = await users.CreateUser(registerRequest);
             result.IsT0.Should().BeTrue();
             User user = result.AsT0;
-            context.Update(user!);
-            user!.Role = UserRole.Confirmed;
+            context.Update(user);
+            user.Role = UserRole.Confirmed;
 
             Run created = new()
             {
@@ -692,14 +704,14 @@ namespace LeaderboardBackend.Test
             CreateUserResult result = await users.CreateUser(registerRequest);
             result.IsT0.Should().BeTrue();
             User user = result.AsT0;
-            context.Update(user!);
-            user!.Role = UserRole.Confirmed;
+            context.Update(user);
+            user.Role = UserRole.Confirmed;
 
             Run created = new()
             {
                 CategoryId = _categoryId,
                 PlayedOn = LocalDate.MinIsoValue,
-                UserId = user!.Id,
+                UserId = user.Id,
                 Time = Duration.FromSeconds(390),
                 DeletedAt = _clock.GetCurrentInstant(),
             };
@@ -745,8 +757,8 @@ namespace LeaderboardBackend.Test
             CreateUserResult result = await users.CreateUser(registerRequest);
             result.IsT0.Should().BeTrue();
             User user = result.AsT0;
-            context.Update(user!);
-            user!.Role = UserRole.Confirmed;
+            context.Update(user);
+            user.Role = UserRole.Confirmed;
 
             Leaderboard leaderboard = new()
             {
@@ -768,7 +780,7 @@ namespace LeaderboardBackend.Test
             {
                 Category = category,
                 PlayedOn = LocalDate.MinIsoValue,
-                UserId = user!.Id,
+                UserId = user.Id,
                 Time = Duration.FromSeconds(390),
             };
 
@@ -907,6 +919,7 @@ namespace LeaderboardBackend.Test
                 Username = $"DeleteRunTest{role}",
             });
 
+            createUserResult.IsT0.Should().BeTrue();
             User user = createUserResult.AsT0;
             context.Update(user);
             user.Role = role;
