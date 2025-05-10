@@ -197,7 +197,9 @@ public class Leaderboards
     [TestCase(UserRole.Registered)]
     public async Task CreateLeaderboard_BadRole(UserRole role)
     {
-        IUserService userService = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<IUserService>();
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+        IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
 
         RegisterRequest registerRequest = new()
         {
@@ -206,7 +208,14 @@ public class Leaderboards
             Username = $"CreateLBTest{role}"
         };
 
-        await userService.CreateUser(registerRequest);
+        CreateUserResult createUserResult = await userService.CreateUser(registerRequest);
+        LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+
+        createUserResult.IsT0.Should().BeTrue();
+        User user = createUserResult.AsT0;
+        context.Update(user);
+        user.Role = role;
+        await context.SaveChangesAsync();
 
         CreateLeaderboardRequest req = new()
         {
@@ -215,13 +224,9 @@ public class Leaderboards
             Info = "You don't have permission to create this!"
         };
 
-#pragma warning disable IDE0008
-        var res = await FluentActions.Awaiting(() => _apiClient.LoginUser(registerRequest.Email, registerRequest.Password)).Should().NotThrowAsync();
-#pragma warning restore IDE0008
-
         await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>(
             "/leaderboards/create",
-            new() { Body = req, Jwt = res.Subject.Token }
+            new() { Body = req, Jwt = res.Token }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
     }
 
@@ -378,11 +383,9 @@ public class Leaderboards
 
     [TestCase(-1, 0)]
     [TestCase(1024, -1)]
-    public async Task GetLeaderboards_BadPageData(int limit, int offset)
-    {
+    public async Task GetLeaderboards_BadPageData(int limit, int offset) =>
         await FluentActions.Awaiting(() => _apiClient.Get<ListView<LeaderboardViewModel>>($"/api/leaderboards?limit={limit}&offset={offset}", new()))
             .Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
-    }
 
     [Test]
     public async Task RestoreLeaderboard_OK()
@@ -424,21 +427,27 @@ public class Leaderboards
     [Test]
     public async Task RestoreLeaderboard_Banned_Unauthorized()
     {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+        IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+
         string email = "restore-leaderboard-banned@example.com";
         string password = "P4ssword";
 
-        UserViewModel userModel = await _apiClient.RegisterUser(
-            "RestoreBoardBanned",
-            email,
-            password
+        CreateUserResult createUserResult = await userService.CreateUser(
+            new()
+            {
+                Email = email,
+                Password = password,
+                Username = "RestoreBoardBanned",
+            }
         );
+        createUserResult.IsT0.Should().BeTrue();
+        User user = createUserResult.AsT0;
+        context.Update(user);
+        user.Role = UserRole.Banned;
 
         string jwt = (await _apiClient.LoginUser(email, password)).Token;
-
-        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
-
-        User update = await context.Users.FirstAsync(user => user.Id == userModel.Id);
-        update.Role = UserRole.Banned;
 
         await context.SaveChangesAsync();
 
@@ -458,14 +467,22 @@ public class Leaderboards
     [TestCase("restore-leaderboard-unauth2@example.com", "RestoreBoard2", UserRole.Registered)]
     public async Task RestoreLeaderboard_Unauthorized(string email, string username, UserRole role)
     {
-        UserViewModel userModel = await _apiClient.RegisterUser(username, email, "P4ssword");
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+        IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
 
-        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
-
-        User? user = await context.Users.FindAsync(userModel.Id);
-
-        user!.Role = role;
-
+        CreateUserResult createUserResult = await userService.CreateUser(
+            new()
+            {
+                Email = email,
+                Password = "P4ssword",
+                Username = username,
+            }
+        );
+        createUserResult.IsT0.Should().BeTrue();
+        User user = createUserResult.AsT0;
+        context.Update(user);
+        user.Role = role;
         await context.SaveChangesAsync();
 
         string jwt = (await _apiClient.LoginUser(email, "P4ssword")).Token;
@@ -607,14 +624,13 @@ public class Leaderboards
             Slug = $"lb-delete-bad-role-test-{role}",
         };
 
-        await userService.CreateUser(registerRequest);
         context.Leaderboards.Add(lb);
-        await context.SaveChangesAsync();
+        CreateUserResult createUserResult = await userService.CreateUser(registerRequest);
         LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
-        User? user = await userService.GetUserByEmail(email);
-        user.Should().NotBeNull();
-        user!.Role = role;
-        context.Users.Update(user);
+        createUserResult.IsT0.Should().BeTrue();
+        User user = createUserResult.AsT0;
+        context.Update(user);
+        user.Role = role;
         await context.SaveChangesAsync();
 
         await FluentActions.Awaiting(() => _apiClient.Delete(
@@ -745,14 +761,13 @@ public class Leaderboards
             Slug = $"lb-update-bad-role-test-{role}",
         };
 
-        await userService.CreateUser(registerRequest);
+        CreateUserResult createUserResult = await userService.CreateUser(registerRequest);
         context.Leaderboards.Add(lb);
-        await context.SaveChangesAsync();
         LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
-        User? user = await userService.GetUserByEmail(email);
-        user.Should().NotBeNull();
-        user!.Role = role;
-        context.Users.Update(user);
+        createUserResult.IsT0.Should().BeTrue();
+        User user = createUserResult.AsT0;
+        context.Update(user);
+        user.Role = role;
         await context.SaveChangesAsync();
         _clock.AdvanceMinutes(1);
 
