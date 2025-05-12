@@ -22,5 +22,5 @@ public static class StatusFilterMethods
         };
 
     public static IEnumerable<T> FilterByStatus<T>(this IEnumerable<T> enumerable, StatusFilter statusFilter) where T : IHasDeletionTimestamp
-        => enumerable.Where(ent => statusFilter == StatusFilter.Any || ((int)statusFilter) == (int)ent.Status);
+        => enumerable.Where(ent => statusFilter == StatusFilter.Any || ((int)statusFilter) == (int)ent.Status());
 }
