@@ -15,8 +15,8 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
 
     public async Task<GetRunsForCategoryResult> GetRunsForCategory(
         long id,
-        Page page,
-        bool includeDeleted = false
+        StatusFilter statusFilter,
+        Page page
     )
     {
         Category? cat = await applicationContext.FindAsync<Category>(id);
@@ -27,9 +27,7 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
 
         IQueryable<Run> query = applicationContext.Runs
             .Include(run => run.Category)
-            .Where(run =>
-                run.CategoryId == id && (includeDeleted || run.DeletedAt == null)
-            );
+            .FilterByStatus(statusFilter);
 
         long count = await query.LongCountAsync();
 

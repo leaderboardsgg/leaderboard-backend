@@ -48,6 +48,8 @@ public record LeaderboardViewModel
     /// </summary>
     public required Instant? DeletedAt { get; set; }
 
+    public required Status Status { get; set; }
+
     public static LeaderboardViewModel MapFrom(Leaderboard leaderboard) => new()
     {
         Id = leaderboard.Id,
@@ -57,5 +59,6 @@ public record LeaderboardViewModel
         CreatedAt = leaderboard.CreatedAt,
         UpdatedAt = leaderboard.UpdatedAt,
         DeletedAt = leaderboard.DeletedAt,
+        Status = leaderboard.Status()
     };
 }

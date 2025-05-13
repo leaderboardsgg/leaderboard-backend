@@ -9,7 +9,7 @@ namespace LeaderboardBackend.Services;
 public interface IRunService
 {
     Task<Run?> GetRun(Guid id);
-    Task<GetRunsForCategoryResult> GetRunsForCategory(long id, Page page, bool includeDeleted = false);
+    Task<GetRunsForCategoryResult> GetRunsForCategory(long id, StatusFilter statusFilter, Page page);
     Task<CreateRunResult> CreateRun(User user, Category category, CreateRunRequest request);
     /// <returns>
     ///     One of four cases (none of which return any inner data):

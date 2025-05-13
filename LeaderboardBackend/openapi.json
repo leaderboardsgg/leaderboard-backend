@@ -17,7 +17,12 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RegisterRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RegisterRequest"
+                  }
+                ],
+                "description": "This request object is sent when a `User` is attempting to register."
               }
             }
           },
@@ -82,7 +87,12 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LoginRequest"
+                  }
+                ],
+                "description": "This request object is sent when a `User` is attempting to log in."
               }
             }
           },
@@ -179,7 +189,11 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RecoverAccountRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RecoverAccountRequest"
+                  }
+                ]
               }
             }
           }
@@ -313,7 +327,11 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ChangePasswordRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ChangePasswordRequest"
+                  }
+                ]
               }
             }
           },
@@ -506,12 +524,15 @@
             }
           },
           {
-            "name": "includeDeleted",
+            "name": "status",
             "in": "query",
-            "description": "Whether to include deleted Categories. Defaults to `false`.",
             "schema": {
-              "type": "boolean",
-              "default": false
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/StatusFilter"
+                }
+              ],
+              "default": "Published"
             }
           }
         ],
@@ -584,7 +605,12 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateCategoryRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateCategoryRequest"
+                  }
+                ],
+                "description": "This request object is sent when creating a `Category`."
               }
             }
           },
@@ -675,7 +701,11 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateCategoryRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateCategoryRequest"
+                  }
+                ]
               }
             }
           },
@@ -983,11 +1013,15 @@
             }
           },
           {
-            "name": "includeDeleted",
+            "name": "status",
             "in": "query",
             "schema": {
-              "type": "boolean",
-              "default": false
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/StatusFilter"
+                }
+              ],
+              "default": "Published"
             }
           }
         ],
@@ -1039,7 +1073,12 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateLeaderboardRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateLeaderboardRequest"
+                  }
+                ],
+                "description": "This request object is sent when creating a `Leaderboard`."
               }
             }
           },
@@ -1243,7 +1282,11 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateLeaderboardRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateLeaderboardRequest"
+                  }
+                ]
               }
             }
           },
@@ -1514,12 +1557,15 @@
             }
           },
           {
-            "name": "includeDeleted",
+            "name": "status",
             "in": "query",
-            "description": "Whether to include deleted runs. Defaults false.",
             "schema": {
-              "type": "boolean",
-              "default": false
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/StatusFilter"
+                }
+              ],
+              "default": "Published"
             }
           }
         ],
@@ -1862,6 +1908,7 @@
           "name",
           "slug",
           "sortDirection",
+          "status",
           "type",
           "updatedAt"
         ],
@@ -1889,10 +1936,18 @@
             "example": "Video proof is required."
           },
           "type": {
-            "$ref": "#/components/schemas/RunType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunType"
+              }
+            ]
           },
           "sortDirection": {
-            "$ref": "#/components/schemas/SortDirection"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SortDirection"
+              }
+            ]
           },
           "leaderboardId": {
             "type": "integer",
@@ -1914,6 +1969,13 @@
             "format": "date-time",
             "nullable": true,
             "example": "1984-01-01T00:00:00Z"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Status"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -1944,7 +2006,13 @@
             "nullable": true
           },
           "conflicting": {
-            "$ref": "#/components/schemas/CategoryViewModel"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CategoryViewModel"
+              }
+            ],
+            "description": "Represents a `Category` tied to a `Leaderboard`.",
+            "nullable": true
           }
         },
         "additionalProperties": { },
@@ -2023,10 +2091,18 @@
             "example": "Video proof is required."
           },
           "sortDirection": {
-            "$ref": "#/components/schemas/SortDirection"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SortDirection"
+              }
+            ]
           },
           "type": {
-            "$ref": "#/components/schemas/RunType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunType"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -2066,7 +2142,11 @@
         "type": "object",
         "properties": {
           "runType": {
-            "$ref": "#/components/schemas/RunType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunType"
+              }
+            ]
           },
           "info": {
             "type": "string"
@@ -2140,6 +2220,7 @@
           "info",
           "name",
           "slug",
+          "status",
           "updatedAt"
         ],
         "type": "object",
@@ -2183,6 +2264,13 @@
             "format": "date-time",
             "nullable": true,
             "example": "1984-01-01T00:00:00Z"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Status"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -2213,7 +2301,13 @@
             "nullable": true
           },
           "conflicting": {
-            "$ref": "#/components/schemas/LeaderboardViewModel"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LeaderboardViewModel"
+              }
+            ],
+            "description": "Represents a collection of `Leaderboard` entities.",
+            "nullable": true
           }
         },
         "additionalProperties": { },
@@ -2385,13 +2479,18 @@
           "info",
           "playedOn",
           "runType",
+          "status",
           "updatedAt",
           "userId"
         ],
         "type": "object",
         "properties": {
           "runType": {
-            "$ref": "#/components/schemas/RunType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunType"
+              }
+            ]
           },
           "id": {
             "pattern": "^[a-zA-Z0-9-_]{22}$",
@@ -2438,6 +2537,13 @@
             "pattern": "^[a-zA-Z0-9-_]{22}$",
             "type": "string",
             "description": "The ID of the LeaderboardBackend.Models.Entities.User who submitted this run."
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Status"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -2517,6 +2623,21 @@
         ],
         "type": "string"
       },
+      "Status": {
+        "enum": [
+          "Published",
+          "Deleted"
+        ],
+        "type": "string"
+      },
+      "StatusFilter": {
+        "enum": [
+          "Published",
+          "Deleted",
+          "Any"
+        ],
+        "type": "string"
+      },
       "TimedRunViewModel": {
         "allOf": [
           {
@@ -2551,7 +2672,12 @@
             "type": "string"
           },
           "sortDirection": {
-            "$ref": "#/components/schemas/SortDirection"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SortDirection"
+              }
+            ],
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -2578,7 +2704,11 @@
         "type": "object",
         "properties": {
           "runType": {
-            "$ref": "#/components/schemas/RunType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunType"
+              }
+            ]
           },
           "info": {
             "type": "string"
@@ -2665,7 +2795,11 @@
             "example": "J'on-Doe"
           },
           "role": {
-            "$ref": "#/components/schemas/UserRole"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserRole"
+              }
+            ]
           },
           "createdAt": {
             "type": "string",

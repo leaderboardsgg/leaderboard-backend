@@ -160,6 +160,7 @@ builder.Services.AddSwaggerGen(c =>
     string xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
     c.EnableAnnotations(true, true);
+    c.UseAllOfToExtendReferenceSchemas();
 
     c.AddSecurityDefinition(
         "Bearer",

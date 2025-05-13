@@ -61,10 +61,10 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     public async Task<ActionResult<ListView<CategoryViewModel>>> GetCategoriesForLeaderboard(
         [FromRoute] long id,
         [FromQuery] Page page,
-        [FromQuery, SwaggerParameter(Description = "Whether to include deleted Categories. Defaults to `false`.")] bool includeDeleted = false
+        [FromQuery] StatusFilter status = StatusFilter.Published
     )
     {
-        GetCategoriesForLeaderboardResult r = await categoryService.GetCategoriesForLeaderboard(id, includeDeleted, page);
+        GetCategoriesForLeaderboardResult r = await categoryService.GetCategoriesForLeaderboard(id, status, page);
 
         return r.Match<ActionResult<ListView<CategoryViewModel>>>(
             categories => Ok(new ListView<CategoryViewModel>

@@ -9,7 +9,7 @@ namespace LeaderboardBackend.Models.Entities;
 /// <summary>
 ///     Represents a collection of `Category` entities.
 /// </summary>
-public class Leaderboard : IHasUpdateTimestamp
+public class Leaderboard : IHasUpdateTimestamp, IHasDeletionTimestamp
 {
     /// <summary>
     ///     The unique identifier of the `Leaderboard`.<br/>
