@@ -78,7 +78,7 @@ public class LeaderboardEntityTypeConfig : IEntityTypeConfiguration<Leaderboard>
             .HasDefaultValue("");
 
         builder.HasIndex(lb => lb.Name)
-        .HasMethod("GIN")
-        .IsTsVectorExpressionIndex("english");
+            .HasMethod("GIN")
+            .IsTsVectorExpressionIndex("english");
     }
 }
