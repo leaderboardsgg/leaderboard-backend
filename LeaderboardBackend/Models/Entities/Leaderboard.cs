@@ -60,6 +60,12 @@ public class Leaderboard : IHasUpdateTimestamp, IHasDeletionTimestamp
     public List<Category>? Categories { get; set; }
 }
 
+public static class LeaderboardExtensions
+{
+    public static IQueryable<Leaderboard> Search(this IQueryable<Leaderboard> lbSource, string query) =>
+        lbSource.Where(lb => EF.Functions.ToTsVector("english", lb.Name).Matches(EF.Functions.WebSearchToTsQuery("english", query)));
+}
+
 public class LeaderboardEntityTypeConfig : IEntityTypeConfiguration<Leaderboard>
 {
     public void Configure(EntityTypeBuilder<Leaderboard> builder)
@@ -70,5 +76,9 @@ public class LeaderboardEntityTypeConfig : IEntityTypeConfiguration<Leaderboard>
 
         builder.Property(l => l.Info)
             .HasDefaultValue("");
+
+        builder.HasIndex(lb => lb.Name)
+        .HasMethod("GIN")
+        .IsTsVectorExpressionIndex("english");
     }
 }
