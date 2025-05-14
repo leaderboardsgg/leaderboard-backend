@@ -67,6 +67,35 @@ public class LeaderboardsController(
         });
     }
 
+    [AllowAnonymous]
+    [HttpGet("/api/leaderboards/search")]
+    [Paginated]
+    [SwaggerOperation("Search leaderboards by name.", OperationId = "searchLeaderboards")]
+    [SwaggerResponse(200, Type = typeof(ListView<LeaderboardViewModel>))]
+    [SwaggerResponse(422, Type = typeof(ProblemDetails))]
+    public async Task<ActionResult<ListView<LeaderboardViewModel>>> SearchLeaderbaords(
+        [
+            FromQuery(Name = "q"),
+            SwaggerParameter("The query string. Must not be empty.", Required = true)
+        ] string query,
+        [FromQuery] Page page,
+        [FromQuery] StatusFilter status = StatusFilter.Published
+    )
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return Problem(null, null, 422, "Empty Query");
+        }
+
+        ListResult<Leaderboard> result = await leaderboardService.SearchLeaderboards(query, status, page);
+
+        return Ok(new ListView<LeaderboardViewModel>()
+        {
+            Data = result.Items.Select(LeaderboardViewModel.MapFrom).ToList(),
+            Total = result.ItemsTotal
+        });
+    }
+
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
     [HttpPost("leaderboards/create")]
     [SwaggerOperation("Creates a new leaderboard. This request is restricted to Administrators.", OperationId = "createLeaderboard")]
