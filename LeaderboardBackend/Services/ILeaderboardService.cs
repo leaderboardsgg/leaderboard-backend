@@ -14,6 +14,7 @@ public interface ILeaderboardService
     Task<RestoreResult<Leaderboard>> RestoreLeaderboard(long id);
     Task<DeleteResult> DeleteLeaderboard(long id);
     Task<UpdateResult<Leaderboard>> UpdateLeaderboard(long id, UpdateLeaderboardRequest request);
+    Task<ListResult<Leaderboard>> SearchLeaderboards(string query, StatusFilter statusFilter, Page page);
 }
 
 [GenerateOneOf]
