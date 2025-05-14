@@ -1025,4 +1025,46 @@ public class Leaderboards
         updated.Slug.Should().Be(newSlug);
         updated.Info.Should().Be(lb.Info);
     }
+
+    [Test]
+    public async Task SearchLeaderboards_NoQuery() => await FluentActions.Awaiting(
+            () => _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search", new())
+        ).Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
+
+    [TestCase(-1, 0)]
+    [TestCase(1024, -1)]
+    public async Task SearchLeaderboards_BadPageData(int limit, int offset) =>
+        await FluentActions.Awaiting(() => _apiClient.Get<ListView<LeaderboardViewModel>>($"/api/leaderboards/search?query=big+chungus&limit={limit}&offset={offset}", new()))
+            .Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
+
+    [Test]
+    public async Task SearchLeaderboards_OK()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard leaderboard = new()
+        {
+            Name = "Croc: Legend of the Gobbos",
+            Info = "Save the Gobbos!",
+            Slug = "croc"
+        };
+
+        Leaderboard irrelevant = new()
+        {
+            Name = "Rayman",
+            Info = "Save the Electoons!",
+            Slug = "rayman"
+        };
+
+        context.Leaderboards.AddRange(leaderboard, irrelevant);
+        await context.SaveChangesAsync();
+
+        ListView<LeaderboardViewModel> results = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search?q=croc&limit=1024", new());
+        results.Data.Should().ContainEquivalentOf(leaderboard, config => config.Excluding(lb => lb.Categories));
+        results.Data.Should().NotContainEquivalentOf(irrelevant, config => config.Excluding(lb => lb.Categories));
+
+        ListView<LeaderboardViewModel> results2 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search?q=gobbos&limit=1024", new());
+        results2.Data.Should().ContainEquivalentOf(leaderboard, config => config.Excluding(lb => lb.Categories));
+        results2.Data.Should().NotContainEquivalentOf(irrelevant, config => config.Excluding(lb => lb.Categories));
+    }
 }
