@@ -6,6 +6,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Fixtures;
+using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,7 +31,7 @@ public class SendRecoveryTests : IntegrationTestsBase
     [TearDown]
     public void TearDown()
     {
-        _factory.ResetDatabase();
+        TestApiFactory.ResetDatabase();
         _scope.Dispose();
     }
 

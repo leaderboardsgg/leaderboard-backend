@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Test.Fixtures;
+using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,7 +44,7 @@ public class ConfirmAccountTests : IntegrationTestsBase
     [TearDown]
     public void TearDown()
     {
-        _factory.ResetDatabase();
+        TestApiFactory.ResetDatabase();
         _scope.Dispose();
     }
 

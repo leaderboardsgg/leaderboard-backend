@@ -9,6 +9,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Fixtures;
 using LeaderboardBackend.Test.Lib;
+using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -22,7 +23,7 @@ public class LoginTests : IntegrationTestsBase
     [OneTimeSetUp]
     public void Init()
     {
-        _factory.ResetDatabase();
+        TestApiFactory.ResetDatabase();
 
         // TODO: Swap to creating users via the UserService instead of calling the DB, once
         // it has the ability to change a user's roles.

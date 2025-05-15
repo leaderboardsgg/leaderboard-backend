@@ -30,7 +30,6 @@ public class TestApiFactory : WebApplicationFactory<Program>
             }
 
             services.Configure<ApplicationContextConfig>(conf =>
-            {
                 conf.Pg = new PostgresConfig
                 {
                     Db = PostgresDatabaseFixture.Database!,
@@ -38,8 +37,8 @@ public class TestApiFactory : WebApplicationFactory<Program>
                     Host = PostgresDatabaseFixture.PostgresContainer.Hostname,
                     User = PostgresDatabaseFixture.Username!,
                     Password = PostgresDatabaseFixture.Password!
-                };
-            });
+                }
+            );
 
             services.Replace(ServiceDescriptor.Singleton(_ => new Mock<IEmailSender>().Object));
 
@@ -98,8 +97,5 @@ public class TestApiFactory : WebApplicationFactory<Program>
     /// <summary>
     /// Deletes and recreates the database
     /// </summary>
-    public void ResetDatabase()
-    {
-        PostgresDatabaseFixture.ResetDatabaseToTemplate();
-    }
+    public static void ResetDatabase() => PostgresDatabaseFixture.ResetDatabaseToTemplate();
 }

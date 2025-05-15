@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Fixtures;
+using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -31,7 +32,7 @@ public class SendConfirmationTests : IntegrationTestsBase
     [TearDown]
     public void TearDown()
     {
-        _factory.ResetDatabase();
+        TestApiFactory.ResetDatabase();
         _scope.Dispose();
     }
 
