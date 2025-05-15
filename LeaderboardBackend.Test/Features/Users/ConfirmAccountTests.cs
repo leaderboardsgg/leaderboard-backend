@@ -25,20 +25,16 @@ public class ConfirmAccountTests : IntegrationTestsBase
     public void Init()
     {
         _scope = _factory.WithWebHostBuilder(builder =>
-        {
             builder.ConfigureTestServices(services =>
-            {
-                services.AddSingleton<IClock, FakeClock>(_ => _clock);
-            });
-        }).Services.CreateScope();
+                services.AddSingleton<IClock, FakeClock>(_ => _clock)
+            )
+        ).Services.CreateScope();
 
         _client = _factory.WithWebHostBuilder(builder =>
-        {
             builder.ConfigureTestServices(services =>
-            {
-                services.AddSingleton<IClock, FakeClock>(_ => _clock);
-            });
-        }).CreateClient();
+                services.AddSingleton<IClock, FakeClock>(_ => _clock)
+            )
+        ).CreateClient();
     }
 
     [TearDown]

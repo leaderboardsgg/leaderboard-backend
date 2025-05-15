@@ -19,14 +19,12 @@ public class TestRecoveryTests : IntegrationTestsBase
     private readonly FakeClock _clock = new(Instant.FromUnixTimeSeconds(1));
 
     [OneTimeSetUp]
-    public void OneTimeSetUp()
-    {
+    public void OneTimeSetUp() =>
         _client = _factory.WithWebHostBuilder(builder =>
             builder.ConfigureTestServices(services =>
                 services.AddSingleton<IClock, FakeClock>(_ => _clock)
             )
         ).CreateClient();
-    }
 
     [SetUp]
     public void Init()

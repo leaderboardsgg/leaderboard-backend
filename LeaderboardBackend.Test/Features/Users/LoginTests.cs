@@ -29,8 +29,7 @@ public class LoginTests : IntegrationTestsBase
         // it has the ability to change a user's roles.
         using IServiceScope s = _factory.Services.CreateScope();
         ApplicationContext dbContext = s.ServiceProvider.GetRequiredService<ApplicationContext>();
-        dbContext.Users.AddRange(new[]
-        {
+        dbContext.Users.AddRange(
             new User{
                 Email = "valid@user.com",
                 Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
@@ -41,8 +40,8 @@ public class LoginTests : IntegrationTestsBase
                 Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
                 Role = UserRole.Banned,
                 Username = "Banned_User",
-            },
-        });
+            }
+        );
         dbContext.SaveChanges();
     }
 
