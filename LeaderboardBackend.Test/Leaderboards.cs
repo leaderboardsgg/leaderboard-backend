@@ -360,25 +360,25 @@ public class Leaderboards
         context.Leaderboards.AddRange(boards);
         await context.SaveChangesAsync();
         ListView<LeaderboardViewModel> returned = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=9999999", new());
-        returned.Data.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
+        returned.Data.Should().BeEquivalentTo(boards.Take(2), config => config.ExcludingMissingMembers());
         returned.Total.Should().Be(2);
         returned.LimitDefault.Should().Be(64);
 
         ListView<LeaderboardViewModel> returned2 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?status=published&limit=1024", new());
-        returned2.Data.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
+        returned2.Data.Should().BeEquivalentTo(boards.Take(2), config => config.ExcludingMissingMembers());
         returned2.Total.Should().Be(2);
 
         ListView<LeaderboardViewModel> returned3 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?status=any&limit=1024", new());
-        returned3.Data.Should().BeEquivalentTo(boards, config => config.Excluding(lb => lb.Categories));
+        returned3.Data.Should().BeEquivalentTo(boards, config => config.ExcludingMissingMembers());
         returned3.Total.Should().Be(3);
 
         ListView<LeaderboardViewModel> returned4 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=1", new());
         returned4.Total.Should().Be(2);
-        returned4.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).First(), config => config.Excluding(lb => lb.Categories));
+        returned4.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).First(), config => config.ExcludingMissingMembers());
 
         ListView<LeaderboardViewModel> returned5 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=1&status=any&offset=1", new());
         returned5.Total.Should().Be(3);
-        returned5.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).Skip(1).First(), config => config.Excluding(lb => lb.Categories));
+        returned5.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).Skip(1).First(), config => config.ExcludingMissingMembers());
     }
 
     [TestCase(-1, 0)]
