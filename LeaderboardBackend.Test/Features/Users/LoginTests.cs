@@ -30,12 +30,14 @@ public class LoginTests : IntegrationTestsBase
         using IServiceScope s = _factory.Services.CreateScope();
         ApplicationContext dbContext = s.ServiceProvider.GetRequiredService<ApplicationContext>();
         dbContext.Users.AddRange(
-            new User{
+            new User
+            {
                 Email = "valid@user.com",
                 Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
                 Username = "Test_User",
             },
-            new User{
+            new User
+            {
                 Email = "banned@user.com",
                 Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
                 Role = UserRole.Banned,

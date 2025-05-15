@@ -888,7 +888,7 @@ namespace LeaderboardBackend.Test
         public async Task DeleteRun_Unauthenticated()
         {
             IServiceScope scope = _factory.Services.CreateScope();
-        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
             Run run = new()
             {
