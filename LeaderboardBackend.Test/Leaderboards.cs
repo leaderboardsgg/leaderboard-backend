@@ -1042,29 +1042,33 @@ public class Leaderboards
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
 
-        Leaderboard leaderboard = new()
+        Leaderboard croc = new()
         {
             Name = "Croc: Legend of the Gobbos",
             Info = "Save the Gobbos!",
             Slug = "croc"
         };
 
-        Leaderboard irrelevant = new()
+        Leaderboard gta = new()
         {
-            Name = "Rayman",
-            Info = "Save the Electoons!",
-            Slug = "rayman"
+            Name = "Grand Theft Auto IV",
+            Info = "Let's go bowling!",
+            Slug = "gtaiv"
         };
 
-        context.Leaderboards.AddRange(leaderboard, irrelevant);
+        context.Leaderboards.AddRange(croc, gta);
         await context.SaveChangesAsync();
 
         ListView<LeaderboardViewModel> results = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search?q=croc&limit=1024", new());
-        results.Data.Should().ContainEquivalentOf(leaderboard, config => config.Excluding(lb => lb.Categories));
-        results.Data.Should().NotContainEquivalentOf(irrelevant, config => config.Excluding(lb => lb.Categories));
+        results.Data.Should().ContainEquivalentOf(croc, config => config.ExcludingMissingMembers());
+        results.Data.Should().NotContainEquivalentOf(gta, config => config.ExcludingMissingMembers());
 
         ListView<LeaderboardViewModel> results2 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search?q=gobbos&limit=1024", new());
-        results2.Data.Should().ContainEquivalentOf(leaderboard, config => config.Excluding(lb => lb.Categories));
-        results2.Data.Should().NotContainEquivalentOf(irrelevant, config => config.Excluding(lb => lb.Categories));
+        results2.Data.Should().ContainEquivalentOf(croc, config => config.ExcludingMissingMembers());
+        results2.Data.Should().NotContainEquivalentOf(gta, config => config.ExcludingMissingMembers());
+
+        ListView<LeaderboardViewModel> results3 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search?q=gtaiv&limit=1024", new());
+        results3.Data.Should().ContainEquivalentOf(gta, config => config.ExcludingMissingMembers());
+        results3.Data.Should().NotContainEquivalentOf(croc, config => config.ExcludingMissingMembers());
     }
 }
