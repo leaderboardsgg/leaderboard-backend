@@ -48,7 +48,7 @@ namespace LeaderboardBackend.Test
 
             _jwt = (await _apiClient.LoginAdminUser()).Token;
 
-            IServiceScope scope = _factory.Services.CreateScope();
+            using IServiceScope scope = _factory.Services.CreateScope();
             ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
             Leaderboard board = new()
             {
