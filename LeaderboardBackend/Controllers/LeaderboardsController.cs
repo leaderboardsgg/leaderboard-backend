@@ -73,7 +73,7 @@ public class LeaderboardsController(
     [SwaggerOperation("Search leaderboards by name.", OperationId = "searchLeaderboards")]
     [SwaggerResponse(200, Type = typeof(ListView<LeaderboardViewModel>))]
     [SwaggerResponse(422, Type = typeof(ProblemDetails))]
-    public async Task<ActionResult<ListView<LeaderboardViewModel>>> SearchLeaderbaords(
+    public async Task<ActionResult<ListView<LeaderboardViewModel>>> SearchLeaderboards(
         [
             FromQuery(Name = "q"),
             SwaggerParameter("The query string. Must not be empty.", Required = true)
