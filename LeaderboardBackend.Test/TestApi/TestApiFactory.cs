@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using Moq;
 using BCryptNet = BCrypt.Net.BCrypt;
 
@@ -17,9 +16,6 @@ public class TestApiFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // Set the environment for the run to Staging
-        builder.UseEnvironment(Environments.Development);
-
         base.ConfigureWebHost(builder);
 
         builder.ConfigureServices(services =>
