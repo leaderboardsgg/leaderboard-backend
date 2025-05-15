@@ -18,7 +18,7 @@ public class TestApiFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         // Set the environment for the run to Staging
-        builder.UseEnvironment(Environments.Staging);
+        builder.UseEnvironment(Environments.Development);
 
         base.ConfigureWebHost(builder);
 
