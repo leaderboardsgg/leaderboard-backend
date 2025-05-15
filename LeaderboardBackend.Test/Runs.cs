@@ -48,7 +48,8 @@ namespace LeaderboardBackend.Test
 
             _jwt = (await _apiClient.LoginAdminUser()).Token;
 
-            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+            IServiceScope scope = _factory.Services.CreateScope();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
             Leaderboard board = new()
             {
                 Name = "Super Mario 64",
@@ -77,7 +78,8 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task GetRun_OK()
         {
-            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+            IServiceScope scope = _factory.Services.CreateScope();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
             Run run = new()
             {
@@ -115,7 +117,8 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task GetRunsForCategory_OK()
         {
-            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+            IServiceScope scope = _factory.Services.CreateScope();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
             await context.Runs.ExecuteDeleteAsync();
 
             Run[] runs = [
@@ -209,8 +212,9 @@ namespace LeaderboardBackend.Test
         [TestCase(UserRole.Administrator)]
         public async Task CreateRun_GetRun_OK(UserRole role)
         {
-            IUserService service = _factory.Services.GetRequiredService<IUserService>();
-            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+            IServiceScope scope = _factory.Services.CreateScope();
+            IUserService service = scope.ServiceProvider.GetRequiredService<IUserService>();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
             CreateUserResult result = await service.CreateUser(new()
             {
@@ -346,7 +350,8 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task CreateRun_CategoryDeleted()
         {
-            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+            IServiceScope scope = _factory.Services.CreateScope();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
             Category deleted = new()
             {
@@ -436,7 +441,8 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task UpdateRun_Admin_OK()
         {
-            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+            IServiceScope scope = _factory.Services.CreateScope();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
             Run run = new()
             {
@@ -531,7 +537,8 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task UpdateRun_Unauthenticated()
         {
-            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+            IServiceScope scope = _factory.Services.CreateScope();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
             Run created = new()
             {
@@ -809,7 +816,8 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task UpdateRun_FieldNotAllowed()
         {
-            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+            IServiceScope scope = _factory.Services.CreateScope();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
             Run created = new()
             {
@@ -845,7 +853,8 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task DeleteRun_OK()
         {
-            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+            IServiceScope scope = _factory.Services.CreateScope();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
             Run created = new()
             {
@@ -878,7 +887,8 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task DeleteRun_Unauthenticated()
         {
-            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+            IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
             Run run = new()
             {
@@ -967,7 +977,8 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task DeleteRun_NotFound_AlreadyDeleted()
         {
-            ApplicationContext context = _factory.Services.GetRequiredService<ApplicationContext>();
+            IServiceScope scope = _factory.Services.CreateScope();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
             Run run = new()
             {
