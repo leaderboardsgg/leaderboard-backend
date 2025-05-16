@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Test.Fixtures;
+using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,26 +25,22 @@ public class ConfirmAccountTests : IntegrationTestsBase
     public void Init()
     {
         _scope = _factory.WithWebHostBuilder(builder =>
-        {
             builder.ConfigureTestServices(services =>
-            {
-                services.AddSingleton<IClock, FakeClock>(_ => _clock);
-            });
-        }).Services.CreateScope();
+                services.AddSingleton<IClock, FakeClock>(_ => _clock)
+            )
+        ).Services.CreateScope();
 
         _client = _factory.WithWebHostBuilder(builder =>
-        {
             builder.ConfigureTestServices(services =>
-            {
-                services.AddSingleton<IClock, FakeClock>(_ => _clock);
-            });
-        }).CreateClient();
+                services.AddSingleton<IClock, FakeClock>(_ => _clock)
+            )
+        ).CreateClient();
     }
 
     [TearDown]
     public void TearDown()
     {
-        _factory.ResetDatabase();
+        TestApiFactory.ResetDatabase();
         _scope.Dispose();
     }
 

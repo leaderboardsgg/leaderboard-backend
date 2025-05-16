@@ -9,6 +9,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Fixtures;
 using LeaderboardBackend.Test.Lib;
+using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -22,26 +23,27 @@ public class LoginTests : IntegrationTestsBase
     [OneTimeSetUp]
     public void Init()
     {
-        _factory.ResetDatabase();
+        TestApiFactory.ResetDatabase();
 
         // TODO: Swap to creating users via the UserService instead of calling the DB, once
         // it has the ability to change a user's roles.
         using IServiceScope s = _factory.Services.CreateScope();
         ApplicationContext dbContext = s.ServiceProvider.GetRequiredService<ApplicationContext>();
-        dbContext.Users.AddRange(new[]
-        {
-            new User{
+        dbContext.Users.AddRange(
+            new User
+            {
                 Email = "valid@user.com",
                 Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
                 Username = "Test_User",
             },
-            new User{
+            new User
+            {
                 Email = "banned@user.com",
                 Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
                 Role = UserRole.Banned,
                 Username = "Banned_User",
-            },
-        });
+            }
+        );
         dbContext.SaveChanges();
     }
 

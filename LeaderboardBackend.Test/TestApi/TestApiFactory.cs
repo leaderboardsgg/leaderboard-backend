@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using Moq;
 using BCryptNet = BCrypt.Net.BCrypt;
 
@@ -17,9 +16,6 @@ public class TestApiFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // Set the environment for the run to Staging
-        builder.UseEnvironment(Environments.Staging);
-
         base.ConfigureWebHost(builder);
 
         builder.ConfigureServices(services =>
@@ -30,7 +26,6 @@ public class TestApiFactory : WebApplicationFactory<Program>
             }
 
             services.Configure<ApplicationContextConfig>(conf =>
-            {
                 conf.Pg = new PostgresConfig
                 {
                     Db = PostgresDatabaseFixture.Database!,
@@ -38,8 +33,8 @@ public class TestApiFactory : WebApplicationFactory<Program>
                     Host = PostgresDatabaseFixture.PostgresContainer.Hostname,
                     User = PostgresDatabaseFixture.Username!,
                     Password = PostgresDatabaseFixture.Password!
-                };
-            });
+                }
+            );
 
             services.Replace(ServiceDescriptor.Singleton(_ => new Mock<IEmailSender>().Object));
 
@@ -98,8 +93,5 @@ public class TestApiFactory : WebApplicationFactory<Program>
     /// <summary>
     /// Deletes and recreates the database
     /// </summary>
-    public void ResetDatabase()
-    {
-        PostgresDatabaseFixture.ResetDatabaseToTemplate();
-    }
+    public static void ResetDatabase() => PostgresDatabaseFixture.ResetDatabaseToTemplate();
 }
