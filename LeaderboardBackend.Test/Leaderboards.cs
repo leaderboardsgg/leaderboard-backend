@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions.Specialized;
 using LeaderboardBackend.Models.Entities;
@@ -231,33 +230,25 @@ public class Leaderboards
     }
 
     [Test]
-    public async Task GetLeaderboards_BySlug_OK()
+    public async Task GetLeaderboard_BySlug_OK()
     {
-        CreateLeaderboardRequest createReqBody = _createBoardReqFaker.Generate();
-        LeaderboardViewModel createdLeaderboard = await _apiClient.Post<LeaderboardViewModel>(
+        CreateLeaderboardRequest req = _createBoardReqFaker.Generate();
+
+        await _apiClient.Post<LeaderboardViewModel>(
             "/leaderboards/create",
-            new() { Body = createReqBody, Jwt = _jwt }
+            new() { Body = req, Jwt = _jwt }
         );
 
-        // create random unrelated boards
-        foreach (CreateLeaderboardRequest req in _createBoardReqFaker.Generate(2))
-        {
-            await _apiClient.Post<LeaderboardViewModel>(
-                "/leaderboards/create",
-                new() { Body = req, Jwt = _jwt }
-            );
-        }
-
         LeaderboardViewModel leaderboard = await _apiClient.Get<LeaderboardViewModel>(
-            $"api/leaderboard?slug={createReqBody.Slug}",
+            $"api/leaderboard?slug={req.Slug}",
             new()
         );
 
-        leaderboard.Should().BeEquivalentTo(createReqBody);
+        leaderboard.Should().BeEquivalentTo(req);
     }
 
     [Test]
-    public async Task GetLeaderboards_BySlug_NotFound()
+    public async Task GetLeaderboard_BySlug_NotFound()
     {
         // populate with unrelated boards
         foreach (CreateLeaderboardRequest req in _createBoardReqFaker.Generate(2))
@@ -274,7 +265,7 @@ public class Leaderboards
     }
 
     [Test]
-    public async Task GetLeaderboards_Deleted_BySlug_NotFound()
+    public async Task GetLeaderboard_Deleted_BySlug_NotFound()
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
         Leaderboard board = new()
