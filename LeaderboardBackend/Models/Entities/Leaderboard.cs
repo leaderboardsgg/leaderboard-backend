@@ -3,6 +3,7 @@ using LeaderboardBackend.Models.Validation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NodaTime;
+using NpgsqlTypes;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -23,6 +24,14 @@ public class Leaderboard : IHasUpdateTimestamp, IHasDeletionTimestamp
     /// <example>Foo Bar</example>
     [Required]
     public required string Name { get; set; }
+
+    /// <summary>
+    ///     The search vector for this Leaderboard. This property is automatically computed
+    ///     from the <see cref="Name" /> and <see cref="Slug" />.
+    /// </summary>
+#nullable disable warnings
+    public NpgsqlTsVector SearchVector { get; set; }
+#nullable restore warnings
 
     /// <summary>
     ///     The URL-scoped unique identifier of the `Leaderboard`.<br/>
@@ -60,6 +69,16 @@ public class Leaderboard : IHasUpdateTimestamp, IHasDeletionTimestamp
     public List<Category>? Categories { get; set; }
 }
 
+public static class LeaderboardExtensions
+{
+    /// <summary>
+    ///     Search for a leaderboard whose name or slug matches the specified query using
+    ///     <see href="https://www.postgresql.org/docs/current/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES">web search syntax</see>.
+    /// </summary>
+    public static IQueryable<Leaderboard> Search(this IQueryable<Leaderboard> lbSource, string query) =>
+        lbSource.Where(lb => lb.SearchVector.Matches(EF.Functions.WebSearchToTsQuery(query)));
+}
+
 public class LeaderboardEntityTypeConfig : IEntityTypeConfiguration<Leaderboard>
 {
     public void Configure(EntityTypeBuilder<Leaderboard> builder)
@@ -70,5 +89,12 @@ public class LeaderboardEntityTypeConfig : IEntityTypeConfiguration<Leaderboard>
 
         builder.Property(l => l.Info)
             .HasDefaultValue("");
+
+        builder.HasGeneratedTsVectorColumn(
+            lb => lb.SearchVector,
+            "english",
+            lb => new { lb.Name, lb.Slug }
+        ).HasIndex(lb => lb.SearchVector)
+            .HasMethod("GIN");
     }
 }

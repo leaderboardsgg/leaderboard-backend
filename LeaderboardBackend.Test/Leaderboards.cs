@@ -360,25 +360,25 @@ public class Leaderboards
         context.Leaderboards.AddRange(boards);
         await context.SaveChangesAsync();
         ListView<LeaderboardViewModel> returned = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=9999999", new());
-        returned.Data.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
+        returned.Data.Should().BeEquivalentTo(boards.Take(2), config => config.ExcludingMissingMembers());
         returned.Total.Should().Be(2);
         returned.LimitDefault.Should().Be(64);
 
         ListView<LeaderboardViewModel> returned2 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?status=published&limit=1024", new());
-        returned2.Data.Should().BeEquivalentTo(boards.Take(2), config => config.Excluding(lb => lb.Categories));
+        returned2.Data.Should().BeEquivalentTo(boards.Take(2), config => config.ExcludingMissingMembers());
         returned2.Total.Should().Be(2);
 
         ListView<LeaderboardViewModel> returned3 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?status=any&limit=1024", new());
-        returned3.Data.Should().BeEquivalentTo(boards, config => config.Excluding(lb => lb.Categories));
+        returned3.Data.Should().BeEquivalentTo(boards, config => config.ExcludingMissingMembers());
         returned3.Total.Should().Be(3);
 
         ListView<LeaderboardViewModel> returned4 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=1", new());
         returned4.Total.Should().Be(2);
-        returned4.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).First(), config => config.Excluding(lb => lb.Categories));
+        returned4.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).First(), config => config.ExcludingMissingMembers());
 
         ListView<LeaderboardViewModel> returned5 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=1&status=any&offset=1", new());
         returned5.Total.Should().Be(3);
-        returned5.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).Skip(1).First(), config => config.Excluding(lb => lb.Categories));
+        returned5.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).Skip(1).First(), config => config.ExcludingMissingMembers());
     }
 
     [TestCase(-1, 0)]
@@ -1024,5 +1024,51 @@ public class Leaderboards
         updated.Name.Should().Be(lb.Name);
         updated.Slug.Should().Be(newSlug);
         updated.Info.Should().Be(lb.Info);
+    }
+
+    [Test]
+    public async Task SearchLeaderboards_NoQuery() => await FluentActions.Awaiting(
+            () => _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search", new())
+        ).Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
+
+    [TestCase(-1, 0)]
+    [TestCase(1024, -1)]
+    public async Task SearchLeaderboards_BadPageData(int limit, int offset) =>
+        await FluentActions.Awaiting(() => _apiClient.Get<ListView<LeaderboardViewModel>>($"/api/leaderboards/search?query=big+chungus&limit={limit}&offset={offset}", new()))
+            .Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
+
+    [Test]
+    public async Task SearchLeaderboards_OK()
+    {
+        ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard croc = new()
+        {
+            Name = "Croc: Legend of the Gobbos",
+            Info = "Save the Gobbos!",
+            Slug = "croc"
+        };
+
+        Leaderboard gta = new()
+        {
+            Name = "Grand Theft Auto IV",
+            Info = "Let's go bowling!",
+            Slug = "gtaiv"
+        };
+
+        context.Leaderboards.AddRange(croc, gta);
+        await context.SaveChangesAsync();
+
+        ListView<LeaderboardViewModel> results = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search?q=croc&limit=1024", new());
+        results.Data.Should().ContainEquivalentOf(croc, config => config.ExcludingMissingMembers());
+        results.Data.Should().NotContainEquivalentOf(gta, config => config.ExcludingMissingMembers());
+
+        ListView<LeaderboardViewModel> results2 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search?q=gobbos&limit=1024", new());
+        results2.Data.Should().ContainEquivalentOf(croc, config => config.ExcludingMissingMembers());
+        results2.Data.Should().NotContainEquivalentOf(gta, config => config.ExcludingMissingMembers());
+
+        ListView<LeaderboardViewModel> results3 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search?q=gtaiv&limit=1024", new());
+        results3.Data.Should().ContainEquivalentOf(gta, config => config.ExcludingMissingMembers());
+        results3.Data.Should().NotContainEquivalentOf(croc, config => config.ExcludingMissingMembers());
     }
 }

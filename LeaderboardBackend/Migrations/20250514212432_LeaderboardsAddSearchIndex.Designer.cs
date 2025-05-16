@@ -4,19 +4,21 @@ using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using NpgsqlTypes;
 
 #nullable disable
 
 namespace LeaderboardBackend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20250514212432_LeaderboardsAddSearchIndex")]
+    partial class LeaderboardsAddSearchIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -191,14 +193,6 @@ namespace LeaderboardBackend.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
-                    b.Property<NpgsqlTsVector>("SearchVector")
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("tsvector")
-                        .HasColumnName("search_vector")
-                        .HasAnnotation("Npgsql:TsVectorConfig", "english")
-                        .HasAnnotation("Npgsql:TsVectorProperties", new[] { "Name", "Slug" });
-
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(80)
@@ -212,10 +206,11 @@ namespace LeaderboardBackend.Migrations
                     b.HasKey("Id")
                         .HasName("pk_leaderboards");
 
-                    b.HasIndex("SearchVector")
-                        .HasDatabaseName("ix_leaderboards_search_vector");
+                    b.HasIndex("Name")
+                        .HasDatabaseName("ix_leaderboards_name")
+                        .HasAnnotation("Npgsql:TsVectorConfig", "english");
 
-                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("SearchVector"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
 
                     b.HasIndex("Slug")
                         .IsUnique()
