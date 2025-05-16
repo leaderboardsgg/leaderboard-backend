@@ -41,12 +41,10 @@ public class Leaderboards
     public async Task OneTimeSetUp()
     {
         _factory = new TestApiFactory().WithWebHostBuilder(builder =>
-        {
             builder.ConfigureTestServices(services =>
-            {
-                services.AddSingleton<IClock, FakeClock>(_ => _clock);
-            });
-        });
+                services.AddSingleton<IClock, FakeClock>(_ => _clock)
+            )
+        );
 
         _apiClient = new TestApiClient(_factory.CreateClient());
 
@@ -375,8 +373,16 @@ public class Leaderboards
     [TestCase(-1, 0)]
     [TestCase(1024, -1)]
     public async Task GetLeaderboards_BadPageData(int limit, int offset) =>
-        await FluentActions.Awaiting(() => _apiClient.Get<ListView<LeaderboardViewModel>>($"/api/leaderboards?limit={limit}&offset={offset}", new()))
-            .Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
+        await FluentActions.Awaiting(
+            () =>
+                _apiClient.Get<ListView<LeaderboardViewModel>>(
+                    $"/api/leaderboards?limit={limit}&offset={offset}",
+                    new()
+                )
+            )
+            .Should()
+            .ThrowAsync<RequestFailureException>()
+            .Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
 
     [Test]
     public async Task RestoreLeaderboard_OK()
