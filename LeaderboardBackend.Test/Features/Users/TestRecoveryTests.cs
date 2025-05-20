@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Test.Fixtures;
+using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
@@ -18,19 +19,17 @@ public class TestRecoveryTests : IntegrationTestsBase
     private readonly FakeClock _clock = new(Instant.FromUnixTimeSeconds(1));
 
     [OneTimeSetUp]
-    public void OneTimeSetUp()
-    {
+    public void OneTimeSetUp() =>
         _client = _factory.WithWebHostBuilder(builder =>
             builder.ConfigureTestServices(services =>
                 services.AddSingleton<IClock, FakeClock>(_ => _clock)
             )
         ).CreateClient();
-    }
 
     [SetUp]
     public void Init()
     {
-        _factory.ResetDatabase();
+        TestApiFactory.ResetDatabase();
         _scope = _factory.WithWebHostBuilder(builder =>
             builder.ConfigureTestServices(services =>
                 services.AddSingleton<IClock, FakeClock>(_ => _clock)

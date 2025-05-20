@@ -6,6 +6,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Fixtures;
+using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,15 +23,12 @@ public class SendRecoveryTests : IntegrationTestsBase
     private IServiceScope _scope = null!;
 
     [SetUp]
-    public void Init()
-    {
-        _scope = _factory.Services.CreateScope();
-    }
+    public void Init() => _scope = _factory.Services.CreateScope();
 
     [TearDown]
     public void TearDown()
     {
-        _factory.ResetDatabase();
+        TestApiFactory.ResetDatabase();
         _scope.Dispose();
     }
 
@@ -39,12 +37,10 @@ public class SendRecoveryTests : IntegrationTestsBase
         Mock<IEmailSender> emailSenderMock = new();
 
         HttpClient client = _factory.WithWebHostBuilder(builder =>
-        {
             builder.ConfigureTestServices(services =>
-            {
-                services.AddScoped(_ => emailSenderMock.Object);
-            });
-        }).CreateClient();
+                services.AddScoped(_ => emailSenderMock.Object)
+            )
+        ).CreateClient();
 
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
@@ -86,12 +82,10 @@ public class SendRecoveryTests : IntegrationTestsBase
         Mock<IEmailSender> emailSenderMock = new();
 
         HttpClient client = _factory.WithWebHostBuilder(builder =>
-        {
             builder.ConfigureTestServices(services =>
-            {
-                services.AddScoped(_ => emailSenderMock.Object);
-            });
-        }).CreateClient();
+                services.AddScoped(_ => emailSenderMock.Object)
+            )
+        ).CreateClient();
 
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
@@ -135,12 +129,10 @@ public class SendRecoveryTests : IntegrationTestsBase
         Mock<IEmailSender> emailSenderMock = new();
 
         HttpClient client = _factory.WithWebHostBuilder(builder =>
-        {
             builder.ConfigureTestServices(services =>
-            {
-                services.AddScoped(_ => emailSenderMock.Object);
-            });
-        }).CreateClient();
+                services.AddScoped(_ => emailSenderMock.Object)
+            )
+        ).CreateClient();
 
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
@@ -184,13 +176,10 @@ public class SendRecoveryTests : IntegrationTestsBase
         Mock<IEmailSender> emailSenderMock = new();
 
         HttpClient client = _factory.WithWebHostBuilder(builder =>
-        {
             builder.ConfigureTestServices(services =>
-            {
-                services.AddScoped(_ => emailSenderMock.Object);
-            });
-        })
-        .CreateClient();
+                services.AddScoped(_ => emailSenderMock.Object)
+            )
+        ).CreateClient();
 
         HttpResponseMessage res = await client.PostAsJsonAsync(
             Routes.RECOVER_ACCOUNT,
@@ -215,13 +204,12 @@ public class SendRecoveryTests : IntegrationTestsBase
         Mock<IEmailSender> emailSenderMock = new();
 
         HttpClient client = _factory.WithWebHostBuilder(builder =>
-        {
             builder.ConfigureTestServices(services =>
             {
                 services.AddScoped(_ => emailSenderMock.Object);
                 services.AddSingleton<IClock, FakeClock>(_ => new(Instant.FromUnixTimeSeconds(0)));
-            });
-        }).CreateClient();
+            })
+        ).CreateClient();
 
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         User user = new()

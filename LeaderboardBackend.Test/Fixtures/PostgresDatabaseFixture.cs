@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using LeaderboardBackend.Test.Fixtures;
 using Npgsql;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;

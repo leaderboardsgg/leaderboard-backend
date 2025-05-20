@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Fixtures;
+using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -31,7 +32,7 @@ public class SendConfirmationTests : IntegrationTestsBase
     [TearDown]
     public void TearDown()
     {
-        _factory.ResetDatabase();
+        TestApiFactory.ResetDatabase();
         _scope.Dispose();
     }
 
@@ -88,12 +89,10 @@ public class SendConfirmationTests : IntegrationTestsBase
             e.EnqueueEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())
         ).Throws(new Exception());
         HttpClient client = _factory.WithWebHostBuilder(builder =>
-        {
             builder.ConfigureTestServices(services =>
-            {
-                services.AddScoped(_ => emailSenderMock.Object);
-            });
-        })
+                services.AddScoped(_ => emailSenderMock.Object)
+            )
+        )
         .CreateClient();
 
         IUserService userService = _scope.ServiceProvider.GetRequiredService<IUserService>();
@@ -115,13 +114,12 @@ public class SendConfirmationTests : IntegrationTestsBase
     {
         Mock<IEmailSender> emailSenderMock = new();
         HttpClient client = _factory.WithWebHostBuilder(builder =>
-        {
             builder.ConfigureTestServices(services =>
             {
                 services.AddScoped(_ => emailSenderMock.Object);
                 services.AddSingleton<IClock, FakeClock>(_ => new(Instant.FromUnixTimeSeconds(1)));
-            });
-        })
+            })
+        )
         .CreateClient();
         IUserService userService = _scope.ServiceProvider.GetRequiredService<IUserService>();
         CreateUserResult result = await userService.CreateUser(new()
