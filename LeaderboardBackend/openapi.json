@@ -123,13 +123,10 @@
             }
           },
           "401": {
-            "description": "The password given was incorrect."
+            "description": "The password given was incorrect, or no `User` could be found."
           },
           "403": {
             "description": "The associated `User` is banned."
-          },
-          "404": {
-            "description": "No `User` with the requested details could be found."
           },
           "422": {
             "description": "The request contains errors.\nValidation error codes by property:\n- **Password**:\n  - **NotEmptyValidator**: No password was passed\n  - **PasswordFormat**: Invalid password format\n- **Email**:\n  - **NotEmptyValidator**: No email was passed\n  - **EmailValidator**: Invalid email format",
