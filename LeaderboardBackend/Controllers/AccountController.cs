@@ -95,9 +95,8 @@ public class AccountController(IUserService userService) : ApiController
         "The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.",
         typeof(LoginResponse)
     )]
-    [SwaggerResponse(401, "The password given was incorrect.")]
+    [SwaggerResponse(401, "The password given was incorrect, or no `User` could be found.")]
     [SwaggerResponse(403, "The associated `User` is banned.")]
-    [SwaggerResponse(404, "No `User` with the requested details could be found.")]
     [SwaggerResponse(
         422,
         """
@@ -123,7 +122,6 @@ public class AccountController(IUserService userService) : ApiController
 
         return result.Match<ActionResult<LoginResponse>>(
             loginToken => Ok(new LoginResponse { Token = loginToken }),
-            notFound => NotFound(),
             banned => Forbid(),
             badCredentials => Unauthorized()
         );
