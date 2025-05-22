@@ -7,30 +7,16 @@ using OneOf.Types;
 
 namespace LeaderboardBackend.Services;
 
-public class AccountConfirmationService : IAccountConfirmationService
+public class AccountConfirmationService(
+    ApplicationContext applicationContext,
+    IEmailSender emailSender,
+    IClock clock,
+    IOptions<AppConfig> appConfig
+) : IAccountConfirmationService
 {
-    private readonly ApplicationContext _applicationContext;
-    private readonly IEmailSender _emailSender;
-    private readonly IClock _clock;
-    private readonly AppConfig _appConfig;
 
-    public AccountConfirmationService(
-        ApplicationContext applicationContext,
-        IEmailSender emailSender,
-        IClock clock,
-        IOptions<AppConfig> appConfig
-    )
-    {
-        _applicationContext = applicationContext;
-        _emailSender = emailSender;
-        _clock = clock;
-        _appConfig = appConfig.Value;
-    }
-
-    public async Task<AccountConfirmation?> GetConfirmationById(Guid id)
-    {
-        return await _applicationContext.AccountConfirmations.FindAsync(id);
-    }
+    public async Task<AccountConfirmation?> GetConfirmationById(Guid id) =>
+        await applicationContext.AccountConfirmations.FindAsync(id);
 
     public async Task<CreateConfirmationResult> CreateConfirmationAndSendEmail(User user)
     {
@@ -39,7 +25,7 @@ public class AccountConfirmationService : IAccountConfirmationService
             return new BadRole();
         }
 
-        Instant now = _clock.GetCurrentInstant();
+        Instant now = clock.GetCurrentInstant();
 
         AccountConfirmation newConfirmation =
             new()
@@ -48,12 +34,12 @@ public class AccountConfirmationService : IAccountConfirmationService
                 UserId = user.Id,
             };
 
-        _applicationContext.AccountConfirmations.Add(newConfirmation);
-        await _applicationContext.SaveChangesAsync();
+        applicationContext.AccountConfirmations.Add(newConfirmation);
+        await applicationContext.SaveChangesAsync();
 
         try
         {
-            await _emailSender.EnqueueEmailAsync(
+            await emailSender.EnqueueEmailAsync(
                 user.Email,
                 "Confirm Your Account",
                 GenerateAccountConfirmationEmailBody(user, newConfirmation)
@@ -74,7 +60,7 @@ public class AccountConfirmationService : IAccountConfirmationService
         {
             try
             {
-                Instant now = _clock.GetCurrentInstant();
+                Instant now = clock.GetCurrentInstant();
 
                 AccountConfirmation newConfirmation =
                     new()
@@ -83,10 +69,10 @@ public class AccountConfirmationService : IAccountConfirmationService
                         UserId = user.Id,
                     };
 
-                _applicationContext.AccountConfirmations.Add(newConfirmation);
-                await _applicationContext.SaveChangesAsync();
+                applicationContext.AccountConfirmations.Add(newConfirmation);
+                await applicationContext.SaveChangesAsync();
 
-                await _emailSender.EnqueueEmailAsync(
+                await emailSender.EnqueueEmailAsync(
                     user.Email,
                     "Confirm Your Account",
                     GenerateAccountConfirmationEmailBody(user, newConfirmation)
@@ -107,7 +93,7 @@ public class AccountConfirmationService : IAccountConfirmationService
 
         try
         {
-            await _emailSender.EnqueueEmailAsync(
+            await emailSender.EnqueueEmailAsync(
                 user.Email,
                 "A Registration Attempt was Made with Your Email",
                 GenerateRegistrationAttemptEmailBody(user)
@@ -123,7 +109,7 @@ public class AccountConfirmationService : IAccountConfirmationService
 
     public async Task<ConfirmAccountResult> ConfirmAccount(Guid id)
     {
-        AccountConfirmation? confirmation = await _applicationContext.AccountConfirmations.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == id);
+        AccountConfirmation? confirmation = await applicationContext.AccountConfirmations.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == id);
 
         if (confirmation is null)
         {
@@ -140,7 +126,7 @@ public class AccountConfirmationService : IAccountConfirmationService
             return new AlreadyUsed();
         }
 
-        Instant now = _clock.GetCurrentInstant();
+        Instant now = clock.GetCurrentInstant();
 
         if (confirmation.ExpiresAt <= now)
         {
@@ -149,14 +135,14 @@ public class AccountConfirmationService : IAccountConfirmationService
 
         confirmation.User.Role = UserRole.Confirmed;
         confirmation.UsedAt = now;
-        await _applicationContext.SaveChangesAsync();
+        await applicationContext.SaveChangesAsync();
         return new AccountConfirmed();
     }
 
     private string GenerateAccountConfirmationEmailBody(User user, AccountConfirmation confirmation)
     {
         // Copy of https://datatracker.ietf.org/doc/html/rfc7515#page-55
-        UriBuilder builder = new(_appConfig.WebsiteUrl)
+        UriBuilder builder = new(appConfig.Value.WebsiteUrl)
         {
             Path = "confirm-account",
             Query = $"code={confirmation.Id.ToUrlSafeBase64String()}"
