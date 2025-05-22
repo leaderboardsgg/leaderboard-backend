@@ -42,28 +42,11 @@
           "500": {
             "description": "Internal Server Error"
           },
-          "201": {
-            "description": "The `User` was registered and returned successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserViewModel"
-                }
-              }
-            }
+          "202": {
+            "description": "The registration attempt was successfully received. An email will be\nsent to the provided address, where its contents will differ based on\nwhether or not an account with that address already exists."
           },
           "409": {
-            "description": "A `User` with the specified username or email already exists.\nValidation error codes by property:\n- **Username**:\n  - **UsernameTaken**: the username is already in use\n- **Email**:\n  - **EmailAlreadyUsed**: the email is already in use",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationProblemDetails"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "The request contains errors.\nValidation error codes by property:\n- **Username**:\n  - **UsernameFormat**: Invalid username format\n- **Password**:\n  - **PasswordFormat**: Invalid password format\n- **Email**:\n  - **EmailValidator**: Invalid email format",
+            "description": "A `User` with the specified username already exists. The validation\nerror code `UsernameTaken` will be returned.",
             "content": {
               "application/json": {
                 "schema": {

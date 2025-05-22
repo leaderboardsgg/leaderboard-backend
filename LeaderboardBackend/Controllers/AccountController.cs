@@ -18,40 +18,26 @@ public class AccountController(IUserService userService) : ApiController
     [FeatureGate(Features.ACCOUNT_REGISTRATION)]
     [HttpPost("register")]
     [SwaggerOperation("Registers a new User.", OperationId = "register")]
-    [SwaggerResponse(201, "The `User` was registered and returned successfully.")]
+    [SwaggerResponse(
+        202,
+        """
+        The registration attempt was successfully received. An email will be
+        sent to the provided address, where its contents will differ based on
+        whether or not an account with that address already exists.
+        """)]
     [SwaggerResponse(
         409,
         """
-        A `User` with the specified username or email already exists.
-        Validation error codes by property:
-        - **Username**:
-          - **UsernameTaken**: the username is already in use
-        - **Email**:
-          - **EmailAlreadyUsed**: the email is already in use
-        """,
-        typeof(ValidationProblemDetails)
-    )]
-    [SwaggerResponse(
-        422,
-        """
-        The request contains errors.
-        Validation error codes by property:
-        - **Username**:
-          - **UsernameFormat**: Invalid username format
-        - **Password**:
-          - **PasswordFormat**: Invalid password format
-        - **Email**:
-          - **EmailValidator**: Invalid email format
+        A `User` with the specified username already exists. The validation
+        error code `UsernameTaken` will be returned.
         """,
         typeof(ValidationProblemDetails)
     )]
     public async Task<ActionResult<UserViewModel>> Register(
-
         [FromBody, SwaggerRequestBody(
             "The `RegisterRequest` instance from which to register the `User`.",
             Required = true
-        )] RegisterRequest request
-    ,
+        )] RegisterRequest request,
         [FromServices] IAccountConfirmationService confirmationService
     )
     {
@@ -62,27 +48,24 @@ public class AccountController(IUserService userService) : ApiController
             CreateConfirmationResult r = await confirmationService.CreateConfirmationAndSendEmail(user);
 
             return r.Match<ActionResult>(
-                confirmation => CreatedAtAction(
-                    nameof(UsersController.GetUserById),
-                    "Users",
-                    new { id = user.Id },
-                    UserViewModel.MapFrom(confirmation.User)
-                ),
-                badRole => StatusCode(StatusCodes.Status500InternalServerError),
+                confirmation => Accepted(),
+                badRole => Accepted(),
                 emailFailed => StatusCode(StatusCodes.Status500InternalServerError)
             );
         }
 
-        if (conflicts.Username)
-        {
-            ModelState.AddModelError(nameof(request.Username), "UsernameTaken");
-        }
-
         if (conflicts.Email)
         {
-            ModelState.AddModelError(nameof(request.Email), "EmailAlreadyUsed");
+            EmailExistingResult r = await confirmationService.EmailExistingUserOfRegistrationAttempt(user);
+
+            return r.Match<ActionResult>(
+                success => Accepted(),
+                badRole => Accepted(),
+                emailFailed => StatusCode(StatusCodes.Status500InternalServerError)
+            );
         }
 
+        ModelState.AddModelError(nameof(request.Username), "UsernameTaken");
         return Conflict(new ValidationProblemDetails(ModelState));
     }
 

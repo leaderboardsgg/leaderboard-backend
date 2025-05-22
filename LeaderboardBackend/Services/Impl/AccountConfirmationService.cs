@@ -3,6 +3,7 @@ using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NodaTime;
+using OneOf.Types;
 
 namespace LeaderboardBackend.Services;
 
@@ -66,6 +67,60 @@ public class AccountConfirmationService : IAccountConfirmationService
         return newConfirmation;
     }
 
+    public async Task<EmailExistingResult> EmailExistingUserOfRegistrationAttempt(User user)
+    {
+        // Resend the first email if UserRole.Registered
+        if (user.Role is UserRole.Registered)
+        {
+            try
+            {
+                Instant now = _clock.GetCurrentInstant();
+
+                AccountConfirmation newConfirmation =
+                    new()
+                    {
+                        ExpiresAt = now + Duration.FromHours(1),
+                        UserId = user.Id,
+                    };
+
+                _applicationContext.AccountConfirmations.Add(newConfirmation);
+                await _applicationContext.SaveChangesAsync();
+
+                await _emailSender.EnqueueEmailAsync(
+                    user.Email,
+                    "Confirm Your Account",
+                    GenerateAccountConfirmationEmailBody(user, newConfirmation)
+                );
+
+                return new True();
+            }
+            catch
+            {
+                return new EmailFailed();
+            }
+        }
+
+        if (user.Role is UserRole.Banned)
+        {
+            return new BadRole();
+        }
+
+        try
+        {
+            await _emailSender.EnqueueEmailAsync(
+                user.Email,
+                "A Registration Attempt was Made with Your Email",
+                GenerateRegistrationAttemptEmailBody(user)
+            );
+
+            return new True();
+        }
+        catch
+        {
+            return new EmailFailed();
+        }
+    }
+
     public async Task<ConfirmAccountResult> ConfirmAccount(Guid id)
     {
         AccountConfirmation? confirmation = await _applicationContext.AccountConfirmations.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == id);
@@ -108,4 +163,9 @@ public class AccountConfirmationService : IAccountConfirmationService
         };
         return $@"Hi {user.Username},<br/><br/>Click <a href=""{builder.Uri}"">here</a> to confirm your account.";
     }
+
+    // TODO: Fill contents
+    private static string GenerateRegistrationAttemptEmailBody(User user) =>
+        $@"Hi {user.Username},<br/><br/>Someone tried to register an account with your email address. " +
+        "If it wasn't you, you can safely ignore this email.";
 }
