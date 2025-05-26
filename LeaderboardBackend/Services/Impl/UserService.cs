@@ -46,11 +46,12 @@ public class UserService(ApplicationContext applicationContext, IAuthService aut
     {
         User? user = await applicationContext.Users.SingleOrDefaultAsync(user => user.Email == email);
 
-        // Previously, we return a 404 if no user exists in the DB, and a 401
-        // if one does, but with bad credentials. This separation however can
-        // be used to guess user's emails. We're keeping these together to help
-        // prevent that. - zysim
-        if (user is null || !BCryptNet.EnhancedVerify(password, user.Password))
+        if (user is null)
+        {
+            return new UserNotFound();
+        }
+
+        if (!BCryptNet.EnhancedVerify(password, user.Password))
         {
             return new BadCredentials();
         }

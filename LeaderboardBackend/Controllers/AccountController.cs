@@ -122,6 +122,7 @@ public class AccountController(IUserService userService) : ApiController
 
         return result.Match<ActionResult<LoginResponse>>(
             loginToken => Ok(new LoginResponse { Token = loginToken }),
+            notFound => Unauthorized(),
             banned => Forbid(),
             badCredentials => Unauthorized()
         );

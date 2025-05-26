@@ -27,7 +27,7 @@ public partial class CreateUserResult : OneOfBase<User, CreateUserConflicts> { }
 public readonly record struct CreateUserConflicts(bool Username = false, bool Email = false);
 
 [GenerateOneOf]
-public partial class LoginResult : OneOfBase<string, UserBanned, BadCredentials> { }
+public partial class LoginResult : OneOfBase<string, UserNotFound, UserBanned, BadCredentials> { }
 
 [GenerateOneOf]
 public partial class GetUserResult : OneOfBase<User, BadCredentials, UserNotFound> { }
