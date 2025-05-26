@@ -3,7 +3,6 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
-using NodaTime;
 using Npgsql;
 using BCryptNet = BCrypt.Net.BCrypt;
 
@@ -12,10 +11,8 @@ namespace LeaderboardBackend.Services;
 public class UserService(ApplicationContext applicationContext, IAuthService authService) : IUserService
 {
     // TODO: Convert return sig to Task<GetUserResult>
-    public async Task<User?> GetUserById(Guid id)
-    {
-        return await applicationContext.Users.FindAsync(id);
-    }
+    public async Task<User?> GetUserById(Guid id) =>
+        await applicationContext.Users.FindAsync(id);
 
     public async Task<GetUserResult> GetUserFromClaims(ClaimsPrincipal claims)
     {
@@ -38,9 +35,7 @@ public class UserService(ApplicationContext applicationContext, IAuthService aut
 
     // TODO: Convert return sig to Task<GetUserResult>
     public async Task<User?> GetUserByEmail(string email)
-    {
-        return await applicationContext.Users.SingleOrDefaultAsync(user => user.Email == email);
-    }
+        => await applicationContext.Users.SingleOrDefaultAsync(user => user.Email == email);
 
     public async Task<LoginResult> LoginByEmailAndPassword(string email, string password)
     {
@@ -65,17 +60,13 @@ public class UserService(ApplicationContext applicationContext, IAuthService aut
     }
 
     // TODO: Convert return sig to Task<GetUserResult>
-    public async Task<User?> GetUserByName(string name)
-    {
-        return await applicationContext.Users.SingleOrDefaultAsync(user => user.Username == name);
-    }
+    public async Task<User?> GetUserByName(string name) =>
+        await applicationContext.Users.SingleOrDefaultAsync(user => user.Username == name);
 
     public async Task<User?> GetUserByNameAndEmail(string name, string email)
-    {
-        return await applicationContext.Users.SingleOrDefaultAsync(
+        => await applicationContext.Users.SingleOrDefaultAsync(
             user => user.Username == name && user.Email == email
         );
-    }
 
     public async Task<CreateUserResult> CreateUser(RegisterRequest request)
     {
