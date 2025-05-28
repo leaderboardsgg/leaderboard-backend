@@ -1067,7 +1067,7 @@
         "tags": [
           "Leaderboards"
         ],
-        "summary": "Search leaderboards by name.",
+        "summary": "Search leaderboards by name or slug.",
         "operationId": "searchLeaderboards",
         "parameters": [
           {

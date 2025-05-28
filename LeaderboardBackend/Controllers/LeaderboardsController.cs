@@ -70,7 +70,7 @@ public class LeaderboardsController(
     [AllowAnonymous]
     [HttpGet("/api/leaderboards/search")]
     [Paginated]
-    [SwaggerOperation("Search leaderboards by name.", OperationId = "searchLeaderboards")]
+    [SwaggerOperation("Search leaderboards by name or slug.", OperationId = "searchLeaderboards")]
     [SwaggerResponse(200, Type = typeof(ListView<LeaderboardViewModel>))]
     [SwaggerResponse(422, Type = typeof(ProblemDetails))]
     public async Task<ActionResult<ListView<LeaderboardViewModel>>> SearchLeaderboards(
