@@ -1,4 +1,5 @@
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -53,37 +54,19 @@ public class AccountConfirmationService(
         return newConfirmation;
     }
 
-    public async Task<EmailExistingResult> EmailExistingUserOfRegistrationAttempt(User user)
+    public async Task<EmailExistingResult> EmailExistingUserOfRegistrationAttempt(RegisterRequest request)
     {
+        User user = await applicationContext.Users.Where(u => u.Email == request.Email).FirstAsync();
+
         // Resend the first email if UserRole.Registered
         if (user.Role is UserRole.Registered)
         {
-            try
-            {
-                Instant now = clock.GetCurrentInstant();
-
-                AccountConfirmation newConfirmation =
-                    new()
-                    {
-                        ExpiresAt = now + Duration.FromHours(1),
-                        UserId = user.Id,
-                    };
-
-                applicationContext.AccountConfirmations.Add(newConfirmation);
-                await applicationContext.SaveChangesAsync();
-
-                await emailSender.EnqueueEmailAsync(
-                    user.Email,
-                    "Confirm Your Account",
-                    GenerateAccountConfirmationEmailBody(user, newConfirmation)
-                );
-
-                return new True();
-            }
-            catch
-            {
-                return new EmailFailed();
-            }
+            CreateConfirmationResult r = await CreateConfirmationAndSendEmail(user);
+            return r.Match<EmailExistingResult>(
+                confirmation => new True(),
+                badRole => new BadRole(),
+                emailFailed => new EmailFailed()
+            );
         }
 
         if (user.Role is UserRole.Banned)

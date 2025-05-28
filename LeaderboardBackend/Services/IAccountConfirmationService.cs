@@ -1,4 +1,5 @@
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using OneOf;
 using OneOf.Types;
@@ -9,7 +10,7 @@ public interface IAccountConfirmationService
 {
     Task<AccountConfirmation?> GetConfirmationById(Guid id);
     Task<CreateConfirmationResult> CreateConfirmationAndSendEmail(User user);
-    Task<EmailExistingResult> EmailExistingUserOfRegistrationAttempt(User user);
+    Task<EmailExistingResult> EmailExistingUserOfRegistrationAttempt(RegisterRequest request);
     Task<ConfirmAccountResult> ConfirmAccount(Guid id);
 }
 

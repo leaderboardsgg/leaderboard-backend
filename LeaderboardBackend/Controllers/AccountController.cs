@@ -56,7 +56,7 @@ public class AccountController(IUserService userService) : ApiController
 
         if (conflicts.Email)
         {
-            EmailExistingResult r = await confirmationService.EmailExistingUserOfRegistrationAttempt(user);
+            EmailExistingResult r = await confirmationService.EmailExistingUserOfRegistrationAttempt(request);
 
             return r.Match<ActionResult>(
                 success => Accepted(),
