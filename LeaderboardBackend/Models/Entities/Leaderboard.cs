@@ -82,7 +82,7 @@ public static class LeaderboardExtensions
                 // to translate the result, and will error at runtime
                 lb.SearchVector.Matches(EF.Functions.WebSearchToTsQuery(query))
         ).OrderByDescending(lb =>
-            lb.SearchVector.RankCoverDensity(EF.Functions.WebSearchToTsQuery(query))
+            lb.SearchVector.Rank(EF.Functions.WebSearchToTsQuery(query))
         );
 }
 
