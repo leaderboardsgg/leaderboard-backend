@@ -81,7 +81,16 @@ public static class LeaderboardExtensions
                 // Static method call can't be abstracted; Npgsql won't know how
                 // to translate the result, and will error at runtime
                 lb.SearchVector.Matches(EF.Functions.WebSearchToTsQuery(query))
-        ).OrderByDescending(lb =>
+        );
+
+    /// <summary>
+    /// Ranks leaderboards in descending order of how close their names or
+    /// slugs match <paramref name="query"/> using Postgres'
+    /// <see href="https://www.postgresql.org/docs/current/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES">
+    /// web search syntax</see>.
+    /// </summary>
+    public static IQueryable<Leaderboard> Rank(this IQueryable<Leaderboard> lbSource, string query) =>
+        lbSource.OrderByDescending(lb =>
             lb.SearchVector.Rank(EF.Functions.WebSearchToTsQuery(query))
         );
 }

@@ -144,7 +144,12 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
         IQueryable<Leaderboard> dbQuery = applicationContext.Leaderboards.FilterByStatus(statusFilter).Search(query);
         long count = await dbQuery.LongCountAsync();
 
-        List<Leaderboard> items = await dbQuery.Skip(page.Offset).Take(page.Limit).ToListAsync();
-        return new ListResult<Leaderboard>(items, count);
+        List<Leaderboard> items = await dbQuery
+            .Rank(query)
+            .Skip(page.Offset)
+            .Take(page.Limit)
+            .ToListAsync();
+
+        return new ListResult<Leaderboard>(items, items.Count);
     }
 }
