@@ -112,7 +112,7 @@ public class LoginTests : IntegrationTestsBase
 
     [TestCase("valid@user.com", "Inc0rrectPassword", HttpStatusCode.Unauthorized, Description = "Wrong password")]
     [TestCase("banned@user.com", "P4ssword", HttpStatusCode.Forbidden, Description = "Banned user")]
-    [TestCase("banned@user.com", "Inc0rrectPassword", HttpStatusCode.Unauthorized, Description = "Wrong email")]
+    [TestCase("banned@user.com", "Inc0rrectPassword", HttpStatusCode.Unauthorized, Description = "Banned user; wrong password")]
     [TestCase("unknown@user.com", "Inc0rrectPassword", HttpStatusCode.Unauthorized, Description = "Wrong email")]
     public async Task Login_InvalidRequest_OtherErrors(string email, string password, HttpStatusCode statusCode)
     {
