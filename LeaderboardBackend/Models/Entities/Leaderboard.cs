@@ -80,8 +80,6 @@ public static class LeaderboardExtensions
     public static IQueryable<Leaderboard> Search(this IQueryable<Leaderboard> lbSource, string query) =>
         lbSource.Where(
             lb =>
-                // Static method call can't be abstracted; Npgsql won't know how
-                // to translate the result, and will error at runtime
                 lb.SearchVector.Matches(EF.Functions.WebSearchToTsQuery(query))
         );
 
