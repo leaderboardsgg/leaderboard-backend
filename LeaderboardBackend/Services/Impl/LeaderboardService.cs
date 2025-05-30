@@ -150,6 +150,6 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
             .Take(page.Limit)
             .ToListAsync();
 
-        return new ListResult<Leaderboard>(items, items.Count);
+        return new ListResult<Leaderboard>(items, count);
     }
 }

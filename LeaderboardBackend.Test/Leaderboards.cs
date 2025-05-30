@@ -1105,5 +1105,10 @@ public class Leaderboards
         results.Data.First().Should().BeEquivalentTo(okami, config => config.ExcludingMissingMembers());
         results.Data[1].Should().BeEquivalentTo(okami2, config => config.ExcludingMissingMembers());
         results.Data.Should().NotContain(LeaderboardViewModel.MapFrom(momo4));
+
+        ListView<LeaderboardViewModel> resultsVerifyCount = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search?q=okami&limit=1", new());
+        resultsVerifyCount.Data.First().Should().BeEquivalentTo(okami, config => config.ExcludingMissingMembers());
+        resultsVerifyCount.Data.Should().ContainSingle();
+        resultsVerifyCount.Total.Should().Be(2);
     }
 }
