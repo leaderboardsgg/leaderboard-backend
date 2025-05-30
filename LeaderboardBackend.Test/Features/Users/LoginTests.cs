@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
@@ -112,8 +111,9 @@ public class LoginTests : IntegrationTestsBase
     }
 
     [TestCase("valid@user.com", "Inc0rrectPassword", HttpStatusCode.Unauthorized, Description = "Wrong password")]
-    [TestCase("banned@user.com", "Inc0rrectPassword", HttpStatusCode.Forbidden, Description = "Banned user")]
-    [TestCase("unknown@user.com", "Inc0rrectPassword", HttpStatusCode.NotFound, Description = "Wrong email")]
+    [TestCase("banned@user.com", "P4ssword", HttpStatusCode.Forbidden, Description = "Banned user")]
+    [TestCase("banned@user.com", "Inc0rrectPassword", HttpStatusCode.Unauthorized, Description = "Banned user; wrong password")]
+    [TestCase("unknown@user.com", "Inc0rrectPassword", HttpStatusCode.Unauthorized, Description = "Wrong email")]
     public async Task Login_InvalidRequest_OtherErrors(string email, string password, HttpStatusCode statusCode)
     {
         LoginRequest request = new()
