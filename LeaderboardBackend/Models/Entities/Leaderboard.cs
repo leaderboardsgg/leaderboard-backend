@@ -72,10 +72,8 @@ public class Leaderboard : IHasUpdateTimestamp, IHasDeletionTimestamp
 public static class LeaderboardExtensions
 {
     /// <summary>
-    /// Filters for leaderboards which names or slugs matches
-    /// <paramref name="query"/> using Postgres'
-    /// <see href="https://www.postgresql.org/docs/current/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES">
-    /// web search syntax</see>.
+    /// Searches for leaderboards with names or slugs that match
+    /// <paramref name="query"/>.
     /// </summary>
     public static IQueryable<Leaderboard> Search(this IQueryable<Leaderboard> lbSource, string query) =>
         lbSource.Where(
@@ -85,9 +83,7 @@ public static class LeaderboardExtensions
 
     /// <summary>
     /// Ranks leaderboards in descending order of how close their names or
-    /// slugs match <paramref name="query"/> using Postgres'
-    /// <see href="https://www.postgresql.org/docs/current/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES">
-    /// web search syntax</see>.
+    /// slugs match <paramref name="query"/>.
     /// </summary>
     public static IQueryable<Leaderboard> Rank(this IQueryable<Leaderboard> lbSource, string query) =>
         lbSource.OrderByDescending(lb =>
