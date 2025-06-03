@@ -29,7 +29,7 @@ public class RegistrationTests : IntegrationTestsBase
         .RuleFor(x => x.Email, b => "TestUser" + b.Internet.Email());
 
     [Test]
-    public async Task Register_ValidRequest_CreatesAndReturnsUser()
+    public async Task Register_ValidRequest()
     {
         Mock<IEmailSender> emailSenderMock = new();
         Instant now = Instant.FromUnixTimeSeconds(1);
@@ -47,16 +47,7 @@ public class RegistrationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveStatusCode(HttpStatusCode.Created);
-        UserViewModel? content = await res.Content.ReadFromJsonAsync<UserViewModel>(TestInitCommonFields.JsonSerializerOptions);
-
-        content.Should().NotBeNull().And.Be(new UserViewModel
-        {
-            Id = content!.Id,
-            Username = request.Username,
-            Role = UserRole.Registered,
-            CreatedAt = now
-        });
+        res.Should().HaveStatusCode(HttpStatusCode.Accepted);
 
         emailSenderMock.Verify(x =>
             x.EnqueueEmailAsync(
@@ -69,17 +60,16 @@ public class RegistrationTests : IntegrationTestsBase
 
         using IServiceScope scope = _factory.Services.CreateScope();
         using ApplicationContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        User? createdUser = dbContext.Users.FirstOrDefault(u => u.Id == content.Id);
+        User? createdUser = dbContext.Users.FirstOrDefault(u => u.Username == request.Username);
 
         createdUser.Should().NotBeNull().And.BeEquivalentTo(new User
         {
-            Id = content!.Id,
             Password = createdUser!.Password,
             Username = request.Username,
             Email = request.Email,
             Role = UserRole.Registered,
             CreatedAt = now
-        });
+        }, opts => opts.Excluding(u => u.Id));
 
         AccountConfirmation confirmation = dbContext.AccountConfirmations.First(c => c.UserId == createdUser.Id);
         confirmation.Should().NotBeNull();
