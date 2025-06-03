@@ -35,13 +35,12 @@ public class RegistrationTests : IntegrationTestsBase
         Instant now = Instant.FromUnixTimeSeconds(1);
 
         using HttpClient client = _factory.WithWebHostBuilder(builder =>
-        {
             builder.ConfigureTestServices(services =>
             {
                 services.AddScoped(_ => emailSenderMock.Object);
                 services.AddSingleton<IClock, FakeClock>(_ => new(now));
-            });
-        })
+            })
+        )
         .CreateClient();
 
         RegisterRequest request = _registerReqFaker.Generate();
@@ -101,7 +100,7 @@ public class RegistrationTests : IntegrationTestsBase
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
         {
-            { nameof(RegisterRequest.Email), new[] { "EmailValidator" } }
+            { nameof(RegisterRequest.Email), [ "EmailValidator" ] }
         });
     }
 
@@ -137,7 +136,7 @@ public class RegistrationTests : IntegrationTestsBase
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
         {
-            { nameof(RegisterRequest.Username), new[] { "UsernameFormat" } }
+            { nameof(RegisterRequest.Username), [ "UsernameFormat" ] }
         });
     }
 
@@ -153,7 +152,7 @@ public class RegistrationTests : IntegrationTestsBase
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
         {
-            { nameof(RegisterRequest.Password), new[] { "PasswordFormat" } }
+            { nameof(RegisterRequest.Password), [ "PasswordFormat" ] }
         });
     }
 
@@ -182,7 +181,7 @@ public class RegistrationTests : IntegrationTestsBase
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
         {
-            { nameof(RegisterRequest.Username), new[] { "UsernameTaken" } }
+            { nameof(RegisterRequest.Username), [ "UsernameTaken" ] }
         });
     }
 
