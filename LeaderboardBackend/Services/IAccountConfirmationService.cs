@@ -10,7 +10,7 @@ public interface IAccountConfirmationService
 {
     Task<AccountConfirmation?> GetConfirmationById(Guid id);
     Task<CreateConfirmationResult> CreateConfirmationAndSendEmail(User user);
-    Task<EmailExistingResult> EmailExistingUserOfRegistrationAttempt(RegisterRequest request);
+    Task<EmailExistingResult> EmailExistingUserOfRegistrationAttempt(User user);
     Task<ConfirmAccountResult> ConfirmAccount(Guid id);
 }
 

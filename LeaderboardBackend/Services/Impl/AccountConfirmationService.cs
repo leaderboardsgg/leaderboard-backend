@@ -54,10 +54,8 @@ public class AccountConfirmationService(
         return newConfirmation;
     }
 
-    public async Task<EmailExistingResult> EmailExistingUserOfRegistrationAttempt(RegisterRequest request)
+    public async Task<EmailExistingResult> EmailExistingUserOfRegistrationAttempt(User user)
     {
-        User user = await applicationContext.Users.Where(u => u.Email == request.Email).FirstAsync();
-
         // Resend the first email if UserRole.Registered
         if (user.Role is UserRole.Registered)
         {

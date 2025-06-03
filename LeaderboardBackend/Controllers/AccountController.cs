@@ -41,25 +41,28 @@ public class AccountController(IUserService userService) : ApiController
         [FromServices] IAccountConfirmationService confirmationService
     )
     {
-        CreateUserResult result = await userService.CreateUser(request);
+        // Check if we already have a user with the request's email first
+        User? possiblyExistingUser = await userService.GetUserByEmail(request.Email);
 
-        if (result.TryPickT0(out User user, out CreateUserConflicts conflicts))
+        if (possiblyExistingUser is not null)
         {
-            CreateConfirmationResult r = await confirmationService.CreateConfirmationAndSendEmail(user);
+            EmailExistingResult r = await confirmationService.EmailExistingUserOfRegistrationAttempt(possiblyExistingUser);
 
             return r.Match<ActionResult>(
-                confirmation => Accepted(),
+                success => Accepted(),
                 badRole => Accepted(),
                 emailFailed => StatusCode(StatusCodes.Status500InternalServerError)
             );
         }
 
-        if (conflicts.Email)
+        CreateUserResult result = await userService.CreateUser(request);
+
+        if (result.TryPickT0(out User user, out CreateUserConflicts _))
         {
-            EmailExistingResult r = await confirmationService.EmailExistingUserOfRegistrationAttempt(request);
+            CreateConfirmationResult r = await confirmationService.CreateConfirmationAndSendEmail(user);
 
             return r.Match<ActionResult>(
-                success => Accepted(),
+                confirmation => Accepted(),
                 badRole => Accepted(),
                 emailFailed => StatusCode(StatusCodes.Status500InternalServerError)
             );

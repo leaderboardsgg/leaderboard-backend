@@ -187,20 +187,121 @@ public class RegistrationTests : IntegrationTestsBase
     }
 
     [Test]
-    public async Task Register_EmailAlreadyUsed_ReturnsConflictAndErrorCode()
+    public async Task Register_EmailAlreadyUsed_ResendsConfirmationEmailIfRegistered()
     {
+        Mock<IEmailSender> emailSender = new();
+
+        using HttpClient client = _factory.WithWebHostBuilder(builder =>
+            builder.ConfigureTestServices(services =>
+                services.AddScoped(_ => emailSender.Object))
+        ).CreateClient();
+
         RegisterRequest createExistingUserReq = _registerReqFaker.Generate();
-        await Client.PostAsJsonAsync(Routes.REGISTER, createExistingUserReq);
+        await client.PostAsJsonAsync(Routes.REGISTER, createExistingUserReq);
+
         RegisterRequest request = _registerReqFaker.Generate() with { Email = createExistingUserReq.Email.ToLower() };
+        HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
+        res.Should().HaveStatusCode(HttpStatusCode.Accepted);
 
-        res.Should().HaveStatusCode(HttpStatusCode.Conflict);
-        ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
-        content.Should().NotBeNull();
-        content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
+        emailSender.Verify(s =>
+            s.EnqueueEmailAsync(
+                createExistingUserReq.Email,
+                "Confirm Your Account",
+                It.IsAny<string>()
+            ),
+            Times.Exactly(2)
+        );
+    }
+
+    [TestCase(UserRole.Confirmed)]
+    [TestCase(UserRole.Administrator)]
+    [TestCase(UserRole.Banned)]
+    public async Task Register_EmailAlreadyUsed_OtherRoles(UserRole role)
+    {
+        Mock<IEmailSender> emailSender = new();
+
+        using HttpClient client = _factory.WithWebHostBuilder(builder =>
+            builder.ConfigureTestServices(services =>
+                services.AddScoped(_ => emailSender.Object)
+        )).CreateClient();
+
+        IServiceScope scope = _factory.Services.CreateScope();
+        IUserService service = scope.ServiceProvider.GetRequiredService<IUserService>();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        CreateUserResult result = await service.CreateUser(new()
         {
-            { nameof(RegisterRequest.Email), new[] { "EmailAlreadyUsed" } }
+            Email = $"testregister.emailused.{role}@example.com",
+            Password = "P4ssword",
+            Username = $"RegisterTestEmailUsed{role}",
         });
+
+        result.IsT0.Should().BeTrue();
+        User user = result.AsT0;
+        context.Update(user);
+        user!.Role = role;
+
+        await context.SaveChangesAsync();
+
+        RegisterRequest request = _registerReqFaker.Generate() with { Email = $"testregister.emailused.{role}@example.com" };
+        HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
+
+        res.Should().HaveStatusCode(HttpStatusCode.Accepted);
+
+        emailSender.Verify(s =>
+            s.EnqueueEmailAsync(
+                $"testregister.emailused.{role}@example.com",
+                "A Registration Attempt was Made with Your Email",
+                It.IsAny<string>()
+            ),
+            role is UserRole.Banned ? Times.Never() : Times.Once()
+        );
+    }
+
+    [Test]
+    public async Task Register_EmailAlreadyUsed_EmailServiceFailed()
+    {
+        Mock<IEmailSender> emailSender = new();
+        emailSender.Setup(x =>
+            x.EnqueueEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())
+        ).Throws(new Exception());
+
+        using HttpClient client = _factory.WithWebHostBuilder(builder =>
+            builder.ConfigureTestServices(services =>
+                services.AddScoped(_ => emailSender.Object)
+        )).CreateClient();
+
+        IServiceScope scope = _factory.Services.CreateScope();
+        IUserService service = scope.ServiceProvider.GetRequiredService<IUserService>();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        CreateUserResult result = await service.CreateUser(new()
+        {
+            Email = "testregister.emailused.servicefailed@example.com",
+            Password = "P4ssword",
+            Username = $"RegisterTestEmailUsedServiceFailed",
+        });
+
+        result.IsT0.Should().BeTrue();
+        User user = result.AsT0;
+        context.Update(user);
+        user!.Role = UserRole.Confirmed;
+
+        await context.SaveChangesAsync();
+
+        RegisterRequest request = _registerReqFaker.Generate() with { Email = "testregister.emailused.servicefailed@example.com" };
+        HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
+
+        res.Should().HaveStatusCode(HttpStatusCode.InternalServerError);
+
+        emailSender.Verify(s =>
+            s.EnqueueEmailAsync(
+                "testregister.emailused.servicefailed@example.com",
+                "A Registration Attempt was Made with Your Email",
+                It.IsAny<string>()
+            ),
+            Times.Once()
+        );
     }
 }
