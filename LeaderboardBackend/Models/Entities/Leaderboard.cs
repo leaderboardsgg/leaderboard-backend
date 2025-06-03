@@ -72,11 +72,23 @@ public class Leaderboard : IHasUpdateTimestamp, IHasDeletionTimestamp
 public static class LeaderboardExtensions
 {
     /// <summary>
-    ///     Search for a leaderboard whose name or slug matches the specified query using
-    ///     <see href="https://www.postgresql.org/docs/current/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES">web search syntax</see>.
+    /// Searches for leaderboards with names or slugs that match
+    /// <paramref name="query"/>.
     /// </summary>
     public static IQueryable<Leaderboard> Search(this IQueryable<Leaderboard> lbSource, string query) =>
-        lbSource.Where(lb => lb.SearchVector.Matches(EF.Functions.WebSearchToTsQuery(query)));
+        lbSource.Where(
+            lb =>
+                lb.SearchVector.Matches(EF.Functions.WebSearchToTsQuery(query))
+        );
+
+    /// <summary>
+    /// Ranks leaderboards in descending order of how close their names or
+    /// slugs match <paramref name="query"/>.
+    /// </summary>
+    public static IQueryable<Leaderboard> Rank(this IQueryable<Leaderboard> lbSource, string query) =>
+        lbSource.OrderByDescending(lb =>
+            lb.SearchVector.Rank(EF.Functions.WebSearchToTsQuery(query))
+        );
 }
 
 public class LeaderboardEntityTypeConfig : IEntityTypeConfiguration<Leaderboard>

@@ -1068,4 +1068,45 @@ public class Leaderboards
         results3.Data.Should().ContainEquivalentOf(gta, config => config.ExcludingMissingMembers());
         results3.Data.Should().NotContainEquivalentOf(croc, config => config.ExcludingMissingMembers());
     }
+
+    [Test]
+    public async Task SearchLeaderboards_Ranked_OK()
+    {
+        using IServiceScope serviceScope = _factory.Services.CreateScope();
+        using ApplicationContext context = serviceScope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard okami = new()
+        {
+            Name = "Okami",
+            Info = "Can't believe she's not called Amy",
+            Slug = "okami",
+        };
+
+        Leaderboard okami2 = new()
+        {
+            Name = "Okami 2",
+            Info = "Why does mom let you have *two* Catwalk Skips",
+            Slug = "okami-2",
+        };
+
+        Leaderboard momo4 = new()
+        {
+            Name = "Momodora: Reverie Under the Moonlight",
+            Info = "I still want a Moka pot",
+            Slug = "momo4",
+        };
+
+        context.Leaderboards.AddRange(okami, okami2, momo4);
+        await context.SaveChangesAsync();
+
+        ListView<LeaderboardViewModel> results = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search?q=okami&limit=1024", new());
+        results.Data.First().Should().BeEquivalentTo(okami, config => config.ExcludingMissingMembers());
+        results.Data[1].Should().BeEquivalentTo(okami2, config => config.ExcludingMissingMembers());
+        results.Data.Should().NotContain(LeaderboardViewModel.MapFrom(momo4));
+
+        ListView<LeaderboardViewModel> resultsVerifyCount = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search?q=okami&limit=1", new());
+        resultsVerifyCount.Data.First().Should().BeEquivalentTo(okami, config => config.ExcludingMissingMembers());
+        resultsVerifyCount.Data.Should().ContainSingle();
+        resultsVerifyCount.Total.Should().Be(2);
+    }
 }
