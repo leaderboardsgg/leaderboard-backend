@@ -12,7 +12,8 @@ public class AccountConfirmationService(
     ApplicationContext applicationContext,
     IEmailSender emailSender,
     IClock clock,
-    IOptions<AppConfig> appConfig
+    IOptions<AppConfig> appConfig,
+    ILogger<AccountConfirmationService> logger
 ) : IAccountConfirmationService
 {
 
@@ -48,6 +49,7 @@ public class AccountConfirmationService(
         }
         catch
         {
+            logger.LogWarning("Account confirmation email failed to send");
             return new EmailFailed();
         }
 
@@ -84,6 +86,7 @@ public class AccountConfirmationService(
         }
         catch
         {
+            logger.LogWarning("Existing account registration attempt email failed to send");
             return new EmailFailed();
         }
     }
