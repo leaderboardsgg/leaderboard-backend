@@ -1,5 +1,4 @@
 using LeaderboardBackend.Models.Entities;
-using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using OneOf;
 using OneOf.Types;
@@ -19,6 +18,6 @@ public partial class CreateConfirmationResult : OneOfBase<AccountConfirmation, B
 
 // Remember: make sure this is a subset of CreateConfirmationResult, or at least match it
 [GenerateOneOf]
-public partial class EmailExistingResult : OneOfBase<True, BadRole, EmailFailed> { };
+public partial class EmailExistingResult : OneOfBase<Success, BadRole, EmailFailed> { };
 [GenerateOneOf]
 public partial class ConfirmAccountResult : OneOfBase<AccountConfirmed, AlreadyUsed, BadRole, ConfirmationNotFound, Expired> { };

@@ -61,7 +61,7 @@ public class AccountConfirmationService(
         {
             CreateConfirmationResult r = await CreateConfirmationAndSendEmail(user);
             return r.Match<EmailExistingResult>(
-                confirmation => new True(),
+                confirmation => new Success(),
                 badRole => new BadRole(),
                 emailFailed => new EmailFailed()
             );
@@ -80,7 +80,7 @@ public class AccountConfirmationService(
                 GenerateRegistrationAttemptEmailBody(user)
             );
 
-            return new True();
+            return new Success();
         }
         catch
         {

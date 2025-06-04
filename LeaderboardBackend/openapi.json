@@ -43,7 +43,7 @@
             "description": "Internal Server Error"
           },
           "202": {
-            "description": "The registration attempt was successfully received. An email will be\nsent to the provided address, where its contents will differ based on\nwhether or not an account with that address already exists."
+            "description": "The registration attempt was successfully received, and an email will\nbe sent to the provided address. If an account with that address does\nnot already exist, or if the account has not been confirmed yet, the\nemail will contain a link to confirm the account. Otherwise, the email\nwill inform the associated user that a registration attempt was made\nwith their address."
           },
           "409": {
             "description": "A `User` with the specified username already exists. The validation\nerror code `UsernameTaken` will be returned.",

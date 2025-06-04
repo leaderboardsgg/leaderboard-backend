@@ -95,7 +95,7 @@ public class RegistrationTests : IntegrationTestsBase
     }
 
     [Test]
-    public async Task Register_EmailFailedToSend_ReturnsErrorCode()
+    public async Task Register_EmailFailedToSend()
     {
         Mock<IEmailSender> emailSenderMock = new();
         emailSenderMock.Setup(x =>
@@ -111,7 +111,7 @@ public class RegistrationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveStatusCode(HttpStatusCode.InternalServerError);
+        res.Should().HaveStatusCode(HttpStatusCode.Accepted);
     }
 
     [Test]
@@ -282,7 +282,7 @@ public class RegistrationTests : IntegrationTestsBase
         RegisterRequest request = _registerReqFaker.Generate() with { Email = "testregister.emailused.servicefailed@example.com" };
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveStatusCode(HttpStatusCode.InternalServerError);
+        res.Should().HaveStatusCode(HttpStatusCode.Accepted);
 
         emailSender.Verify(s =>
             s.EnqueueEmailAsync(

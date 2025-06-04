@@ -21,9 +21,12 @@ public class AccountController(IUserService userService) : ApiController
     [SwaggerResponse(
         202,
         """
-        The registration attempt was successfully received. An email will be
-        sent to the provided address, where its contents will differ based on
-        whether or not an account with that address already exists.
+        The registration attempt was successfully received, and an email will
+        be sent to the provided address. If an account with that address does
+        not already exist, or if the account has not been confirmed yet, the
+        email will contain a link to confirm the account. Otherwise, the email
+        will inform the associated user that a registration attempt was made
+        with their address.
         """)]
     [SwaggerResponse(
         409,
@@ -41,7 +44,13 @@ public class AccountController(IUserService userService) : ApiController
         [FromServices] IAccountConfirmationService confirmationService
     )
     {
-        // Check if we already have a user with the request's email first
+        // Check if we already have a user with the request's email first.
+        // This prevents UserService's ApplicationContext instance from being
+        // used for two units-of-work in the same lifetime, which, in the case
+        // of a User with UserRole.Registered, causes EF Core to attempt to
+        // add the existing User as if it's a new entity when adding an
+        // AccountConfirmation, which triggers the unique index exception on
+        // emails. - zysim
         User? possiblyExistingUser = await userService.GetUserByEmail(request.Email);
 
         if (possiblyExistingUser is not null)
@@ -51,7 +60,7 @@ public class AccountController(IUserService userService) : ApiController
             return r.Match<ActionResult>(
                 success => Accepted(),
                 badRole => Accepted(),
-                emailFailed => StatusCode(StatusCodes.Status500InternalServerError)
+                emailFailed => Accepted()
             );
         }
 
@@ -64,7 +73,7 @@ public class AccountController(IUserService userService) : ApiController
             return r.Match<ActionResult>(
                 confirmation => Accepted(),
                 badRole => Accepted(),
-                emailFailed => StatusCode(StatusCodes.Status500InternalServerError)
+                emailFailed => Accepted()
             );
         }
 
