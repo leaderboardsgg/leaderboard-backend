@@ -93,7 +93,8 @@ namespace LeaderboardBackend.Test
             context.Add(run);
             await context.SaveChangesAsync();
             // Needed for resolving the run type for viewmodel mapping
-            context.Entry(run).Reference(r => r.Category).Load();
+            await context.Entry(run).Reference(r => r.Category).LoadAsync();
+            await context.Entry(run).Reference(r => r.User).LoadAsync();
 
             TimedRunViewModel retrieved = await _apiClient.Get<TimedRunViewModel>(
                 $"/api/run/{run.Id.ToUrlSafeBase64String()}",
@@ -155,7 +156,8 @@ namespace LeaderboardBackend.Test
             foreach (Run run in runs)
             {
                 // Needed for resolving the run type for viewmodel mapping
-                context.Entry(run).Reference(r => r.Category).Load();
+                await context.Entry(run).Reference(r => r.Category).LoadAsync();
+                await context.Entry(run).Reference(r => r.User).LoadAsync();
             }
 
             ListView<TimedRunViewModel> returned = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?limit=9999999", new());
@@ -259,7 +261,7 @@ namespace LeaderboardBackend.Test
                     PlayedOn = LocalDate.FromDateTime(new(2025, 1, 1)),
                     Info = "",
                     Time = Duration.FromMilliseconds(622111),
-                    UserId = user.Id,
+                    User = UserViewModel.MapFrom(user)
                 }
             );
         }
