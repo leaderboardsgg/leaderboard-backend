@@ -203,10 +203,10 @@ public class RegistrationTests : IntegrationTestsBase
         );
     }
 
-    [TestCase(UserRole.Confirmed)]
-    [TestCase(UserRole.Administrator)]
-    [TestCase(UserRole.Banned)]
-    public async Task Register_EmailAlreadyUsed_OtherRoles(UserRole role)
+    [TestCase(UserRole.Confirmed, 1)]
+    [TestCase(UserRole.Administrator, 1)]
+    [TestCase(UserRole.Banned, 0)]
+    public async Task Register_EmailAlreadyUsed_OtherRoles(UserRole role, int callCount)
     {
         Mock<IEmailSender> emailSender = new();
 
@@ -244,7 +244,7 @@ public class RegistrationTests : IntegrationTestsBase
                 "A Registration Attempt was Made with Your Email",
                 It.IsAny<string>()
             ),
-            role is UserRole.Banned ? Times.Never() : Times.Once()
+            Times.Exactly(callCount)
         );
     }
 
