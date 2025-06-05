@@ -48,9 +48,9 @@ public abstract record RunViewModel
     public required long CategoryId { get; set; }
 
     /// <summary>
-    ///     The ID of the <see cref="User" /> who submitted this run.
+    ///     The user who submitted this run.
     /// </summary>
-    public required Guid UserId { get; set; }
+    public required UserViewModel User { get; set; }
 
     public required Status Status { get; set; }
 
@@ -60,7 +60,7 @@ public abstract record RunViewModel
         {
             Id = run.Id,
             CategoryId = run.CategoryId,
-            UserId = run.UserId,
+            User = UserViewModel.MapFrom(run.User),
             PlayedOn = run.PlayedOn,
             CreatedAt = run.CreatedAt,
             UpdatedAt = run.UpdatedAt,
@@ -74,7 +74,7 @@ public abstract record RunViewModel
         {
             Id = run.Id,
             CategoryId = run.CategoryId,
-            UserId = run.UserId,
+            User = UserViewModel.MapFrom(run.User),
             PlayedOn = run.PlayedOn,
             CreatedAt = run.CreatedAt,
             UpdatedAt = run.UpdatedAt,
