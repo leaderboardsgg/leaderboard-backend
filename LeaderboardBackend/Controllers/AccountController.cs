@@ -55,26 +55,16 @@ public class AccountController(IUserService userService) : ApiController
 
         if (possiblyExistingUser is not null)
         {
-            EmailExistingResult r = await confirmationService.EmailExistingUserOfRegistrationAttempt(possiblyExistingUser);
-
-            return r.Match<ActionResult>(
-                success => Accepted(),
-                badRole => Accepted(),
-                emailFailed => Accepted()
-            );
+            await confirmationService.EmailExistingUserOfRegistrationAttempt(possiblyExistingUser);
+            return Accepted();
         }
 
         CreateUserResult result = await userService.CreateUser(request);
 
         if (result.TryPickT0(out User user, out CreateUserConflicts _))
         {
-            CreateConfirmationResult r = await confirmationService.CreateConfirmationAndSendEmail(user);
-
-            return r.Match<ActionResult>(
-                confirmation => Accepted(),
-                badRole => Accepted(),
-                emailFailed => Accepted()
-            );
+            await confirmationService.CreateConfirmationAndSendEmail(user);
+            return Accepted();
         }
 
         ModelState.AddModelError(nameof(request.Username), "UsernameTaken");
