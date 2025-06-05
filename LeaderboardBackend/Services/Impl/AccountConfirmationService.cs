@@ -49,7 +49,7 @@ public class AccountConfirmationService(
         }
         catch
         {
-            logger.LogWarning("Account confirmation email failed to send");
+            logger.LogWarning("Account confirmation email failed to send for user {ID}", user.Id);
             return new EmailFailed();
         }
 
@@ -86,7 +86,7 @@ public class AccountConfirmationService(
         }
         catch
         {
-            logger.LogWarning("Existing account registration attempt email failed to send");
+            logger.LogWarning("Existing account registration attempt email failed to send for user {ID}", user.Id);
             return new EmailFailed();
         }
     }
