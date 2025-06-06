@@ -18,71 +18,56 @@ public class AccountController(IUserService userService) : ApiController
     [FeatureGate(Features.ACCOUNT_REGISTRATION)]
     [HttpPost("register")]
     [SwaggerOperation("Registers a new User.", OperationId = "register")]
-    [SwaggerResponse(201, "The `User` was registered and returned successfully.")]
+    [SwaggerResponse(
+        202,
+        """
+        The registration attempt was successfully received, and an email will
+        be sent to the provided address. If an account with that address does
+        not already exist, or if the account has not been confirmed yet, the
+        email will contain a link to confirm the account. Otherwise, the email
+        will inform the associated user that a registration attempt was made
+        with their address.
+        """)]
     [SwaggerResponse(
         409,
         """
-        A `User` with the specified username or email already exists.
-        Validation error codes by property:
-        - **Username**:
-          - **UsernameTaken**: the username is already in use
-        - **Email**:
-          - **EmailAlreadyUsed**: the email is already in use
-        """,
-        typeof(ValidationProblemDetails)
-    )]
-    [SwaggerResponse(
-        422,
-        """
-        The request contains errors.
-        Validation error codes by property:
-        - **Username**:
-          - **UsernameFormat**: Invalid username format
-        - **Password**:
-          - **PasswordFormat**: Invalid password format
-        - **Email**:
-          - **EmailValidator**: Invalid email format
+        A `User` with the specified username already exists. The validation
+        error code `UsernameTaken` will be returned.
         """,
         typeof(ValidationProblemDetails)
     )]
     public async Task<ActionResult<UserViewModel>> Register(
-
         [FromBody, SwaggerRequestBody(
             "The `RegisterRequest` instance from which to register the `User`.",
             Required = true
-        )] RegisterRequest request
-    ,
+        )] RegisterRequest request,
         [FromServices] IAccountConfirmationService confirmationService
     )
     {
+        // Check if we already have a user with the request's email first.
+        // This prevents UserService's ApplicationContext instance from being
+        // used for two units-of-work in the same lifetime, which, in the case
+        // of a User with UserRole.Registered, causes EF Core to attempt to
+        // add the existing User as if it's a new entity when adding an
+        // AccountConfirmation, which triggers the unique index exception on
+        // emails. - zysim
+        User? possiblyExistingUser = await userService.GetUserByEmail(request.Email);
+
+        if (possiblyExistingUser is not null)
+        {
+            await confirmationService.EmailExistingUserOfRegistrationAttempt(possiblyExistingUser);
+            return Accepted();
+        }
+
         CreateUserResult result = await userService.CreateUser(request);
 
-        if (result.TryPickT0(out User user, out CreateUserConflicts conflicts))
+        if (result.TryPickT0(out User user, out CreateUserConflicts _))
         {
-            CreateConfirmationResult r = await confirmationService.CreateConfirmationAndSendEmail(user);
-
-            return r.Match<ActionResult>(
-                confirmation => CreatedAtAction(
-                    nameof(UsersController.GetUserById),
-                    "Users",
-                    new { id = user.Id },
-                    UserViewModel.MapFrom(confirmation.User)
-                ),
-                badRole => StatusCode(StatusCodes.Status500InternalServerError),
-                emailFailed => StatusCode(StatusCodes.Status500InternalServerError)
-            );
+            await confirmationService.CreateConfirmationAndSendEmail(user);
+            return Accepted();
         }
 
-        if (conflicts.Username)
-        {
-            ModelState.AddModelError(nameof(request.Username), "UsernameTaken");
-        }
-
-        if (conflicts.Email)
-        {
-            ModelState.AddModelError(nameof(request.Email), "EmailAlreadyUsed");
-        }
-
+        ModelState.AddModelError(nameof(request.Username), "UsernameTaken");
         return Conflict(new ValidationProblemDetails(ModelState));
     }
 

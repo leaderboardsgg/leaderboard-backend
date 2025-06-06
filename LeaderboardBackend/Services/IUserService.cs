@@ -18,7 +18,6 @@ public interface IUserService
     Task<User?> GetUserByName(string name);
     Task<User?> GetUserByNameAndEmail(string name, string email);
     Task<CreateUserResult> CreateUser(RegisterRequest request);
-
 }
 
 [GenerateOneOf]

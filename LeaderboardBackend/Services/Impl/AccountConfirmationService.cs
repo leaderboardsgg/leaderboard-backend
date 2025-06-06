@@ -1,35 +1,24 @@
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NodaTime;
+using OneOf.Types;
 
 namespace LeaderboardBackend.Services;
 
-public class AccountConfirmationService : IAccountConfirmationService
+public class AccountConfirmationService(
+    ApplicationContext applicationContext,
+    IEmailSender emailSender,
+    IClock clock,
+    IOptions<AppConfig> appConfig,
+    ILogger<AccountConfirmationService> logger
+) : IAccountConfirmationService
 {
-    private readonly ApplicationContext _applicationContext;
-    private readonly IEmailSender _emailSender;
-    private readonly IClock _clock;
-    private readonly AppConfig _appConfig;
 
-    public AccountConfirmationService(
-        ApplicationContext applicationContext,
-        IEmailSender emailSender,
-        IClock clock,
-        IOptions<AppConfig> appConfig
-    )
-    {
-        _applicationContext = applicationContext;
-        _emailSender = emailSender;
-        _clock = clock;
-        _appConfig = appConfig.Value;
-    }
-
-    public async Task<AccountConfirmation?> GetConfirmationById(Guid id)
-    {
-        return await _applicationContext.AccountConfirmations.FindAsync(id);
-    }
+    public async Task<AccountConfirmation?> GetConfirmationById(Guid id) =>
+        await applicationContext.AccountConfirmations.FindAsync(id);
 
     public async Task<CreateConfirmationResult> CreateConfirmationAndSendEmail(User user)
     {
@@ -38,7 +27,7 @@ public class AccountConfirmationService : IAccountConfirmationService
             return new BadRole();
         }
 
-        Instant now = _clock.GetCurrentInstant();
+        Instant now = clock.GetCurrentInstant();
 
         AccountConfirmation newConfirmation =
             new()
@@ -47,12 +36,12 @@ public class AccountConfirmationService : IAccountConfirmationService
                 UserId = user.Id,
             };
 
-        _applicationContext.AccountConfirmations.Add(newConfirmation);
-        await _applicationContext.SaveChangesAsync();
+        applicationContext.AccountConfirmations.Add(newConfirmation);
+        await applicationContext.SaveChangesAsync();
 
         try
         {
-            await _emailSender.EnqueueEmailAsync(
+            await emailSender.EnqueueEmailAsync(
                 user.Email,
                 "Confirm Your Account",
                 GenerateAccountConfirmationEmailBody(user, newConfirmation)
@@ -60,15 +49,51 @@ public class AccountConfirmationService : IAccountConfirmationService
         }
         catch
         {
+            logger.LogWarning("Account confirmation email failed to send for user {ID}", user.Id);
             return new EmailFailed();
         }
 
         return newConfirmation;
     }
 
+    public async Task<EmailExistingResult> EmailExistingUserOfRegistrationAttempt(User user)
+    {
+        // Resend the first email if UserRole.Registered
+        if (user.Role is UserRole.Registered)
+        {
+            CreateConfirmationResult r = await CreateConfirmationAndSendEmail(user);
+            return r.Match<EmailExistingResult>(
+                confirmation => new Success(),
+                badRole => new BadRole(),
+                emailFailed => new EmailFailed()
+            );
+        }
+
+        if (user.Role is UserRole.Banned)
+        {
+            return new BadRole();
+        }
+
+        try
+        {
+            await emailSender.EnqueueEmailAsync(
+                user.Email,
+                "A Registration Attempt was Made with Your Email",
+                GenerateRegistrationAttemptEmailBody(user)
+            );
+
+            return new Success();
+        }
+        catch
+        {
+            logger.LogWarning("Existing account registration attempt email failed to send for user {ID}", user.Id);
+            return new EmailFailed();
+        }
+    }
+
     public async Task<ConfirmAccountResult> ConfirmAccount(Guid id)
     {
-        AccountConfirmation? confirmation = await _applicationContext.AccountConfirmations.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == id);
+        AccountConfirmation? confirmation = await applicationContext.AccountConfirmations.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == id);
 
         if (confirmation is null)
         {
@@ -85,7 +110,7 @@ public class AccountConfirmationService : IAccountConfirmationService
             return new AlreadyUsed();
         }
 
-        Instant now = _clock.GetCurrentInstant();
+        Instant now = clock.GetCurrentInstant();
 
         if (confirmation.ExpiresAt <= now)
         {
@@ -94,18 +119,23 @@ public class AccountConfirmationService : IAccountConfirmationService
 
         confirmation.User.Role = UserRole.Confirmed;
         confirmation.UsedAt = now;
-        await _applicationContext.SaveChangesAsync();
+        await applicationContext.SaveChangesAsync();
         return new AccountConfirmed();
     }
 
     private string GenerateAccountConfirmationEmailBody(User user, AccountConfirmation confirmation)
     {
         // Copy of https://datatracker.ietf.org/doc/html/rfc7515#page-55
-        UriBuilder builder = new(_appConfig.WebsiteUrl)
+        UriBuilder builder = new(appConfig.Value.WebsiteUrl)
         {
             Path = "confirm-account",
             Query = $"code={confirmation.Id.ToUrlSafeBase64String()}"
         };
         return $@"Hi {user.Username},<br/><br/>Click <a href=""{builder.Uri}"">here</a> to confirm your account.";
     }
+
+    // TODO: Fill contents
+    private static string GenerateRegistrationAttemptEmailBody(User user) =>
+        $@"Hi {user.Username},<br/><br/>Someone tried to register an account with your email address. " +
+        "If it wasn't you, you can safely ignore this email.";
 }
