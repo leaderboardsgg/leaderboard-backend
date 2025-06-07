@@ -54,12 +54,16 @@ public class LeaderboardsController(
     [AllowAnonymous]
     [HttpGet("api/leaderboards")]
     [Paginated]
-    [SwaggerOperation("Gets all leaderboards.", OperationId = "listLeaderboards")]
+    [SwaggerOperation("Gets leaderboards. Includes deleted, if specified.", OperationId = "listLeaderboards")]
     [SwaggerResponse(200)]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
-    public async Task<ActionResult<ListView<LeaderboardViewModel>>> GetLeaderboards([FromQuery] Page page, [FromQuery] StatusFilter status = StatusFilter.Published)
+    public async Task<ActionResult<ListView<LeaderboardViewModel>>> GetLeaderboards(
+        [FromQuery] Page page,
+        [FromQuery] StatusFilter status = StatusFilter.Published,
+        [FromQuery, SwaggerParameter("Sorts results by a leaderboard's field, tie-breaking with IDs if needed.")] SortBy sortBy = SortBy.Name
+    )
     {
-        ListResult<Leaderboard> result = await leaderboardService.ListLeaderboards(status, page);
+        ListResult<Leaderboard> result = await leaderboardService.ListLeaderboards(status, page, sortBy);
         return Ok(new ListView<LeaderboardViewModel>()
         {
             Data = result.Items.Select(LeaderboardViewModel.MapFrom).ToList(),
