@@ -11,7 +11,10 @@ namespace LeaderboardBackend.Services;
 public class RunService(ApplicationContext applicationContext, IClock clock) : IRunService
 {
     public async Task<Run?> GetRun(Guid id) =>
-        await applicationContext.Runs.Include(run => run.Category).SingleOrDefaultAsync(run => run.Id == id);
+        await applicationContext.Runs
+            .Include(run => run.Category)
+            .Include(run => run.User)
+            .SingleOrDefaultAsync(run => run.Id == id);
 
     public async Task<GetRunsForCategoryResult> GetRunsForCategory(
         long id,
@@ -27,6 +30,7 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
 
         IQueryable<Run> query = applicationContext.Runs
             .Include(run => run.Category)
+            .Include(run => run.User)
             .FilterByStatus(statusFilter);
 
         long count = await query.LongCountAsync();

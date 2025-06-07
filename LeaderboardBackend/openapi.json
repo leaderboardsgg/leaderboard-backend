@@ -2547,7 +2547,7 @@
           "runType",
           "status",
           "updatedAt",
-          "userId"
+          "user"
         ],
         "type": "object",
         "properties": {
@@ -2599,10 +2599,13 @@
             "description": "The ID of the `Category` for `Run`.",
             "format": "int64"
           },
-          "userId": {
-            "pattern": "^[a-zA-Z0-9-_]{22}$",
-            "type": "string",
-            "description": "The ID of the LeaderboardBackend.Models.Entities.User who submitted this run."
+          "user": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserViewModel"
+              }
+            ],
+            "description": "The user who submitted this run."
           },
           "status": {
             "allOf": [
