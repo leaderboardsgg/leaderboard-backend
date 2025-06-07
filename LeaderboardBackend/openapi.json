@@ -970,7 +970,7 @@
         "tags": [
           "Leaderboards"
         ],
-        "summary": "Gets all leaderboards.",
+        "summary": "Gets leaderboards. Includes deleted, if specified.",
         "operationId": "listLeaderboards",
         "parameters": [
           {
@@ -1002,6 +1002,20 @@
                 }
               ],
               "default": "Published"
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Sorts results by a leaderboard's field, tie-breaking with IDs if needed.",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/SortBy"
+                }
+              ],
+              "description": "Used in GetLeaderboards to sort leaderboards by a field.",
+              "default": "Name"
             }
           }
         ],
@@ -2534,7 +2548,8 @@
           "Time",
           "Score"
         ],
-        "type": "string"
+        "type": "string",
+        "description": "<p>Members:</p><ul></ul>"
       },
       "RunViewModel": {
         "required": [
@@ -2685,19 +2700,31 @@
           }
         ]
       },
+      "SortBy": {
+        "enum": [
+          "Name",
+          "Name_Desc",
+          "CreatedAt",
+          "CreatedAt_Desc"
+        ],
+        "type": "string",
+        "description": "Used in GetLeaderboards to sort leaderboards by a field.<p>Members:</p><ul><li><i>Name</i> - Sorts by name alphabetically.</li><li><i>Name_Desc</i> - Sorts by name in reverse alphabetical order.</li><li><i>CreatedAt</i> - Sorts by creation timestamp, earliest-first.</li><li><i>CreatedAt_Desc</i> - Sorts by creation timestamp, latest-first.</li></ul>"
+      },
       "SortDirection": {
         "enum": [
           "Ascending",
           "Descending"
         ],
-        "type": "string"
+        "type": "string",
+        "description": "<p>Members:</p><ul></ul>"
       },
       "Status": {
         "enum": [
           "Published",
           "Deleted"
         ],
-        "type": "string"
+        "type": "string",
+        "description": "<p>Members:</p><ul></ul>"
       },
       "StatusFilter": {
         "enum": [
@@ -2705,7 +2732,8 @@
           "Deleted",
           "Any"
         ],
-        "type": "string"
+        "type": "string",
+        "description": "<p>Members:</p><ul></ul>"
       },
       "TimedRunViewModel": {
         "allOf": [
@@ -2842,7 +2870,8 @@
           "Administrator",
           "Banned"
         ],
-        "type": "string"
+        "type": "string",
+        "description": "<p>Members:</p><ul></ul>"
       },
       "UserViewModel": {
         "required": [

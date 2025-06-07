@@ -17,15 +17,23 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
         await applicationContext.Leaderboards
             .FirstOrDefaultAsync(b => b.Slug == slug && b.DeletedAt == null);
 
-    public async Task<ListResult<Leaderboard>> ListLeaderboards(StatusFilter statusFilter, Page page)
+    public async Task<ListResult<Leaderboard>> ListLeaderboards(StatusFilter statusFilter, Page page, SortBy sortBy)
     {
         IQueryable<Leaderboard> query = applicationContext.Leaderboards.FilterByStatus(statusFilter);
         long count = await query.LongCountAsync();
 
-        // Ordering by ID is necessary, otherwise pagination breaks completely because the records won't
-        // be returned in a specific order.
+        query = sortBy switch
+        {
+            SortBy.Name_Desc => query.OrderByDescending(lb => lb.Name),
+            SortBy.CreatedAt => query.OrderBy(lb => lb.CreatedAt),
+            SortBy.CreatedAt_Desc => query.OrderByDescending(lb => lb.CreatedAt),
+            _ => query.OrderBy(lb => lb.Name),
+        };
 
-        List<Leaderboard> items = await query.OrderBy(lb => lb.Id).Skip(page.Offset).Take(page.Limit).ToListAsync();
+        List<Leaderboard> items = await query
+            .Skip(page.Offset)
+            .Take(page.Limit)
+            .ToListAsync();
         return new ListResult<Leaderboard>(items, count);
     }
 
