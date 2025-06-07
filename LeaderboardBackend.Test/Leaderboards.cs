@@ -323,51 +323,68 @@ public class Leaderboards
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
         await context.Leaderboards.ExecuteDeleteAsync();
 
+        Instant now = _clock.GetCurrentInstant();
+
         Leaderboard[] boards = [
             new()
             {
                 Name = "The Legend of Zelda",
                 Slug = "legend-of-zelda",
-                Info = "The original for the NES"
+                Info = "The original for the NES",
+            },
+            new()
+            {
+                Name = "The Legend of Zelda",
+                Slug = "legend-of-zelda-copy",
+                Info = "Asserts ID-based tie-break",
             },
             new()
             {
                 Name = "Zelda II: The Adventure of Link",
                 Slug = "adventure-of-link",
-                Info = "The daring sequel"
+                Info = "The daring sequel",
+                CreatedAt = now + Duration.FromSeconds(1),
             },
             new()
             {
                 Name = "Link: The Faces of Evil",
                 Slug = "link-faces-of-evil",
                 Info = "Nobody should play this one.",
-                UpdatedAt = _clock.GetCurrentInstant(),
-                DeletedAt = _clock.GetCurrentInstant()
-            }
+                UpdatedAt = now,
+                DeletedAt = now
+            },
         ];
 
         context.Leaderboards.AddRange(boards);
         await context.SaveChangesAsync();
         ListView<LeaderboardViewModel> returned = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=9999999", new());
-        returned.Data.Should().BeEquivalentTo(boards.Take(2), config => config.ExcludingMissingMembers());
-        returned.Total.Should().Be(2);
+        returned.Data.Should().BeEquivalentTo(boards.Take(3).OrderBy(b => b.Name), config => config.ExcludingMissingMembers());
+        returned.Total.Should().Be(3);
         returned.LimitDefault.Should().Be(64);
 
         ListView<LeaderboardViewModel> returned2 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?status=published&limit=1024", new());
-        returned2.Data.Should().BeEquivalentTo(boards.Take(2), config => config.ExcludingMissingMembers());
-        returned2.Total.Should().Be(2);
+        returned2.Data.Should().BeEquivalentTo(boards.Take(3).OrderBy(b => b.Name), config => config.ExcludingMissingMembers());
+        returned2.Total.Should().Be(3);
 
         ListView<LeaderboardViewModel> returned3 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?status=any&limit=1024", new());
-        returned3.Data.Should().BeEquivalentTo(boards, config => config.ExcludingMissingMembers());
-        returned3.Total.Should().Be(3);
+        returned3.Data.Should().BeEquivalentTo(boards.OrderBy(b => b.Name), config => config.ExcludingMissingMembers().WithStrictOrdering());
+        returned3.Total.Should().Be(4);
 
         ListView<LeaderboardViewModel> returned4 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=1", new());
-        returned4.Total.Should().Be(2);
-        returned4.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).First(), config => config.ExcludingMissingMembers());
+        returned4.Total.Should().Be(3);
+        returned4.Data.Single().Should().BeEquivalentTo(boards[0], config => config.ExcludingMissingMembers());
 
         ListView<LeaderboardViewModel> returned5 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=1&status=any&offset=1", new());
-        returned5.Total.Should().Be(3);
-        returned5.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).Skip(1).First(), config => config.ExcludingMissingMembers());
+        returned5.Total.Should().Be(4);
+        returned5.Data.Single().Should().BeEquivalentTo(boards[0], config => config.ExcludingMissingMembers());
+
+        ListView<LeaderboardViewModel> returned6 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?sortBy=name_desc", new());
+        returned6.Total.Should().Be(3);
+        returned6.Data.Should().BeEquivalentTo([boards[2], boards[0], boards[1]], config => config.ExcludingMissingMembers().WithStrictOrdering());
+
+        ListView<LeaderboardViewModel> returned7 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?sortBy=createdAt_desc", new());
+        returned7.Total.Should().Be(3);
+        returned7.Data.Should().BeEquivalentTo([boards[2], boards[0], boards[1]], config => config.ExcludingMissingMembers().WithStrictOrdering());
     }
 
     [TestCase(-1, 0)]
