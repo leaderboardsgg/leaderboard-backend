@@ -11,7 +11,7 @@ namespace LeaderboardBackend.Models.Entities;
 /// <summary>
 /// Used in GetLeaderboards to sort leaderboards by a field.
 /// </summary>
-public enum SortBy
+public enum SortLeaderboardsBy
 {
     /// <summary>
     /// Sorts by name alphabetically.

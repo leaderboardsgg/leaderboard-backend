@@ -1011,7 +1011,7 @@
             "schema": {
               "allOf": [
                 {
-                  "$ref": "#/components/schemas/SortBy"
+                  "$ref": "#/components/schemas/SortLeaderboardsBy"
                 }
               ],
               "description": "Used in GetLeaderboards to sort leaderboards by a field.",
@@ -2700,7 +2700,15 @@
           }
         ]
       },
-      "SortBy": {
+      "SortDirection": {
+        "enum": [
+          "Ascending",
+          "Descending"
+        ],
+        "type": "string",
+        "description": "<p>Members:</p><ul></ul>"
+      },
+      "SortLeaderboardsBy": {
         "enum": [
           "Name_Asc",
           "Name_Desc",
@@ -2709,14 +2717,6 @@
         ],
         "type": "string",
         "description": "Used in GetLeaderboards to sort leaderboards by a field.<p>Members:</p><ul><li><i>Name_Asc</i> - Sorts by name alphabetically.</li><li><i>Name_Desc</i> - Sorts by name in reverse alphabetical order.</li><li><i>CreatedAt_Asc</i> - Sorts by creation timestamp, earliest-first.</li><li><i>CreatedAt_Desc</i> - Sorts by creation timestamp, latest-first.</li></ul>"
-      },
-      "SortDirection": {
-        "enum": [
-          "Ascending",
-          "Descending"
-        ],
-        "type": "string",
-        "description": "<p>Members:</p><ul></ul>"
       },
       "Status": {
         "enum": [
