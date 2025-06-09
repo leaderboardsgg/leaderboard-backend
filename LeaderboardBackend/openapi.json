@@ -2548,8 +2548,7 @@
           "Time",
           "Score"
         ],
-        "type": "string",
-        "description": "<p>Members:</p><ul></ul>"
+        "type": "string"
       },
       "RunViewModel": {
         "required": [
@@ -2705,8 +2704,7 @@
           "Ascending",
           "Descending"
         ],
-        "type": "string",
-        "description": "<p>Members:</p><ul></ul>"
+        "type": "string"
       },
       "SortLeaderboardsBy": {
         "enum": [
@@ -2716,15 +2714,14 @@
           "CreatedAt_Desc"
         ],
         "type": "string",
-        "description": "Used in GetLeaderboards to sort leaderboards by a field.<p>Members:</p><ul><li><i>Name_Asc</i> - Sorts by name alphabetically.</li><li><i>Name_Desc</i> - Sorts by name in reverse alphabetical order.</li><li><i>CreatedAt_Asc</i> - Sorts by creation timestamp, earliest-first.</li><li><i>CreatedAt_Desc</i> - Sorts by creation timestamp, latest-first.</li></ul>"
+        "description": "Used in GetLeaderboards to sort leaderboards by a field."
       },
       "Status": {
         "enum": [
           "Published",
           "Deleted"
         ],
-        "type": "string",
-        "description": "<p>Members:</p><ul></ul>"
+        "type": "string"
       },
       "StatusFilter": {
         "enum": [
@@ -2732,8 +2729,7 @@
           "Deleted",
           "Any"
         ],
-        "type": "string",
-        "description": "<p>Members:</p><ul></ul>"
+        "type": "string"
       },
       "TimedRunViewModel": {
         "allOf": [
@@ -2870,8 +2866,7 @@
           "Administrator",
           "Banned"
         ],
-        "type": "string",
-        "description": "<p>Members:</p><ul></ul>"
+        "type": "string"
       },
       "UserViewModel": {
         "required": [
