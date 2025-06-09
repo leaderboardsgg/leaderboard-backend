@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
@@ -17,17 +18,18 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
         await applicationContext.Leaderboards
             .FirstOrDefaultAsync(b => b.Slug == slug && b.DeletedAt == null);
 
-    public async Task<ListResult<Leaderboard>> ListLeaderboards(StatusFilter statusFilter, Page page, SortBy sortBy)
+    public async Task<ListResult<Leaderboard>> ListLeaderboards(StatusFilter statusFilter, Page page, SortLeaderboardsBy sortBy)
     {
         IQueryable<Leaderboard> query = applicationContext.Leaderboards.FilterByStatus(statusFilter);
         long count = await query.LongCountAsync();
 
         query = sortBy switch
         {
-            SortBy.Name_Desc => query.OrderByDescending(lb => lb.Name),
-            SortBy.CreatedAt_Asc => query.OrderBy(lb => lb.CreatedAt),
-            SortBy.CreatedAt_Desc => query.OrderByDescending(lb => lb.CreatedAt),
-            _ => query.OrderBy(lb => lb.Name),
+            SortLeaderboardsBy.Name_Asc => query.OrderBy(lb => lb.Name),
+            SortLeaderboardsBy.Name_Desc => query.OrderByDescending(lb => lb.Name),
+            SortLeaderboardsBy.CreatedAt_Asc => query.OrderBy(lb => lb.CreatedAt),
+            SortLeaderboardsBy.CreatedAt_Desc => query.OrderByDescending(lb => lb.CreatedAt),
+            _ => throw new InvalidEnumArgumentException(nameof(SortLeaderboardsBy), (int)sortBy, typeof(SortLeaderboardsBy)),
         };
 
         List<Leaderboard> items = await query
