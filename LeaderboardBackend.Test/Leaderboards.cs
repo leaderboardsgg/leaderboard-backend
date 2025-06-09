@@ -325,7 +325,6 @@ public class Leaderboards
 
         Instant now = _clock.GetCurrentInstant();
         _clock.AdvanceSeconds(1);
-        Instant later = _clock.GetCurrentInstant();
 
         Leaderboard[] boards = [
             new()
@@ -345,7 +344,6 @@ public class Leaderboards
                 Name = "Zelda II: The Adventure of Link",
                 Slug = "adventure-of-link",
                 Info = "The daring sequel",
-                CreatedAt = later,
             },
             new()
             {
