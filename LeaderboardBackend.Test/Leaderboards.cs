@@ -402,6 +402,22 @@ public class Leaderboards
             .Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
 
     [Test]
+    public async Task GetLeaderboards_BadQueryParam()
+    {
+        ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(
+            a => a.Get<LeaderboardViewModel>(
+                "/api/leaderboards?sortBy=invalid&status=invalid",
+                new()
+            )
+        ).Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableEntity);
+
+        ValidationProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ValidationProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+        problemDetails.Should().NotBeNull();
+        problemDetails!.Errors["status"].Single().Should().Be("The value 'invalid' is not valid.");
+        problemDetails!.Errors["sortBy"].Single().Should().Be("The value 'invalid' is not valid.");
+    }
+
+    [Test]
     public async Task RestoreLeaderboard_OK()
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
