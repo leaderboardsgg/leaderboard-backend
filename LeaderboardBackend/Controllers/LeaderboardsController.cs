@@ -60,7 +60,7 @@ public class LeaderboardsController(
     public async Task<ActionResult<ListView<LeaderboardViewModel>>> GetLeaderboards(
         [FromQuery] Page page,
         [FromQuery] StatusFilter status = StatusFilter.Published,
-        [FromQuery, SwaggerParameter("Sorts results by a leaderboard's field, tie-breaking with IDs if needed.")] SortBy sortBy = SortBy.Name
+        [FromQuery, SwaggerParameter("Sorts results by a leaderboard's field, tie-breaking with IDs if needed.")] SortBy sortBy = SortBy.Name_Asc
     )
     {
         ListResult<Leaderboard> result = await leaderboardService.ListLeaderboards(status, page, sortBy);

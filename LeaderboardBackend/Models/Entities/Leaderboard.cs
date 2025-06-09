@@ -16,7 +16,7 @@ public enum SortBy
     /// <summary>
     /// Sorts by name alphabetically.
     /// </summary>
-    Name,
+    Name_Asc,
     /// <summary>
     /// Sorts by name in reverse alphabetical order.
     /// </summary>
@@ -24,7 +24,7 @@ public enum SortBy
     /// <summary>
     /// Sorts by creation timestamp, earliest-first.
     /// </summary>
-    CreatedAt,
+    CreatedAt_Asc,
     /// <summary>
     /// Sorts by creation timestamp, latest-first.
     /// </summary>

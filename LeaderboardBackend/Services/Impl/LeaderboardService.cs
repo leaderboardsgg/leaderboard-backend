@@ -25,7 +25,7 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
         query = sortBy switch
         {
             SortBy.Name_Desc => query.OrderByDescending(lb => lb.Name),
-            SortBy.CreatedAt => query.OrderBy(lb => lb.CreatedAt),
+            SortBy.CreatedAt_Asc => query.OrderBy(lb => lb.CreatedAt),
             SortBy.CreatedAt_Desc => query.OrderByDescending(lb => lb.CreatedAt),
             _ => query.OrderBy(lb => lb.Name),
         };

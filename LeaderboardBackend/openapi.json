@@ -1015,7 +1015,7 @@
                 }
               ],
               "description": "Used in GetLeaderboards to sort leaderboards by a field.",
-              "default": "Name"
+              "default": "Name_Asc"
             }
           }
         ],
@@ -2702,13 +2702,13 @@
       },
       "SortBy": {
         "enum": [
-          "Name",
+          "Name_Asc",
           "Name_Desc",
-          "CreatedAt",
+          "CreatedAt_Asc",
           "CreatedAt_Desc"
         ],
         "type": "string",
-        "description": "Used in GetLeaderboards to sort leaderboards by a field.<p>Members:</p><ul><li><i>Name</i> - Sorts by name alphabetically.</li><li><i>Name_Desc</i> - Sorts by name in reverse alphabetical order.</li><li><i>CreatedAt</i> - Sorts by creation timestamp, earliest-first.</li><li><i>CreatedAt_Desc</i> - Sorts by creation timestamp, latest-first.</li></ul>"
+        "description": "Used in GetLeaderboards to sort leaderboards by a field.<p>Members:</p><ul><li><i>Name_Asc</i> - Sorts by name alphabetically.</li><li><i>Name_Desc</i> - Sorts by name in reverse alphabetical order.</li><li><i>CreatedAt_Asc</i> - Sorts by creation timestamp, earliest-first.</li><li><i>CreatedAt_Desc</i> - Sorts by creation timestamp, latest-first.</li></ul>"
       },
       "SortDirection": {
         "enum": [
