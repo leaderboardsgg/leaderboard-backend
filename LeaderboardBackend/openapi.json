@@ -970,7 +970,7 @@
         "tags": [
           "Leaderboards"
         ],
-        "summary": "Gets all leaderboards.",
+        "summary": "Gets leaderboards. Includes deleted, if specified.",
         "operationId": "listLeaderboards",
         "parameters": [
           {
@@ -1002,6 +1002,20 @@
                 }
               ],
               "default": "Published"
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Sorts results by a leaderboard's field, tie-breaking with IDs if needed.",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/SortLeaderboardsBy"
+                }
+              ],
+              "description": "Used in GetLeaderboards to sort leaderboards by a field.",
+              "default": "Name_Asc"
             }
           }
         ],
@@ -2691,6 +2705,16 @@
           "Descending"
         ],
         "type": "string"
+      },
+      "SortLeaderboardsBy": {
+        "enum": [
+          "Name_Asc",
+          "Name_Desc",
+          "CreatedAt_Asc",
+          "CreatedAt_Desc"
+        ],
+        "type": "string",
+        "description": "Used in GetLeaderboards to sort leaderboards by a field."
       },
       "Status": {
         "enum": [

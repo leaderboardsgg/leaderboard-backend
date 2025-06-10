@@ -328,13 +328,19 @@ public class Leaderboards
             {
                 Name = "The Legend of Zelda",
                 Slug = "legend-of-zelda",
-                Info = "The original for the NES"
+                Info = "The original for the NES",
+            },
+            new()
+            {
+                Name = "The Legend of Zelda",
+                Slug = "legend-of-zelda-copy",
+                Info = "Asserts ID-based tie-break",
             },
             new()
             {
                 Name = "Zelda II: The Adventure of Link",
                 Slug = "adventure-of-link",
-                Info = "The daring sequel"
+                Info = "The daring sequel",
             },
             new()
             {
@@ -343,31 +349,45 @@ public class Leaderboards
                 Info = "Nobody should play this one.",
                 UpdatedAt = _clock.GetCurrentInstant(),
                 DeletedAt = _clock.GetCurrentInstant()
-            }
+            },
         ];
 
-        context.Leaderboards.AddRange(boards);
+        // Skip third element to be saved later
+        context.Leaderboards.AddRange(boards[0], boards[1], boards[3]);
         await context.SaveChangesAsync();
+
+        _clock.AdvanceSeconds(1);
+        context.Leaderboards.Add(boards[2]);
+        await context.SaveChangesAsync();
+
         ListView<LeaderboardViewModel> returned = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=9999999", new());
-        returned.Data.Should().BeEquivalentTo(boards.Take(2), config => config.ExcludingMissingMembers());
-        returned.Total.Should().Be(2);
+        returned.Data.Should().BeEquivalentTo(boards.Take(3).OrderBy(b => b.Name), config => config.ExcludingMissingMembers().WithStrictOrdering());
+        returned.Total.Should().Be(3);
         returned.LimitDefault.Should().Be(64);
 
         ListView<LeaderboardViewModel> returned2 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?status=published&limit=1024", new());
-        returned2.Data.Should().BeEquivalentTo(boards.Take(2), config => config.ExcludingMissingMembers());
-        returned2.Total.Should().Be(2);
+        returned2.Data.Should().BeEquivalentTo(boards.Take(3).OrderBy(b => b.Name), config => config.ExcludingMissingMembers().WithStrictOrdering());
+        returned2.Total.Should().Be(3);
 
         ListView<LeaderboardViewModel> returned3 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?status=any&limit=1024", new());
-        returned3.Data.Should().BeEquivalentTo(boards, config => config.ExcludingMissingMembers());
-        returned3.Total.Should().Be(3);
+        returned3.Data.Should().BeEquivalentTo(boards.OrderBy(b => b.Name), config => config.ExcludingMissingMembers().WithStrictOrdering());
+        returned3.Total.Should().Be(4);
 
         ListView<LeaderboardViewModel> returned4 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=1", new());
-        returned4.Total.Should().Be(2);
-        returned4.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).First(), config => config.ExcludingMissingMembers());
+        returned4.Total.Should().Be(3);
+        returned4.Data.Single().Should().BeEquivalentTo(boards[0], config => config.ExcludingMissingMembers());
 
         ListView<LeaderboardViewModel> returned5 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=1&status=any&offset=1", new());
-        returned5.Total.Should().Be(3);
-        returned5.Data.Single().Should().BeEquivalentTo(boards.OrderBy(lb => lb.Id).Skip(1).First(), config => config.ExcludingMissingMembers());
+        returned5.Total.Should().Be(4);
+        returned5.Data.Single().Should().BeEquivalentTo(boards[0], config => config.ExcludingMissingMembers());
+
+        ListView<LeaderboardViewModel> returned6 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?sortBy=name_desc", new());
+        returned6.Total.Should().Be(3);
+        returned6.Data.Should().BeEquivalentTo([boards[2], boards[0], boards[1]], config => config.ExcludingMissingMembers().WithStrictOrdering());
+
+        ListView<LeaderboardViewModel> returned7 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?sortBy=createdAt_desc", new());
+        returned7.Total.Should().Be(3);
+        returned7.Data.Should().BeEquivalentTo([boards[2], boards[0], boards[1]], config => config.ExcludingMissingMembers().WithStrictOrdering());
     }
 
     [TestCase(-1, 0)]
@@ -383,6 +403,22 @@ public class Leaderboards
             .Should()
             .ThrowAsync<RequestFailureException>()
             .Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
+
+    [Test]
+    public async Task GetLeaderboards_BadQueryParam()
+    {
+        ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(
+            a => a.Get<LeaderboardViewModel>(
+                "/api/leaderboards?sortBy=invalid&status=invalid",
+                new()
+            )
+        ).Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableEntity);
+
+        ValidationProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ValidationProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+        problemDetails.Should().NotBeNull();
+        problemDetails!.Errors["status"].Single().Should().Be("The value 'invalid' is not valid.");
+        problemDetails!.Errors["sortBy"].Single().Should().Be("The value 'invalid' is not valid.");
+    }
 
     [Test]
     public async Task RestoreLeaderboard_OK()

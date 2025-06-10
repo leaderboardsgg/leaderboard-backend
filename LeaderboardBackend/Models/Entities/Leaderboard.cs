@@ -8,6 +8,29 @@ using NpgsqlTypes;
 namespace LeaderboardBackend.Models.Entities;
 
 /// <summary>
+/// Used in GetLeaderboards to sort leaderboards by a field.
+/// </summary>
+public enum SortLeaderboardsBy
+{
+    /// <summary>
+    /// Sorts by name alphabetically.
+    /// </summary>
+    Name_Asc,
+    /// <summary>
+    /// Sorts by name in reverse alphabetical order.
+    /// </summary>
+    Name_Desc,
+    /// <summary>
+    /// Sorts by creation timestamp, earliest-first.
+    /// </summary>
+    CreatedAt_Asc,
+    /// <summary>
+    /// Sorts by creation timestamp, latest-first.
+    /// </summary>
+    CreatedAt_Desc
+}
+
+/// <summary>
 ///     Represents a collection of `Category` entities.
 /// </summary>
 public class Leaderboard : IHasUpdateTimestamp, IHasDeletionTimestamp

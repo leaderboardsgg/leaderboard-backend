@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
@@ -17,15 +18,24 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
         await applicationContext.Leaderboards
             .FirstOrDefaultAsync(b => b.Slug == slug && b.DeletedAt == null);
 
-    public async Task<ListResult<Leaderboard>> ListLeaderboards(StatusFilter statusFilter, Page page)
+    public async Task<ListResult<Leaderboard>> ListLeaderboards(StatusFilter statusFilter, Page page, SortLeaderboardsBy sortBy)
     {
         IQueryable<Leaderboard> query = applicationContext.Leaderboards.FilterByStatus(statusFilter);
         long count = await query.LongCountAsync();
 
-        // Ordering by ID is necessary, otherwise pagination breaks completely because the records won't
-        // be returned in a specific order.
+        query = sortBy switch
+        {
+            SortLeaderboardsBy.Name_Asc => query.OrderBy(lb => lb.Name),
+            SortLeaderboardsBy.Name_Desc => query.OrderByDescending(lb => lb.Name),
+            SortLeaderboardsBy.CreatedAt_Asc => query.OrderBy(lb => lb.CreatedAt),
+            SortLeaderboardsBy.CreatedAt_Desc => query.OrderByDescending(lb => lb.CreatedAt),
+            _ => throw new InvalidEnumArgumentException(nameof(SortLeaderboardsBy), (int)sortBy, typeof(SortLeaderboardsBy)),
+        };
 
-        List<Leaderboard> items = await query.OrderBy(lb => lb.Id).Skip(page.Offset).Take(page.Limit).ToListAsync();
+        List<Leaderboard> items = await query
+            .Skip(page.Offset)
+            .Take(page.Limit)
+            .ToListAsync();
         return new ListResult<Leaderboard>(items, count);
     }
 
