@@ -159,7 +159,6 @@ builder.Services.AddSwaggerGen(c =>
     // Enable adding XML comments to controllers to populate Swagger UI
     string xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
-    // Reflects the contents of public enum fields' <summary> tags to the doc
     c.EnableAnnotations(true, true);
     c.UseAllOfToExtendReferenceSchemas();
 
