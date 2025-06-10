@@ -323,9 +323,6 @@ public class Leaderboards
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
         await context.Leaderboards.ExecuteDeleteAsync();
 
-        Instant now = _clock.GetCurrentInstant();
-        _clock.AdvanceSeconds(1);
-
         Leaderboard[] boards = [
             new()
             {
@@ -350,20 +347,26 @@ public class Leaderboards
                 Name = "Link: The Faces of Evil",
                 Slug = "link-faces-of-evil",
                 Info = "Nobody should play this one.",
-                UpdatedAt = now,
-                DeletedAt = now
+                UpdatedAt = _clock.GetCurrentInstant(),
+                DeletedAt = _clock.GetCurrentInstant()
             },
         ];
 
-        context.Leaderboards.AddRange(boards);
+        // Skip third element to be saved later
+        context.Leaderboards.AddRange(boards[0], boards[1], boards[3]);
         await context.SaveChangesAsync();
+
+        _clock.AdvanceSeconds(1);
+        context.Leaderboards.Add(boards[2]);
+        await context.SaveChangesAsync();
+
         ListView<LeaderboardViewModel> returned = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?limit=9999999", new());
-        returned.Data.Should().BeEquivalentTo(boards.Take(3).OrderBy(b => b.Name), config => config.ExcludingMissingMembers());
+        returned.Data.Should().BeEquivalentTo(boards.Take(3).OrderBy(b => b.Name), config => config.ExcludingMissingMembers().WithStrictOrdering());
         returned.Total.Should().Be(3);
         returned.LimitDefault.Should().Be(64);
 
         ListView<LeaderboardViewModel> returned2 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?status=published&limit=1024", new());
-        returned2.Data.Should().BeEquivalentTo(boards.Take(3).OrderBy(b => b.Name), config => config.ExcludingMissingMembers());
+        returned2.Data.Should().BeEquivalentTo(boards.Take(3).OrderBy(b => b.Name), config => config.ExcludingMissingMembers().WithStrictOrdering());
         returned2.Total.Should().Be(3);
 
         ListView<LeaderboardViewModel> returned3 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards?status=any&limit=1024", new());
