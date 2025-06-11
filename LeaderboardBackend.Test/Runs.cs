@@ -98,7 +98,7 @@ namespace LeaderboardBackend.Test
             await context.Entry(run).Reference(r => r.User).LoadAsync();
 
             TimedRunViewModel retrieved = await _apiClient.Get<TimedRunViewModel>(
-                $"/api/run/{run.Id.ToUrlSafeBase64String()}",
+                $"/api/runs/{run.Id.ToUrlSafeBase64String()}",
                 new() { }
             );
 
@@ -110,7 +110,7 @@ namespace LeaderboardBackend.Test
         public async Task GetRun_NotFound(string id) =>
             await FluentActions.Awaiting(() =>
                 _apiClient.Get<RunViewModel>(
-                $"/api/run/{id}",
+                $"/api/runs/{id}",
                 new() { }
             )).Should()
             .ThrowAsync<RequestFailureException>()
@@ -161,23 +161,23 @@ namespace LeaderboardBackend.Test
                 await context.Entry(run).Reference(r => r.User).LoadAsync();
             }
 
-            ListView<TimedRunViewModel> returned = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?limit=9999999", new());
+            ListView<TimedRunViewModel> returned = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryId}/runs?limit=9999999", new());
             returned.Data.Should().BeEquivalentTo(runs.Take(2).Select(RunViewModel.MapFrom));
             returned.Total.Should().Be(2);
 
-            ListView<TimedRunViewModel> returned2 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?status=published&limit=1024", new());
+            ListView<TimedRunViewModel> returned2 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryId}/runs?status=published&limit=1024", new());
             returned2.Data.Should().BeEquivalentTo(runs.Take(2).Select(RunViewModel.MapFrom));
             returned2.Total.Should().Be(2);
 
-            ListView<TimedRunViewModel> returned3 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?status=any&limit=1024", new());
+            ListView<TimedRunViewModel> returned3 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryId}/runs?status=any&limit=1024", new());
             returned3.Data.Should().BeEquivalentTo(new Run[] { runs[0], runs[2], runs[1] }.Select(RunViewModel.MapFrom), config => config.WithStrictOrdering());
             returned3.Total.Should().Be(3);
 
-            ListView<TimedRunViewModel> returned4 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?limit=1", new());
+            ListView<TimedRunViewModel> returned4 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryId}/runs?limit=1", new());
             returned4.Data.Single().Should().BeEquivalentTo(RunViewModel.MapFrom(runs[0]));
             returned4.Total.Should().Be(2);
 
-            ListView<TimedRunViewModel> returned5 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/category/{_categoryId}/runs?limit=1&status=any&offset=1", new());
+            ListView<TimedRunViewModel> returned5 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryId}/runs?limit=1&status=any&offset=1", new());
             returned5.Data.Single().Should().BeEquivalentTo(RunViewModel.MapFrom(runs[2]));
             returned5.Total.Should().Be(3);
         }
@@ -187,7 +187,7 @@ namespace LeaderboardBackend.Test
         public async Task GetRunsForCategory_BadPageData(int limit, int offset) =>
             await _apiClient.Awaiting(
                 a => a.Get<RunViewModel>(
-                    $"/api/category/{_categoryId}/runs?limit={limit}&offset={offset}",
+                    $"/api/categories/{_categoryId}/runs?limit={limit}&offset={offset}",
                     new()
                 )
             ).Should()
@@ -199,7 +199,7 @@ namespace LeaderboardBackend.Test
         {
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(
                 a => a.Get<RunViewModel>(
-                    "/api/category/0/runs",
+                    "/api/categories/0/runs",
                     new()
                 )
             ).Should()
@@ -348,7 +348,7 @@ namespace LeaderboardBackend.Test
             LoginResponse login = await _apiClient.LoginUser($"testuser.createrun.{role}@example.com", "P4ssword");
 
             TimedRunViewModel created = await _apiClient.Post<TimedRunViewModel>(
-                $"/category/{_categoryId}/runs/create",
+                $"/categories/{_categoryId}/runs",
                 new()
                 {
                     Body = new
@@ -363,7 +363,7 @@ namespace LeaderboardBackend.Test
             );
 
             TimedRunViewModel retrieved = await _apiClient.Get<TimedRunViewModel>(
-                $"/api/run/{created.Id.ToUrlSafeBase64String()}",
+                $"/api/runs/{created.Id.ToUrlSafeBase64String()}",
                 new() { }
             );
 
@@ -382,7 +382,7 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task CreateRun_Unauthenticated() =>
             await _apiClient.Awaiting(a => a.Post<RunViewModel>(
-                $"/category/{_categoryId}/runs/create",
+                $"/categories/{_categoryId}/runs",
                 new()
                 {
                     Body = new
@@ -421,7 +421,7 @@ namespace LeaderboardBackend.Test
             await context.SaveChangesAsync();
 
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
-                $"/category/{_categoryId}/runs/create",
+                $"/categories/{_categoryId}/runs",
                 new()
                 {
                     Body = new
@@ -441,7 +441,7 @@ namespace LeaderboardBackend.Test
         public async Task CreateRun_CategoryNotFound()
         {
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
-                "/category/0/runs/create",
+                "/categories/0/runs",
                 new()
                 {
                     Body = new
@@ -482,7 +482,7 @@ namespace LeaderboardBackend.Test
             await context.SaveChangesAsync();
 
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
-                $"/category/{deleted.Id}/runs/create",
+                $"/categories/{deleted.Id}/runs",
                 new()
                 {
                     Body = new
@@ -511,7 +511,7 @@ namespace LeaderboardBackend.Test
         public async Task CreateRun_BadData(string? playedOn, string info, string? time)
         {
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
-                $"/category/{_categoryId}/runs/create",
+                $"/categories/{_categoryId}/runs",
                 new()
                 {
                     Body = new
@@ -530,7 +530,7 @@ namespace LeaderboardBackend.Test
         public async Task GetCategoryForRun_OK()
         {
             TimedRunViewModel createdRun = await _apiClient.Post<TimedRunViewModel>(
-                $"/category/{_categoryId}/runs/create",
+                $"/categories/{_categoryId}/runs",
                 new()
                 {
                     Body = new
@@ -545,7 +545,7 @@ namespace LeaderboardBackend.Test
             );
 
             CategoryViewModel category = await _apiClient.Get<CategoryViewModel>(
-                $"api/run/{createdRun.Id.ToUrlSafeBase64String()}/category",
+                $"api/runs/{createdRun.Id.ToUrlSafeBase64String()}/category",
                 new() { Jwt = _jwt }
             );
 
@@ -573,7 +573,7 @@ namespace LeaderboardBackend.Test
             context.ChangeTracker.Clear();
 
             HttpResponseMessage response = await _apiClient.Patch(
-                $"/run/{run.Id.ToUrlSafeBase64String()}",
+                $"/runs/{run.Id.ToUrlSafeBase64String()}",
                 new()
                 {
                     Body = new
@@ -630,7 +630,7 @@ namespace LeaderboardBackend.Test
                 "updaterun.ok@example.com", "Passw0rd");
 
             HttpResponseMessage userResponse = await _apiClient.Patch(
-                $"/run/{run.Id.ToUrlSafeBase64String()}",
+                $"/runs/{run.Id.ToUrlSafeBase64String()}",
                 new()
                 {
                     Body = new
@@ -669,7 +669,7 @@ namespace LeaderboardBackend.Test
             context.ChangeTracker.Clear();
 
             await _apiClient.Awaiting(a => a.Patch(
-                $"run/{created.Id}",
+                $"runs/{created.Id}",
                 new()
                 {
                     Body = new
@@ -723,7 +723,7 @@ namespace LeaderboardBackend.Test
             await context.SaveChangesAsync();
 
             await _apiClient.Awaiting(a => a.Patch(
-                $"run/{created.Id.ToUrlSafeBase64String()}",
+                $"runs/{created.Id.ToUrlSafeBase64String()}",
                 new()
                 {
                     Body = new
@@ -775,7 +775,7 @@ namespace LeaderboardBackend.Test
             LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
 
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Patch(
-                $"run/{created.Id.ToUrlSafeBase64String()}",
+                $"runs/{created.Id.ToUrlSafeBase64String()}",
                 new()
                 {
                     Body = new
@@ -795,7 +795,7 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task UpdateRun_NotFound() =>
             await _apiClient.Awaiting(a => a.Patch(
-                $"run/{Guid.Empty.ToUrlSafeBase64String()}",
+                $"runs/{Guid.Empty.ToUrlSafeBase64String()}",
                 new()
                 {
                     Body = new
@@ -844,7 +844,7 @@ namespace LeaderboardBackend.Test
 
             LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Patch(
-                $"run/{created.Id.ToUrlSafeBase64String()}",
+                $"runs/{created.Id.ToUrlSafeBase64String()}",
                 new()
                 {
                     Body = new
@@ -912,7 +912,7 @@ namespace LeaderboardBackend.Test
 
             LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Patch(
-                $"run/{created.Id.ToUrlSafeBase64String()}",
+                $"runs/{created.Id.ToUrlSafeBase64String()}",
                 new()
                 {
                     Body = new
@@ -949,7 +949,7 @@ namespace LeaderboardBackend.Test
 
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(
                 a => a.Patch(
-                    $"run/{created.Id.ToUrlSafeBase64String()}",
+                    $"runs/{created.Id.ToUrlSafeBase64String()}",
                     new()
                     {
                         Body = new
@@ -985,7 +985,7 @@ namespace LeaderboardBackend.Test
             context.ChangeTracker.Clear();
 
             HttpResponseMessage message = await _apiClient.Delete(
-                $"run/{created.Id.ToUrlSafeBase64String()}",
+                $"runs/{created.Id.ToUrlSafeBase64String()}",
                 new()
                 {
                     Jwt = _jwt,
@@ -1019,7 +1019,7 @@ namespace LeaderboardBackend.Test
             context.ChangeTracker.Clear();
 
             await _apiClient.Awaiting(a => a.Delete(
-                $"run/{run.Id.ToUrlSafeBase64String()}",
+                $"runs/{run.Id.ToUrlSafeBase64String()}",
                 new() { }
             )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
 
@@ -1066,7 +1066,7 @@ namespace LeaderboardBackend.Test
             context.ChangeTracker.Clear();
 
             await _apiClient.Awaiting(a => a.Delete(
-                $"run/{run.Id.ToUrlSafeBase64String()}",
+                $"runs/{run.Id.ToUrlSafeBase64String()}",
                 new() { Jwt = res.Token }
             )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
 
@@ -1078,7 +1078,7 @@ namespace LeaderboardBackend.Test
         public async Task DeleteRun_NotFound()
         {
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Delete(
-                $"run/{Guid.Empty.ToUrlSafeBase64String()}",
+                $"runs/{Guid.Empty.ToUrlSafeBase64String()}",
                 new()
                 {
                     Jwt = _jwt,
@@ -1111,7 +1111,7 @@ namespace LeaderboardBackend.Test
             context.ChangeTracker.Clear();
 
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Delete(
-                $"run/{run.Id.ToUrlSafeBase64String()}",
+                $"runs/{run.Id.ToUrlSafeBase64String()}",
                 new()
                 {
                     Jwt = _jwt,
