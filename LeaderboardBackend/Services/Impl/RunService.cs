@@ -58,6 +58,63 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
         return new ListResult<Run>(items, count);
     }
 
+    public async Task<GetRecordsForCategoryResult> GetRecordsForCategory(
+        long id,
+        Page page
+    )
+    {
+        Category? cat = await applicationContext.FindAsync<Category>(id);
+        if (cat is null)
+        {
+            return new NotFound();
+        }
+
+        IQueryable<Run> query = applicationContext.Runs
+            .Include(run => run.Category)
+            .Include(run => run.User)
+            .FilterByStatus(StatusFilter.Published)
+            .Where(r => r.CategoryId == cat.Id);
+
+        IQueryable<dynamic> query1 = applicationContext.Runs
+            .FilterByStatus(StatusFilter.Published)
+            .Where(run => run.CategoryId == cat.Id)
+            .GroupBy(run => run.UserId)
+            .Select(group => new {
+                UserId = group.Key,
+                TimeOrScore = cat.SortDirection == SortDirection.Ascending
+                    ? group.Min(r => r.TimeOrScore)
+                    : group.Max(r => r.TimeOrScore)
+            });
+
+        query = query.Join(
+            query1,
+            run => new { run.UserId, run.TimeOrScore },
+            run1 => run1,
+            (r, run1) => r
+        );
+
+        if (cat.SortDirection == SortDirection.Descending)
+        {
+            query = query.OrderByDescending(run => run.TimeOrScore)
+                .ThenBy(run => run.PlayedOn)
+                .ThenBy(run => run.CreatedAt);
+        }
+        else
+        {
+            query = query.OrderBy(run => run.TimeOrScore)
+                .ThenBy(run => run.PlayedOn)
+                .ThenBy(run => run.CreatedAt);
+        }
+
+        long count = await query.LongCountAsync();
+
+        List<Run> items = await query.Skip(page.Offset)
+            .Take(page.Limit)
+            .ToListAsync();
+
+        return new ListResult<Run>(items, count);
+    }
+
     public async Task<CreateRunResult> CreateRun(User user, Category category, CreateRunRequest request)
     {
         switch (user.Role)
