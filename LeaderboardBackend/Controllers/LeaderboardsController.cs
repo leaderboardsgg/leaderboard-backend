@@ -129,38 +129,6 @@ public class LeaderboardsController(
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpPut("leaderboard/{id:long}/restore")]
-    [SwaggerOperation("Restores a deleted leaderboard.", OperationId = "restoreLeaderboard")]
-    [SwaggerResponse(200, "The restored `Leaderboard`s view model.", typeof(LeaderboardViewModel))]
-    [SwaggerResponse(401)]
-    [SwaggerResponse(403, "The requesting `User` is unauthorized to restore `Leaderboard`s.")]
-    [SwaggerResponse(404, "The `Leaderboard` was not found, or it wasn't deleted in the first place. Includes a field, `title`, which will be \"Not Found\" in the former case, and \"Not Deleted\" in the latter.", typeof(ProblemDetails))]
-    [SwaggerResponse(409, "Another `Leaderboard` with the same slug has been created since and will be returned in the `conflicting` field, and therefore can't be restored.", typeof(ConflictDetails<LeaderboardViewModel>))]
-    public async Task<ActionResult<LeaderboardViewModel>> RestoreLeaderboard(
-        [FromRoute] long id
-    )
-    {
-        RestoreResult<Leaderboard> r = await leaderboardService.RestoreLeaderboard(id);
-
-        return r.Match<ActionResult<LeaderboardViewModel>>(
-            board => Ok(LeaderboardViewModel.MapFrom(board)),
-            notFound => NotFound(),
-            neverDeleted => Problem(
-                null,
-                null,
-                404,
-                "Not Deleted"
-            ),
-            conflict =>
-            {
-                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
-                problemDetails.Extensions.Add("conflicting", LeaderboardViewModel.MapFrom(conflict.Conflicting));
-                return Conflict(problemDetails);
-            }
-        );
-    }
-
-    [Authorize(Policy = UserTypes.ADMINISTRATOR)]
     [HttpDelete("leaderboard/{id:long}")]
     [SwaggerOperation("Deletes a leaderboard. This request is restricted to Administrators.", OperationId = "deleteLeaderboard")]
     [SwaggerResponse(204)]
