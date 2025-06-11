@@ -17,7 +17,7 @@ public class LeaderboardsController(
 ) : ApiController
 {
     [AllowAnonymous]
-    [HttpGet("api/leaderboard/{id:long}")]
+    [HttpGet("api/leaderboards/{id:long}")]
     [SwaggerOperation("Gets a leaderboard by its ID.", OperationId = "getLeaderboard")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
@@ -34,11 +34,11 @@ public class LeaderboardsController(
     }
 
     [AllowAnonymous]
-    [HttpGet("api/leaderboard")]
+    [HttpGet("api/leaderboards/{slug}")]
     [SwaggerOperation("Gets a leaderboard by its slug. Will not return deleted boards.", OperationId = "getLeaderboardBySlug")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
-    public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboardBySlug([FromQuery, SwaggerParameter(Required = true)] string slug)
+    public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboardBySlug([FromRoute] string slug)
     {
         Leaderboard? leaderboard = await leaderboardService.GetLeaderboardBySlug(slug);
 
@@ -100,7 +100,7 @@ public class LeaderboardsController(
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpPost("leaderboards/create")]
+    [HttpPost("leaderboards")]
     [SwaggerOperation("Creates a new leaderboard. This request is restricted to Administrators.", OperationId = "createLeaderboard")]
     [SwaggerResponse(201)]
     [SwaggerResponse(401)]
@@ -129,7 +129,7 @@ public class LeaderboardsController(
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpDelete("leaderboard/{id:long}")]
+    [HttpDelete("leaderboards/{id:long}")]
     [SwaggerOperation("Deletes a leaderboard. This request is restricted to Administrators.", OperationId = "deleteLeaderboard")]
     [SwaggerResponse(204)]
     [SwaggerResponse(401)]
@@ -159,7 +159,7 @@ public class LeaderboardsController(
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpPatch("/leaderboard/{id:long}")]
+    [HttpPatch("/leaderboards/{id:long}")]
     [SwaggerOperation(
         "Updates a leaderboard with the specified new fields. This request is restricted to administrators. " +
         "This operation is atomic; if an error occurs, the leaderboard will not be updated. " +
