@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
@@ -134,6 +135,29 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
         if (request.Slug is not null)
         {
             lb.Slug = request.Slug;
+        }
+
+        switch (request.Status)
+        {
+            case null:
+                break;
+
+            case Status.Published:
+            {
+                lb.DeletedAt = null;
+                break;
+            }
+
+            case Status.Deleted:
+            {
+                lb.DeletedAt = clock.GetCurrentInstant();
+                break;
+            }
+
+            default:
+            {
+                throw new ArgumentException($"Invalid Status in request: {(int)request.Status}", nameof(request));
+            }
         }
 
         try
