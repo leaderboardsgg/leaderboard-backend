@@ -18,7 +18,7 @@ public class RunsController(
     ) : ApiController
 {
     [AllowAnonymous]
-    [HttpGet("api/run/{id}")]
+    [HttpGet("api/runs/{id}")]
     [SwaggerOperation("Gets a Run by its ID.", OperationId = "getRun")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404, "The Run with ID `id` could not be found.", typeof(ProblemDetails))]
@@ -35,7 +35,7 @@ public class RunsController(
     }
 
     [Authorize]
-    [HttpPost("/category/{id:long}/runs/create")]
+    [HttpPost("/categories/{id:long}/runs")]
     [SwaggerOperation("Creates a new Run for a Category with ID `id`. This request is restricted to confirmed Users and Administrators.", OperationId = "createRun")]
     [SwaggerResponse(201)]
     [SwaggerResponse(401, "The client is not logged in.", typeof(ProblemDetails))]
@@ -100,7 +100,7 @@ public class RunsController(
     }
 
     [AllowAnonymous]
-    [HttpGet("/api/category/{id:long}/runs")]
+    [HttpGet("/api/categories/{id:long}/runs")]
     [Paginated]
     [SwaggerOperation("Gets the Runs for a Category.", OperationId = "getRunsForCategory")]
     [SwaggerResponse(200)]
@@ -159,7 +159,7 @@ public class RunsController(
     }
 
     [AllowAnonymous]
-    [HttpGet("/api/run/{id}/category")]
+    [HttpGet("/api/runs/{id}/category")]
     [SwaggerOperation("Gets the category a run belongs to.", OperationId = "getRunCategory")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
@@ -184,7 +184,7 @@ public class RunsController(
 
     // TODO: Replace UserTypes with UserRole, i.e. reconfigure authZ policy infra
     [Authorize]
-    [HttpPatch("run/{id}")]
+    [HttpPatch("runs/{id}")]
     [SwaggerOperation(
         "Updates a run with the specified new fields. This request is restricted to administrators " +
         "or users updating their own runs. " +
@@ -195,7 +195,13 @@ public class RunsController(
     )]
     [SwaggerResponse(204)]
     [SwaggerResponse(401)]
-    [SwaggerResponse(403, "The user attempted to update another user's run, or the user is banned or not yet confirmed.", Type = typeof(ProblemDetails))]
+    [SwaggerResponse(
+        403,
+        "The user attempted to update another user's run, " +
+        "the user is banned or not yet confirmed, " +
+        "or the user attempted to change the status of a run.",
+        Type = typeof(ProblemDetails)
+    )]
     [SwaggerResponse(404, "The Run with ID `id` could not be found, or has been deleted. Read `title` for more information.", Type = typeof(ProblemDetails))]
     [SwaggerResponse(
         422,
@@ -271,7 +277,7 @@ public class RunsController(
 
     // TODO: To replace UserTypes with UserRole
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpDelete("/run/{id}")]
+    [HttpDelete("/runs/{id}")]
     [SwaggerOperation("Deletes a Run.", OperationId = "deleteRun")]
     [SwaggerResponse(204)]
     [SwaggerResponse(401)]
