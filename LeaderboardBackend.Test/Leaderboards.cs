@@ -174,6 +174,7 @@ public class Leaderboards
     [TestCase("Super Mario Bros.", "super-mario-bros.")]
     [TestCase("Super Mario Bros.", "1985-nintendo-nes-famicom-fds-gbc-gba-gcn-wiivc-3dsvc-wiiuvc-super-marios-bros-best-game")]
     [TestCase("Super Mario Bros.", "スーパーマリオブラザーズ")]
+    [TestCase("140", "140")]
     public async Task CreateLeaderboard_BadData(string name, string slug)
     {
         CreateLeaderboardRequest req = new()
@@ -912,6 +913,7 @@ public class Leaderboards
     )]
     [TestCase("The Legendary Starfy", "伝説のスタフィー", "densetsu-no-stafy", "デンセツノスタフィー")]
     [TestCase("Resident Evil", "", "resident-evil", null)]
+    [TestCase("Ten Million", "10000000", "ten-million", "10000000")]
     public async Task UpdateLeaderboard_BadData(string oldName, string? newName, string oldSlug, string? newSlug)
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();

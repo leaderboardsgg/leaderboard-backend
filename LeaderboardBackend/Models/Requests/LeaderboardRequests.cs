@@ -57,7 +57,7 @@ public class UpdateLeaderboardRequestValidator : AbstractValidator<UpdateLeaderb
     public UpdateLeaderboardRequestValidator()
     {
         RuleFor(x => x).Must(ulr => ulr.Info is not null || ulr.Name is not null || ulr.Slug is not null || ulr.Status is not null);
-        RuleFor(x => x.Slug).Slug();
+        RuleFor(x => x.Slug).LeaderboardSlug();
         RuleFor(x => x.Name).MinimumLength(1);
         RuleFor(x => x.Status).IsInEnum();
     }
@@ -68,6 +68,6 @@ public class CreateLeaderboardRequestValidator : AbstractValidator<CreateLeaderb
     public CreateLeaderboardRequestValidator()
     {
         RuleFor(x => x.Name).NotEmpty();
-        RuleFor(x => x.Slug).NotEmpty().Slug();
+        RuleFor(x => x.Slug).NotEmpty().LeaderboardSlug();
     }
 }
