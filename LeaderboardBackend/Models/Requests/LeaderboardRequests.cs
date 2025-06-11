@@ -47,15 +47,19 @@ public record UpdateLeaderboardRequest
     /// <inheritdoc cref="Entities.Leaderboard.Info" />
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string Info { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Status? Status { get; set; }
 }
 
 public class UpdateLeaderboardRequestValidator : AbstractValidator<UpdateLeaderboardRequest>
 {
     public UpdateLeaderboardRequestValidator()
     {
-        RuleFor(x => x).Must(ulr => ulr.Info is not null || ulr.Name is not null || ulr.Slug is not null);
+        RuleFor(x => x).Must(ulr => ulr.Info is not null || ulr.Name is not null || ulr.Slug is not null || ulr.Status is not null);
         RuleFor(x => x.Slug).Slug();
         RuleFor(x => x.Name).MinimumLength(1);
+        RuleFor(x => x.Status).IsInEnum();
     }
 }
 
