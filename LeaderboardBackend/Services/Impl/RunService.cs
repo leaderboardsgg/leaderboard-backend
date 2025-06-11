@@ -79,7 +79,8 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
             .FilterByStatus(StatusFilter.Published)
             .Where(run => run.CategoryId == cat.Id)
             .GroupBy(run => run.UserId)
-            .Select(group => new {
+            .Select(group => new
+            {
                 UserId = group.Key,
                 TimeOrScore = cat.SortDirection == SortDirection.Ascending
                     ? group.Min(r => r.TimeOrScore)
@@ -120,14 +121,14 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
                 continue;
             }
 
-            if (items[i-1].TimeOrScore == items[i].TimeOrScore)
+            if (items[i - 1].TimeOrScore == items[i].TimeOrScore)
             {
-                items[i].Rank = items[i-1].Rank;
+                items[i].Rank = items[i - 1].Rank;
                 runsWithSameRank++;
                 continue;
             }
 
-            items[i].Rank = items[i-1].Rank + runsWithSameRank + 1;
+            items[i].Rank = items[i - 1].Rank + runsWithSameRank + 1;
             runsWithSameRank = 0;
         }
 
