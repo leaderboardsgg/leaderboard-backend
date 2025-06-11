@@ -173,7 +173,7 @@ public class LeaderboardsController(
     [SwaggerResponse(
         409,
         "The specified slug is already in use by another leaderboard. Returns the conflicting leaderboard.",
-        typeof(LeaderboardViewModel)
+        typeof(ConflictDetails<LeaderboardViewModel>)
     )]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult> UpdateLeaderboard(
@@ -184,7 +184,12 @@ public class LeaderboardsController(
         UpdateResult<Leaderboard> result = await leaderboardService.UpdateLeaderboard(id, request);
 
         return result.Match<ActionResult>(
-            conflict => Conflict(conflict.Conflicting),
+            conflict =>
+            {
+                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
+                problemDetails.Extensions.Add("conflicting", LeaderboardViewModel.MapFrom(conflict.Conflicting));
+                return Conflict(problemDetails);
+            },
             notfound => NotFound(),
             success => NoContent()
         );
