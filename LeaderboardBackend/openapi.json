@@ -1696,6 +1696,73 @@
         }
       }
     },
+    "/api/categories/{id}/records": {
+      "get": {
+        "tags": [
+          "Runs"
+        ],
+        "summary": "Gets the records for a category.",
+        "operationId": "getRecordsForCategory",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of records to return. Fewer records may be returned.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The zero-based index at which to begin selecting records to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunViewModelListView"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/run/{id}/category": {
       "get": {
         "tags": [
@@ -2627,6 +2694,11 @@
                 "$ref": "#/components/schemas/Status"
               }
             ]
+          },
+          "rank": {
+            "type": "integer",
+            "description": "The record's rank for its category. Will be 0 if it's not part of\nrecord retrieval.",
+            "format": "int32"
           }
         },
         "additionalProperties": false,

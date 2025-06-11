@@ -131,6 +131,33 @@ public class RunsController(
     }
 
     [AllowAnonymous]
+    [HttpGet("/api/categories/{id}/records")]
+    [SwaggerOperation("Gets the records for a category.", OperationId = "getRecordsForCategory")]
+    [SwaggerResponse(200)]
+    [SwaggerResponse(404)]
+    public async Task<ActionResult<ListView<RunViewModel>>> GetRecordsForCategory(
+        [FromRoute] long id,
+        [FromQuery] Page page
+    )
+    {
+        GetRecordsForCategoryResult result = await runService.GetRecordsForCategory(id, page);
+
+        return result.Match<ActionResult>(
+            runs => Ok(new ListView<RunViewModel>()
+            {
+                Data = runs.Items.Select(RunViewModel.MapFrom).ToList(),
+                Total = runs.ItemsTotal
+            }),
+            notFound => Problem(
+                null,
+                null,
+                404,
+                "Category Not Found"
+            )
+        );
+    }
+
+    [AllowAnonymous]
     [HttpGet("/api/run/{id}/category")]
     [SwaggerOperation("Gets the category a run belongs to.", OperationId = "getRunCategory")]
     [SwaggerResponse(200)]
