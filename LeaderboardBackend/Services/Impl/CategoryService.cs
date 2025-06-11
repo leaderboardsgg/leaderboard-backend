@@ -1,3 +1,4 @@
+using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
@@ -97,6 +98,27 @@ public class CategoryService(ApplicationContext applicationContext, IClock clock
         if (request.SortDirection is not null)
         {
             cat.SortDirection = (SortDirection)request.SortDirection;
+        }
+
+        switch (request.Status)
+        {
+            case null:
+                break;
+
+            case Status.Published:
+            {
+                cat.DeletedAt = null;
+                break;
+            }
+
+            case Status.Deleted:
+            {
+                cat.DeletedAt = clock.GetCurrentInstant();
+                break;
+            }
+
+            default:
+                throw new ArgumentException($"Invalid Status in request: {(int)request.Status}", nameof(request));
         }
 
         try
