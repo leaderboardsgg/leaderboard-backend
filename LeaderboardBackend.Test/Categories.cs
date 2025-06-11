@@ -47,7 +47,7 @@ internal class Categories
         _jwt = (await _apiClient.LoginAdminUser()).Token;
 
         _createdLeaderboard = await _apiClient.Post<LeaderboardViewModel>(
-            "/leaderboards/create",
+            "/leaderboards",
             new()
             {
                 Body = new CreateLeaderboardRequest()
@@ -84,7 +84,7 @@ internal class Categories
 
         await _apiClient.Awaiting(
             a => a.Get<CategoryViewModel>(
-                $"api/category/{created.Id}",
+                $"api/categories/{created.Id}",
                 new() { }
             )
         ).Should()
@@ -110,7 +110,7 @@ internal class Categories
     public async Task GetCategoryByID_NotFound(object id) =>
         await _apiClient.Awaiting(
             a => a.Get<CategoryViewModel>(
-                $"/api/category/{id}",
+                $"/api/categories/{id}",
                 new() { Jwt = _jwt }
             )
         ).Should()
@@ -138,7 +138,7 @@ internal class Categories
 
         await _apiClient.Awaiting(
             a => a.Get<CategoryViewModel>(
-                $"api/leaderboard/{_createdLeaderboard.Id}/category?slug=getcategory-slug-ok",
+                $"api/leaderboards/{_createdLeaderboard.Id}/categories/getcategory-slug-ok",
                 new() { }
             )
         ).Should()
@@ -163,7 +163,7 @@ internal class Categories
     public async Task GetCategoryBySlug_NotFound_WrongSlug() =>
         await _apiClient.Awaiting(
             a => a.Get<CategoryViewModel>(
-                $"api/leaderboard/{_createdLeaderboard.Id}/category?slug=wrong-slug",
+                $"api/leaderboards/{_createdLeaderboard.Id}/categories/wrong-slug",
                 new() { }
             )
         ).Should()
@@ -192,7 +192,7 @@ internal class Categories
 
         await _apiClient.Awaiting(
             a => a.Get<CategoryViewModel>(
-                $"api/leaderboard/{short.MaxValue}/category?slug={created.Slug}",
+                $"api/leaderboards/{short.MaxValue}/categories/{created.Slug}",
                 new() { }
             )
         ).Should()
@@ -222,7 +222,7 @@ internal class Categories
 
         await _apiClient.Awaiting(
             a => a.Get<CategoryViewModel>(
-                $"api/leaderboard/{_createdLeaderboard.Id}/category?slug={created.Slug}",
+                $"api/leaderboards/{_createdLeaderboard.Id}/categories/{created.Slug}",
                 new() { }
             )
         ).Should()
@@ -271,7 +271,7 @@ internal class Categories
         board.Id.Should().NotBe(default);
 
         ListView<CategoryViewModel> resultSansDeleted = await _apiClient.Get<ListView<CategoryViewModel>>(
-            $"api/leaderboard/{board.Id}/categories?limit=99999999",
+            $"api/leaderboards/{board.Id}/categories?limit=99999999",
             new() { }
         );
         resultSansDeleted.Data.Should().BeEquivalentTo(board.Categories.Take(2), opts => opts.ExcludingMissingMembers());
@@ -279,7 +279,7 @@ internal class Categories
         resultSansDeleted.LimitDefault.Should().Be(64);
 
         ListView<CategoryViewModel> resultWithDeleted = await _apiClient.Get<ListView<CategoryViewModel>>(
-            $"api/leaderboard/{board.Id}/categories?status=any",
+            $"api/leaderboards/{board.Id}/categories?status=any",
             new() { }
         );
 
@@ -290,7 +290,7 @@ internal class Categories
         await context.SaveChangesAsync();
 
         ListView<CategoryViewModel> resultEmpty = await _apiClient.Get<ListView<CategoryViewModel>>(
-            $"api/leaderboard/{board.Id}/categories",
+            $"api/leaderboards/{board.Id}/categories",
             new() { }
         );
 
@@ -302,7 +302,7 @@ internal class Categories
     public async Task GetCategoriesForLeaderboard_BadPageData(int limit, int offset) =>
         await _apiClient.Awaiting(
             a => a.Get<ListView<CategoryViewModel>>(
-                $"/api/leaderboard/54/categories?limit={limit}&offset={offset}",
+                $"/api/leaderboards/54/categories?limit={limit}&offset={offset}",
                 new()
             )
         ).Should()
@@ -313,7 +313,7 @@ internal class Categories
     public async Task GetCategoriesForLeaderboard_NotFound() =>
         await _apiClient.Awaiting(
             a => a.Get<CategoryViewModel>(
-                $"api/leaderboard/{short.MaxValue}/categories",
+                $"api/leaderboards/{short.MaxValue}/categories",
                 new() { }
             )
         ).Should()
@@ -333,7 +333,7 @@ internal class Categories
         };
 
         CategoryViewModel createdCategory = await _apiClient.Post<CategoryViewModel>(
-            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
+            $"/leaderboards/{_createdLeaderboard.Id}/categories",
             new()
             {
                 Body = request,
@@ -344,7 +344,7 @@ internal class Categories
         createdCategory.CreatedAt.Should().Be(_clock.GetCurrentInstant());
 
         CategoryViewModel retrievedCategory = await _apiClient.Get<CategoryViewModel>(
-            $"/api/category/{createdCategory?.Id}", new() { }
+            $"/api/categories/{createdCategory?.Id}", new() { }
         );
 
         retrievedCategory.Should().BeEquivalentTo(request);
@@ -363,7 +363,7 @@ internal class Categories
         };
 
         await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
-            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
+            $"/leaderboards/{_createdLeaderboard.Id}/categories",
             new()
             {
                 Body = request,
@@ -408,7 +408,7 @@ internal class Categories
         };
 
         await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
-            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
+            $"/leaderboards/{_createdLeaderboard.Id}/categories",
             new()
             {
                 Body = request,
@@ -430,7 +430,7 @@ internal class Categories
         };
 
         ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
-            "/leaderboard/1000/categories/create",
+            "/leaderboards/1000/categories",
             new()
             {
                 Body = request,
@@ -472,7 +472,7 @@ internal class Categories
         };
 
         await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
-            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
+            $"/leaderboards/{_createdLeaderboard.Id}/categories",
             new()
             {
                 Body = request,
@@ -494,7 +494,7 @@ internal class Categories
         };
 
         CategoryViewModel created = await _apiClient.Post<CategoryViewModel>(
-            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
+            $"/leaderboards/{_createdLeaderboard.Id}/categories",
             new()
             {
                 Body = request,
@@ -503,7 +503,7 @@ internal class Categories
         );
 
         ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
-            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
+            $"/leaderboards/{_createdLeaderboard.Id}/categories",
             new()
             {
                 Body = request,
@@ -531,7 +531,7 @@ internal class Categories
         };
 
         ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
-            $"/leaderboard/{_createdLeaderboard.Id}/categories/create",
+            $"/leaderboards/{_createdLeaderboard.Id}/categories",
             new()
             {
                 Body = request,
@@ -565,7 +565,7 @@ internal class Categories
         context.ChangeTracker.Clear();
 
         HttpResponseMessage response = await _apiClient.Patch(
-            $"category/{created.Id}",
+            $"categories/{created.Id}",
             new()
             {
                 Body = new UpdateCategoryRequest()
@@ -609,7 +609,7 @@ internal class Categories
         context.ChangeTracker.Clear();
 
         await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"category/{cat.Id}",
+            $"categories/{cat.Id}",
             new()
             {
                 Body = new UpdateCategoryRequest
@@ -665,7 +665,7 @@ internal class Categories
         await context.SaveChangesAsync();
 
         await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"category/{cat.Id}",
+            $"categories/{cat.Id}",
             new()
             {
                 Body = new UpdateCategoryRequest
@@ -683,7 +683,7 @@ internal class Categories
     [Test]
     public async Task UpdateCategory_CategoryNotFound() =>
         await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"category/{int.MaxValue}",
+            $"categories/{int.MaxValue}",
             new()
             {
                 Body = new UpdateCategoryRequest
@@ -725,7 +725,7 @@ internal class Categories
         context.ChangeTracker.Clear();
 
         ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"category/{toConflict.Id}",
+            $"categories/{toConflict.Id}",
             new()
             {
                 Body = new UpdateCategoryRequest()
@@ -776,7 +776,7 @@ internal class Categories
         context.ChangeTracker.Clear();
 
         await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"category/{toNotConflict.Id}",
+            $"categories/{toNotConflict.Id}",
             new()
             {
                 Body = new UpdateCategoryRequest()
@@ -831,7 +831,7 @@ internal class Categories
         context.ChangeTracker.Clear();
 
         await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"category/{toNotConflict.Id}",
+            $"categories/{toNotConflict.Id}",
             new()
             {
                 Body = new UpdateCategoryRequest()
@@ -876,7 +876,7 @@ internal class Categories
         }
 
         ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"category/{cat.Id}",
+            $"categories/{cat.Id}",
             new()
             {
                 Body = updateRequest,
@@ -921,7 +921,7 @@ internal class Categories
         context.ChangeTracker.Clear();
 
         await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"category/{cat.Id}",
+            $"categories/{cat.Id}",
             new()
             {
                 Body = new
@@ -954,7 +954,7 @@ internal class Categories
         context.ChangeTracker.Clear();
 
         HttpResponseMessage response = await _apiClient.Delete(
-            $"/category/{cat.Id}",
+            $"/categories/{cat.Id}",
             new()
             {
                 Jwt = _jwt
@@ -990,7 +990,7 @@ internal class Categories
         context.ChangeTracker.Clear();
 
         await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"category/{cat.Id}",
+            $"categories/{cat.Id}",
             new() { }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
 
@@ -1039,7 +1039,7 @@ internal class Categories
         context.ChangeTracker.Clear();
 
         await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"/category/{cat.Id}",
+            $"/categories/{cat.Id}",
             new()
             {
                 Jwt = res.Token
@@ -1054,7 +1054,7 @@ internal class Categories
     public async Task DeleteCategory_NotFound()
     {
         ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"/category/{int.MaxValue}",
+            $"/categories/{int.MaxValue}",
             new()
             {
                 Jwt = _jwt,
@@ -1086,7 +1086,7 @@ internal class Categories
         context.ChangeTracker.Clear();
 
         ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"/category/{cat.Id}",
+            $"/categories/{cat.Id}",
             new()
             {
                 Jwt = _jwt,
@@ -1121,15 +1121,17 @@ internal class Categories
         cat.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        CategoryViewModel restored = await _apiClient.Put<CategoryViewModel>(
-            $"category/{cat.Id}/restore",
+        await _apiClient.Patch(
+            $"categories/{cat.Id}",
             new()
             {
+                Body = new UpdateCategoryRequest()
+                {
+                    Status = Status.Published
+                },
                 Jwt = _jwt
             }
         );
-
-        restored.DeletedAt.Should().BeNull();
 
         Category? verify = await context.FindAsync<Category>(cat.Id);
         verify!.DeletedAt.Should().BeNull();
@@ -1156,9 +1158,15 @@ internal class Categories
         cat.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
-            $"category/{cat.Id}/restore",
-            new() { }
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"categories/{cat.Id}",
+            new()
+            {
+                Body = new UpdateCategoryRequest()
+                {
+                    Status = Status.Published
+                }
+            }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
 
         Category? verify = await context.FindAsync<Category>(cat.Id);
@@ -1207,10 +1215,14 @@ internal class Categories
         user.Role = role;
         await context.SaveChangesAsync();
 
-        await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
-            $"category/{cat.Id}/restore",
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"categories/{cat.Id}",
             new()
             {
+                Body = new UpdateCategoryRequest()
+                {
+                    Status = Status.Published
+                },
                 Jwt = res.Token
             }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
@@ -1222,10 +1234,14 @@ internal class Categories
     [Test]
     public async Task RestoreCategory_NotFound()
     {
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
-            $"category/{int.MaxValue}/restore",
+        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"categories/{int.MaxValue}",
             new()
             {
+                Body = new UpdateCategoryRequest()
+                {
+                    Status = Status.Published
+                },
                 Jwt = _jwt
             }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
@@ -1235,15 +1251,15 @@ internal class Categories
     }
 
     [Test]
-    public async Task RestoreCategory_NotFound_WasNeverDeleted()
+    public async Task RestoreCategory_WasNeverDeleted_OK()
     {
         IServiceScope scope = _factory.Services.CreateScope();
         ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
         Category cat = new()
         {
-            Name = "Restore Cat Not Found Never Deleted",
-            Slug = "restorecat-notfound-never-deleted",
+            Name = "Restore Cat Never Deleted",
+            Slug = "restorecat-never-deleted",
             LeaderboardId = _createdLeaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
@@ -1252,18 +1268,20 @@ internal class Categories
         context.Categories.Add(cat);
         await context.SaveChangesAsync();
         cat.Id.Should().NotBe(default);
-        context.ChangeTracker.Clear();
 
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
-            $"category/{cat.Id}/restore",
+        AndWhichConstraint<GenericAsyncFunctionAssertions<HttpResponseMessage>, HttpResponseMessage> assert = await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"categories/{cat.Id}",
             new()
             {
+                Body = new UpdateCategoryRequest()
+                {
+                    Status = Status.Published
+                },
                 Jwt = _jwt
             }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+        )).Should().NotThrowAsync();
 
-        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-        problemDetails!.Title.Should().Be("Not Deleted");
+        assert.Which.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Test]
@@ -1297,10 +1315,14 @@ internal class Categories
         conflicting.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
-            $"category/{deleted.Id}/restore",
+        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"categories/{deleted.Id}",
             new()
             {
+                Body = new UpdateCategoryRequest()
+                {
+                    Status = Status.Published
+                },
                 Jwt = _jwt,
             }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Conflict);
@@ -1356,15 +1378,17 @@ internal class Categories
         notConflicting.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        CategoryViewModel restored = await _apiClient.Put<CategoryViewModel>(
-            $"category/{notConflicting.Id}/restore",
+        await _apiClient.Patch(
+            $"categories/{notConflicting.Id}",
             new()
             {
+                Body = new UpdateCategoryRequest()
+                {
+                    Status = Status.Published
+                },
                 Jwt = _jwt
             }
         );
-
-        restored.DeletedAt.Should().BeNull();
 
         Category? verify = await context.FindAsync<Category>(notConflicting.Id);
         verify!.DeletedAt.Should().BeNull();

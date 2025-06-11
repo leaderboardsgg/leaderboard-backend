@@ -62,7 +62,7 @@ public class Leaderboard : IHasUpdateTimestamp, IHasDeletionTimestamp
     /// </summary>
     /// <example>foo-bar</example>
     [StringLength(80, MinimumLength = 2)]
-    [RegularExpression(SlugRule.REGEX)]
+    [RegularExpression(LeaderboardSlugRule.REGEX)]
     public required string Slug { get; set; }
 
     /// <summary>

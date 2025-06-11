@@ -17,7 +17,7 @@ public class LeaderboardsController(
 ) : ApiController
 {
     [AllowAnonymous]
-    [HttpGet("api/leaderboard/{id:long}")]
+    [HttpGet("api/leaderboards/{id:long}")]
     [SwaggerOperation("Gets a leaderboard by its ID.", OperationId = "getLeaderboard")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
@@ -34,11 +34,11 @@ public class LeaderboardsController(
     }
 
     [AllowAnonymous]
-    [HttpGet("api/leaderboard")]
+    [HttpGet("api/leaderboards/{slug}")]
     [SwaggerOperation("Gets a leaderboard by its slug. Will not return deleted boards.", OperationId = "getLeaderboardBySlug")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
-    public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboardBySlug([FromQuery, SwaggerParameter(Required = true)] string slug)
+    public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboardBySlug([FromRoute] string slug)
     {
         Leaderboard? leaderboard = await leaderboardService.GetLeaderboardBySlug(slug);
 
@@ -100,7 +100,7 @@ public class LeaderboardsController(
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpPost("leaderboards/create")]
+    [HttpPost("leaderboards")]
     [SwaggerOperation("Creates a new leaderboard. This request is restricted to Administrators.", OperationId = "createLeaderboard")]
     [SwaggerResponse(201)]
     [SwaggerResponse(401)]
@@ -129,39 +129,7 @@ public class LeaderboardsController(
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpPut("leaderboard/{id:long}/restore")]
-    [SwaggerOperation("Restores a deleted leaderboard.", OperationId = "restoreLeaderboard")]
-    [SwaggerResponse(200, "The restored `Leaderboard`s view model.", typeof(LeaderboardViewModel))]
-    [SwaggerResponse(401)]
-    [SwaggerResponse(403, "The requesting `User` is unauthorized to restore `Leaderboard`s.")]
-    [SwaggerResponse(404, "The `Leaderboard` was not found, or it wasn't deleted in the first place. Includes a field, `title`, which will be \"Not Found\" in the former case, and \"Not Deleted\" in the latter.", typeof(ProblemDetails))]
-    [SwaggerResponse(409, "Another `Leaderboard` with the same slug has been created since and will be returned in the `conflicting` field, and therefore can't be restored.", typeof(ConflictDetails<LeaderboardViewModel>))]
-    public async Task<ActionResult<LeaderboardViewModel>> RestoreLeaderboard(
-        [FromRoute] long id
-    )
-    {
-        RestoreResult<Leaderboard> r = await leaderboardService.RestoreLeaderboard(id);
-
-        return r.Match<ActionResult<LeaderboardViewModel>>(
-            board => Ok(LeaderboardViewModel.MapFrom(board)),
-            notFound => NotFound(),
-            neverDeleted => Problem(
-                null,
-                null,
-                404,
-                "Not Deleted"
-            ),
-            conflict =>
-            {
-                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
-                problemDetails.Extensions.Add("conflicting", LeaderboardViewModel.MapFrom(conflict.Conflicting));
-                return Conflict(problemDetails);
-            }
-        );
-    }
-
-    [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpDelete("leaderboard/{id:long}")]
+    [HttpDelete("leaderboards/{id:long}")]
     [SwaggerOperation("Deletes a leaderboard. This request is restricted to Administrators.", OperationId = "deleteLeaderboard")]
     [SwaggerResponse(204)]
     [SwaggerResponse(401)]
@@ -191,7 +159,7 @@ public class LeaderboardsController(
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpPatch("/leaderboard/{id:long}")]
+    [HttpPatch("/leaderboards/{id:long}")]
     [SwaggerOperation(
         "Updates a leaderboard with the specified new fields. This request is restricted to administrators. " +
         "This operation is atomic; if an error occurs, the leaderboard will not be updated. " +
@@ -205,7 +173,7 @@ public class LeaderboardsController(
     [SwaggerResponse(
         409,
         "The specified slug is already in use by another leaderboard. Returns the conflicting leaderboard.",
-        typeof(LeaderboardViewModel)
+        typeof(ConflictDetails<LeaderboardViewModel>)
     )]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult> UpdateLeaderboard(
@@ -216,7 +184,12 @@ public class LeaderboardsController(
         UpdateResult<Leaderboard> result = await leaderboardService.UpdateLeaderboard(id, request);
 
         return result.Match<ActionResult>(
-            conflict => Conflict(conflict.Conflicting),
+            conflict =>
+            {
+                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
+                problemDetails.Extensions.Add("conflicting", LeaderboardViewModel.MapFrom(conflict.Conflicting));
+                return Conflict(problemDetails);
+            },
             notfound => NotFound(),
             success => NoContent()
         );

@@ -74,6 +74,13 @@ public abstract record UpdateRunRequest
     /// <inheritdoc cref="CreateRunRequest.PlayedOn" />
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public LocalDate? PlayedOn { get; set; }
+
+    /// <remarks>
+    ///     The user must have admin privileges in order to update this property.
+    /// </remarks>
+    /// <seealso cref="ViewModels.RunViewModel.Status"/>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Status? Status { get; set; }
 }
 
 public record UpdateTimedRunRequest : UpdateRunRequest
@@ -101,18 +108,28 @@ public class UpdateRunRequestValidator : AbstractValidator<UpdateRunRequest>
 
 public class UpdateTimedRunRequestValidator : AbstractValidator<UpdateTimedRunRequest>
 {
-    public UpdateTimedRunRequestValidator() =>
+    public UpdateTimedRunRequestValidator()
+    {
         RuleFor(x => x).Must(
             utrr => utrr.Info is not null ||
             utrr.PlayedOn is not null ||
-            utrr.Time is not null);
+            utrr.Time is not null ||
+            utrr.Status is not null);
+
+        RuleFor(x => x.Status).IsInEnum();
+    }
 }
 
 public class UpdateScoredRunRequestValidator : AbstractValidator<UpdateScoredRunRequest>
 {
-    public UpdateScoredRunRequestValidator() =>
+    public UpdateScoredRunRequestValidator()
+    {
         RuleFor(x => x).Must(
             usrr => usrr.Info is not null ||
             usrr.PlayedOn is not null ||
-            usrr.Score is not null);
+            usrr.Score is not null ||
+            usrr.Status is not null);
+
+        RuleFor(x => x.Status).IsInEnum();
+    }
 }

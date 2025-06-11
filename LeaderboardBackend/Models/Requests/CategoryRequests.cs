@@ -46,21 +46,24 @@ public record CreateCategoryRequest
 
 public record UpdateCategoryRequest
 {
-    /// <inheritdoc cref="Entities.Category.Name" />
+    /// <inheritdoc cref="Category.Name" />
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string Name { get; set; }
 
-    /// <inheritdoc cref="Entities.Category.Slug" />
+    /// <inheritdoc cref="Category.Slug" />
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string Slug { get; set; }
 
-    /// <inheritdoc cref="Entities.Category.Info" />
+    /// <inheritdoc cref="Category.Info" />
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string Info { get; set; }
 
-    /// <inheritdoc cref="Entities.Category.SortDirection" />
+    /// <inheritdoc cref="Category.SortDirection" />
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public SortDirection? SortDirection { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Status? Status { get; set; }
 }
 
 public class CreateCategoryRequestValidator : AbstractValidator<CreateCategoryRequest>
@@ -82,9 +85,11 @@ public class UpdateCategoryRequestValidator : AbstractValidator<UpdateCategoryRe
             ucr => ucr.Info is not null ||
             ucr.Name is not null ||
             ucr.Slug is not null ||
-            ucr.SortDirection is not null);
+            ucr.SortDirection is not null ||
+            ucr.Status is not null);
         RuleFor(x => x.Slug).Slug();
         RuleFor(x => x.Name).MinimumLength(1);
         RuleFor(x => x.SortDirection).IsInEnum();
+        RuleFor(x => x.Status).IsInEnum();
     }
 }

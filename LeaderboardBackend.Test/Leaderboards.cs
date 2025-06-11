@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using FluentAssertions.Specialized;
+using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
@@ -58,7 +59,7 @@ public class Leaderboards
     [Test]
     public async Task GetLeaderboard_NotFound() => await FluentActions.Awaiting(
         async () => await _apiClient.Get<LeaderboardViewModel>(
-            $"/api/leaderboard/{long.MaxValue}",
+            $"/api/leaderboards/{long.MaxValue}",
             new()
         )
     ).Should().ThrowAsync<RequestFailureException>()
@@ -78,14 +79,14 @@ public class Leaderboards
         _clock.Reset(now);
 
         LeaderboardViewModel createdLeaderboard = await _apiClient.Post<LeaderboardViewModel>(
-            "/leaderboards/create",
+            "/leaderboards",
             new() { Body = req, Jwt = _jwt }
         );
 
         createdLeaderboard.CreatedAt.Should().Be(now);
 
         LeaderboardViewModel retrievedLeaderboard = await _apiClient.Get<LeaderboardViewModel>(
-            $"/api/leaderboard/{createdLeaderboard?.Id}",
+            $"/api/leaderboards/{createdLeaderboard?.Id}",
             new()
         );
 
@@ -103,7 +104,7 @@ public class Leaderboards
         };
 
         await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>(
-            "/leaderboards/create",
+            "/leaderboards",
             new() { Body = req }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
     }
@@ -129,7 +130,7 @@ public class Leaderboards
         };
 
         ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>(
-            "/leaderboards/create",
+            "/leaderboards",
             new() { Body = req, Jwt = _jwt }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Conflict);
 
@@ -142,7 +143,7 @@ public class Leaderboards
     public async Task CreateLeaderboard_MissingData()
     {
         await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>(
-        "/leaderboards/create",
+        "/leaderboards",
         new()
         {
             Body = new
@@ -154,7 +155,7 @@ public class Leaderboards
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableContent);
 
         await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>(
-        "/leaderboards/create",
+        "/leaderboards",
         new()
         {
             Body = new
@@ -174,6 +175,7 @@ public class Leaderboards
     [TestCase("Super Mario Bros.", "super-mario-bros.")]
     [TestCase("Super Mario Bros.", "1985-nintendo-nes-famicom-fds-gbc-gba-gcn-wiivc-3dsvc-wiiuvc-super-marios-bros-best-game")]
     [TestCase("Super Mario Bros.", "スーパーマリオブラザーズ")]
+    [TestCase("140", "140")]
     public async Task CreateLeaderboard_BadData(string name, string slug)
     {
         CreateLeaderboardRequest req = new()
@@ -184,7 +186,7 @@ public class Leaderboards
         };
 
         await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>(
-            "/leaderboards/create",
+            "/leaderboards",
             new() { Body = req, Jwt = _jwt }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableContent);
     }
@@ -222,7 +224,7 @@ public class Leaderboards
         };
 
         await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>(
-            "/leaderboards/create",
+            "/leaderboards",
             new() { Body = req, Jwt = res.Token }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
     }
@@ -233,12 +235,12 @@ public class Leaderboards
         CreateLeaderboardRequest req = _createBoardReqFaker.Generate();
 
         await _apiClient.Post<LeaderboardViewModel>(
-            "/leaderboards/create",
+            "/leaderboards",
             new() { Body = req, Jwt = _jwt }
         );
 
         LeaderboardViewModel leaderboard = await _apiClient.Get<LeaderboardViewModel>(
-            $"api/leaderboard?slug={req.Slug}",
+            $"api/leaderboards/{req.Slug}",
             new()
         );
 
@@ -252,13 +254,13 @@ public class Leaderboards
         foreach (CreateLeaderboardRequest req in _createBoardReqFaker.Generate(2))
         {
             await _apiClient.Post<LeaderboardViewModel>(
-                "/leaderboards/create",
+                "/leaderboards",
                 new() { Body = req, Jwt = _jwt }
             );
         }
 
         CreateLeaderboardRequest reqForInexistentBoard = _createBoardReqFaker.Generate();
-        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Get<LeaderboardViewModel>($"/api/leaderboard?slug={reqForInexistentBoard.Slug}", new());
+        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Get<LeaderboardViewModel>($"/api/leaderboards/{reqForInexistentBoard.Slug}", new());
         await act.Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
     }
 
@@ -277,7 +279,7 @@ public class Leaderboards
         context.Leaderboards.Add(board);
         await context.SaveChangesAsync();
 
-        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Get<LeaderboardViewModel>($"/api/leaderboard?slug={board.Slug}", new());
+        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Get<LeaderboardViewModel>($"/api/leaderboards/{board.Slug}", new());
         await act.Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
     }
 
@@ -305,7 +307,7 @@ public class Leaderboards
         };
 
 #pragma warning disable IDE0008 // Use explicit type
-        var res = await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>("/leaderboards/create", new()
+        var res = await FluentActions.Awaiting(() => _apiClient.Post<LeaderboardViewModel>("/leaderboards", new()
         {
             Body = lbRequest,
             Jwt = _jwt
@@ -435,15 +437,20 @@ public class Leaderboards
         context.Leaderboards.Add(deletedBoard);
         await context.SaveChangesAsync();
         deletedBoard.Id.Should().NotBe(default);
-
+        context.ChangeTracker.Clear();
         _clock.AdvanceMinutes(1);
 
-        LeaderboardViewModel res = await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/{deletedBoard.Id}/restore", new()
+        await _apiClient.Patch($"/leaderboards/{deletedBoard.Id}", new()
         {
+            Body = new UpdateLeaderboardRequest()
+            {
+                Status = Status.Published
+            },
             Jwt = _jwt
         });
 
-        res.Id.Should().Be(deletedBoard.Id);
+        Leaderboard? res = await context.Leaderboards.FindAsync(deletedBoard.Id);
+        res!.Id.Should().Be(deletedBoard.Id);
         res.Slug.Should().Be(deletedBoard.Slug);
         res.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
         res.DeletedAt.Should().BeNull();
@@ -452,7 +459,16 @@ public class Leaderboards
     [Test]
     public async Task RestoreLeaderboard_Unauthenticated()
     {
-        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/100/restore", new());
+        Func<Task> act = async () => await _apiClient.Patch(
+            $"/leaderboards/100",
+            new()
+            {
+                Body = new UpdateLeaderboardRequest()
+                {
+                    Status = Status.Published
+                }
+            }
+        );
 
         await act.Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
     }
@@ -485,10 +501,14 @@ public class Leaderboards
         await context.SaveChangesAsync();
 
         await FluentActions.Awaiting(
-            async () => await _apiClient.Put<LeaderboardViewModel>(
-                $"/leaderboard/1/restore",
+            async () => await _apiClient.Patch(
+                "/leaderboards/1/",
                 new()
                 {
+                    Body = new UpdateLeaderboardRequest()
+                    {
+                        Status = Status.Published
+                    },
                     Jwt = jwt,
                 }
             )
@@ -520,8 +540,12 @@ public class Leaderboards
 
         string jwt = (await _apiClient.LoginUser(email, "P4ssword")).Token;
 
-        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/100/restore", new()
+        Func<Task> act = async () => await _apiClient.Patch($"/leaderboards/100", new()
         {
+            Body = new UpdateLeaderboardRequest()
+            {
+                Status = Status.Published
+            },
             Jwt = jwt,
         });
 
@@ -531,8 +555,12 @@ public class Leaderboards
     [Test]
     public async Task RestoreLeaderboard_NotFound()
     {
-        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/{1e10}/restore", new()
+        Func<Task> act = async () => await _apiClient.Patch($"/leaderboard/{10000000000L}/", new()
         {
+            Body = new UpdateLeaderboardRequest()
+            {
+                Status = Status.Published
+            },
             Jwt = _jwt
         });
 
@@ -540,7 +568,7 @@ public class Leaderboards
     }
 
     [Test]
-    public async Task RestoreLeaderboard_NotFound_WasNeverDeleted()
+    public async Task RestoreLeaderboard_WasNeverDeleted_OK()
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
 
@@ -554,19 +582,21 @@ public class Leaderboards
         await context.SaveChangesAsync();
         board.Id.Should().NotBe(default);
 
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() =>
-            _apiClient.Put<LeaderboardViewModel>(
-                $"/leaderboard/{board.Id}/restore",
+        AndWhichConstraint<GenericAsyncFunctionAssertions<HttpResponseMessage>, HttpResponseMessage> assert = await FluentActions.Awaiting(() =>
+            _apiClient.Patch(
+                $"/leaderboards/{board.Id}",
                 new()
                 {
+                    Body = new UpdateLeaderboardRequest()
+                    {
+                        Status = Status.Published
+                    },
                     Jwt = _jwt,
                 }
             )
-        ).Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.NotFound);
+        ).Should().NotThrowAsync();
 
-        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-        problemDetails.Should().NotBeNull();
-        problemDetails!.Title.Should().Be("Not Deleted");
+        assert.Which.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Test]
@@ -592,10 +622,14 @@ public class Leaderboards
         await context.SaveChangesAsync();
 
         ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() =>
-            _apiClient.Put<LeaderboardViewModel>(
-                $"/leaderboard/{deleted.Id}/restore",
+            _apiClient.Patch(
+                $"/leaderboards/{deleted.Id}",
                 new()
                 {
+                    Body = new UpdateLeaderboardRequest()
+                    {
+                        Status = Status.Published
+                    },
                     Jwt = _jwt,
                 }
             )
@@ -625,7 +659,7 @@ public class Leaderboards
         context.ChangeTracker.Clear();
 
         await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"/leaderboard/{lb.Id}",
+            $"/leaderboards/{lb.Id}",
             new()
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
 
@@ -667,7 +701,7 @@ public class Leaderboards
         await context.SaveChangesAsync();
 
         await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"/leaderboard/{lb.Id}",
+            $"/leaderboards/{lb.Id}",
             new() { Jwt = res.Token }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
 
@@ -681,7 +715,7 @@ public class Leaderboards
     [TestCase("sansundertale")]
     public async Task DeleteLeaderboard_NotFound(object id) =>
         await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"/leaderboard/{id}",
+            $"/leaderboards/{id}",
             new() { Jwt = _jwt }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
 
@@ -703,7 +737,7 @@ public class Leaderboards
         await context.SaveChangesAsync();
 
         ExceptionAssertions<RequestFailureException> ex = await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"/leaderboard/{lb.Id}",
+            $"/leaderboards/{lb.Id}",
             new() { Jwt = _jwt }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
 
@@ -730,7 +764,7 @@ public class Leaderboards
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
         _clock.AdvanceMinutes(1);
-        HttpResponseMessage res = await _apiClient.Delete($"/leaderboard/{lb.Id}", new() { Jwt = _jwt });
+        HttpResponseMessage res = await _apiClient.Delete($"/leaderboards/{lb.Id}", new() { Jwt = _jwt });
         res.Should().HaveStatusCode(HttpStatusCode.NoContent);
         Leaderboard? found = await context.Leaderboards.FindAsync(lb.Id);
         found.Should().NotBeNull();
@@ -757,7 +791,7 @@ public class Leaderboards
         _clock.AdvanceMinutes(1);
 
         await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"/leaderboard/{lb.Id}", new()
+            $"/leaderboards/{lb.Id}", new()
             {
                 Body = new UpdateLeaderboardRequest()
                 {
@@ -805,7 +839,7 @@ public class Leaderboards
         _clock.AdvanceMinutes(1);
 
         await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"/leaderboard/{lb.Id}",
+            $"/leaderboards/{lb.Id}",
             new()
             {
                 Body = new UpdateLeaderboardRequest()
@@ -826,7 +860,7 @@ public class Leaderboards
     [TestCase("partyrockersinthehousetonight")]
     public async Task UpdateLeaderboard_NotFound(object id) =>
         await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"/leaderboard/{id}",
+            $"/leaderboards/{id}",
             new()
             {
                 Body = new UpdateLeaderboardRequest()
@@ -853,7 +887,7 @@ public class Leaderboards
         await context.SaveChangesAsync();
 
         await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"/leaderboard/{lb.Id}",
+            $"/leaderboards/{lb.Id}",
             new()
             {
                 Body = new UpdateLeaderboardRequest(),
@@ -884,7 +918,7 @@ public class Leaderboards
         context.ChangeTracker.Clear();
 
         await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"/leaderboard/{lb2.Id}",
+            $"/leaderboards/{lb2.Id}",
             new()
             {
                 Jwt = _jwt,
@@ -912,6 +946,7 @@ public class Leaderboards
     )]
     [TestCase("The Legendary Starfy", "伝説のスタフィー", "densetsu-no-stafy", "デンセツノスタフィー")]
     [TestCase("Resident Evil", "", "resident-evil", null)]
+    [TestCase("Ten Million", "10000000", "ten-million", "10000000")]
     public async Task UpdateLeaderboard_BadData(string oldName, string? newName, string oldSlug, string? newSlug)
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
@@ -939,7 +974,7 @@ public class Leaderboards
         }
 
         await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"/leaderboard/{lb.Id}",
+            $"/leaderboards/{lb.Id}",
             new()
             {
                 Jwt = _jwt,
@@ -968,7 +1003,7 @@ public class Leaderboards
         Instant instant = _clock.GetCurrentInstant() - Duration.FromMinutes(1);
 
         await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"/leaderboard/{lb.Id}",
+            $"/leaderboards/{lb.Id}",
             new()
             {
                 Jwt = _jwt,
@@ -1008,7 +1043,7 @@ public class Leaderboards
         };
 
         await _apiClient.Patch(
-            $"/leaderboard/{lb.Id}",
+            $"/leaderboards/{lb.Id}",
             new()
             {
                 Jwt = _jwt,
@@ -1040,7 +1075,7 @@ public class Leaderboards
         string newSlug = "pokemon-yellow";
 
         await _apiClient.Patch(
-            $"/leaderboard/{lb.Id}",
+            $"/leaderboards/{lb.Id}",
             new()
             {
                 Jwt = _jwt,

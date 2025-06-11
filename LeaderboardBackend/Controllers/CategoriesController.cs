@@ -15,7 +15,7 @@ namespace LeaderboardBackend.Controllers;
 public class CategoriesController(ICategoryService categoryService) : ApiController
 {
     [AllowAnonymous]
-    [HttpGet("api/category/{id:long}")]
+    [HttpGet("api/categories/{id:long}")]
     [SwaggerOperation("Gets a Category by its ID.", OperationId = "getCategory")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
@@ -32,13 +32,13 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     }
 
     [AllowAnonymous]
-    [HttpGet("api/leaderboard/{id:long}/category")]
+    [HttpGet("api/leaderboards/{id:long}/categories/{slug}")]
     [SwaggerOperation("Gets a Category of Leaderboard `id` by its slug. Will not return deleted Categories.", OperationId = "getCategoryBySlug")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404, "The Category either doesn't exist for the Leaderboard, or it has been deleted.", typeof(ProblemDetails))]
     public async Task<ActionResult<CategoryViewModel>> GetCategoryBySlug(
         [FromRoute] long id,
-        [FromQuery, SwaggerParameter(Required = true)] string slug
+        [FromRoute] string slug
     )
     {
         Category? category = await categoryService.GetCategoryBySlug(id, slug);
@@ -52,7 +52,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     }
 
     [AllowAnonymous]
-    [HttpGet("api/leaderboard/{id:long}/categories")]
+    [HttpGet("api/leaderboards/{id:long}/categories")]
     [Paginated]
     [SwaggerOperation("Gets all Categories of Leaderboard `id`.", OperationId = "getCategoriesForLeaderboard")]
     [SwaggerResponse(200)]
@@ -77,7 +77,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpPost("leaderboard/{id:long}/categories/create")]
+    [HttpPost("leaderboards/{id:long}/categories")]
     [SwaggerOperation("Creates a new Category for a Leaderboard with ID `id`. This request is restricted to Administrators.", OperationId = "createCategory")]
     [SwaggerResponse(201)]
     [SwaggerResponse(401)]
@@ -114,7 +114,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpPatch("category/{id:long}")]
+    [HttpPatch("categories/{id:long}")]
     [SwaggerOperation(
         "Updates a category with the specified new fields. This request is restricted to administrators. " +
         "Note: `type` cannot be updated. " +
@@ -152,7 +152,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpDelete("category/{id:long}")]
+    [HttpDelete("categories/{id:long}")]
     [SwaggerOperation("Deletes a Category. This request is restricted to Administrators.", OperationId = "deleteCategory")]
     [SwaggerResponse(204)]
     [SwaggerResponse(401)]
@@ -178,38 +178,6 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
                 404,
                 "Already Deleted"
             )
-        );
-    }
-
-    [Authorize(Policy = UserTypes.ADMINISTRATOR)]
-    [HttpPut("category/{id:long}/restore")]
-    [SwaggerOperation("Restores a deleted Category.", OperationId = "restoreCategory")]
-    [SwaggerResponse(200, "The restored `Category`s view model.", typeof(CategoryViewModel))]
-    [SwaggerResponse(401)]
-    [SwaggerResponse(403, "The requesting `User` is unauthorized to restore `Category`s.")]
-    [SwaggerResponse(404, "The `Category` was not found, or it wasn't deleted in the first place. Includes a field, `title`, which will be \"Not Found\" in the former case, and \"Not Deleted\" in the latter.", typeof(ProblemDetails))]
-    [SwaggerResponse(409, "Another `Category` with the same slug has been created since, and therefore can't be restored. Said `Category` will be returned in the `conflicting` field in the response.", typeof(ConflictDetails<CategoryViewModel>))]
-    public async Task<ActionResult<CategoryViewModel>> RestoreCategory(
-        [FromRoute] long id
-    )
-    {
-        RestoreResult<Category> r = await categoryService.RestoreCategory(id);
-
-        return r.Match<ActionResult<CategoryViewModel>>(
-            category => Ok(CategoryViewModel.MapFrom(category)),
-            notFound => NotFound(),
-            neverDeleted => Problem(
-                null,
-                null,
-                404,
-                "Not Deleted"
-            ),
-            conflict =>
-            {
-                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
-                problemDetails.Extensions.Add("conflicting", CategoryViewModel.MapFrom(conflict.Conflicting));
-                return Conflict(problemDetails);
-            }
         );
     }
 }
