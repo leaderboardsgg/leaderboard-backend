@@ -1121,15 +1121,17 @@ internal class Categories
         cat.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        CategoryViewModel restored = await _apiClient.Put<CategoryViewModel>(
-            $"category/{cat.Id}/restore",
+        await _apiClient.Patch(
+            $"categories/{cat.Id}",
             new()
             {
+                Body = new UpdateCategoryRequest()
+                {
+                    Status = Status.Published
+                },
                 Jwt = _jwt
             }
         );
-
-        restored.DeletedAt.Should().BeNull();
 
         Category? verify = await context.FindAsync<Category>(cat.Id);
         verify!.DeletedAt.Should().BeNull();
@@ -1156,9 +1158,15 @@ internal class Categories
         cat.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
-            $"category/{cat.Id}/restore",
-            new() { }
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"categories/{cat.Id}",
+            new()
+            {
+                Body = new UpdateCategoryRequest()
+                {
+                    Status = Status.Published
+                }
+            }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
 
         Category? verify = await context.FindAsync<Category>(cat.Id);
@@ -1207,10 +1215,14 @@ internal class Categories
         user.Role = role;
         await context.SaveChangesAsync();
 
-        await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
-            $"category/{cat.Id}/restore",
+        await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"categories/{cat.Id}",
             new()
             {
+                Body = new UpdateCategoryRequest()
+                {
+                    Status = Status.Published
+                },
                 Jwt = res.Token
             }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
@@ -1222,10 +1234,14 @@ internal class Categories
     [Test]
     public async Task RestoreCategory_NotFound()
     {
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
-            $"category/{int.MaxValue}/restore",
+        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"categories/{int.MaxValue}",
             new()
             {
+                Body = new UpdateCategoryRequest()
+                {
+                    Status = Status.Published
+                },
                 Jwt = _jwt
             }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
@@ -1235,15 +1251,15 @@ internal class Categories
     }
 
     [Test]
-    public async Task RestoreCategory_NotFound_WasNeverDeleted()
+    public async Task RestoreCategory_WasNeverDeleted_OK()
     {
         IServiceScope scope = _factory.Services.CreateScope();
         ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
         Category cat = new()
         {
-            Name = "Restore Cat Not Found Never Deleted",
-            Slug = "restorecat-notfound-never-deleted",
+            Name = "Restore Cat Never Deleted",
+            Slug = "restorecat-never-deleted",
             LeaderboardId = _createdLeaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
@@ -1252,18 +1268,20 @@ internal class Categories
         context.Categories.Add(cat);
         await context.SaveChangesAsync();
         cat.Id.Should().NotBe(default);
-        context.ChangeTracker.Clear();
 
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
-            $"category/{cat.Id}/restore",
+        AndWhichConstraint<GenericAsyncFunctionAssertions<HttpResponseMessage>, HttpResponseMessage> assert = await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"categories/{cat.Id}",
             new()
             {
+                Body = new UpdateCategoryRequest()
+                {
+                    Status = Status.Published
+                },
                 Jwt = _jwt
             }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+        )).Should().NotThrowAsync();
 
-        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-        problemDetails!.Title.Should().Be("Not Deleted");
+        assert.Which.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Test]
@@ -1297,10 +1315,14 @@ internal class Categories
         conflicting.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Put<CategoryViewModel>(
-            $"category/{deleted.Id}/restore",
+        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Patch(
+            $"categories/{deleted.Id}",
             new()
             {
+                Body = new UpdateCategoryRequest()
+                {
+                    Status = Status.Published
+                },
                 Jwt = _jwt,
             }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Conflict);
@@ -1356,15 +1378,17 @@ internal class Categories
         notConflicting.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        CategoryViewModel restored = await _apiClient.Put<CategoryViewModel>(
-            $"category/{notConflicting.Id}/restore",
+        await _apiClient.Patch(
+            $"categories/{notConflicting.Id}",
             new()
             {
+                Body = new UpdateCategoryRequest()
+                {
+                    Status = Status.Published
+                },
                 Jwt = _jwt
             }
         );
-
-        restored.DeletedAt.Should().BeNull();
 
         Category? verify = await context.FindAsync<Category>(notConflicting.Id);
         verify!.DeletedAt.Should().BeNull();
