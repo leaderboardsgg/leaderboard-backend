@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using FluentAssertions.Specialized;
+using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
@@ -436,15 +437,20 @@ public class Leaderboards
         context.Leaderboards.Add(deletedBoard);
         await context.SaveChangesAsync();
         deletedBoard.Id.Should().NotBe(default);
-
+        context.ChangeTracker.Clear();
         _clock.AdvanceMinutes(1);
 
-        LeaderboardViewModel res = await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/{deletedBoard.Id}/restore", new()
+        await _apiClient.Patch($"/leaderboards/{deletedBoard.Id}", new()
         {
+            Body = new UpdateLeaderboardRequest()
+            {
+                Status = Status.Published
+            },
             Jwt = _jwt
         });
 
-        res.Id.Should().Be(deletedBoard.Id);
+        Leaderboard? res = await context.Leaderboards.FindAsync(deletedBoard.Id);
+        res!.Id.Should().Be(deletedBoard.Id);
         res.Slug.Should().Be(deletedBoard.Slug);
         res.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
         res.DeletedAt.Should().BeNull();
@@ -453,7 +459,16 @@ public class Leaderboards
     [Test]
     public async Task RestoreLeaderboard_Unauthenticated()
     {
-        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/100/restore", new());
+        Func<Task> act = async () => await _apiClient.Patch(
+            $"/leaderboards/100",
+            new()
+            {
+                Body = new UpdateLeaderboardRequest()
+                {
+                    Status = Status.Published
+                }
+            }
+        );
 
         await act.Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
     }
@@ -486,10 +501,14 @@ public class Leaderboards
         await context.SaveChangesAsync();
 
         await FluentActions.Awaiting(
-            async () => await _apiClient.Put<LeaderboardViewModel>(
-                $"/leaderboard/1/restore",
+            async () => await _apiClient.Patch(
+                "/leaderboards/1/",
                 new()
                 {
+                    Body = new UpdateLeaderboardRequest()
+                    {
+                        Status = Status.Published
+                    },
                     Jwt = jwt,
                 }
             )
@@ -521,8 +540,12 @@ public class Leaderboards
 
         string jwt = (await _apiClient.LoginUser(email, "P4ssword")).Token;
 
-        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/100/restore", new()
+        Func<Task> act = async () => await _apiClient.Patch($"/leaderboards/100", new()
         {
+            Body = new UpdateLeaderboardRequest()
+            {
+                Status = Status.Published
+            },
             Jwt = jwt,
         });
 
@@ -532,8 +555,12 @@ public class Leaderboards
     [Test]
     public async Task RestoreLeaderboard_NotFound()
     {
-        Func<Task<LeaderboardViewModel>> act = async () => await _apiClient.Put<LeaderboardViewModel>($"/leaderboard/{1e10}/restore", new()
+        Func<Task> act = async () => await _apiClient.Patch($"/leaderboard/{10000000000L}/", new()
         {
+            Body = new UpdateLeaderboardRequest()
+            {
+                Status = Status.Published
+            },
             Jwt = _jwt
         });
 
@@ -541,7 +568,7 @@ public class Leaderboards
     }
 
     [Test]
-    public async Task RestoreLeaderboard_NotFound_WasNeverDeleted()
+    public async Task RestoreLeaderboard_WasNeverDeleted_OK()
     {
         ApplicationContext context = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationContext>();
 
@@ -555,19 +582,21 @@ public class Leaderboards
         await context.SaveChangesAsync();
         board.Id.Should().NotBe(default);
 
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() =>
-            _apiClient.Put<LeaderboardViewModel>(
-                $"/leaderboard/{board.Id}/restore",
+        AndWhichConstraint<GenericAsyncFunctionAssertions<HttpResponseMessage>, HttpResponseMessage> assert = await FluentActions.Awaiting(() =>
+            _apiClient.Patch(
+                $"/leaderboards/{board.Id}",
                 new()
                 {
+                    Body = new UpdateLeaderboardRequest()
+                    {
+                        Status = Status.Published
+                    },
                     Jwt = _jwt,
                 }
             )
-        ).Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.NotFound);
+        ).Should().NotThrowAsync();
 
-        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-        problemDetails.Should().NotBeNull();
-        problemDetails!.Title.Should().Be("Not Deleted");
+        assert.Which.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Test]
@@ -593,10 +622,14 @@ public class Leaderboards
         await context.SaveChangesAsync();
 
         ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() =>
-            _apiClient.Put<LeaderboardViewModel>(
-                $"/leaderboard/{deleted.Id}/restore",
+            _apiClient.Patch(
+                $"/leaderboards/{deleted.Id}",
                 new()
                 {
+                    Body = new UpdateLeaderboardRequest()
+                    {
+                        Status = Status.Published
+                    },
                     Jwt = _jwt,
                 }
             )
