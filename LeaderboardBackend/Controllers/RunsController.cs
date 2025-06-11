@@ -1,4 +1,3 @@
-using System.Net;
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Filters;
 using LeaderboardBackend.Models.Entities;
