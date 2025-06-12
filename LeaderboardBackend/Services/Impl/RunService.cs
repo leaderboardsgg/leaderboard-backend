@@ -109,32 +109,9 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
 
         long count = await query.LongCountAsync();
 
-        List<Run> items = await query.ToListAsync();
-
-        // Rank runs
-        int runsWithSameRank = 0;
-        for (int i = 0; i < count; i++)
-        {
-            if (i == 0)
-            {
-                items[i].Rank = 1;
-                continue;
-            }
-
-            if (items[i - 1].TimeOrScore == items[i].TimeOrScore)
-            {
-                items[i].Rank = items[i - 1].Rank;
-                runsWithSameRank++;
-                continue;
-            }
-
-            items[i].Rank = items[i - 1].Rank + runsWithSameRank + 1;
-            runsWithSameRank = 0;
-        }
-
-        items = items.Skip(page.Offset)
+        List<Run> items = await query.Skip(page.Offset)
             .Take(page.Limit)
-            .ToList();
+            .ToListAsync();
 
         return new ListResult<Run>(items, count);
     }

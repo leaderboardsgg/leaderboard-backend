@@ -282,9 +282,9 @@ namespace LeaderboardBackend.Test
                 await context.Entry(run).Reference(r => r.User).LoadAsync();
             }
 
-            runs[0].Rank = 1;
-            runs[2].Rank = 1;
-            runs[3].Rank = 3;
+            // TODO: Test for rank. As of this writing, rank calculation will
+            // be handled in another PR. (And of course remove this comment
+            // in that PR)
 
             ListView<TimedRunViewModel> returned = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryId}/records?limit=9999999", new());
             returned.Data.Should().BeEquivalentTo(
