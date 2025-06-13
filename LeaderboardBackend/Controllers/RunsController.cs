@@ -131,9 +131,11 @@ public class RunsController(
 
     [AllowAnonymous]
     [HttpGet("/api/categories/{id}/records")]
-    [SwaggerOperation("Gets the records for a category.", OperationId = "getRecordsForCategory")]
+    [Paginated]
+    [SwaggerOperation("Gets the records for a category, or the personal bests of every user, ranked best-first.", OperationId = "getRecordsForCategory")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<ListView<RunViewModel>>> GetRecordsForCategory(
         [FromRoute] long id,
         [FromQuery] Page page

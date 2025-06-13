@@ -1701,7 +1701,7 @@
         "tags": [
           "Runs"
         ],
-        "summary": "Gets the records for a category.",
+        "summary": "Gets the records for a category, or the personal bests of every user, ranked best-first.",
         "operationId": "getRecordsForCategory",
         "parameters": [
           {
@@ -1759,6 +1759,16 @@
           },
           "404": {
             "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
           }
         }
       }
