@@ -3,6 +3,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using NodaTime;
 using OneOf.Types;
 
@@ -64,56 +65,46 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
     )
     {
         Category? cat = await applicationContext.FindAsync<Category>(id);
+
         if (cat is null)
         {
             return new NotFound();
         }
 
-        IQueryable<Run> query = applicationContext.Runs
-            .Include(run => run.Category)
-            .Include(run => run.User)
-            .FilterByStatus(StatusFilter.Published)
-            .Where(r => r.CategoryId == cat.Id);
+        IQueryable<Run> initQuery = applicationContext.Runs.FromSql($"""
+        SELECT *
+        FROM (
+            SELECT r.id, r.category_id, r.created_at, r.deleted_at, r.info, r.played_on, r.time_or_score, r.updated_at, r.user_id, RANK() OVER (PARTITION BY r.user_id ORDER BY r.time_or_score, r.played_on, r.created_at, r.id) as rank
+            FROM runs as r
+            WHERE r.category_id = {id} AND r.deleted_at IS NULL
+        ) as t
+        WHERE t.rank = 1
+        """);
 
-        IQueryable<dynamic> query1 = applicationContext.Runs
-            .FilterByStatus(StatusFilter.Published)
-            .Where(run => run.CategoryId == cat.Id)
-            .GroupBy(run => run.UserId)
-            .Select(group => new
-            {
-                UserId = group.Key,
-                TimeOrScore = cat.SortDirection == SortDirection.Ascending
-                    ? group.Min(r => r.TimeOrScore)
-                    : group.Max(r => r.TimeOrScore)
-            });
+        long count = await initQuery.LongCountAsync();
 
-        query = query.Join(
-            query1,
-            run => new { run.UserId, run.TimeOrScore },
-            run1 => run1,
-            (r, run1) => r
-        );
+        IIncludableQueryable<Run, User> unsorted = initQuery
+            .Include(r => r.User);
 
-        if (cat.SortDirection == SortDirection.Descending)
+        IOrderedQueryable<Run> runsOrdered;
+        if (cat.SortDirection is SortDirection.Ascending)
         {
-            query = query.OrderByDescending(run => run.TimeOrScore)
-                .ThenBy(run => run.PlayedOn)
-                .ThenBy(run => run.CreatedAt);
+            runsOrdered = unsorted.OrderBy(r => r.TimeOrScore);
         }
         else
         {
-            query = query.OrderBy(run => run.TimeOrScore)
-                .ThenBy(run => run.PlayedOn)
-                .ThenBy(run => run.CreatedAt);
+            runsOrdered = unsorted.OrderByDescending(r => r.TimeOrScore);
         }
 
-        long count = await query.LongCountAsync();
-
-        List<Run> items = await query.Skip(page.Offset)
+        List<Run> runs = await runsOrdered
+            .ThenBy(r => r.PlayedOn)
+            .ThenBy(r => r.CreatedAt)
+            .ThenBy(r => r.Id)
+            .Skip(page.Offset)
             .Take(page.Limit)
             .ToListAsync();
 
-        return new ListResult<Run>(items, count);
+        return new ListResult<Run>(runs, count);
     }
 
     public async Task<CreateRunResult> CreateRun(User user, Category category, CreateRunRequest request)
