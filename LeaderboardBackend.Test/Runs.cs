@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -199,6 +200,118 @@ namespace LeaderboardBackend.Test
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(
                 a => a.Get<RunViewModel>(
                     "/api/category/0/runs",
+                    new()
+                )
+            ).Should()
+            .ThrowAsync<RequestFailureException>()
+            .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+
+            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails.Should().NotBeNull();
+            problemDetails!.Title.Should().Be("Category Not Found");
+        }
+
+        [Test]
+        public async Task GetRecordsForCategory_OK()
+        {
+            IServiceScope scope = _factory.Services.CreateScope();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+            IUserService users = scope.ServiceProvider.GetRequiredService<IUserService>();
+            await context.Runs.ExecuteDeleteAsync();
+
+            CreateUserResult userResult = await users.CreateUser(new()
+            {
+                Username = "getrecords-ok",
+                Email = "getrecords_ok@leaderboards.gg",
+                Password = "P4ssword",
+            });
+            userResult.IsT0.Should().BeTrue();
+            User user = userResult.AsT0;
+
+            CreateUserResult user1Result = await users.CreateUser(new()
+            {
+                Username = "getrecords-ok1",
+                Email = "getrecords_ok1@leaderboards.gg",
+                Password = "P4ssword",
+            });
+            user1Result.IsT0.Should().BeTrue();
+            User user1 = user1Result.AsT0;
+
+            Run[] runs = [
+                new()
+                {
+                    CategoryId = _categoryId,
+                    Info = "",
+                    PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().ToDateTimeUtc()),
+                    TimeOrScore = Duration.FromSeconds(390).ToInt64Nanoseconds(),
+                    UserId = TestInitCommonFields.Admin.Id,
+                },
+                new()
+                {
+                    CategoryId = _categoryId,
+                    Info = "",
+                    PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().Plus(Duration.FromDays(1)).ToDateTimeUtc()),
+                    TimeOrScore = Duration.FromSeconds(400).ToInt64Nanoseconds(),
+                    UserId = TestInitCommonFields.Admin.Id,
+                },
+                new()
+                {
+                    CategoryId = _categoryId,
+                    Info = "",
+                    PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().Plus(Duration.FromDays(2)).ToDateTimeUtc()),
+                    TimeOrScore = Duration.FromSeconds(390).ToInt64Nanoseconds(),
+                    UserId = user.Id,
+                },
+                new()
+                {
+                    CategoryId = _categoryId,
+                    Info = "",
+                    PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().Plus(Duration.FromDays(2)).ToDateTimeUtc()),
+                    TimeOrScore = Duration.FromSeconds(400).ToInt64Nanoseconds(),
+                    UserId = user1.Id,
+                },
+            ];
+
+            context.AddRange(runs);
+            await context.SaveChangesAsync();
+
+            foreach (Run run in runs)
+            {
+                // Needed for resolving the run type for viewmodel mapping
+                await context.Entry(run).Reference(r => r.Category).LoadAsync();
+                await context.Entry(run).Reference(r => r.User).LoadAsync();
+            }
+
+            // TODO: Test for rank. As of this writing, rank calculation will
+            // be handled in another PR. (And of course remove this comment
+            // in that PR)
+
+            ListView<TimedRunViewModel> returned = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryId}/records?limit=9999999", new());
+            returned.Data.Should().BeEquivalentTo(
+                new List<Run>([runs[0], runs[2], runs[3]]).Select(RunViewModel.MapFrom),
+                config => config.WithStrictOrdering()
+            );
+            returned.Total.Should().Be(3);
+        }
+
+        [TestCase(-1, 0)]
+        [TestCase(1024, -1)]
+        public async Task GetRecordsForCategory_BadPageData(int limit, int offset) =>
+            await _apiClient.Awaiting(
+                a => a.Get<RunViewModel>(
+                    $"/api/categories/{_categoryId}/records?limit={limit}&offset={offset}",
+                    new()
+                )
+            ).Should()
+            .ThrowAsync<RequestFailureException>()
+            .Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
+
+        [Test]
+        public async Task GetRecordsForCategory_CategoryNotFound()
+        {
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(
+                a => a.Get<RunViewModel>(
+                    "/api/categories/0/records",
                     new()
                 )
             ).Should()
