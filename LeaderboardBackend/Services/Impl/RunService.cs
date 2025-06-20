@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
@@ -71,10 +72,17 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
             return new NotFound();
         }
 
+        string direction = cat.SortDirection switch
+        {
+            SortDirection.Ascending => "ASC",
+            SortDirection.Descending => "DESC",
+            _ => throw new InvalidEnumArgumentException()
+        };
+
         IQueryable<Run> initQuery = applicationContext.Runs.FromSql($"""
         SELECT *
         FROM (
-            SELECT r.id, r.category_id, r.created_at, r.deleted_at, r.info, r.played_on, r.time_or_score, r.updated_at, r.user_id, RANK() OVER (PARTITION BY r.user_id ORDER BY r.time_or_score, r.played_on, r.created_at, r.id) as rank
+            SELECT r.id, r.category_id, r.created_at, r.deleted_at, r.info, r.played_on, r.time_or_score, r.updated_at, r.user_id, RANK() OVER (PARTITION BY r.user_id ORDER BY r.time_or_score {direction}, r.played_on, r.created_at, r.id) as rank
             FROM runs as r
             WHERE r.category_id = {id} AND r.deleted_at IS NULL
         ) as t
