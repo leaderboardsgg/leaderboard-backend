@@ -81,7 +81,7 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
 
         // The linter check we disable here checks for calls to .FromSqlRaw.
         // We need to call .FromSqlRaw to be able to pass `direction` into ORDER BY.
-        #pragma warning disable EF1002
+#pragma warning disable EF1002
         IQueryable<Run> initQuery = applicationContext.Runs.FromSqlRaw($"""
         SELECT *
         FROM (
@@ -91,7 +91,7 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
         ) as t
         WHERE t.row_number = 1
         """);
-        #pragma warning restore EF1002
+#pragma warning restore EF1002
 
         long count = await initQuery.LongCountAsync();
 
