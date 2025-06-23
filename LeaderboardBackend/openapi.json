@@ -1701,7 +1701,7 @@
         "tags": [
           "Runs"
         ],
-        "summary": "Gets the records for a category, or the personal bests of every user, ranked best-first.",
+        "summary": "Gets the records for a category, a.k.a. the personal bests of every user, ranked best-first.",
         "operationId": "getRecordsForCategory",
         "parameters": [
           {
