@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
@@ -71,15 +72,26 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
             return new NotFound();
         }
 
-        IQueryable<Run> initQuery = applicationContext.Runs.FromSql($"""
+        string direction = cat.SortDirection switch
+        {
+            SortDirection.Ascending => "ASC",
+            SortDirection.Descending => "DESC",
+            _ => throw new InvalidEnumArgumentException(),
+        };
+
+        // The linter check we disable here checks for calls to .FromSqlRaw.
+        // We need to call .FromSqlRaw to be able to pass `direction` into ORDER BY.
+        #pragma warning disable EF1002
+        IQueryable<Run> initQuery = applicationContext.Runs.FromSqlRaw($"""
         SELECT *
         FROM (
-            SELECT r.id, r.category_id, r.created_at, r.deleted_at, r.info, r.played_on, r.time_or_score, r.updated_at, r.user_id, ROW_NUMBER() OVER (PARTITION BY r.user_id ORDER BY r.time_or_score, r.played_on, r.created_at, r.id) as row_number
+            SELECT r.*, ROW_NUMBER() OVER (PARTITION BY r.user_id ORDER BY r.time_or_score {direction}, r.played_on, r.created_at, r.id) as row_number
             FROM runs as r
             WHERE r.category_id = {id} AND r.deleted_at IS NULL
         ) as t
         WHERE t.row_number = 1
         """);
+        #pragma warning restore EF1002
 
         long count = await initQuery.LongCountAsync();
 
