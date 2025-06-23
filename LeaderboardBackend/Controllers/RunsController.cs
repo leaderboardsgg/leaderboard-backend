@@ -132,7 +132,7 @@ public class RunsController(
     [AllowAnonymous]
     [HttpGet("/api/categories/{id}/records")]
     [Paginated]
-    [SwaggerOperation("Gets the records for a category, or the personal bests of every user, ranked best-first.", OperationId = "getRecordsForCategory")]
+    [SwaggerOperation("Gets the records for a category, a.k.a. the personal bests of every user, ranked best-first.", OperationId = "getRecordsForCategory")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
