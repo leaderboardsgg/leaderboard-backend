@@ -74,11 +74,11 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
         IQueryable<Run> initQuery = applicationContext.Runs.FromSql($"""
         SELECT *
         FROM (
-            SELECT r.id, r.category_id, r.created_at, r.deleted_at, r.info, r.played_on, r.time_or_score, r.updated_at, r.user_id, RANK() OVER (PARTITION BY r.user_id ORDER BY r.time_or_score, r.played_on, r.created_at, r.id) as rank
+            SELECT r.id, r.category_id, r.created_at, r.deleted_at, r.info, r.played_on, r.time_or_score, r.updated_at, r.user_id, ROW_NUMBER() OVER (PARTITION BY r.user_id ORDER BY r.time_or_score, r.played_on, r.created_at, r.id) as row_number
             FROM runs as r
             WHERE r.category_id = {id} AND r.deleted_at IS NULL
         ) as t
-        WHERE t.rank = 1
+        WHERE t.row_number = 1
         """);
 
         long count = await initQuery.LongCountAsync();
