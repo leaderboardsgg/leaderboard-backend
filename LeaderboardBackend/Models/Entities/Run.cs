@@ -71,12 +71,6 @@ public class Run : IHasUpdateTimestamp, IHasDeletionTimestamp
     ///     The User who submitted the run.
     /// </summary>
     public User User { get; set; } = null!;
-
-    /// <summary>
-    /// The record's rank in its category. Calculated on list retrieval.
-    /// </summary>
-    [NotMapped]
-    public int Rank { get; set; }
 }
 
 public class RunEntityTypeConfig : IEntityTypeConfiguration<Run>

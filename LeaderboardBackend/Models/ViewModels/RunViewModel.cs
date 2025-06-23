@@ -75,7 +75,8 @@ public abstract record RunViewModel
             Time = run.Time,
             RunType = run.Type,
             Status = run.Status(),
-            Rank = run.Rank,
+            // TODO: Actually set value
+            Rank = 0,
         },
         RunType.Score => new ScoredRunViewModel
         {
@@ -90,7 +91,8 @@ public abstract record RunViewModel
             Score = run.TimeOrScore,
             RunType = run.Type,
             Status = run.Status(),
-            Rank = run.Rank,
+            // TODO: Actually set value
+            Rank = 0,
         },
         _ => throw new NotImplementedException(),
     };
