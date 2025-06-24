@@ -10,6 +10,10 @@ public interface IRunService
 {
     Task<Run?> GetRun(Guid id);
     Task<GetRunsForCategoryResult> GetRunsForCategory(long id, StatusFilter statusFilter, Page page);
+    /// <summary>
+    /// Returns the top-scoring runs of every unique User for a category.
+    /// </summary>
+    Task<GetRecordsForCategoryResult> GetRecordsForCategory(long id, Page page);
     Task<CreateRunResult> CreateRun(User user, Category category, CreateRunRequest request);
     /// <returns>
     ///     One of four cases (none of which return any inner data):
@@ -54,3 +58,6 @@ public partial class UpdateRunResult : OneOfBase<BadRole, UserDoesNotOwnRun, Not
 
 [GenerateOneOf]
 public partial class GetRunsForCategoryResult : OneOfBase<ListResult<Run>, NotFound>;
+
+[GenerateOneOf]
+public partial class GetRecordsForCategoryResult : OneOfBase<ListResult<Run>, NotFound>;

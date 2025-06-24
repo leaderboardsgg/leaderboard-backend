@@ -1,4 +1,3 @@
-using System.Net;
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Filters;
 using LeaderboardBackend.Models.Entities;
@@ -114,6 +113,35 @@ public class RunsController(
     )
     {
         GetRunsForCategoryResult result = await runService.GetRunsForCategory(id, status, page);
+
+        return result.Match<ActionResult>(
+            runs => Ok(new ListView<RunViewModel>()
+            {
+                Data = runs.Items.Select(RunViewModel.MapFrom).ToList(),
+                Total = runs.ItemsTotal
+            }),
+            notFound => Problem(
+                null,
+                null,
+                404,
+                "Category Not Found"
+            )
+        );
+    }
+
+    [AllowAnonymous]
+    [HttpGet("/api/categories/{id}/records")]
+    [Paginated]
+    [SwaggerOperation("Gets the records for a category, a.k.a. the personal bests of every user, ranked best-first.", OperationId = "getRecordsForCategory")]
+    [SwaggerResponse(200)]
+    [SwaggerResponse(404)]
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
+    public async Task<ActionResult<ListView<RunViewModel>>> GetRecordsForCategory(
+        [FromRoute] long id,
+        [FromQuery] Page page
+    )
+    {
+        GetRecordsForCategoryResult result = await runService.GetRecordsForCategory(id, page);
 
         return result.Match<ActionResult>(
             runs => Ok(new ListView<RunViewModel>()

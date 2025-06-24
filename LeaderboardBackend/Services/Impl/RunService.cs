@@ -1,8 +1,10 @@
+using System.ComponentModel;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using NodaTime;
 using OneOf.Types;
 
@@ -56,6 +58,65 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
             .ToListAsync();
 
         return new ListResult<Run>(items, count);
+    }
+
+    public async Task<GetRecordsForCategoryResult> GetRecordsForCategory(
+        long id,
+        Page page
+    )
+    {
+        Category? cat = await applicationContext.FindAsync<Category>(id);
+
+        if (cat is null)
+        {
+            return new NotFound();
+        }
+
+        string direction = cat.SortDirection switch
+        {
+            SortDirection.Ascending => "ASC",
+            SortDirection.Descending => "DESC",
+            _ => throw new InvalidEnumArgumentException(),
+        };
+
+        // The linter check we disable here checks for calls to .FromSqlRaw.
+        // We need to call .FromSqlRaw to be able to pass `direction` into ORDER BY.
+#pragma warning disable EF1002
+        IQueryable<Run> initQuery = applicationContext.Runs.FromSqlRaw($"""
+        SELECT *
+        FROM (
+            SELECT r.*, ROW_NUMBER() OVER (PARTITION BY r.user_id ORDER BY r.time_or_score {direction}, r.played_on, r.created_at, r.id) as row_number
+            FROM runs as r
+            WHERE r.category_id = {id} AND r.deleted_at IS NULL
+        ) as t
+        WHERE t.row_number = 1
+        """);
+#pragma warning restore EF1002
+
+        long count = await initQuery.LongCountAsync();
+
+        IIncludableQueryable<Run, User> unsorted = initQuery
+            .Include(r => r.User);
+
+        IOrderedQueryable<Run> runsOrdered;
+        if (cat.SortDirection is SortDirection.Ascending)
+        {
+            runsOrdered = unsorted.OrderBy(r => r.TimeOrScore);
+        }
+        else
+        {
+            runsOrdered = unsorted.OrderByDescending(r => r.TimeOrScore);
+        }
+
+        List<Run> runs = await runsOrdered
+            .ThenBy(r => r.PlayedOn)
+            .ThenBy(r => r.CreatedAt)
+            .ThenBy(r => r.Id)
+            .Skip(page.Offset)
+            .Take(page.Limit)
+            .ToListAsync();
+
+        return new ListResult<Run>(runs, count);
     }
 
     public async Task<CreateRunResult> CreateRun(User user, Category category, CreateRunRequest request)
