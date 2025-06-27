@@ -232,6 +232,12 @@ public class RunsController(
                 403,
                 "User Does Not Own Run"
             ),
+            userCannotChangeStatusOfRuns => Problem(
+                null,
+                null,
+                403,
+                "User Cannot Change Status of Runs"
+            ),
             notFound => Problem(
                 null,
                 null,
