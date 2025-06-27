@@ -216,6 +216,11 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
                     return new AlreadyDeleted(typeof(Leaderboard));
                 }
 
+                if (request.Status is not null)
+                {
+                    return new BadRole();
+                }
+
                 break;
             }
             case UserRole.Administrator:
@@ -232,6 +237,27 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
         if (request.PlayedOn is not null)
         {
             run.PlayedOn = (LocalDate)request.PlayedOn;
+        }
+
+        switch (request.Status)
+        {
+            case null:
+                break;
+
+            case Status.Published:
+            {
+                run.DeletedAt = null;
+                break;
+            }
+
+            case Status.Deleted:
+            {
+                run.DeletedAt = clock.GetCurrentInstant();
+                break;
+            }
+
+            default:
+                throw new ArgumentException($"Invalid Status in request: {(int)request.Status}", nameof(request));
         }
 
         switch (request)
