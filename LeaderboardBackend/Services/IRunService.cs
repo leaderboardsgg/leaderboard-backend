@@ -54,7 +54,7 @@ public interface IRunService
 public partial class CreateRunResult : OneOfBase<Run, BadRole, BadRunType>;
 
 [GenerateOneOf]
-public partial class UpdateRunResult : OneOfBase<BadRole, UserDoesNotOwnRun, NotFound, AlreadyDeleted, BadRunType, Success>;
+public partial class UpdateRunResult : OneOfBase<BadRole, UserDoesNotOwnRun, UserCannotChangeStatusOfRuns, NotFound, AlreadyDeleted, BadRunType, Success>;
 
 [GenerateOneOf]
 public partial class GetRunsForCategoryResult : OneOfBase<ListResult<Run>, NotFound>;
