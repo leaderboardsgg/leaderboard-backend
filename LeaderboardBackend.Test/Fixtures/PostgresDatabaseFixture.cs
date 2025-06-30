@@ -8,7 +8,7 @@ using Testcontainers.PostgreSql;
 // It has no namespace on purpose, so that the fixture applies to all tests in this assembly
 
 [SetUpFixture] // https://docs.nunit.org/articles/nunit/writing-tests/attributes/setupfixture.html
-internal class PostgresDatabaseFixture
+public class PostgresDatabaseFixture
 {
     public static PostgreSqlContainer? PostgresContainer { get; private set; }
     public static string? Database { get; private set; }
