@@ -11,15 +11,6 @@ public class ApplicationContext : DbContext
 {
     private readonly IClock _clock;
 
-    [Obsolete]
-    static ApplicationContext()
-    {
-        // GlobalTypeMapper is obsolete but the new way (DataSource) is a pain to work with
-        NpgsqlConnection.GlobalTypeMapper.MapEnum<UserRole>();
-        NpgsqlConnection.GlobalTypeMapper.MapEnum<SortDirection>();
-        NpgsqlConnection.GlobalTypeMapper.MapEnum<RunType>();
-    }
-
     private void AddCreationTimestamp(object? sender, EntityEntryEventArgs e)
     {
         if (e.Entry.State is EntityState.Added && e.Entry.Entity is IHasCreationTimestamp entity)
@@ -75,11 +66,6 @@ public class ApplicationContext : DbContext
         }
     }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
+    protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-        modelBuilder.HasPostgresEnum<UserRole>();
-        modelBuilder.HasPostgresEnum<SortDirection>();
-        modelBuilder.HasPostgresEnum<RunType>();
-    }
 }
