@@ -44,13 +44,11 @@ namespace LeaderboardBackend.Test
             );
 
             _apiClient = new TestApiClient(_factory.CreateClient());
-
-            PostgresDatabaseFixture.ResetDatabaseToTemplate();
-
-            _jwt = (await _apiClient.LoginAdminUser()).Token;
-
             using IServiceScope scope = _factory.Services.CreateScope();
             ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+            await TestApiFactory.ResetDatabase(context);
+            _jwt = (await _apiClient.LoginAdminUser()).Token;
+
             Leaderboard board = new()
             {
                 Name = "Super Mario 64",

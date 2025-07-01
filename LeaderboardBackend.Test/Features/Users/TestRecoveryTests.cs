@@ -27,14 +27,16 @@ public class TestRecoveryTests : IntegrationTestsBase
         ).CreateClient();
 
     [SetUp]
-    public void Init()
+    public async Task Init()
     {
-        TestApiFactory.ResetDatabase();
         _scope = _factory.WithWebHostBuilder(builder =>
             builder.ConfigureTestServices(services =>
                 services.AddSingleton<IClock, FakeClock>(_ => _clock)
             )
         ).Services.CreateScope();
+
+        ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+        await TestApiFactory.ResetDatabase(context);
     }
 
     [TearDown]
