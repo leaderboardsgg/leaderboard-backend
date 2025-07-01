@@ -86,7 +86,8 @@ builder.Services.AddDbContext<ApplicationContext>(
                 connectionBuilder.Port = db.Port.Value;
             }
 
-            opt.UseNpgsql(connectionBuilder.ConnectionString, o => {
+            opt.UseNpgsql(connectionBuilder.ConnectionString, o =>
+            {
                 o.MapEnum<UserRole>();
                 o.MapEnum<SortDirection>();
                 o.MapEnum<RunType>();
