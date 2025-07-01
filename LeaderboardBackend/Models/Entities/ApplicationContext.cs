@@ -1,9 +1,7 @@
-using System.Data;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using NodaTime;
-using Npgsql;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -41,30 +39,6 @@ public class ApplicationContext : DbContext
     public DbSet<Leaderboard> Leaderboards { get; set; } = null!;
     public DbSet<Run> Runs { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;
-
-    /// <summary>
-    /// Migrates the database and reloads Npgsql types
-    /// </summary>
-    public void MigrateDatabase()
-    {
-        Database.Migrate();
-        bool tempConnection = false;
-        NpgsqlConnection connection = (NpgsqlConnection)Database.GetDbConnection();
-
-        if (connection.State is ConnectionState.Closed)
-        {
-            tempConnection = true;
-            Database.OpenConnection();
-        }
-
-        // when new extensions have been enabled by migrations, Npgsql's type cache must be refreshed
-        connection.ReloadTypes();
-
-        if (tempConnection)
-        {
-            Database.CloseConnection();
-        }
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());

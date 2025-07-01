@@ -297,7 +297,7 @@ using (ApplicationContext context = scope.ServiceProvider.GetRequiredService<App
     if (config.MigrateDb && app.Environment.IsDevelopment())
     {
         // migration as part of the startup phase (dev env only)
-        context.MigrateDatabase();
+        context.Database.Migrate();
     }
 }
 

@@ -62,7 +62,7 @@ public class TestApiFactory : WebApplicationFactory<Program>
     {
         if (!PostgresDatabaseFixture.HasCreatedTemplate)
         {
-            dbContext.MigrateDatabase();
+            dbContext.Database.Migrate();
             Seed(dbContext);
             dbContext.Dispose();
             PostgresDatabaseFixture.CreateTemplateFromCurrentDb();
