@@ -827,7 +827,7 @@ namespace LeaderboardBackend.Test
                 CategoryId = _categoryId,
                 PlayedOn = LocalDate.MinIsoValue,
                 Time = Duration.FromSeconds(390),
-                UserId = user.Id,
+                UserId = TestInitCommonFields.Admin.Id,
                 DeletedAt = _clock.GetCurrentInstant(),
             };
 
