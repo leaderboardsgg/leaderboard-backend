@@ -1,12 +1,11 @@
-using System.ComponentModel;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using NodaTime;
 using OneOf.Types;
+using Zomp.EFCore.WindowFunctions;
 
 namespace LeaderboardBackend.Services;
 
@@ -37,9 +36,6 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
 
         long count = await query.LongCountAsync();
 
-        // TODO: To spin a Redis instance to calculate and store ranks for runs.
-        // Then we can simply fetch data from it, instead of calculating this
-        // here.
         if (cat.SortDirection == SortDirection.Descending)
         {
             query = query.OrderByDescending(run => run.TimeOrScore)
@@ -72,51 +68,53 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
             return new NotFound();
         }
 
-        string direction = cat.SortDirection switch
+        bool asc = cat.SortDirection == SortDirection.Ascending;
+
+        // Query the best run from each user.
+
+        IQueryable<RankedRun> query = applicationContext.Runs
+            .Include(r => r.Category)
+            .Include(r => r.User)
+            .Where(r => r.CategoryId == id && r.DeletedAt == null)
+            .Where(r => EF.Functions.RowNumber((
+                asc ?
+                EF.Functions.Over().PartitionBy(r.UserId).OrderBy(r.TimeOrScore) :
+                EF.Functions.Over().PartitionBy(r.UserId).OrderByDescending(r.TimeOrScore)
+            ).ThenBy(r.PlayedOn).ThenBy(r.CreatedAt)) == 1L)
+
+        // Assign each run a rank relative to the other users' best runs and count them up.
+
+            .Select(r => new RankedRun
+            {
+                Rank = EF.Functions.Rank(
+                    asc ?
+                    EF.Functions.Over().OrderBy(r.TimeOrScore) :
+                    EF.Functions.Over().OrderByDescending(r.TimeOrScore)),
+                Run = r,
+                Count = EF.Functions.Count(EF.Functions.Over())
+            });
+
+        // Break ties and apply pagination.
+
+        IOrderedQueryable<RankedRun> runs;
+        if (asc)
         {
-            SortDirection.Ascending => "ASC",
-            SortDirection.Descending => "DESC",
-            _ => throw new InvalidEnumArgumentException(),
-        };
-
-        // The linter check we disable here checks for calls to .FromSqlRaw.
-        // We need to call .FromSqlRaw to be able to pass `direction` into ORDER BY.
-#pragma warning disable EF1002
-        IQueryable<Run> initQuery = applicationContext.Runs.FromSqlRaw($"""
-        SELECT *
-        FROM (
-            SELECT r.*, ROW_NUMBER() OVER (PARTITION BY r.user_id ORDER BY r.time_or_score {direction}, r.played_on, r.created_at, r.id) as row_number
-            FROM runs as r
-            WHERE r.category_id = {id} AND r.deleted_at IS NULL
-        ) as t
-        WHERE t.row_number = 1
-        """);
-#pragma warning restore EF1002
-
-        long count = await initQuery.LongCountAsync();
-
-        IIncludableQueryable<Run, User> unsorted = initQuery
-            .Include(r => r.User);
-
-        IOrderedQueryable<Run> runsOrdered;
-        if (cat.SortDirection is SortDirection.Ascending)
-        {
-            runsOrdered = unsorted.OrderBy(r => r.TimeOrScore);
+            runs = query.OrderBy(r => r.Run.TimeOrScore);
         }
         else
         {
-            runsOrdered = unsorted.OrderByDescending(r => r.TimeOrScore);
+            runs = query.OrderByDescending(r => r.Run.TimeOrScore);
         }
 
-        List<Run> runs = await runsOrdered
-            .ThenBy(r => r.PlayedOn)
-            .ThenBy(r => r.CreatedAt)
-            .ThenBy(r => r.Id)
+        List<RankedRun> records = await runs
+            .ThenBy(r => r.Run.PlayedOn)
+            .ThenBy(r => r.Run.CreatedAt)
+            .ThenBy(r => r.Run.Id)
             .Skip(page.Offset)
             .Take(page.Limit)
             .ToListAsync();
 
-        return new ListResult<Run>(runs, count);
+        return new ListResult<RankedRun>(records, records.FirstOrDefault()?.Count ?? 0L);
     }
 
     public async Task<CreateRunResult> CreateRun(User user, Category category, CreateRunRequest request)
