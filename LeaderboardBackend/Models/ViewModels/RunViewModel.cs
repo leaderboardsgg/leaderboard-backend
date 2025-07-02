@@ -55,10 +55,10 @@ public abstract record RunViewModel
     public required Status Status { get; set; }
 
     /// <summary>
-    /// The record's rank for its category. Will be 0 if it's not part of
-    /// record retrieval.
+    /// The run's rank within its category.
     /// </summary>
-    public int Rank { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public long Rank { get; set; }
 
     public static RunViewModel MapFrom(Run run) => run.Type switch
     {
@@ -74,9 +74,7 @@ public abstract record RunViewModel
             Info = run.Info,
             Time = run.Time,
             RunType = run.Type,
-            Status = run.Status(),
-            // TODO: Actually set value
-            Rank = 0,
+            Status = run.Status()
         },
         RunType.Score => new ScoredRunViewModel
         {
@@ -90,12 +88,17 @@ public abstract record RunViewModel
             Info = run.Info,
             Score = run.TimeOrScore,
             RunType = run.Type,
-            Status = run.Status(),
-            // TODO: Actually set value
-            Rank = 0,
+            Status = run.Status()
         },
         _ => throw new NotImplementedException(),
     };
+
+    public static RunViewModel MapFrom(RankedRun ranked)
+    {
+        RunViewModel viewModel = MapFrom(ranked.Run);
+        viewModel.Rank = ranked.Rank;
+        return viewModel;
+    }
 }
 
 public record TimedRunViewModel : RunViewModel
