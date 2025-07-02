@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Fixtures;
+using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,9 +34,7 @@ public class SendConfirmationTests : IntegrationTestsBase
     public async Task TearDown()
     {
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        await context.Users.ExecuteDeleteAsync();
-        await context.AccountConfirmations.ExecuteDeleteAsync();
-        _scope.Dispose();
+        await TestApiFactory.ResetDatabase(context);
     }
 
     [Test]
