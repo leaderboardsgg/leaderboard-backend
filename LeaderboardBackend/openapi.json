@@ -2735,8 +2735,8 @@
           },
           "rank": {
             "type": "integer",
-            "description": "The record's rank for its category. Will be 0 if it's not part of\nrecord retrieval.",
-            "format": "int32"
+            "description": "The run's rank within its category.",
+            "format": "int64"
           }
         },
         "additionalProperties": false,
