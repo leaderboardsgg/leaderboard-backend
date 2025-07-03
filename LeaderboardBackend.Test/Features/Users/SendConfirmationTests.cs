@@ -9,6 +9,7 @@ using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Fixtures;
 using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NodaTime;
@@ -30,10 +31,10 @@ public class SendConfirmationTests : IntegrationTestsBase
     }
 
     [TearDown]
-    public void TearDown()
+    public async Task TearDown()
     {
-        TestApiFactory.ResetDatabase();
-        _scope.Dispose();
+        ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+        await TestApiFactory.ResetDatabase(context);
     }
 
     [Test]

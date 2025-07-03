@@ -20,14 +20,14 @@ namespace LeaderboardBackend.Test.Features.Users;
 public class LoginTests : IntegrationTestsBase
 {
     [OneTimeSetUp]
-    public void Init()
+    public async Task Init()
     {
-        TestApiFactory.ResetDatabase();
-
         // TODO: Swap to creating users via the UserService instead of calling the DB, once
         // it has the ability to change a user's roles.
         using IServiceScope s = _factory.Services.CreateScope();
         ApplicationContext dbContext = s.ServiceProvider.GetRequiredService<ApplicationContext>();
+        await TestApiFactory.ResetDatabase(dbContext);
+
         dbContext.Users.AddRange(
             new User
             {
@@ -43,7 +43,7 @@ public class LoginTests : IntegrationTestsBase
                 Username = "Banned_User",
             }
         );
-        dbContext.SaveChanges();
+        await dbContext.SaveChangesAsync();
     }
 
     [Test]

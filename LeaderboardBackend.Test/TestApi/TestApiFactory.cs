@@ -1,10 +1,12 @@
 using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Lib;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
@@ -51,21 +53,13 @@ public class TestApiFactory : WebApplicationFactory<Program>
         return new TestApiClient(client);
     }
 
-    public void InitializeDatabase()
+    public static void InitializeDatabase(ApplicationContext dbContext)
     {
-        using IServiceScope scope = Services.CreateScope();
-        ApplicationContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        InitializeDatabase(dbContext);
-    }
-
-    private static void InitializeDatabase(ApplicationContext dbContext)
-    {
-        if (!PostgresDatabaseFixture.HasCreatedTemplate)
+        if (!PostgresDatabaseFixture.IsInitialized)
         {
-            dbContext.MigrateDatabase();
+            dbContext.Database.Migrate();
             Seed(dbContext);
-            dbContext.Dispose();
-            PostgresDatabaseFixture.CreateTemplateFromCurrentDb();
+            PostgresDatabaseFixture.IsInitialized = true;
         }
     }
 
@@ -86,12 +80,20 @@ public class TestApiFactory : WebApplicationFactory<Program>
 
         dbContext.Add(admin);
         dbContext.Add(leaderboard);
-
         dbContext.SaveChanges();
     }
 
     /// <summary>
     /// Deletes and recreates the database
     /// </summary>
-    public static void ResetDatabase() => PostgresDatabaseFixture.ResetDatabaseToTemplate();
+    public static async Task ResetDatabase(ApplicationContext context)
+    {
+        await context.Runs.ExecuteDeleteAsync();
+        await context.AccountConfirmations.ExecuteDeleteAsync();
+        await context.AccountRecoveries.ExecuteDeleteAsync();
+        await context.Categories.ExecuteDeleteAsync();
+        await context.Users.ExecuteDeleteAsync();
+        await context.Leaderboards.ExecuteDeleteAsync();
+        Seed(context);
+    }
 }

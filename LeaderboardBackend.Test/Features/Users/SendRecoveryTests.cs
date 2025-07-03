@@ -26,9 +26,10 @@ public class SendRecoveryTests : IntegrationTestsBase
     public void Init() => _scope = _factory.Services.CreateScope();
 
     [TearDown]
-    public void TearDown()
+    public async Task TearDown()
     {
-        TestApiFactory.ResetDatabase();
+        ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+        await TestApiFactory.ResetDatabase(context);
         _scope.Dispose();
     }
 

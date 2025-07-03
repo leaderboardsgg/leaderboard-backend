@@ -11,6 +11,7 @@ using LeaderboardBackend;
 using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Converters;
 using LeaderboardBackend.Filters;
+using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Services;
 using MicroElements.Swashbuckle.NodaTime;
@@ -85,7 +86,14 @@ builder.Services.AddDbContext<ApplicationContext>(
                 connectionBuilder.Port = db.Port.Value;
             }
 
-            opt.UseNpgsql(connectionBuilder.ConnectionString, o => o.UseNodaTime());
+            opt.UseNpgsql(connectionBuilder.ConnectionString, o =>
+            {
+                o.MapEnum<UserRole>();
+                o.MapEnum<SortDirection>();
+                o.MapEnum<RunType>();
+                o.UseNodaTime();
+            });
+
             opt.UseSnakeCaseNamingConvention();
             opt.UseValidationCheckConstraints();
         }
@@ -290,7 +298,7 @@ using (ApplicationContext context = scope.ServiceProvider.GetRequiredService<App
     if (config.MigrateDb && app.Environment.IsDevelopment())
     {
         // migration as part of the startup phase (dev env only)
-        context.MigrateDatabase();
+        context.Database.Migrate();
     }
 }
 

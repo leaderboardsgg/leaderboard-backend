@@ -10,9 +10,6 @@ public abstract class IntegrationTestsBase
 
     protected static readonly TestApiFactory _factory = new();
 
-    [OneTimeSetUp]
-    public void OneTimeSetup() => _factory.InitializeDatabase();
-
     [SetUp]
     public void SetUp() => Client = _factory.CreateClient();
 
