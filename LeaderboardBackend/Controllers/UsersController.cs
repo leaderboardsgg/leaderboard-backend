@@ -1,4 +1,5 @@
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -47,4 +48,47 @@ public class UsersController(IUserService userService) : ApiController
             badCredentials => Unauthorized(),
             userNotFound => NotFound()
         );
+
+    [HttpPatch("users/{id}")]
+    [SwaggerOperation(
+        "Updates a user. This request is restricted to administrators, and currently " +
+        "only for banning/unbanning users. " +
+        "This operation is atomic; if an error occurs, the user will not be updated. ",
+        OperationId = "updateUser"
+    )]
+    [SwaggerResponse(204)]
+    [SwaggerResponse(401)]
+    [SwaggerResponse(
+        403,
+        "The requesting User is unauthorized to update users, or this request is an " +
+        "attempt to ban an administrator.",
+        typeof(ProblemDetails)
+    )]
+    [SwaggerResponse(404, Type = typeof(ProblemDetails))]
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
+    public async Task<ActionResult> UpdateUser(
+        [FromRoute] Guid id,
+        [FromBody, SwaggerRequestBody(Required = true)] UpdateUserRequest request
+    )
+    {
+        GetUserResult res = await userService.GetUserFromClaims(HttpContext.User);
+
+        if (!res.IsT0)
+        {
+            return Unauthorized();
+        }
+
+        if (res.AsT0.Role is not UserRole.Administrator)
+        {
+            return Forbid();
+        }
+
+        UpdateUserResult r = await userService.UpdateUser(id, request);
+
+        return r.Match<ActionResult>(
+            badRole => Forbid(),
+            notFound => NotFound(),
+            success => NoContent()
+        );
+    }
 }

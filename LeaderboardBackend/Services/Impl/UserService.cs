@@ -4,6 +4,7 @@ using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using OneOf.Types;
 using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace LeaderboardBackend.Services;
@@ -97,5 +98,24 @@ public class UserService(ApplicationContext applicationContext, IAuthService aut
         }
 
         return newUser;
+    }
+
+    public async Task<UpdateUserResult> UpdateUser(Guid id, UpdateUserRequest request)
+    {
+        User? user = await applicationContext.Users.SingleOrDefaultAsync(user => user.Id == id);
+
+        if (user is null)
+        {
+            return new UserNotFound();
+        }
+
+        if (user.Role == UserRole.Administrator)
+        {
+            return new BadRole();
+        }
+
+        user.Role = request.Role;
+        await applicationContext.SaveChangesAsync();
+        return new Success();
     }
 }
