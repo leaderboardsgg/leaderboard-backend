@@ -793,6 +793,87 @@ namespace LeaderboardBackend.Test
         }
 
         [Test]
+        public async Task UpdateRun_UserCannotRestoreRuns()
+        {
+            IServiceScope scope = _factory.Services.CreateScope();
+            IUserService users = scope.ServiceProvider.GetRequiredService<IUserService>();
+            ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+            RegisterRequest registerRequest = new()
+            {
+                Email = "testuser.updaterun.cannotrestore@example.com",
+                Password = "Passw0rd",
+                Username = $"UpdateRunTestCannotRestoreRuns"
+            };
+
+            CreateUserResult result = await users.CreateUser(registerRequest);
+            result.IsT0.Should().BeTrue();
+            User user = result.AsT0;
+            context.Update(user);
+            user.Role = UserRole.Confirmed;
+
+            Run created = new()
+            {
+                CategoryId = _categoryId,
+                PlayedOn = LocalDate.MinIsoValue,
+                Time = Duration.FromSeconds(390),
+                UserId = user.Id,
+                DeletedAt = _clock.GetCurrentInstant(),
+            };
+
+            // To assert that role check supersedes user ID check
+            Run created1 = new()
+            {
+                CategoryId = _categoryId,
+                PlayedOn = LocalDate.MinIsoValue,
+                Time = Duration.FromSeconds(390),
+                UserId = TestInitCommonFields.Admin.Id,
+                DeletedAt = _clock.GetCurrentInstant(),
+            };
+
+            context.AddRange(created, created1);
+            await context.SaveChangesAsync();
+            created.Id.Should().NotBe(Guid.Empty);
+            created1.Id.Should().NotBe(Guid.Empty);
+
+            LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+
+            ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Patch(
+                $"runs/{created.Id.ToUrlSafeBase64String()}",
+                new()
+                {
+                    Body = new
+                    {
+                        runType = nameof(RunType.Time),
+                        status = Status.Published,
+                    },
+                    Jwt = res.Token,
+                }
+            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+
+            ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails.Should().NotBeNull();
+            problemDetails!.Title.Should().Be("User Cannot Change Status of Runs");
+
+            ExceptionAssertions<RequestFailureException> exAssert1 = await _apiClient.Awaiting(a => a.Patch(
+                $"runs/{created1.Id.ToUrlSafeBase64String()}",
+                new()
+                {
+                    Body = new
+                    {
+                        runType = nameof(RunType.Time),
+                        status = Status.Published,
+                    },
+                    Jwt = res.Token,
+                }
+            )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+
+            ProblemDetails? problemDetails1 = await exAssert1.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+            problemDetails1.Should().NotBeNull();
+            problemDetails1!.Title.Should().Be("User Cannot Change Status of Runs");
+        }
+
+        [Test]
         public async Task UpdateRun_NotFound() =>
             await _apiClient.Awaiting(a => a.Patch(
                 $"runs/{Guid.Empty.ToUrlSafeBase64String()}",

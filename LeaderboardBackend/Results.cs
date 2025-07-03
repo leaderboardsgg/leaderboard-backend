@@ -26,6 +26,7 @@ public readonly record struct BadRunType;
 public readonly record struct UserNotFound;
 public readonly record struct UserBanned;
 public readonly record struct UserDoesNotOwnRun;
+public readonly record struct UserCannotChangeStatusOfRuns;
 
 [GenerateOneOf]
 public partial class DeleteResult : OneOfBase<Success, NotFound, AlreadyDeleted>;
