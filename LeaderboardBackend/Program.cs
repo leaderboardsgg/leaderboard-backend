@@ -27,6 +27,7 @@ using Microsoft.OpenApi.Models;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
 using Npgsql;
+using Zomp.EFCore.WindowFunctions.Npgsql;
 
 #region WebApplicationBuilder
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -92,6 +93,7 @@ builder.Services.AddDbContext<ApplicationContext>(
                 o.MapEnum<SortDirection>();
                 o.MapEnum<RunType>();
                 o.UseNodaTime();
+                o.UseWindowFunctions();
             });
 
             opt.UseSnakeCaseNamingConvention();

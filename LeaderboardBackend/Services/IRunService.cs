@@ -60,4 +60,4 @@ public partial class UpdateRunResult : OneOfBase<BadRole, UserDoesNotOwnRun, Use
 public partial class GetRunsForCategoryResult : OneOfBase<ListResult<Run>, NotFound>;
 
 [GenerateOneOf]
-public partial class GetRecordsForCategoryResult : OneOfBase<ListResult<Run>, NotFound>;
+public partial class GetRecordsForCategoryResult : OneOfBase<ListResult<RankedRun>, NotFound>;
