@@ -194,6 +194,11 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
         {
             case UserRole.Confirmed:
             {
+                if (request.Status != null)
+                {
+                    return new UserCannotChangeStatusOfRuns();
+                }
+
                 if (run.UserId != user.Id)
                 {
                     return new UserDoesNotOwnRun();
@@ -212,11 +217,6 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
                 if (run.Category.Leaderboard!.DeletedAt != null)
                 {
                     return new AlreadyDeleted(typeof(Leaderboard));
-                }
-
-                if (request.Status is not null)
-                {
-                    return new BadRole();
                 }
 
                 break;

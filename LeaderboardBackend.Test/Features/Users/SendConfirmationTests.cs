@@ -33,9 +33,7 @@ public class SendConfirmationTests : IntegrationTestsBase
     public async Task TearDown()
     {
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        await context.Users.ExecuteDeleteAsync();
-        await context.AccountConfirmations.ExecuteDeleteAsync();
-        _scope.Dispose();
+        await TestApiFactory.ResetDatabase(context);
     }
 
     [Test]
