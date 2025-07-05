@@ -238,4 +238,39 @@ public class Users
             }
         )).Should().NotThrowAsync();
     }
+
+    [Test]
+    public async Task UnbanUser_OK()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        RegisterRequest registerRequest = new()
+        {
+            Email = "testuser.unbanuser.ok@example.com",
+            Password = "Passw0rd",
+            Username = "UnbanUserTestOk"
+        };
+
+        CreateUserResult createUserResult = await userService.CreateUser(registerRequest);
+        createUserResult.IsT0.Should().BeTrue();
+        User user = createUserResult.AsT0;
+
+        user.Role = UserRole.Banned;
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        await _apiClient.Patch($"/users/{user.Id.ToUrlSafeBase64String()}", new()
+        {
+            Body = new
+            {
+                Role = UserRole.Registered,
+            },
+            Jwt = _jwt
+        });
+
+        User? res = await context.Users.FindAsync(user.Id);
+        res!.Role.Should().Be(UserRole.Registered);
+    }
 }
