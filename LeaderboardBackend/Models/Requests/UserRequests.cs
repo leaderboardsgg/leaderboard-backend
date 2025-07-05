@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using FluentValidation;
+using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Validation;
 
 namespace LeaderboardBackend.Models.Requests;
@@ -105,6 +106,15 @@ public record RegisterRequest
     public string Password { get; set; }
 }
 
+/// <summary>
+/// This request object is sent when updating a `User`.
+/// Currently it only allows banning/unbanning a `User`.
+/// </summary>
+public record UpdateUserRequest
+{
+    public UserRole Role { get; set; }
+}
+
 public record RecoverAccountRequest
 {
     /// <summary>
@@ -150,4 +160,9 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 public class ChangePasswordValidator : AbstractValidator<ChangePasswordRequest>
 {
     public ChangePasswordValidator() => RuleFor(x => x.Password).UserPassword();
+}
+
+public class UpdateUserValidator : AbstractValidator<UpdateUserRequest>
+{
+    public UpdateUserValidator() => RuleFor(x => x.Role).IsInEnum();
 }
