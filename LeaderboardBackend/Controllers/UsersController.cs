@@ -78,14 +78,29 @@ public class UsersController(IUserService userService) : ApiController
 
         if (res.AsT0.Role is not UserRole.Administrator)
         {
-            return Forbid();
+            return Problem(
+                null,
+                null,
+                403,
+                "Requesting User Not Admin"
+            );
         }
 
         UpdateUserResult r = await userService.UpdateUser(id, request);
 
         return r.Match<ActionResult>(
-            badRole => Forbid(),
-            roleChangeNotAllowed => Forbid(),
+            badRole => Problem(
+                null,
+                null,
+                403,
+                "Banning Admins Forbidden"
+            ),
+            roleChangeForbidden => Problem(
+                null,
+                null,
+                403,
+                "Role Change Forbidden"
+            ),
             notFound => NotFound(),
             success => NoContent()
         );

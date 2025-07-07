@@ -116,7 +116,7 @@ public class UserService(ApplicationContext applicationContext, IAuthService aut
 
         if (request.Role == UserRole.Administrator || request.Role == UserRole.Registered)
         {
-            return new RoleChangeNotAllowed();
+            return new RoleChangeForbidden();
         }
 
         user.Role = request.Role;
