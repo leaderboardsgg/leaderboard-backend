@@ -59,8 +59,7 @@ public class UsersController(IUserService userService) : ApiController
     [SwaggerResponse(401)]
     [SwaggerResponse(
         403,
-        "The requesting User is unauthorized to update users, or this request is an " +
-        "attempt to ban an administrator.",
+        "This request is not an attempt by an admin to ban/unban confirmed users.",
         typeof(ProblemDetails)
     )]
     [SwaggerResponse(404, Type = typeof(ProblemDetails))]
@@ -86,6 +85,7 @@ public class UsersController(IUserService userService) : ApiController
 
         return r.Match<ActionResult>(
             badRole => Forbid(),
+            roleChangeNotAllowed => Forbid(),
             notFound => NotFound(),
             success => NoContent()
         );

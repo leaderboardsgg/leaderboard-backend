@@ -1964,7 +1964,7 @@
             "description": "Unauthorized"
           },
           "403": {
-            "description": "The requesting User is unauthorized to update users, or this request is an attempt to ban an administrator.",
+            "description": "This request is not an attempt by an admin to ban/unban confirmed users.",
             "content": {
               "application/json": {
                 "schema": {

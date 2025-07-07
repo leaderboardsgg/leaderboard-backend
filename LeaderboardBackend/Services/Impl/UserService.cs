@@ -114,6 +114,11 @@ public class UserService(ApplicationContext applicationContext, IAuthService aut
             return new BadRole();
         }
 
+        if (request.Role == UserRole.Administrator || request.Role == UserRole.Registered)
+        {
+            return new RoleChangeNotAllowed();
+        }
+
         user.Role = request.Role;
         await applicationContext.SaveChangesAsync();
         return new Success();

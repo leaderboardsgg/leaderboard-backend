@@ -34,4 +34,4 @@ public partial class LoginResult : OneOfBase<string, UserNotFound, UserBanned, B
 public partial class GetUserResult : OneOfBase<User, BadCredentials, UserNotFound> { }
 
 [GenerateOneOf]
-public partial class UpdateUserResult : OneOfBase<BadRole, UserNotFound, Success> { }
+public partial class UpdateUserResult : OneOfBase<BadRole, RoleChangeNotAllowed, UserNotFound, Success> { }

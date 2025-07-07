@@ -166,9 +166,9 @@ public class Users
 
         RegisterRequest registerRequest = new()
         {
-            Email = $"testuser.banuser.unauthz.isadmin@example.com",
+            Email = "testuser.banuser.unauthz.isadmin@example.com",
             Password = "Passw0rd",
-            Username = $"BanUserTestUnauthZIsAdmin"
+            Username = "BanUserTestUnauthZIsAdmin"
         };
 
         CreateUserResult createUserResult = await userService.CreateUser(registerRequest);
@@ -185,6 +185,38 @@ public class Users
                 Body = new
                 {
                     Role = UserRole.Banned,
+                },
+                Jwt = _jwt
+            }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+    }
+
+    [TestCase(UserRole.Registered)]
+    [TestCase(UserRole.Administrator)]
+    public async Task BanUser_RoleChangeNotAllowed(UserRole role)
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        RegisterRequest registerRequest = new()
+        {
+            Email = $"testuser.banuser.rolechange.{role}@example.com",
+            Password = "Passw0rd",
+            Username = $"BanUserTestRoleChange{role}"
+        };
+
+        CreateUserResult createUserResult = await userService.CreateUser(registerRequest);
+        createUserResult.IsT0.Should().BeTrue();
+        User user = createUserResult.AsT0;
+
+        await _apiClient.Awaiting(a => a.Patch(
+            $"/users/{user.Id.ToUrlSafeBase64String()}",
+            new()
+            {
+                Body = new
+                {
+                    Role = role,
                 },
                 Jwt = _jwt
             }

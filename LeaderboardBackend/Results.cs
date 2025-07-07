@@ -23,6 +23,7 @@ public readonly record struct Expired;
 public readonly record struct ListResult<T>(List<T> Items, long ItemsTotal);
 public readonly record struct NeverDeleted;
 public readonly record struct BadRunType;
+public readonly record struct RoleChangeNotAllowed;
 public readonly record struct UserNotFound;
 public readonly record struct UserBanned;
 public readonly record struct UserDoesNotOwnRun;
