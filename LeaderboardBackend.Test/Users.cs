@@ -80,7 +80,7 @@ public class Users
     }
 
     [Test]
-    public async Task BanUser_Unauthenticated()
+    public async Task BanUser_Unauthorized()
     {
         IServiceScope scope = _factory.Services.CreateScope();
         IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
@@ -113,7 +113,7 @@ public class Users
     [TestCase(UserRole.Confirmed)]
     [TestCase(UserRole.Registered)]
     [TestCase(UserRole.Banned)]
-    public async Task BanUser_Unauthorized_NonAdmin(UserRole role)
+    public async Task BanUser_Forbidden_NonAdmin(UserRole role)
     {
         IServiceScope scope = _factory.Services.CreateScope();
         IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
@@ -166,7 +166,7 @@ public class Users
     }
 
     [Test]
-    public async Task BanUser_Unauthorized_UserToBanIsAdmin()
+    public async Task BanUser_Forbidden_UserToBanIsAdmin()
     {
         IServiceScope scope = _factory.Services.CreateScope();
         IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
@@ -205,7 +205,7 @@ public class Users
 
     [TestCase(UserRole.Registered)]
     [TestCase(UserRole.Administrator)]
-    public async Task BanUser_Unauthorized_RoleChangeForbidden(UserRole role)
+    public async Task BanUser_Forbidden_RoleChangeForbidden(UserRole role)
     {
         IServiceScope scope = _factory.Services.CreateScope();
         IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
