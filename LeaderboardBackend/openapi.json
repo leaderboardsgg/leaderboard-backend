@@ -1915,7 +1915,7 @@
         "tags": [
           "Users"
         ],
-        "summary": "Updates a user. This request is restricted to administrators, and currently only for banning/unbanning users. This operation is atomic; if an error occurs, the user will not be updated. ",
+        "summary": "Updates a user. This request is restricted to administrators, and currently only for banning/unbanning users.",
         "operationId": "updateUser",
         "parameters": [
           {

@@ -52,8 +52,7 @@ public class UsersController(IUserService userService) : ApiController
     [HttpPatch("users/{id}")]
     [SwaggerOperation(
         "Updates a user. This request is restricted to administrators, and currently " +
-        "only for banning/unbanning users. " +
-        "This operation is atomic; if an error occurs, the user will not be updated. ",
+        "only for banning/unbanning users.",
         OperationId = "updateUser"
     )]
     [SwaggerResponse(204)]
