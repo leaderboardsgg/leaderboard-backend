@@ -1,3 +1,4 @@
+using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
@@ -49,6 +50,7 @@ public class UsersController(IUserService userService) : ApiController
             userNotFound => NotFound()
         );
 
+    [Authorize(Policy = UserTypes.ADMINISTRATOR)]
     [HttpPatch("users/{id}")]
     [SwaggerOperation(
         "Updates a user. This request is restricted to administrators, and currently " +
@@ -69,23 +71,6 @@ public class UsersController(IUserService userService) : ApiController
         [FromBody, SwaggerRequestBody(Required = true)] UpdateUserRequest request
     )
     {
-        GetUserResult res = await userService.GetUserFromClaims(HttpContext.User);
-
-        if (!res.IsT0)
-        {
-            return Unauthorized();
-        }
-
-        if (res.AsT0.Role is not UserRole.Administrator)
-        {
-            return Problem(
-                null,
-                null,
-                403,
-                "Requesting User Not Admin"
-            );
-        }
-
         UpdateUserResult r = await userService.UpdateUser(id, request);
 
         return r.Match<ActionResult>(

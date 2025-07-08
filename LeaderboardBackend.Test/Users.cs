@@ -140,7 +140,7 @@ public class Users
         User userToBan = createUserToBanResult.AsT0;
         User userToBeBanned = createUserToBeBannedResult.AsT0;
 
-        LoginResult res = await userService.LoginByEmailAndPassword(
+        LoginResponse res = await _apiClient.LoginUser(
             registerRequestToBan.Email,
             registerRequestToBan.Password
         );
@@ -156,13 +156,9 @@ public class Users
                 {
                     Role = UserRole.Banned,
                 },
-                Jwt = res.AsT0
+                Jwt = res.Token
             }
         )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
-
-        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-        problemDetails.Should().NotBeNull();
-        problemDetails!.Title.Should().Be("Requesting User Not Admin");
     }
 
     [Test]
