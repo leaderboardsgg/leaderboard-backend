@@ -1937,7 +1937,7 @@
                     "$ref": "#/components/schemas/UpdateUserRequest"
                   }
                 ],
-                "description": "This request object is sent when updating a `User`.\nCurrently it only allows banning/unbanning a `User`."
+                "description": "The request object sent when updating a `User`.\nCurrently, only the `Role` field exists, which only accepts\n`UserRole.Banned` and `UserRole.Confirmed` as valid values."
               }
             }
           },
@@ -2921,7 +2921,7 @@
           }
         },
         "additionalProperties": false,
-        "description": "This request object is sent when updating a `User`.\nCurrently it only allows banning/unbanning a `User`."
+        "description": "The request object sent when updating a `User`.\nCurrently, only the `Role` field exists, which only accepts\n`UserRole.Banned` and `UserRole.Confirmed` as valid values."
       },
       "UserRole": {
         "enum": [

@@ -107,8 +107,9 @@ public record RegisterRequest
 }
 
 /// <summary>
-/// This request object is sent when updating a `User`.
-/// Currently it only allows banning/unbanning a `User`.
+/// The request object sent when updating a `User`.
+/// Currently, only the `Role` field exists, which only accepts
+/// `UserRole.Banned` and `UserRole.Confirmed` as valid values.
 /// </summary>
 public record UpdateUserRequest
 {
