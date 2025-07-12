@@ -985,7 +985,7 @@
         }
       }
     },
-    "/api/leaderboards/search": {
+    "/api/search/leaderboards": {
       "get": {
         "tags": [
           "Leaderboards"
