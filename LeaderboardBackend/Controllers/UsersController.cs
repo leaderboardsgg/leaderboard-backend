@@ -61,7 +61,8 @@ public class UsersController(IUserService userService) : ApiController
     [SwaggerResponse(401)]
     [SwaggerResponse(
         403,
-        "This request is not an attempt by an admin to ban/unban confirmed users.",
+        "This request was not sent by an admin, the target use is an admin, or the " +
+        "role provided was neither BANNED nor CONFIRMED.",
         typeof(ProblemDetails)
     )]
     [SwaggerResponse(404, Type = typeof(ProblemDetails))]
