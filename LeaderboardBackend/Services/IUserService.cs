@@ -3,6 +3,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Result;
 using OneOf;
+using OneOf.Types;
 
 namespace LeaderboardBackend.Services;
 
@@ -18,6 +19,7 @@ public interface IUserService
     Task<User?> GetUserByName(string name);
     Task<User?> GetUserByNameAndEmail(string name, string email);
     Task<CreateUserResult> CreateUser(RegisterRequest request);
+    Task<UpdateUserResult> UpdateUser(Guid id, UpdateUserRequest request);
 }
 
 [GenerateOneOf]
@@ -30,3 +32,6 @@ public partial class LoginResult : OneOfBase<string, UserNotFound, UserBanned, B
 
 [GenerateOneOf]
 public partial class GetUserResult : OneOfBase<User, BadCredentials, UserNotFound> { }
+
+[GenerateOneOf]
+public partial class UpdateUserResult : OneOfBase<BadRole, RoleChangeForbidden, UserNotFound, Success> { }

@@ -1,4 +1,6 @@
+using LeaderboardBackend.Authorization;
 using LeaderboardBackend.Models.Entities;
+using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -47,4 +49,46 @@ public class UsersController(IUserService userService) : ApiController
             badCredentials => Unauthorized(),
             userNotFound => NotFound()
         );
+
+    [Authorize(Policy = UserTypes.ADMINISTRATOR)]
+    [HttpPatch("users/{id}")]
+    [SwaggerOperation(
+        "Updates a user. This request is restricted to administrators, and currently " +
+        "only for banning/unbanning users.",
+        OperationId = "updateUser"
+    )]
+    [SwaggerResponse(204)]
+    [SwaggerResponse(401)]
+    [SwaggerResponse(
+        403,
+        "This request was not sent by an admin, the target user is an admin, or the " +
+        "role provided was neither BANNED nor CONFIRMED.",
+        typeof(ProblemDetails)
+    )]
+    [SwaggerResponse(404, Type = typeof(ProblemDetails))]
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
+    public async Task<ActionResult> UpdateUser(
+        [FromRoute] Guid id,
+        [FromBody, SwaggerRequestBody(Required = true)] UpdateUserRequest request
+    )
+    {
+        UpdateUserResult r = await userService.UpdateUser(id, request);
+
+        return r.Match<ActionResult>(
+            badRole => Problem(
+                null,
+                null,
+                403,
+                "Banning Admins Forbidden"
+            ),
+            roleChangeForbidden => Problem(
+                null,
+                null,
+                403,
+                "Role Change Forbidden"
+            ),
+            notFound => NotFound(),
+            success => NoContent()
+        );
+    }
 }

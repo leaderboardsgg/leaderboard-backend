@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using FluentValidation;
+using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Validation;
 
 namespace LeaderboardBackend.Models.Requests;
@@ -105,6 +106,16 @@ public record RegisterRequest
     public string Password { get; set; }
 }
 
+/// <summary>
+/// The request object sent when updating a `User`.
+/// Currently, only the `Role` field exists, which only accepts
+/// `UserRole.Banned` and `UserRole.Confirmed` as valid values.
+/// </summary>
+public record UpdateUserRequest
+{
+    public UserRole Role { get; set; }
+}
+
 public record RecoverAccountRequest
 {
     /// <summary>
@@ -150,4 +161,9 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 public class ChangePasswordValidator : AbstractValidator<ChangePasswordRequest>
 {
     public ChangePasswordValidator() => RuleFor(x => x.Password).UserPassword();
+}
+
+public class UpdateUserValidator : AbstractValidator<UpdateUserRequest>
+{
+    public UpdateUserValidator() => RuleFor(x => x.Role).IsInEnum();
 }
