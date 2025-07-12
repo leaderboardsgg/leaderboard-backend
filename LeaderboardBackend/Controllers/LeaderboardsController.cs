@@ -71,7 +71,7 @@ public class LeaderboardsController(
     }
 
     [AllowAnonymous]
-    [HttpGet("/api/leaderboards/search")]
+    [HttpGet("/api/search/leaderboards")]
     [Paginated]
     [SwaggerOperation("Search leaderboards by name or slug.", OperationId = "searchLeaderboards")]
     [SwaggerResponse(200, Type = typeof(ListView<LeaderboardViewModel>))]
