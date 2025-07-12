@@ -1964,7 +1964,7 @@
             "description": "Unauthorized"
           },
           "403": {
-            "description": "This request was not sent by an admin, the target use is an admin, or the role provided was neither BANNED nor CONFIRMED.",
+            "description": "This request was not sent by an admin, the target user is an admin, or the role provided was neither BANNED nor CONFIRMED.",
             "content": {
               "application/json": {
                 "schema": {

@@ -61,7 +61,7 @@ public class UsersController(IUserService userService) : ApiController
     [SwaggerResponse(401)]
     [SwaggerResponse(
         403,
-        "This request was not sent by an admin, the target use is an admin, or the " +
+        "This request was not sent by an admin, the target user is an admin, or the " +
         "role provided was neither BANNED nor CONFIRMED.",
         typeof(ProblemDetails)
     )]
