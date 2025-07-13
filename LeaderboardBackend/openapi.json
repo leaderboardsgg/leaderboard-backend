@@ -1869,6 +1869,89 @@
         }
       }
     },
+    "/users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Gets users. Includes banned users, if specified.",
+        "operationId": "listUsers",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of records to return. Fewer records may be returned.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The zero-based index at which to begin selecting records to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/UserStatusFilter"
+                }
+              ],
+              "default": "NotBanned"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserViewModelListView"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/me": {
       "get": {
         "tags": [
@@ -2932,11 +3015,27 @@
         ],
         "type": "string"
       },
+      "UserStatus": {
+        "enum": [
+          "Banned",
+          "NotBanned"
+        ],
+        "type": "string"
+      },
+      "UserStatusFilter": {
+        "enum": [
+          "NotBanned",
+          "Banned",
+          "All"
+        ],
+        "type": "string"
+      },
       "UserViewModel": {
         "required": [
           "createdAt",
           "id",
           "role",
+          "status",
           "username"
         ],
         "type": "object",
@@ -2962,6 +3061,46 @@
             "type": "string",
             "format": "date-time",
             "example": "1984-01-01T00:00:00Z"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserStatus"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserViewModelListView": {
+        "required": [
+          "data",
+          "limitDefault",
+          "limitMax",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserViewModel"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "description": "The total number of records matching the given criteria that\nexist in the database, NOT the total number of records returned.",
+            "format": "int64"
+          },
+          "limitDefault": {
+            "type": "integer",
+            "description": "The default limit that will be applied for this resource type\nif the client does not specify one in the query string.",
+            "format": "int32"
+          },
+          "limitMax": {
+            "type": "integer",
+            "description": "The maximum value the client is allowed to specify as a limt for\nendpoints return a paginated list of resources of this type.\nExceeding this value will result in an error.",
+            "format": "int32"
           }
         },
         "additionalProperties": false

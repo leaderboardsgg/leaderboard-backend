@@ -80,6 +80,8 @@ public class User : IHasCreationTimestamp
     public Instant CreatedAt { get; set; }
 
     public bool IsAdmin => Role == UserRole.Administrator;
+
+    public UserStatus Status() => Role == UserRole.Banned ? UserStatus.Banned : UserStatus.NotBanned;
 }
 
 public class UserEntityTypeConfig : IEntityTypeConfiguration<User>
