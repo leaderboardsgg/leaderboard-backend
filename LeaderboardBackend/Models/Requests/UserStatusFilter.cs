@@ -15,8 +15,8 @@ public static class UserStatusFilterMethods
         => statusFilter switch
         {
             UserStatusFilter.All => queryable,
-            UserStatusFilter.Banned => queryable.Where(ent => ent.Role == UserRole.Banned),
-            UserStatusFilter.NotBanned => queryable.Where(ent => ent.Role != UserRole.Banned),
+            UserStatusFilter.Banned => queryable.Where(usr => usr.Role == UserRole.Banned),
+            UserStatusFilter.NotBanned => queryable.Where(usr => usr.Role != UserRole.Banned),
             _ => throw new InvalidEnumArgumentException(nameof(statusFilter), (int)statusFilter, typeof(StatusFilter))
         };
 
