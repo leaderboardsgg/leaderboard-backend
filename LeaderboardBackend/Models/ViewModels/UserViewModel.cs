@@ -34,14 +34,11 @@ public record UserViewModel
 
     public required Instant CreatedAt { get; set; }
 
-    public required UserStatus Status { get; set; }
-
     public static UserViewModel MapFrom(User user) => new()
     {
         Id = user.Id,
         Username = user.Username,
         Role = user.Role,
         CreatedAt = user.CreatedAt,
-        Status = user.Status(),
     };
 }

@@ -1897,15 +1897,14 @@
             }
           },
           {
-            "name": "status",
+            "name": "roles",
             "in": "query",
             "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/UserStatusFilter"
-                }
-              ],
-              "default": "NotBanned"
+              "uniqueItems": true,
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/UserRole"
+              }
             }
           }
         ],
@@ -3015,27 +3014,11 @@
         ],
         "type": "string"
       },
-      "UserStatus": {
-        "enum": [
-          "Banned",
-          "NotBanned"
-        ],
-        "type": "string"
-      },
-      "UserStatusFilter": {
-        "enum": [
-          "NotBanned",
-          "Banned",
-          "All"
-        ],
-        "type": "string"
-      },
       "UserViewModel": {
         "required": [
           "createdAt",
           "id",
           "role",
-          "status",
           "username"
         ],
         "type": "object",
@@ -3061,13 +3044,6 @@
             "type": "string",
             "format": "date-time",
             "example": "1984-01-01T00:00:00Z"
-          },
-          "status": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserStatus"
-              }
-            ]
           }
         },
         "additionalProperties": false

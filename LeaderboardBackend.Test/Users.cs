@@ -111,14 +111,14 @@ public class Users
         result.Data.Should().BeEquivalentTo(expected, config => config.WithStrictOrdering());
 
         IEnumerable<UserViewModel> expected1 = users.Where(u => u.Role == UserRole.Banned);
-        ListView<UserViewModel> result1 = await _apiClient.Get<ListView<UserViewModel>>("/users?status=banned", new()
+        ListView<UserViewModel> result1 = await _apiClient.Get<ListView<UserViewModel>>("/users?roles=banned", new()
         {
             Jwt = _jwt,
         });
         result1.Total.Should().Be(1);
         result1.Data.Should().BeEquivalentTo(expected1);
 
-        ListView<UserViewModel> result2 = await _apiClient.Get<ListView<UserViewModel>>("/users?status=all", new()
+        ListView<UserViewModel> result2 = await _apiClient.Get<ListView<UserViewModel>>("/users?roles=banned&roles=registered&roles=confirmed&roles=administrator", new()
         {
             Jwt = _jwt,
         });

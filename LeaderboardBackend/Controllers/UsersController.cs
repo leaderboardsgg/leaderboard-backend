@@ -7,6 +7,8 @@ using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using NuGet.Packaging;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Controllers;
@@ -42,10 +44,14 @@ public class UsersController(IUserService userService) : ApiController
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<ListView<UserViewModel>>> GetUsers(
         [FromQuery] Page page,
-        [FromQuery] UserStatusFilter status = UserStatusFilter.NotBanned
-    )
+        [FromQuery] HashSet<UserRole> roles)
     {
-        ListResult<User> result = await userService.ListUsers(page, status);
+        if (roles.IsNullOrEmpty())
+        {
+            roles.AddRange([UserRole.Administrator, UserRole.Confirmed, UserRole.Registered]);
+        }
+
+        ListResult<User> result = await userService.ListUsers(page, roles);
         return Ok(new ListView<UserViewModel>()
         {
             Data = result.Items.Select(UserViewModel.MapFrom).ToList(),
