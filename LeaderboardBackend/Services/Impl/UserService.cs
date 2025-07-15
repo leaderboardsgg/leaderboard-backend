@@ -75,6 +75,7 @@ public class UserService(ApplicationContext applicationContext, IAuthService aut
         long count = await query.LongCountAsync();
 
         List<User> items = await query
+            .OrderBy(u => u.Username)
             .Skip(page.Offset)
             .Take(page.Limit)
             .ToListAsync();
