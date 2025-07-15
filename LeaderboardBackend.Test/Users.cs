@@ -176,7 +176,7 @@ public class Users
         ).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
     }
 
-    [TestCase("status=invalid&limit=10")]
+    [TestCase("roles=invalid&limit=10")]
     [TestCase("offset=-1")]
     [TestCase("limit=-1")]
     public async Task GetUsers_UnprocessableEntity(string query) =>
