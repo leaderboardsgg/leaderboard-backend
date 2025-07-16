@@ -1,10 +1,14 @@
 using LeaderboardBackend.Authorization;
+using LeaderboardBackend.Filters;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
+using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using NuGet.Packaging;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Controllers;
@@ -28,6 +32,31 @@ public class UsersController(IUserService userService) : ApiController
         }
 
         return Ok(UserViewModel.MapFrom(user));
+    }
+
+    [Authorize(Policy = UserTypes.ADMINISTRATOR)]
+    [HttpGet("/users")]
+    [Paginated]
+    [SwaggerOperation("Gets users. Includes banned users, if specified.", OperationId = "listUsers")]
+    [SwaggerResponse(200)]
+    [SwaggerResponse(401)]
+    [SwaggerResponse(403)]
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
+    public async Task<ActionResult<ListView<UserViewModel>>> GetUsers(
+        [FromQuery] Page page,
+        [FromQuery] HashSet<UserRole> role)
+    {
+        if (role.IsNullOrEmpty())
+        {
+            role.AddRange([UserRole.Administrator, UserRole.Confirmed, UserRole.Registered]);
+        }
+
+        ListResult<User> result = await userService.ListUsers(page, role);
+        return Ok(new ListView<UserViewModel>()
+        {
+            Data = result.Items.Select(UserViewModel.MapFrom).ToList(),
+            Total = result.ItemsTotal
+        });
     }
 
     [Authorize]

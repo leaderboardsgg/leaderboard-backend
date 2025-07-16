@@ -69,6 +69,19 @@ public class UserService(ApplicationContext applicationContext, IAuthService aut
             user => user.Username == name && user.Email == email
         );
 
+    public async Task<ListResult<User>> ListUsers(Page page, HashSet<UserRole> roles)
+    {
+        IQueryable<User> query = applicationContext.Users.Where(u => roles.Contains(u.Role));
+        long count = await query.LongCountAsync();
+
+        List<User> items = await query
+            .OrderBy(u => u.Username)
+            .Skip(page.Offset)
+            .Take(page.Limit)
+            .ToListAsync();
+        return new ListResult<User>(items, count);
+    }
+
     public async Task<CreateUserResult> CreateUser(RegisterRequest request)
     {
         User newUser =
