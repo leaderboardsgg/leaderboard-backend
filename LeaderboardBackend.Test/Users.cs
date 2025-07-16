@@ -99,7 +99,7 @@ public class Users
         ]);
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
-        IEnumerable<UserViewModel> users = context.Users.Select(UserViewModel.MapFrom);
+        IEnumerable<UserViewModel> users = context.Users.Select(UserViewModel.MapFrom).OrderBy(u => u.Username);
 
         IEnumerable<UserViewModel> expected = users.Where(u => u.Role != UserRole.Banned);
         ListView<UserViewModel> result = await _apiClient.Get<ListView<UserViewModel>>("/users", new()
@@ -111,14 +111,14 @@ public class Users
         result.Data.Should().BeEquivalentTo(expected, config => config.WithStrictOrdering());
 
         IEnumerable<UserViewModel> expected1 = users.Where(u => u.Role == UserRole.Banned);
-        ListView<UserViewModel> result1 = await _apiClient.Get<ListView<UserViewModel>>("/users?roles=banned", new()
+        ListView<UserViewModel> result1 = await _apiClient.Get<ListView<UserViewModel>>("/users?role=banned", new()
         {
             Jwt = _jwt,
         });
         result1.Total.Should().Be(1);
         result1.Data.Should().BeEquivalentTo(expected1);
 
-        ListView<UserViewModel> result2 = await _apiClient.Get<ListView<UserViewModel>>("/users?roles=banned&roles=registered&roles=confirmed&roles=administrator", new()
+        ListView<UserViewModel> result2 = await _apiClient.Get<ListView<UserViewModel>>("/users?role=banned&role=registered&role=confirmed&role=administrator", new()
         {
             Jwt = _jwt,
         });
@@ -176,7 +176,7 @@ public class Users
         ).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
     }
 
-    [TestCase("roles=invalid&limit=10")]
+    [TestCase("role=invalid&limit=10")]
     [TestCase("offset=-1")]
     [TestCase("limit=-1")]
     public async Task GetUsers_UnprocessableEntity(string query) =>

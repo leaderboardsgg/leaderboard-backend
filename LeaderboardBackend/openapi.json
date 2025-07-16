@@ -1897,7 +1897,7 @@
             }
           },
           {
-            "name": "roles",
+            "name": "role",
             "in": "query",
             "schema": {
               "uniqueItems": true,
