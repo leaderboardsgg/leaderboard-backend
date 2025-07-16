@@ -1097,13 +1097,13 @@ public class Leaderboards
 
     [Test]
     public async Task SearchLeaderboards_NoQuery() => await FluentActions.Awaiting(
-            () => _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search", new())
+            () => _apiClient.Get<ListView<LeaderboardViewModel>>("/api/search/leaderboards", new())
         ).Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
 
     [TestCase(-1, 0)]
     [TestCase(1024, -1)]
     public async Task SearchLeaderboards_BadPageData(int limit, int offset) =>
-        await FluentActions.Awaiting(() => _apiClient.Get<ListView<LeaderboardViewModel>>($"/api/leaderboards/search?query=big+chungus&limit={limit}&offset={offset}", new()))
+        await FluentActions.Awaiting(() => _apiClient.Get<ListView<LeaderboardViewModel>>($"/api/search/leaderboards?query=big+chungus&limit={limit}&offset={offset}", new()))
             .Should().ThrowAsync<RequestFailureException>().Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
 
     [Test]
@@ -1128,15 +1128,15 @@ public class Leaderboards
         context.Leaderboards.AddRange(croc, gta);
         await context.SaveChangesAsync();
 
-        ListView<LeaderboardViewModel> results = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search?q=croc&limit=1024", new());
+        ListView<LeaderboardViewModel> results = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/search/leaderboards?q=croc&limit=1024", new());
         results.Data.Should().ContainEquivalentOf(croc, config => config.ExcludingMissingMembers());
         results.Data.Should().NotContainEquivalentOf(gta, config => config.ExcludingMissingMembers());
 
-        ListView<LeaderboardViewModel> results2 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search?q=gobbos&limit=1024", new());
+        ListView<LeaderboardViewModel> results2 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/search/leaderboards?q=gobbos&limit=1024", new());
         results2.Data.Should().ContainEquivalentOf(croc, config => config.ExcludingMissingMembers());
         results2.Data.Should().NotContainEquivalentOf(gta, config => config.ExcludingMissingMembers());
 
-        ListView<LeaderboardViewModel> results3 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search?q=gtaiv&limit=1024", new());
+        ListView<LeaderboardViewModel> results3 = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/search/leaderboards?q=gtaiv&limit=1024", new());
         results3.Data.Should().ContainEquivalentOf(gta, config => config.ExcludingMissingMembers());
         results3.Data.Should().NotContainEquivalentOf(croc, config => config.ExcludingMissingMembers());
     }
@@ -1171,12 +1171,12 @@ public class Leaderboards
         context.Leaderboards.AddRange(okami, okami2, momo4);
         await context.SaveChangesAsync();
 
-        ListView<LeaderboardViewModel> results = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search?q=okami&limit=1024", new());
+        ListView<LeaderboardViewModel> results = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/search/leaderboards?q=okami&limit=1024", new());
         results.Data.First().Should().BeEquivalentTo(okami, config => config.ExcludingMissingMembers());
         results.Data[1].Should().BeEquivalentTo(okami2, config => config.ExcludingMissingMembers());
         results.Data.Should().NotContain(LeaderboardViewModel.MapFrom(momo4));
 
-        ListView<LeaderboardViewModel> resultsVerifyCount = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/leaderboards/search?q=okami&limit=1", new());
+        ListView<LeaderboardViewModel> resultsVerifyCount = await _apiClient.Get<ListView<LeaderboardViewModel>>("/api/search/leaderboards?q=okami&limit=1", new());
         resultsVerifyCount.Data.First().Should().BeEquivalentTo(okami, config => config.ExcludingMissingMembers());
         resultsVerifyCount.Data.Should().ContainSingle();
         resultsVerifyCount.Total.Should().Be(2);
