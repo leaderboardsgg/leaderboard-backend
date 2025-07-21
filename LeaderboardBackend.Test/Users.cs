@@ -1,11 +1,9 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using brevo_csharp.Client;
 using FluentAssertions.Specialized;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
@@ -15,13 +13,11 @@ using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using LeaderboardBackend.Test.TestApi.Extensions;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 using NodaTime;
 using NodaTime.Testing;
 using NUnit.Framework;
@@ -102,7 +98,7 @@ public class Users
         IEnumerable<UserViewModel> users = context.Users.Select(UserViewModel.MapFrom).OrderBy(u => u.Username);
 
         IEnumerable<UserViewModel> expected = users.Where(u => u.Role != UserRole.Banned);
-        ListView<UserViewModel> result = await _apiClient.Get<ListView<UserViewModel>>("/users", new()
+        ListView<UserViewModel> result = await _apiClient.Get<ListView<UserViewModel>>("/users?role=Administrator,Registered", new()
         {
             Jwt = _jwt,
         });
@@ -118,7 +114,7 @@ public class Users
         result1.Total.Should().Be(1);
         result1.Data.Should().BeEquivalentTo(expected1);
 
-        ListView<UserViewModel> result2 = await _apiClient.Get<ListView<UserViewModel>>("/users?role=banned&role=registered&role=confirmed&role=administrator", new()
+        ListView<UserViewModel> result2 = await _apiClient.Get<ListView<UserViewModel>>("/users?role=banned,registered,confirmed,administrator", new()
         {
             Jwt = _jwt,
         });
@@ -126,7 +122,7 @@ public class Users
         result2.Data.Should().BeEquivalentTo(users, config => config.WithStrictOrdering());
 
         IEnumerable<UserViewModel> expected3 = users.Where(u => u.Role != UserRole.Banned).TakeLast(2);
-        ListView<UserViewModel> result3 = await _apiClient.Get<ListView<UserViewModel>>("/users?limit=2&offset=3", new()
+        ListView<UserViewModel> result3 = await _apiClient.Get<ListView<UserViewModel>>("/users?limit=2&offset=3&role=Registered,Administrator", new()
         {
             Jwt = _jwt,
         });

@@ -1874,7 +1874,7 @@
         "tags": [
           "Users"
         ],
-        "summary": "Gets users. Includes banned users, if specified.",
+        "summary": "Gets users, filtered by role.",
         "operationId": "listUsers",
         "parameters": [
           {
@@ -1899,12 +1899,14 @@
           {
             "name": "role",
             "in": "query",
+            "description": "Multiple comma-separated values are allowed.",
             "schema": {
-              "uniqueItems": true,
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/UserRole"
-              }
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/UserRole"
+                }
+              ],
+              "default": "Confirmed, Administrator"
             }
           }
         ],

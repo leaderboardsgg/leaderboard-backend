@@ -7,12 +7,13 @@ using NodaTime;
 
 namespace LeaderboardBackend.Models.Entities;
 
+[Flags]
 public enum UserRole
 {
     Registered = 1,
-    Confirmed,
-    Administrator,
-    Banned,
+    Confirmed = 2,
+    Administrator = 4,
+    Banned = 8
 }
 
 /// <summary>
