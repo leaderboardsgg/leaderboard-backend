@@ -73,6 +73,13 @@ public class Run : IHasUpdateTimestamp, IHasDeletionTimestamp
     public User User { get; set; } = null!;
 }
 
+public class RankedRun
+{
+    public Run Run { get; set; } = null!;
+    public long Rank { get; set; }
+    public long Count { get; set; }
+}
+
 public class RunEntityTypeConfig : IEntityTypeConfiguration<Run>
 {
     public void Configure(EntityTypeBuilder<Run> builder) =>
