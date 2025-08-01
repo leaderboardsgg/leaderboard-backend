@@ -39,6 +39,6 @@ public record UserViewModel
         Id = user.Id,
         Username = user.Username,
         Role = user.Role,
-        CreatedAt = user.CreatedAt,
+        CreatedAt = user.CreatedAt
     };
 }
