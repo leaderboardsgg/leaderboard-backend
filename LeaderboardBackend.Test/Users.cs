@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
@@ -6,6 +7,8 @@ using System.Threading.Tasks;
 using FluentAssertions.Specialized;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Models.ViewModels;
+using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
@@ -13,6 +16,7 @@ using LeaderboardBackend.Test.TestApi.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
 using NodaTime.Testing;
@@ -46,6 +50,141 @@ public class Users
 
     [OneTimeTearDown]
     public void OneTimeTearDown() => _factory.Dispose();
+
+    [Test]
+    public async Task GetUsers_OK()
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+        context.Users.Where(u => u != TestInitCommonFields.Admin).ExecuteDelete();
+
+        // Breaking standard pattern here because doing otherwise would be
+        // unnecessarily tedious - zysim
+        context.Users.AddRange([
+            new()
+            {
+                Email = "getusers.ok@example.com",
+                Password = "P4ssword",
+                Username = "GetUsersOk",
+            },
+            new()
+            {
+                Email = "getusers.ok1@example.com",
+                Password = "P4ssword",
+                Username = "GetUsersOk1",
+            },
+            new()
+            {
+                Email = "getusers.ok2@example.com",
+                Password = "P4ssword",
+                Username = "GetUsersOk2",
+                Role = UserRole.Banned,
+            },
+            new()
+            {
+                Email = "getusers.ok3@example.com",
+                Password = "P4ssword",
+                Username = "GetUsersOk3",
+            },
+            new()
+            {
+                Email = "getusers.ok4@example.com",
+                Password = "P4ssword",
+                Username = "GetUsersOk4",
+            },
+        ]);
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        IEnumerable<UserViewModel> users = context.Users.Select(UserViewModel.MapFrom).OrderBy(u => u.Username);
+
+        IEnumerable<UserViewModel> expected = users.Where(u => u.Role != UserRole.Banned);
+        ListView<UserViewModel> result = await _apiClient.Get<ListView<UserViewModel>>("/users?role=Administrator,Registered", new()
+        {
+            Jwt = _jwt,
+        });
+        result.Total.Should().Be(5);
+        result.LimitDefault.Should().Be(64);
+        result.Data.Should().BeEquivalentTo(expected, config => config.WithStrictOrdering());
+
+        IEnumerable<UserViewModel> expected1 = users.Where(u => u.Role == UserRole.Banned);
+        ListView<UserViewModel> result1 = await _apiClient.Get<ListView<UserViewModel>>("/users?role=banned", new()
+        {
+            Jwt = _jwt,
+        });
+        result1.Total.Should().Be(1);
+        result1.Data.Should().BeEquivalentTo(expected1);
+
+        ListView<UserViewModel> result2 = await _apiClient.Get<ListView<UserViewModel>>("/users?role=banned,registered,confirmed,administrator", new()
+        {
+            Jwt = _jwt,
+        });
+        result2.Total.Should().Be(6);
+        result2.Data.Should().BeEquivalentTo(users, config => config.WithStrictOrdering());
+
+        IEnumerable<UserViewModel> expected3 = users.Where(u => u.Role != UserRole.Banned).TakeLast(2);
+        ListView<UserViewModel> result3 = await _apiClient.Get<ListView<UserViewModel>>("/users?limit=2&offset=3&role=Registered,Administrator", new()
+        {
+            Jwt = _jwt,
+        });
+        result3.Total.Should().Be(5);
+        result3.Data.Should().BeEquivalentTo(expected3, config => config.WithStrictOrdering());
+    }
+
+    [Test]
+    public async Task GetUsers_Unauthorized() =>
+        await _apiClient.Awaiting(a => a.Get<ListResult<UserViewModel>>(
+            "/users",
+            new() { }
+        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+
+    [TestCase(UserRole.Banned)]
+    [TestCase(UserRole.Confirmed)]
+    [TestCase(UserRole.Registered)]
+    public async Task GetUsers_Forbidden(UserRole role)
+    {
+        IServiceScope scope = _factory.Services.CreateScope();
+        IUserService userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+        ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        RegisterRequest request = new()
+        {
+            Email = $"getusers.forbidden.{role}@example.com",
+            Password = "P4ssword",
+            Username = $"GetUsersForbidden{role}",
+        };
+
+        CreateUserResult createUserResult = await userService.CreateUser(request);
+        User user = createUserResult.AsT0;
+
+        LoginResult loginResult = await userService.LoginByEmailAndPassword(request.Email, request.Password);
+
+        user.Role = role;
+        await context.SaveChangesAsync();
+
+        await _apiClient.Awaiting(
+            a => a.Get<ListResult<UserViewModel>>(
+                "/users",
+                new()
+                {
+                    Jwt = loginResult.AsT0,
+                }
+            )
+        ).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+    }
+
+    [TestCase("role=invalid&limit=10")]
+    [TestCase("offset=-1")]
+    [TestCase("limit=-1")]
+    public async Task GetUsers_UnprocessableEntity(string query) =>
+        await _apiClient.Awaiting(
+            a => a.Get<ListResult<UserViewModel>>(
+                $"/users?{query}",
+                new()
+                {
+                    Jwt = _jwt,
+                }
+            )
+        ).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableEntity);
 
     [Test]
     public async Task BanUser_OK()

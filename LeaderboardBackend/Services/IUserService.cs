@@ -18,6 +18,7 @@ public interface IUserService
     // TODO: Convert return sig to Task<GetUserResult>
     Task<User?> GetUserByName(string name);
     Task<User?> GetUserByNameAndEmail(string name, string email);
+    Task<ListResult<User>> ListUsers(Page page, UserRole roleFlags);
     Task<CreateUserResult> CreateUser(RegisterRequest request);
     Task<UpdateUserResult> UpdateUser(Guid id, UpdateUserRequest request);
 }
