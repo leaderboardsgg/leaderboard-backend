@@ -91,7 +91,7 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
                     EF.Functions.Over().OrderBy(r.TimeOrScore) :
                     EF.Functions.Over().OrderByDescending(r.TimeOrScore)),
                 Run = r,
-                Count = EF.Functions.Count(EF.Functions.Over())
+                Count = EF.Functions.Count<long>(EF.Functions.Over())
             });
 
         // Break ties and apply pagination.
