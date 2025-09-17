@@ -92,6 +92,18 @@ public class Leaderboard : IHasUpdateTimestamp, IHasDeletionTimestamp
     public List<Category>? Categories { get; set; }
 }
 
+public class LeaderboardStats
+{
+    public long RunCount { get; set; }
+}
+
+public class LeaderboardWithStats
+{
+    public required Leaderboard Leaderboard { get; set; }
+
+    public required LeaderboardStats Stats { get; set; }
+}
+
 public static class LeaderboardExtensions
 {
     /// <summary>
