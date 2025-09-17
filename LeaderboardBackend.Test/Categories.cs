@@ -287,8 +287,8 @@ internal class Categories
 
         resultWithDeleted.Data.Should().BeEquivalentTo(board.Categories, options => options.ExcludingMissingMembers());
         resultWithDeleted.Total.Should().Be(3);
-        board.Categories[0].DeletedAt = _clock.GetCurrentInstant();
-        board.Categories[1].DeletedAt = _clock.GetCurrentInstant();
+        board.Categories.ElementAt(0).DeletedAt = _clock.GetCurrentInstant();
+        board.Categories.ElementAt(1).DeletedAt = _clock.GetCurrentInstant();
         await context.SaveChangesAsync();
 
         ListView<CategoryViewModel> resultEmpty = await _apiClient.Get<ListView<CategoryViewModel>>(

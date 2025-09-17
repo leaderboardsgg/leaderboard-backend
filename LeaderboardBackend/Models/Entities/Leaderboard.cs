@@ -89,7 +89,7 @@ public class Leaderboard : IHasUpdateTimestamp, IHasDeletionTimestamp
     /// <summary>
     ///     A collection of `Category` entities for the `Leaderboard`.
     /// </summary>
-    public List<Category>? Categories { get; set; }
+    public ICollection<Category> Categories { get; set; } = [];
 }
 
 public class LeaderboardStats

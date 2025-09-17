@@ -81,7 +81,7 @@ public class Category : IHasUpdateTimestamp, IHasDeletionTimestamp
     /// </summary>
     public Instant? DeletedAt { get; set; }
 
-    public List<Run>? Runs { get; set; }
+    public ICollection<Run> Runs { get; set; } = [];
 }
 
 public class CategoryEntityTypeConfig : IEntityTypeConfiguration<Category>

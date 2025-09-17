@@ -1238,7 +1238,7 @@ public class Leaderboards
         await context.SaveChangesAsync();
 
         _clock.Advance(Duration.FromDays(1));
-        leaderboard.Categories[1].Runs![1].DeletedAt = _clock.GetCurrentInstant();
+        leaderboard.Categories.Last().Runs.Last().DeletedAt = _clock.GetCurrentInstant();
         context.Leaderboards.Update(leaderboard);
         await context.SaveChangesAsync();
 
