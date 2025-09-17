@@ -80,6 +80,8 @@ public class Category : IHasUpdateTimestamp, IHasDeletionTimestamp
     ///     The time at which the Category was deleted, or <see langword="null" /> if the Category has not been deleted.
     /// </summary>
     public Instant? DeletedAt { get; set; }
+
+    public List<Run>? Runs { get; set; }
 }
 
 public class CategoryEntityTypeConfig : IEntityTypeConfiguration<Category>
