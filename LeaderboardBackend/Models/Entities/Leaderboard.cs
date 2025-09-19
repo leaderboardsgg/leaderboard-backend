@@ -28,7 +28,9 @@ public enum SortLeaderboardsBy
     /// <summary>
     /// Sorts by creation timestamp, latest-first.
     /// </summary>
-    CreatedAt_Desc
+    CreatedAt_Desc,
+    RunCount_Asc,
+    RunCount_Desc
 }
 
 /// <summary>

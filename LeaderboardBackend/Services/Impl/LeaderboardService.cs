@@ -30,6 +30,8 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
             SortLeaderboardsBy.Name_Desc => query.OrderByDescending(lb => lb.Leaderboard.Name),
             SortLeaderboardsBy.CreatedAt_Asc => query.OrderBy(lb => lb.Leaderboard.CreatedAt),
             SortLeaderboardsBy.CreatedAt_Desc => query.OrderByDescending(lb => lb.Leaderboard.CreatedAt),
+            SortLeaderboardsBy.RunCount_Asc => query.OrderBy(lb => lb.Stats.RunCount),
+            SortLeaderboardsBy.RunCount_Desc => query.OrderByDescending(lb => lb.Stats.RunCount),
             _ => throw new InvalidEnumArgumentException(nameof(SortLeaderboardsBy), (int)sortBy, typeof(SortLeaderboardsBy)),
         };
 
