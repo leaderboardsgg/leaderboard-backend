@@ -1,5 +1,7 @@
 using OneOf;
 using OneOf.Types;
+using LeaderboardBackend.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace LeaderboardBackend.Result;
 
@@ -37,3 +39,12 @@ public partial class UpdateResult<T> : OneOfBase<Conflict<T>, NotFound, Success>
 
 [GenerateOneOf]
 public partial class RestoreResult<T> : OneOfBase<T, NotFound, NeverDeleted, Conflict<T>>;
+
+public static class IQueryableListResultExtensions
+{
+    public static async Task<ListResult<T>> ToListResult<T>(this IQueryable<T> queryable) where T : ICounts<long>
+    {
+        List<T> result = await queryable.ToListAsync();
+        return new(result, result.FirstOrDefault()?.Count ?? 0L);
+    }
+}
