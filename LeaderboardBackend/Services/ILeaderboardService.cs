@@ -7,14 +7,14 @@ namespace LeaderboardBackend.Services;
 
 public interface ILeaderboardService
 {
-    Task<Leaderboard?> GetLeaderboard(long id);
-    Task<Leaderboard?> GetLeaderboardBySlug(string slug);
-    Task<ListResult<Leaderboard>> ListLeaderboards(StatusFilter statusFilter, Page page, SortLeaderboardsBy sortBy);
+    Task<LeaderboardWithStats?> GetLeaderboard(long id);
+    Task<LeaderboardWithStats?> GetLeaderboardBySlug(string slug);
+    Task<ListResult<LeaderboardWithStats>> ListLeaderboards(StatusFilter statusFilter, Page page, SortLeaderboardsBy sortBy);
     Task<CreateLeaderboardResult> CreateLeaderboard(CreateLeaderboardRequest request);
-    Task<RestoreResult<Leaderboard>> RestoreLeaderboard(long id);
+    Task<RestoreResult<LeaderboardWithStats>> RestoreLeaderboard(long id);
     Task<DeleteResult> DeleteLeaderboard(long id);
     Task<UpdateResult<Leaderboard>> UpdateLeaderboard(long id, UpdateLeaderboardRequest request);
-    Task<ListResult<Leaderboard>> SearchLeaderboards(string query, StatusFilter statusFilter, Page page);
+    Task<ListResult<LeaderboardWithStats>> SearchLeaderboards(string query, StatusFilter statusFilter, Page page);
 }
 
 [GenerateOneOf]
