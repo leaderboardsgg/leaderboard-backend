@@ -97,11 +97,13 @@ public class LeaderboardStats
     public long RunCount { get; set; }
 }
 
-public class LeaderboardWithStats
+public class LeaderboardWithStats : ICounts<long>
 {
     public required Leaderboard Leaderboard { get; set; }
 
     public required LeaderboardStats Stats { get; set; }
+
+    public long Count { get; set; }
 }
 
 public static class LeaderboardExtensions

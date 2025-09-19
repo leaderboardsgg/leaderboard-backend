@@ -73,7 +73,7 @@ public class Run : IHasUpdateTimestamp, IHasDeletionTimestamp
     public User User { get; set; } = null!;
 }
 
-public class RankedRun
+public class RankedRun : ICounts<long>
 {
     public Run Run { get; set; } = null!;
     public long Rank { get; set; }
