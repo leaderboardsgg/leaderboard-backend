@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NodaTime;
 using NpgsqlTypes;
+using Zomp.EFCore.WindowFunctions;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -125,6 +126,31 @@ public static class LeaderboardExtensions
     public static IQueryable<Leaderboard> Rank(this IQueryable<Leaderboard> lbSource, string query) =>
         lbSource.OrderByDescending(lb =>
             lb.SearchVector.Rank(EF.Functions.WebSearchToTsQuery(query))
+        );
+
+    public static IQueryable<LeaderboardWithStats> WithStats(this IQueryable<Leaderboard> lbSource) =>
+        lbSource.Select(lb =>
+            new LeaderboardWithStats()
+            {
+                Leaderboard = lb,
+                Stats = new()
+                {
+                    RunCount = lb.Categories.Where(cat => cat.DeletedAt == null).Sum(cat => cat.Runs.LongCount(run => run.DeletedAt == null))
+                }
+            }
+        );
+
+    public static IQueryable<LeaderboardWithStats> WithStatsAndCount(this IQueryable<Leaderboard> lbSource) =>
+        lbSource.Select(lb =>
+            new LeaderboardWithStats()
+            {
+                Leaderboard = lb,
+                Stats = new()
+                {
+                    RunCount = lb.Categories.Where(cat => cat.DeletedAt == null).Sum(cat => cat.Runs.LongCount(run => run.DeletedAt == null))
+                },
+                Count = EF.Functions.Count<long>(EF.Functions.Over())
+            }
         );
 }
 
