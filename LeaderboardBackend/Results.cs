@@ -1,7 +1,7 @@
-using OneOf;
-using OneOf.Types;
 using LeaderboardBackend.Models;
 using Microsoft.EntityFrameworkCore;
+using OneOf;
+using OneOf.Types;
 
 namespace LeaderboardBackend.Result;
 

@@ -65,7 +65,7 @@ public class LeaderboardsController(
         ListResult<LeaderboardWithStats> result = await leaderboardService.ListLeaderboards(status, page, sortBy);
         return Ok(new ListView<LeaderboardViewModel>()
         {
-            Data = [..result.Items.Select(LeaderboardViewModel.MapFrom)],
+            Data = [.. result.Items.Select(LeaderboardViewModel.MapFrom)],
             Total = result.ItemsTotal
         });
     }
@@ -94,7 +94,7 @@ public class LeaderboardsController(
 
         return Ok(new ListView<LeaderboardViewModel>()
         {
-            Data = [..result.Items.Select(LeaderboardViewModel.MapFrom)],
+            Data = [.. result.Items.Select(LeaderboardViewModel.MapFrom)],
             Total = result.ItemsTotal
         });
     }
