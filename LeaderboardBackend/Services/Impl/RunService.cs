@@ -106,15 +106,13 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
             runs = query.OrderByDescending(r => r.Run.TimeOrScore);
         }
 
-        List<RankedRun> records = await runs
+        return await runs
             .ThenBy(r => r.Run.PlayedOn)
             .ThenBy(r => r.Run.CreatedAt)
             .ThenBy(r => r.Run.Id)
             .Skip(page.Offset)
             .Take(page.Limit)
-            .ToListAsync();
-
-        return new ListResult<RankedRun>(records, records.FirstOrDefault()?.Count ?? 0L);
+            .ToListResult();
     }
 
     public async Task<CreateRunResult> CreateRun(User user, Category category, CreateRunRequest request)

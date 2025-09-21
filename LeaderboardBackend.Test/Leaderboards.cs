@@ -1181,4 +1181,73 @@ public class Leaderboards
         resultsVerifyCount.Data.Should().ContainSingle();
         resultsVerifyCount.Total.Should().Be(2);
     }
+
+    [Test]
+    public async Task GetLeaderboardWithStats_OK()
+    {
+        using IServiceScope serviceScope = _factory.Services.CreateScope();
+        using ApplicationContext context = serviceScope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+        Leaderboard leaderboard = new()
+        {
+            Name = "Grand Theft Auto: Vice City",
+            Info = "All you had to do was follow the damn train!",
+            Slug = "vice-city",
+            Categories = [
+                new()
+                {
+                    Name = "All Missions",
+                    Slug = "all-missions",
+                    SortDirection = SortDirection.Ascending,
+                    Type = RunType.Time,
+                    Runs = [
+                        new()
+                        {
+                            Time = Duration.FromMinutes(120.5),
+                            PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().ToDateTimeUtc()),
+                            UserId = TestInitCommonFields.Admin.Id
+                        }
+                    ]
+                },
+                new()
+                {
+                    Name = "100%",
+                    Slug = "hundo",
+                    SortDirection = SortDirection.Ascending,
+                    Type = RunType.Time,
+                    Runs = [
+                        new()
+                        {
+                            Time = Duration.FromHours(4.2),
+                            PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().ToDateTimeUtc()),
+                            UserId = TestInitCommonFields.Admin.Id
+                        },
+                        new()
+                        {
+                            Time = Duration.FromHours(2),
+                            PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().ToDateTimeUtc()),
+                            UserId = TestInitCommonFields.Admin.Id,
+                            Info = "Whoops didn't mean to submit this."
+                        }
+                    ]
+                }
+            ]
+        };
+
+        context.Leaderboards.Add(leaderboard);
+        await context.SaveChangesAsync();
+
+        _clock.Advance(Duration.FromDays(1));
+        leaderboard.Categories.Last().Runs.Last().DeletedAt = _clock.GetCurrentInstant();
+        context.Leaderboards.Update(leaderboard);
+        await context.SaveChangesAsync();
+
+        LeaderboardViewModel lbVieWModel = await _apiClient.Get<LeaderboardViewModel>(
+            $"/api/leaderboards/{leaderboard.Id}",
+            new()
+        );
+
+        lbVieWModel.Should().BeEquivalentTo(leaderboard, config => config.ExcludingMissingMembers());
+        lbVieWModel.Stats.RunCount.Should().Be(2);
+    }
 }

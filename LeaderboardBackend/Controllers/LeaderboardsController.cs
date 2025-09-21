@@ -23,7 +23,7 @@ public class LeaderboardsController(
     [SwaggerResponse(404)]
     public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboard([FromRoute] long id)
     {
-        Leaderboard? leaderboard = await leaderboardService.GetLeaderboard(id);
+        LeaderboardWithStats? leaderboard = await leaderboardService.GetLeaderboard(id);
 
         if (leaderboard == null)
         {
@@ -40,7 +40,7 @@ public class LeaderboardsController(
     [SwaggerResponse(404)]
     public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboardBySlug([FromRoute] string slug)
     {
-        Leaderboard? leaderboard = await leaderboardService.GetLeaderboardBySlug(slug);
+        LeaderboardWithStats? leaderboard = await leaderboardService.GetLeaderboardBySlug(slug);
 
         if (leaderboard == null)
         {
@@ -62,10 +62,10 @@ public class LeaderboardsController(
         [FromQuery, SwaggerParameter("Sorts results by a leaderboard's field, tie-breaking with IDs if needed.")] SortLeaderboardsBy sortBy = SortLeaderboardsBy.Name_Asc
     )
     {
-        ListResult<Leaderboard> result = await leaderboardService.ListLeaderboards(status, page, sortBy);
+        ListResult<LeaderboardWithStats> result = await leaderboardService.ListLeaderboards(status, page, sortBy);
         return Ok(new ListView<LeaderboardViewModel>()
         {
-            Data = result.Items.Select(LeaderboardViewModel.MapFrom).ToList(),
+            Data = [.. result.Items.Select(LeaderboardViewModel.MapFrom)],
             Total = result.ItemsTotal
         });
     }
@@ -90,11 +90,11 @@ public class LeaderboardsController(
             return Problem(null, null, 422, "Empty Query");
         }
 
-        ListResult<Leaderboard> result = await leaderboardService.SearchLeaderboards(query, status, page);
+        ListResult<LeaderboardWithStats> result = await leaderboardService.SearchLeaderboards(query, status, page);
 
         return Ok(new ListView<LeaderboardViewModel>()
         {
-            Data = result.Items.Select(LeaderboardViewModel.MapFrom).ToList(),
+            Data = [.. result.Items.Select(LeaderboardViewModel.MapFrom)],
             Total = result.ItemsTotal
         });
     }

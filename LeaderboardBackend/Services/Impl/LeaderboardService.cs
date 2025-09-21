@@ -12,32 +12,33 @@ namespace LeaderboardBackend.Services;
 
 public class LeaderboardService(ApplicationContext applicationContext, IClock clock) : ILeaderboardService
 {
-    public async Task<Leaderboard?> GetLeaderboard(long id) =>
-        await applicationContext.Leaderboards.FindAsync(id);
+    public async Task<LeaderboardWithStats?> GetLeaderboard(long id) =>
+        await applicationContext.Leaderboards.WithStats().FirstOrDefaultAsync(lb => lb.Leaderboard.Id == id);
 
-    public async Task<Leaderboard?> GetLeaderboardBySlug(string slug) =>
+    public async Task<LeaderboardWithStats?> GetLeaderboardBySlug(string slug) =>
         await applicationContext.Leaderboards
-            .FirstOrDefaultAsync(b => b.Slug == slug && b.DeletedAt == null);
+            .WithStats()
+            .FirstOrDefaultAsync(b => b.Leaderboard.Slug == slug && b.Leaderboard.DeletedAt == null);
 
-    public async Task<ListResult<Leaderboard>> ListLeaderboards(StatusFilter statusFilter, Page page, SortLeaderboardsBy sortBy)
+    public async Task<ListResult<LeaderboardWithStats>> ListLeaderboards(StatusFilter statusFilter, Page page, SortLeaderboardsBy sortBy)
     {
-        IQueryable<Leaderboard> query = applicationContext.Leaderboards.FilterByStatus(statusFilter);
-        long count = await query.LongCountAsync();
+        IQueryable<LeaderboardWithStats> query = applicationContext.Leaderboards.FilterByStatus(statusFilter).WithStatsAndCount();
 
         query = sortBy switch
         {
-            SortLeaderboardsBy.Name_Asc => query.OrderBy(lb => lb.Name),
-            SortLeaderboardsBy.Name_Desc => query.OrderByDescending(lb => lb.Name),
-            SortLeaderboardsBy.CreatedAt_Asc => query.OrderBy(lb => lb.CreatedAt),
-            SortLeaderboardsBy.CreatedAt_Desc => query.OrderByDescending(lb => lb.CreatedAt),
+            SortLeaderboardsBy.Name_Asc => query.OrderBy(lb => lb.Leaderboard.Name),
+            SortLeaderboardsBy.Name_Desc => query.OrderByDescending(lb => lb.Leaderboard.Name),
+            SortLeaderboardsBy.CreatedAt_Asc => query.OrderBy(lb => lb.Leaderboard.CreatedAt),
+            SortLeaderboardsBy.CreatedAt_Desc => query.OrderByDescending(lb => lb.Leaderboard.CreatedAt),
+            SortLeaderboardsBy.RunCount_Asc => query.OrderBy(lb => lb.Stats.RunCount),
+            SortLeaderboardsBy.RunCount_Desc => query.OrderByDescending(lb => lb.Stats.RunCount),
             _ => throw new InvalidEnumArgumentException(nameof(SortLeaderboardsBy), (int)sortBy, typeof(SortLeaderboardsBy)),
         };
 
-        List<Leaderboard> items = await query
+        return await query
             .Skip(page.Offset)
             .Take(page.Limit)
-            .ToListAsync();
-        return new ListResult<Leaderboard>(items, count);
+            .ToListResult();
     }
 
     public async Task<CreateLeaderboardResult> CreateLeaderboard(CreateLeaderboardRequest request)
@@ -64,21 +65,21 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
         return lb;
     }
 
-    public async Task<RestoreResult<Leaderboard>> RestoreLeaderboard(long id)
+    public async Task<RestoreResult<LeaderboardWithStats>> RestoreLeaderboard(long id)
     {
-        Leaderboard? lb = await applicationContext.Leaderboards.FindAsync(id);
+        LeaderboardWithStats? lb = await applicationContext.Leaderboards.WithStats().FirstOrDefaultAsync(lb => lb.Leaderboard.Id == id);
 
         if (lb == null)
         {
             return new NotFound();
         }
 
-        if (lb.DeletedAt == null)
+        if (lb.Leaderboard.DeletedAt == null)
         {
             return new NeverDeleted();
         }
 
-        lb.DeletedAt = null;
+        lb.Leaderboard.DeletedAt = null;
 
         try
         {
@@ -87,8 +88,11 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
         catch (DbUpdateException e)
             when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } pgEx)
         {
-            Leaderboard conflict = await applicationContext.Leaderboards.SingleAsync(c => c.Slug == lb.Slug && c.DeletedAt == null);
-            return new Conflict<Leaderboard>(conflict);
+            LeaderboardWithStats conflict = await applicationContext.Leaderboards.WithStats().SingleAsync(
+                c => c.Leaderboard.Slug == lb.Leaderboard.Slug && c.Leaderboard.DeletedAt == null
+            );
+
+            return new Conflict<LeaderboardWithStats>(conflict);
         }
 
         return lb;
@@ -96,6 +100,10 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
 
     public async Task<DeleteResult> DeleteLeaderboard(long id)
     {
+        // TODO: Use ExecuteUpdate instead of fetching and saving, possibly using
+        // RETURNING to check old value.
+        // - Ted W
+
         Leaderboard? lb = await applicationContext.Leaderboards.FindAsync(id);
 
         if (lb is null)
@@ -173,17 +181,14 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
 
         return new Success();
     }
-    public async Task<ListResult<Leaderboard>> SearchLeaderboards(string query, StatusFilter statusFilter, Page page)
-    {
-        IQueryable<Leaderboard> dbQuery = applicationContext.Leaderboards.FilterByStatus(statusFilter).Search(query);
-        long count = await dbQuery.LongCountAsync();
 
-        List<Leaderboard> items = await dbQuery
+    public async Task<ListResult<LeaderboardWithStats>> SearchLeaderboards(string query, StatusFilter statusFilter, Page page) =>
+        await applicationContext.Leaderboards
+            .FilterByStatus(statusFilter)
+            .Search(query)
             .Rank(query)
             .Skip(page.Offset)
             .Take(page.Limit)
-            .ToListAsync();
-
-        return new ListResult<Leaderboard>(items, count);
-    }
+            .WithStatsAndCount()
+            .ToListResult();
 }

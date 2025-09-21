@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using LeaderboardBackend.Models.Entities;
 using NodaTime;
 
@@ -50,6 +51,9 @@ public record LeaderboardViewModel
 
     public required Status Status { get; set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LeaderboardStats Stats { get; set; } = null!;
+
     public static LeaderboardViewModel MapFrom(Leaderboard leaderboard) => new()
     {
         Id = leaderboard.Id,
@@ -61,4 +65,11 @@ public record LeaderboardViewModel
         DeletedAt = leaderboard.DeletedAt,
         Status = leaderboard.Status()
     };
+
+    public static LeaderboardViewModel MapFrom(LeaderboardWithStats lbWithStats)
+    {
+        LeaderboardViewModel viewModel = MapFrom(lbWithStats.Leaderboard);
+        viewModel.Stats = lbWithStats.Stats;
+        return viewModel;
+    }
 }

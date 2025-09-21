@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NodaTime;
 using NpgsqlTypes;
+using Zomp.EFCore.WindowFunctions;
 
 namespace LeaderboardBackend.Models.Entities;
 
@@ -27,7 +28,9 @@ public enum SortLeaderboardsBy
     /// <summary>
     /// Sorts by creation timestamp, latest-first.
     /// </summary>
-    CreatedAt_Desc
+    CreatedAt_Desc,
+    RunCount_Asc,
+    RunCount_Desc
 }
 
 /// <summary>
@@ -89,7 +92,21 @@ public class Leaderboard : IHasUpdateTimestamp, IHasDeletionTimestamp
     /// <summary>
     ///     A collection of `Category` entities for the `Leaderboard`.
     /// </summary>
-    public List<Category>? Categories { get; set; }
+    public ICollection<Category> Categories { get; set; } = [];
+}
+
+public class LeaderboardStats
+{
+    public long RunCount { get; set; }
+}
+
+public class LeaderboardWithStats : ICounts<long>
+{
+    public required Leaderboard Leaderboard { get; set; }
+
+    public required LeaderboardStats Stats { get; set; }
+
+    public long Count { get; set; }
 }
 
 public static class LeaderboardExtensions
@@ -111,6 +128,31 @@ public static class LeaderboardExtensions
     public static IQueryable<Leaderboard> Rank(this IQueryable<Leaderboard> lbSource, string query) =>
         lbSource.OrderByDescending(lb =>
             lb.SearchVector.Rank(EF.Functions.WebSearchToTsQuery(query))
+        );
+
+    public static IQueryable<LeaderboardWithStats> WithStats(this IQueryable<Leaderboard> lbSource) =>
+        lbSource.Select(lb =>
+            new LeaderboardWithStats()
+            {
+                Leaderboard = lb,
+                Stats = new()
+                {
+                    RunCount = lb.Categories.Where(cat => cat.DeletedAt == null).Sum(cat => cat.Runs.LongCount(run => run.DeletedAt == null))
+                }
+            }
+        );
+
+    public static IQueryable<LeaderboardWithStats> WithStatsAndCount(this IQueryable<Leaderboard> lbSource) =>
+        lbSource.Select(lb =>
+            new LeaderboardWithStats()
+            {
+                Leaderboard = lb,
+                Stats = new()
+                {
+                    RunCount = lb.Categories.Where(cat => cat.DeletedAt == null).Sum(cat => cat.Runs.LongCount(run => run.DeletedAt == null))
+                },
+                Count = EF.Functions.Count<long>(EF.Functions.Over())
+            }
         );
 }
 

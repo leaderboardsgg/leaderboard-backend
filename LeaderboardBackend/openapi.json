@@ -2397,6 +2397,16 @@
         ],
         "description": "`runType: \"Time\"`"
       },
+      "LeaderboardStats": {
+        "type": "object",
+        "properties": {
+          "runCount": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "LeaderboardViewModel": {
         "required": [
           "createdAt",
@@ -2454,6 +2464,13 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/Status"
+              }
+            ]
+          },
+          "stats": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LeaderboardStats"
               }
             ]
           }
@@ -2821,7 +2838,9 @@
           "Name_Asc",
           "Name_Desc",
           "CreatedAt_Asc",
-          "CreatedAt_Desc"
+          "CreatedAt_Desc",
+          "RunCount_Asc",
+          "RunCount_Desc"
         ],
         "type": "string",
         "description": "Used in GetLeaderboards to sort leaderboards by a field."
