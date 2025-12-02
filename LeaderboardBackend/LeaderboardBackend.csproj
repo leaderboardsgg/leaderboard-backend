@@ -73,6 +73,6 @@
 
   <Target Name="SwaggerPostBuildTarget" Condition="'$(DISABLE_OPENAPI_FILE_GEN)' != 'true'" AfterTargets="Build" Inputs="$(OutputPath)/$(AssemblyName).dll" Outputs="@(OpenApiFile)">
     <Exec Command="dotnet tool restore"></Exec>
-    <Exec EnvironmentVariables="EnvPath=../swagger-gen.env;ASPNETCORE_ENVIRONMENT=development" Command="dotnet tool run swagger tofile --output &quot;@(OpenApiFile)&quot; &quot;$(OutputPath)/$(AssemblyName).dll&quot; v1"></Exec>
+    <Exec EnvironmentVariables="EnvPath=../swagger-gen.env;ASPNETCORE_ENVIRONMENT=Development" Command="dotnet tool run swagger tofile --output &quot;@(OpenApiFile)&quot; &quot;$(OutputPath)$(AssemblyName).dll&quot; v1"></Exec>
   </Target>
 </Project>
