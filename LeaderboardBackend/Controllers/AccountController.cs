@@ -27,7 +27,9 @@ public class AccountController(IUserService userService) : ApiController
         email will contain a link to confirm the account. Otherwise, the email
         will inform the associated user that a registration attempt was made
         with their address.
-        """)]
+        """,
+        typeof(UserViewModel)
+    )]
     [SwaggerResponse(
         409,
         """
