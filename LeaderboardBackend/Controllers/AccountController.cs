@@ -27,8 +27,7 @@ public class AccountController(IUserService userService) : ApiController
         email will contain a link to confirm the account. Otherwise, the email
         will inform the associated user that a registration attempt was made
         with their address.
-        """,
-        typeof(UserViewModel)
+        """
     )]
     [SwaggerResponse(
         409,
@@ -38,7 +37,7 @@ public class AccountController(IUserService userService) : ApiController
         """,
         typeof(ValidationProblemDetails)
     )]
-    public async Task<ActionResult<UserViewModel>> Register(
+    public async Task<ActionResult> Register(
         [FromBody, SwaggerRequestBody(
             "The `RegisterRequest` instance from which to register the `User`.",
             Required = true
