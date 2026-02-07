@@ -30,6 +30,7 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
         }
 
         IQueryable<Run> query = applicationContext.Runs
+            .Where(r => r.CategoryId == cat.Id)
             .Include(run => run.Category)
             .Include(run => run.User)
             .FilterByStatus(statusFilter);

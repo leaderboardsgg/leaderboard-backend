@@ -55,20 +55,31 @@ namespace LeaderboardBackend.Test
                 Slug = "super_mario_64",
             };
 
-            Category category = new()
-            {
-                Name = "120 Stars",
-                Slug = "120_stars",
-                Info = "120 stars",
-                SortDirection = SortDirection.Ascending,
-                Type = RunType.Time,
-                Leaderboard = board,
-            };
+            Category[] category = [
+                new ()
+                {
+                    Name = "120 Stars",
+                    Slug = "120_stars",
+                    Info = "120 stars",
+                    SortDirection = SortDirection.Ascending,
+                    Type = RunType.Time,
+                    Leaderboard = board,
+                },
+                new ()
+                {
+                    Name = "Min Stars",
+                    Slug = "min_stars",
+                    Info = "Min stars",
+                    SortDirection = SortDirection.Ascending,
+                    Type = RunType.Time,
+                    Leaderboard = board,
+                },
+            ];
 
-            context.Add(category);
+            context.AddRange(category);
             context.SaveChanges();
 
-            _categoryId = category.Id;
+            _categoryId = category.First().Id;
         }
 
         [OneTimeTearDown]
@@ -143,6 +154,15 @@ namespace LeaderboardBackend.Test
                     CategoryId = _categoryId,
                     Info = "",
                     PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().Plus(Duration.FromDays(2)).ToDateTimeUtc()),
+                    TimeOrScore = Duration.FromSeconds(390).ToInt64Nanoseconds(),
+                    UserId = TestInitCommonFields.Admin.Id,
+                    DeletedAt = _clock.GetCurrentInstant(),
+                },
+                new()
+                {
+                    CategoryId = _categoryId + 1,
+                    Info = "",
+                    PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().ToDateTimeUtc()),
                     TimeOrScore = Duration.FromSeconds(390).ToInt64Nanoseconds(),
                     UserId = TestInitCommonFields.Admin.Id,
                     DeletedAt = _clock.GetCurrentInstant(),
