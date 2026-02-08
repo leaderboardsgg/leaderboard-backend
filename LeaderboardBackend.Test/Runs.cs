@@ -31,7 +31,7 @@ namespace LeaderboardBackend.Test
         private static TestApiClient _apiClient = null!;
         private static WebApplicationFactory<Program> _factory = null!;
         private static string _jwt = null!;
-        private static long _categoryId;
+        private static long[] _categoryIds = [];
         private static readonly FakeClock _clock = new(Instant.FromUtc(2025, 01, 01, 0, 0));
 
         [OneTimeSetUp]
@@ -55,20 +55,31 @@ namespace LeaderboardBackend.Test
                 Slug = "super_mario_64",
             };
 
-            Category category = new()
-            {
-                Name = "120 Stars",
-                Slug = "120_stars",
-                Info = "120 stars",
-                SortDirection = SortDirection.Ascending,
-                Type = RunType.Time,
-                Leaderboard = board,
-            };
+            Category[] categories = [
+                new ()
+                {
+                    Name = "120 Stars",
+                    Slug = "120_stars",
+                    Info = "120 stars",
+                    SortDirection = SortDirection.Ascending,
+                    Type = RunType.Time,
+                    Leaderboard = board,
+                },
+                new ()
+                {
+                    Name = "Min Stars",
+                    Slug = "min_stars",
+                    Info = "Min stars",
+                    SortDirection = SortDirection.Ascending,
+                    Type = RunType.Time,
+                    Leaderboard = board,
+                },
+            ];
 
-            context.Add(category);
+            context.AddRange(categories);
             context.SaveChanges();
 
-            _categoryId = category.Id;
+            _categoryIds = [.. categories.Select(cat => cat.Id)];
         }
 
         [OneTimeTearDown]
@@ -82,7 +93,7 @@ namespace LeaderboardBackend.Test
 
             Run run = new()
             {
-                CategoryId = _categoryId,
+                CategoryId = _categoryIds[0],
                 Info = "",
                 PlayedOn = LocalDate.FromDateTime(new()),
                 TimeOrScore = Duration.FromSeconds(390).ToInt64Nanoseconds(),
@@ -124,7 +135,7 @@ namespace LeaderboardBackend.Test
             Run[] runs = [
                 new()
                 {
-                    CategoryId = _categoryId,
+                    CategoryId = _categoryIds[0],
                     Info = "",
                     PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().ToDateTimeUtc()),
                     TimeOrScore = Duration.FromSeconds(390).ToInt64Nanoseconds(),
@@ -132,7 +143,7 @@ namespace LeaderboardBackend.Test
                 },
                 new()
                 {
-                    CategoryId = _categoryId,
+                    CategoryId = _categoryIds[0],
                     Info = "",
                     PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().Plus(Duration.FromDays(1)).ToDateTimeUtc()),
                     TimeOrScore = Duration.FromSeconds(400).ToInt64Nanoseconds(),
@@ -140,9 +151,18 @@ namespace LeaderboardBackend.Test
                 },
                 new()
                 {
-                    CategoryId = _categoryId,
+                    CategoryId = _categoryIds[0],
                     Info = "",
                     PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().Plus(Duration.FromDays(2)).ToDateTimeUtc()),
+                    TimeOrScore = Duration.FromSeconds(390).ToInt64Nanoseconds(),
+                    UserId = TestInitCommonFields.Admin.Id,
+                    DeletedAt = _clock.GetCurrentInstant(),
+                },
+                new()
+                {
+                    CategoryId = _categoryIds[1],
+                    Info = "",
+                    PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().ToDateTimeUtc()),
                     TimeOrScore = Duration.FromSeconds(390).ToInt64Nanoseconds(),
                     UserId = TestInitCommonFields.Admin.Id,
                     DeletedAt = _clock.GetCurrentInstant(),
@@ -159,23 +179,23 @@ namespace LeaderboardBackend.Test
                 await context.Entry(run).Reference(r => r.User).LoadAsync();
             }
 
-            ListView<TimedRunViewModel> returned = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryId}/runs?limit=9999999", new());
+            ListView<TimedRunViewModel> returned = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryIds[0]}/runs?limit=9999999", new());
             returned.Data.Should().BeEquivalentTo(runs.Take(2).Select(RunViewModel.MapFrom));
             returned.Total.Should().Be(2);
 
-            ListView<TimedRunViewModel> returned2 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryId}/runs?status=published&limit=1024", new());
+            ListView<TimedRunViewModel> returned2 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryIds[0]}/runs?status=published&limit=1024", new());
             returned2.Data.Should().BeEquivalentTo(runs.Take(2).Select(RunViewModel.MapFrom));
             returned2.Total.Should().Be(2);
 
-            ListView<TimedRunViewModel> returned3 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryId}/runs?status=any&limit=1024", new());
+            ListView<TimedRunViewModel> returned3 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryIds[0]}/runs?status=any&limit=1024", new());
             returned3.Data.Should().BeEquivalentTo(new Run[] { runs[0], runs[2], runs[1] }.Select(RunViewModel.MapFrom), config => config.WithStrictOrdering());
             returned3.Total.Should().Be(3);
 
-            ListView<TimedRunViewModel> returned4 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryId}/runs?limit=1", new());
+            ListView<TimedRunViewModel> returned4 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryIds[0]}/runs?limit=1", new());
             returned4.Data.Single().Should().BeEquivalentTo(RunViewModel.MapFrom(runs[0]));
             returned4.Total.Should().Be(2);
 
-            ListView<TimedRunViewModel> returned5 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryId}/runs?limit=1&status=any&offset=1", new());
+            ListView<TimedRunViewModel> returned5 = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryIds[0]}/runs?limit=1&status=any&offset=1", new());
             returned5.Data.Single().Should().BeEquivalentTo(RunViewModel.MapFrom(runs[2]));
             returned5.Total.Should().Be(3);
         }
@@ -185,7 +205,7 @@ namespace LeaderboardBackend.Test
         public async Task GetRunsForCategory_BadPageData(int limit, int offset) =>
             await _apiClient.Awaiting(
                 a => a.Get<RunViewModel>(
-                    $"/api/categories/{_categoryId}/runs?limit={limit}&offset={offset}",
+                    $"/api/categories/{_categoryIds[0]}/runs?limit={limit}&offset={offset}",
                     new()
                 )
             ).Should()
@@ -238,7 +258,7 @@ namespace LeaderboardBackend.Test
             Run[] runs = [
                 new()
                 {
-                    CategoryId = _categoryId,
+                    CategoryId = _categoryIds[0],
                     Info = "",
                     PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().ToDateTimeUtc()),
                     TimeOrScore = Duration.FromSeconds(390).ToInt64Nanoseconds(),
@@ -246,7 +266,7 @@ namespace LeaderboardBackend.Test
                 },
                 new()
                 {
-                    CategoryId = _categoryId,
+                    CategoryId = _categoryIds[0],
                     Info = "",
                     PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().Plus(Duration.FromDays(1)).ToDateTimeUtc()),
                     TimeOrScore = Duration.FromSeconds(400).ToInt64Nanoseconds(),
@@ -254,7 +274,7 @@ namespace LeaderboardBackend.Test
                 },
                 new()
                 {
-                    CategoryId = _categoryId,
+                    CategoryId = _categoryIds[0],
                     Info = "",
                     PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().Plus(Duration.FromDays(2)).ToDateTimeUtc()),
                     TimeOrScore = Duration.FromSeconds(390).ToInt64Nanoseconds(),
@@ -262,7 +282,7 @@ namespace LeaderboardBackend.Test
                 },
                 new()
                 {
-                    CategoryId = _categoryId,
+                    CategoryId = _categoryIds[0],
                     Info = "",
                     PlayedOn = LocalDate.FromDateTime(_clock.GetCurrentInstant().Plus(Duration.FromDays(2)).ToDateTimeUtc()),
                     TimeOrScore = Duration.FromSeconds(400).ToInt64Nanoseconds(),
@@ -280,7 +300,7 @@ namespace LeaderboardBackend.Test
                 await context.Entry(run).Reference(r => r.User).LoadAsync();
             }
 
-            ListView<TimedRunViewModel> returned = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryId}/records?limit=9999999", new());
+            ListView<TimedRunViewModel> returned = await _apiClient.Get<ListView<TimedRunViewModel>>($"/api/categories/{_categoryIds[0]}/records?limit=9999999", new());
             returned.Data.Should().BeEquivalentTo(
                 [
                     RunViewModel.MapFrom(new RankedRun
@@ -309,7 +329,7 @@ namespace LeaderboardBackend.Test
         public async Task GetRecordsForCategory_BadPageData(int limit, int offset) =>
             await _apiClient.Awaiting(
                 a => a.Get<RunViewModel>(
-                    $"/api/categories/{_categoryId}/records?limit={limit}&offset={offset}",
+                    $"/api/categories/{_categoryIds[0]}/records?limit={limit}&offset={offset}",
                     new()
                 )
             ).Should()
@@ -358,7 +378,7 @@ namespace LeaderboardBackend.Test
             LoginResponse login = await _apiClient.LoginUser($"testuser.createrun.{role}@example.com", "P4ssword");
 
             TimedRunViewModel created = await _apiClient.Post<TimedRunViewModel>(
-                $"/categories/{_categoryId}/runs",
+                $"/categories/{_categoryIds[0]}/runs",
                 new()
                 {
                     Body = new
@@ -392,7 +412,7 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task CreateRun_Unauthenticated() =>
             await _apiClient.Awaiting(a => a.Post<RunViewModel>(
-                $"/categories/{_categoryId}/runs",
+                $"/categories/{_categoryIds[0]}/runs",
                 new()
                 {
                     Body = new
@@ -431,7 +451,7 @@ namespace LeaderboardBackend.Test
             await context.SaveChangesAsync();
 
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
-                $"/categories/{_categoryId}/runs",
+                $"/categories/{_categoryIds[0]}/runs",
                 new()
                 {
                     Body = new
@@ -521,7 +541,7 @@ namespace LeaderboardBackend.Test
         public async Task CreateRun_BadData(string? playedOn, string info, string? time)
         {
             ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Post<RunViewModel>(
-                $"/categories/{_categoryId}/runs",
+                $"/categories/{_categoryIds[0]}/runs",
                 new()
                 {
                     Body = new
@@ -540,7 +560,7 @@ namespace LeaderboardBackend.Test
         public async Task GetCategoryForRun_OK()
         {
             TimedRunViewModel createdRun = await _apiClient.Post<TimedRunViewModel>(
-                $"/categories/{_categoryId}/runs",
+                $"/categories/{_categoryIds[0]}/runs",
                 new()
                 {
                     Body = new
@@ -560,7 +580,7 @@ namespace LeaderboardBackend.Test
             );
 
             category.Should().NotBeNull();
-            category.Id.Should().Be(_categoryId);
+            category.Id.Should().Be(_categoryIds[0]);
         }
 
         [Test]
@@ -571,7 +591,7 @@ namespace LeaderboardBackend.Test
 
             Run run = new()
             {
-                CategoryId = _categoryId,
+                CategoryId = _categoryIds[0],
                 PlayedOn = LocalDate.MinIsoValue,
                 Time = Duration.FromSeconds(390),
                 UserId = TestInitCommonFields.Admin.Id,
@@ -624,7 +644,7 @@ namespace LeaderboardBackend.Test
 
             Run run = new()
             {
-                CategoryId = _categoryId,
+                CategoryId = _categoryIds[0],
                 PlayedOn = LocalDate.MinIsoValue,
                 Time = Duration.FromSeconds(390),
                 User = user!,
@@ -667,7 +687,7 @@ namespace LeaderboardBackend.Test
 
             Run created = new()
             {
-                CategoryId = _categoryId,
+                CategoryId = _categoryIds[0],
                 PlayedOn = LocalDate.MinIsoValue,
                 Time = Duration.FromSeconds(390),
                 UserId = TestInitCommonFields.Admin.Id,
@@ -704,7 +724,7 @@ namespace LeaderboardBackend.Test
 
             Run created = new()
             {
-                CategoryId = _categoryId,
+                CategoryId = _categoryIds[0],
                 PlayedOn = LocalDate.MinIsoValue,
                 Time = Duration.FromSeconds(390),
                 UserId = TestInitCommonFields.Admin.Id,
@@ -772,7 +792,7 @@ namespace LeaderboardBackend.Test
 
             Run created = new()
             {
-                CategoryId = _categoryId,
+                CategoryId = _categoryIds[0],
                 PlayedOn = LocalDate.MinIsoValue,
                 Time = Duration.FromSeconds(390),
                 UserId = TestInitCommonFields.Admin.Id,
@@ -824,7 +844,7 @@ namespace LeaderboardBackend.Test
 
             Run created = new()
             {
-                CategoryId = _categoryId,
+                CategoryId = _categoryIds[0],
                 PlayedOn = LocalDate.MinIsoValue,
                 Time = Duration.FromSeconds(390),
                 UserId = user.Id,
@@ -834,7 +854,7 @@ namespace LeaderboardBackend.Test
             // To assert that role check supersedes user ID check
             Run created1 = new()
             {
-                CategoryId = _categoryId,
+                CategoryId = _categoryIds[0],
                 PlayedOn = LocalDate.MinIsoValue,
                 Time = Duration.FromSeconds(390),
                 UserId = TestInitCommonFields.Admin.Id,
@@ -922,7 +942,7 @@ namespace LeaderboardBackend.Test
 
             Run created = new()
             {
-                CategoryId = _categoryId,
+                CategoryId = _categoryIds[0],
                 PlayedOn = LocalDate.MinIsoValue,
                 UserId = user.Id,
                 Time = Duration.FromSeconds(390),
@@ -1027,7 +1047,7 @@ namespace LeaderboardBackend.Test
 
             Run created = new()
             {
-                CategoryId = _categoryId,
+                CategoryId = _categoryIds[0],
                 PlayedOn = LocalDate.MinIsoValue,
                 UserId = TestInitCommonFields.Admin.Id,
                 Time = Duration.FromSeconds(390),
@@ -1064,7 +1084,7 @@ namespace LeaderboardBackend.Test
 
             Run created = new()
             {
-                CategoryId = _categoryId,
+                CategoryId = _categoryIds[0],
                 PlayedOn = LocalDate.MinIsoValue,
                 UserId = TestInitCommonFields.Admin.Id,
                 Time = Duration.FromSeconds(390),
@@ -1098,7 +1118,7 @@ namespace LeaderboardBackend.Test
 
             Run run = new()
             {
-                CategoryId = _categoryId,
+                CategoryId = _categoryIds[0],
                 PlayedOn = LocalDate.MinIsoValue,
                 UserId = TestInitCommonFields.Admin.Id,
                 Time = Duration.FromSeconds(390),
@@ -1144,7 +1164,7 @@ namespace LeaderboardBackend.Test
 
             Run run = new()
             {
-                CategoryId = _categoryId,
+                CategoryId = _categoryIds[0],
                 PlayedOn = LocalDate.MinIsoValue,
                 UserId = TestInitCommonFields.Admin.Id,
                 Time = Duration.FromSeconds(390),
@@ -1188,7 +1208,7 @@ namespace LeaderboardBackend.Test
 
             Run run = new()
             {
-                CategoryId = _categoryId,
+                CategoryId = _categoryIds[0],
                 PlayedOn = LocalDate.MinIsoValue,
                 DeletedAt = _clock.GetCurrentInstant(),
                 UserId = TestInitCommonFields.Admin.Id,
