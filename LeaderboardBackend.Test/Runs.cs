@@ -574,13 +574,13 @@ namespace LeaderboardBackend.Test
                 }
             );
 
-            CategoryViewModel categories = await _apiClient.Get<CategoryViewModel>(
-                $"api/runs/{createdRun.Id.ToUrlSafeBase64String()}/categories",
+            CategoryViewModel category = await _apiClient.Get<CategoryViewModel>(
+                $"api/runs/{createdRun.Id.ToUrlSafeBase64String()}/category",
                 new() { Jwt = _jwt }
             );
 
-            categories.Should().NotBeNull();
-            categories.Id.Should().Be(_categoryIds[0]);
+            category.Should().NotBeNull();
+            category.Id.Should().Be(_categoryIds[0]);
         }
 
         [Test]
@@ -1000,7 +1000,7 @@ namespace LeaderboardBackend.Test
                 DeletedAt = _clock.GetCurrentInstant(),
             };
 
-            Category categories = new()
+            Category category = new()
             {
                 Name = "UpdateRunDeletedBoardCat",
                 Slug = "update-run-deleted-board-cat",
@@ -1011,13 +1011,13 @@ namespace LeaderboardBackend.Test
 
             Run created = new()
             {
-                Category = categories,
+                Category = category,
                 PlayedOn = LocalDate.MinIsoValue,
                 UserId = user.Id,
                 Time = Duration.FromSeconds(390),
             };
 
-            context.AddRange(leaderboard, categories, created);
+            context.AddRange(leaderboard, category, created);
             await context.SaveChangesAsync();
             created.Id.Should().NotBe(Guid.Empty);
 
