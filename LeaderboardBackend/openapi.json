@@ -1463,7 +1463,7 @@
         "tags": [
           "Runs"
         ],
-        "summary": "Gets the Runs for a Category.",
+        "summary": "Gets all Runs submitted by users for a Category. To get only the personal bests of every user instead, call `GetRecordsForCategory`.",
         "operationId": "getRunsForCategory",
         "parameters": [
           {
