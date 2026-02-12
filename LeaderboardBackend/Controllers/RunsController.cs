@@ -102,7 +102,7 @@ public class RunsController(
     [AllowAnonymous]
     [HttpGet("/api/categories/{id:long}/runs")]
     [Paginated]
-    [SwaggerOperation("Gets the Runs for a Category.", OperationId = "getRunsForCategory")]
+    [SwaggerOperation("Gets all Runs submitted by users for a Category. To get only the personal bests of every user instead, call `GetRecordsForCategory`.", OperationId = "getRunsForCategory")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404, "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.", Type = typeof(ProblemDetails))]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
