@@ -24,7 +24,7 @@ public class RunsController(
     [SwaggerResponse(404, "The Run with ID `id` could not be found.", typeof(ProblemDetails))]
     public async Task<ActionResult<RunViewModel>> GetRun([FromRoute] Guid id)
     {
-        Run? run = await runService.GetRun(id);
+        RankedRun? run = await runService.GetRun(id);
 
         if (run is null)
         {
@@ -84,7 +84,7 @@ public class RunsController(
             {
                 CreatedAtActionResult result = CreatedAtAction(
                     nameof(GetRun),
-                    new { id = run.Id.ToUrlSafeBase64String() },
+                    new { id = run.Run.Id.ToUrlSafeBase64String() },
                     RunViewModel.MapFrom(run)
                 );
                 return result;
@@ -165,14 +165,14 @@ public class RunsController(
     [SwaggerResponse(404)]
     public async Task<ActionResult<CategoryViewModel>> GetCategoryForRun(Guid id)
     {
-        Run? run = await runService.GetRun(id);
+        RankedRun? run = await runService.GetRun(id);
 
         if (run is null)
         {
             return NotFound("Run Not Found");
         }
 
-        Category? category = await categoryService.GetCategoryForRun(run);
+        Category? category = await categoryService.GetCategoryForRun(run.Run);
 
         if (category is null)
         {

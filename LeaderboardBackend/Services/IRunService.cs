@@ -8,7 +8,10 @@ namespace LeaderboardBackend.Services;
 
 public interface IRunService
 {
-    Task<Run?> GetRun(Guid id);
+    /// <summary>
+    /// Includes the rank of the fetched run if it's the user's personal best.
+    /// </summary>
+    Task<RankedRun?> GetRun(Guid id);
     Task<GetRunsForCategoryResult> GetRunsForCategory(long id, StatusFilter statusFilter, Page page);
     /// <summary>
     /// Returns the top-scoring runs of every unique User for a category.
@@ -51,7 +54,7 @@ public interface IRunService
 }
 
 [GenerateOneOf]
-public partial class CreateRunResult : OneOfBase<Run, BadRole, BadRunType>;
+public partial class CreateRunResult : OneOfBase<RankedRun, BadRole, BadRunType>;
 
 [GenerateOneOf]
 public partial class UpdateRunResult : OneOfBase<BadRole, UserDoesNotOwnRun, UserCannotChangeStatusOfRuns, NotFound, AlreadyDeleted, BadRunType, Success>;
