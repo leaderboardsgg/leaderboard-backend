@@ -11,7 +11,8 @@ namespace LeaderboardBackend.Services;
 
 public class RunService(ApplicationContext applicationContext, IClock clock) : IRunService
 {
-    public async Task<RankedRun?> GetRun(Guid id) {
+    public async Task<RankedRun?> GetRun(Guid id)
+    {
         Run? unranked = await applicationContext.Runs
             .Include(run => run.Category)
             .Include(run => run.User)
@@ -34,7 +35,7 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
 
         return new RankedRun
         {
-            Count = pb.Count,
+            Count = 0,
             Rank = 0,
             Run = unranked
         };
