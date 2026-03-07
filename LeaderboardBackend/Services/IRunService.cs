@@ -8,7 +8,10 @@ namespace LeaderboardBackend.Services;
 
 public interface IRunService
 {
-    Task<Run?> GetRun(Guid id);
+    /// <summary>
+    /// Includes the rank of the fetched run if it's the user's personal best.
+    /// </summary>
+    Task<RankedRun?> GetRun(Guid id);
     Task<GetRunsForCategoryResult> GetRunsForCategory(long id, StatusFilter statusFilter, Page page);
     /// <summary>
     /// Returns the top-scoring runs of every unique User for a category.
