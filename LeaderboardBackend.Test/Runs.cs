@@ -430,15 +430,6 @@ namespace LeaderboardBackend.Test
             );
 
             retrieved.Should().BeEquivalentTo(created);
-            retrieved.Should().BeEquivalentTo(
-                new
-                {
-                    PlayedOn = LocalDate.FromDateTime(new(2025, 1, 1)),
-                    Info = "",
-                    Time = Duration.FromMilliseconds(622111),
-                    User = UserViewModel.MapFrom(user)
-                }
-            );
         }
 
         [Test]

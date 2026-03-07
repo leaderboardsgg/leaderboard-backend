@@ -177,7 +177,20 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
 
         applicationContext.Add(run);
         await applicationContext.SaveChangesAsync();
-        return run;
+
+        RankedRun pb = await GetPersonalBests(category).Where(r => r.Run.UserId == user.Id).FirstAsync();
+
+        if (pb.Run.Id == run.Id)
+        {
+            return pb;
+        }
+
+        return new RankedRun
+        {
+            Count = 0,
+            Rank = 0,
+            Run = run
+        };
     }
 
     public async Task<UpdateRunResult> UpdateRun(User user, Guid id, UpdateRunRequest request)
@@ -316,7 +329,7 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
         return new Success();
     }
 
-    private IQueryable<RankedRun> GetPersonalBests (Category cat)
+    private IQueryable<RankedRun> GetPersonalBests(Category cat)
     {
         bool asc = cat.SortDirection == SortDirection.Ascending;
 

@@ -84,7 +84,7 @@ public class RunsController(
             {
                 CreatedAtActionResult result = CreatedAtAction(
                     nameof(GetRun),
-                    new { id = run.Id.ToUrlSafeBase64String() },
+                    new { id = run.Run.Id.ToUrlSafeBase64String() },
                     RunViewModel.MapFrom(run)
                 );
                 return result;
