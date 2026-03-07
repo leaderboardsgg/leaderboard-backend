@@ -36,7 +36,7 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
 
         return new RankedRun
         {
-            Count = pb.Count,
+            Count = 0,
             Rank = 0,
             Run = unranked
         };
