@@ -15,7 +15,7 @@ public class ApplicationContextConfig : IValidatableObject
         {
             yield return new ValidationResult(
                 "Missing database configuration.",
-                new[] { nameof(Pg) }
+                [nameof(Pg)]
             );
         }
     }
