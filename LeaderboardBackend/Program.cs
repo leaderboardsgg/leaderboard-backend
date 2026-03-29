@@ -105,7 +105,6 @@ builder.Services.AddDbContext<ApplicationContext>(
             {
                 opt.UseSeeding((context, _) =>
                 {
-                    Console.WriteLine("Creating users");
                     User? admin = context.Set<User>().FirstOrDefault(u => u.Email == "admin@leaderboards.gg");
                     if (admin == null)
                     {
@@ -132,7 +131,6 @@ builder.Services.AddDbContext<ApplicationContext>(
                         context.Add(user);
                     }
 
-                    Console.WriteLine("Creating leaderboard");
                     Leaderboard? board = context.Set<Leaderboard>().FirstOrDefault(b => b.Slug == "mario-64");
                     if (board == null)
                     {
@@ -172,8 +170,6 @@ builder.Services.AddDbContext<ApplicationContext>(
                     context.SaveChanges();
                 }).UseAsyncSeeding(async (context, _, cancellationToken) =>
                 {
-                    Console.WriteLine("Creating users");
-
                     User admin = await context.Set<User>().FirstOrDefaultAsync(u => u.Email == "admin@leaderboards.gg", cancellationToken)
                         ?? context.Add(new User()
                         {
@@ -191,9 +187,7 @@ builder.Services.AddDbContext<ApplicationContext>(
                             Username = "user1",
                             Role = UserRole.Confirmed,
                         }).Entity;
-
-                    Console.WriteLine("Creating leaderboard");
-
+                        
                     Leaderboard? board = await context.Set<Leaderboard>().FirstOrDefaultAsync(b => b.Slug == "mario-64", cancellationToken);
 
                     if (board == null)
