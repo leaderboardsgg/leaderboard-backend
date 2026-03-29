@@ -182,6 +182,75 @@ builder.Services.AddDbContext<ApplicationContext>(
                         });
                     }
 
+                    if (context.Set<Leaderboard>().SingleOrDefault(b => b.Slug == "worlds-hardest-game") is null)
+                    {
+                        context.Add(new Leaderboard()
+                        {
+                            Name = "The World's Hardest Game",
+                            Slug = "worlds-hardest-game",
+                            Categories = [
+                                new()
+                                {
+                                    Name = "Beat the Game (Fewest Deaths)",
+                                    Slug = "fewest-deaths",
+                                    SortDirection = SortDirection.Ascending,
+                                    Type = RunType.Score,
+                                    Info = "Beat the game while dying as few times as you can. Time doesn't matter.",
+                                    Runs = [
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 1,
+                                            PlayedOn = new(2008, 6, 7),
+                                            Info = "So close!"
+                                        },
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 0,
+                                            PlayedOn = new(2020, 12, 5),
+                                            Info = "Finally conquered this game from my childhood."
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+                    }
+
+                    if (context.Set<Leaderboard>().SingleOrDefault(b => b.Slug == "call-of-duty-black-ops") is null)
+                    {
+                        context.Add(new Leaderboard()
+                        {
+                            Name = "Call of Duty: Black Ops",
+                            Slug = "call-of-duty-black-ops",
+                            Categories = [
+                                new()
+                                {
+                                    Name = "Kino der Toten (High Round, Solo)",
+                                    Slug = "kino-highround-solo",
+                                    Info = "Reach the highest round you can on Kino der Toten. Singleplayer only.",
+                                    SortDirection = SortDirection.Descending,
+                                    Type = RunType.Score,
+                                    Runs = [
+                                        new()
+                                        {
+                                            User = user,
+                                            TimeOrScore = 50,
+                                            Info = "Could have gone higher but I got bored.",
+                                            PlayedOn = new(2019, 7, 15)
+                                        },
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 170,
+                                            PlayedOn = new(2022, 11, 11)
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+                    }
+
                     context.SaveChanges();
                 }).UseAsyncSeeding(async (context, _, cancellationToken) =>
                 {
@@ -203,9 +272,9 @@ builder.Services.AddDbContext<ApplicationContext>(
                             Role = UserRole.Confirmed,
                         }).Entity;
 
-                    Leaderboard? board = await context.Set<Leaderboard>().SingleOrDefaultAsync(b => b.Slug == "mario-64", cancellationToken);
+                    Leaderboard? board1 = await context.Set<Leaderboard>().SingleOrDefaultAsync(b => b.Slug == "mario-64", cancellationToken);
 
-                    if (board == null)
+                    if (board1 == null)
                     {
                         context.Add(new Leaderboard()
                         {
@@ -238,7 +307,7 @@ builder.Services.AddDbContext<ApplicationContext>(
                                         {
                                             User = admin,
                                             TimeOrScore = 255,
-                                            PlayedOn = new (2023, 8, 24)
+                                            PlayedOn = new(2023, 8, 24)
                                         }
                                     ]
                                 },
@@ -267,7 +336,80 @@ builder.Services.AddDbContext<ApplicationContext>(
                                         {
                                             User = admin,
                                             TimeOrScore = 255,
-                                            PlayedOn = new (2023, 8, 24)
+                                            PlayedOn = new(2023, 8, 24)
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+                    }
+
+                    Leaderboard? board2 = await context.Set<Leaderboard>().SingleOrDefaultAsync(b => b.Slug == "worlds-hardest-game", cancellationToken);
+
+                    if (board2 is null)
+                    {
+                        context.Add(new Leaderboard()
+                        {
+                            Name = "The World's Hardest Game",
+                            Slug = "worlds-hardest-game",
+                            Categories = [
+                                new()
+                                {
+                                    Name = "Beat the Game (Fewest Deaths)",
+                                    Slug = "fewest-deaths",
+                                    SortDirection = SortDirection.Ascending,
+                                    Type = RunType.Score,
+                                    Info = "Beat the game while dying as few times as you can. Time doesn't matter.",
+                                    Runs = [
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 1,
+                                            PlayedOn = new(2008, 6, 7),
+                                            Info = "So close!"
+                                        },
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 0,
+                                            PlayedOn = new(2020, 12, 5),
+                                            Info = "Finally conquered this game from my childhood."
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+                    }
+
+                    Leaderboard? board3 = await context.Set<Leaderboard>().SingleOrDefaultAsync(b => b.Slug == "call-of-duty-black-ops", cancellationToken);
+
+                    if (board3 is null)
+                    {
+                        context.Add(new Leaderboard()
+                        {
+                            Name = "Call of Duty: Black Ops",
+                            Slug = "call-of-duty-black-ops",
+                            Categories = [
+                                new()
+                                {
+                                    Name = "Kino der Toten (High Round, Solo)",
+                                    Slug = "kino-highround-solo",
+                                    Info = "Reach the highest round you can on Kino der Toten. Singleplayer only.",
+                                    SortDirection = SortDirection.Descending,
+                                    Type = RunType.Score,
+                                    Runs = [
+                                        new()
+                                        {
+                                            User = user,
+                                            TimeOrScore = 50,
+                                            Info = "Could have gone higher but I got bored.",
+                                            PlayedOn = new(2019, 7, 15)
+                                        },
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 170,
+                                            PlayedOn = new(2022, 11, 11)
                                         }
                                     ]
                                 }
