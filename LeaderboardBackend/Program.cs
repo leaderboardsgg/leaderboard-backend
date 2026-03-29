@@ -105,33 +105,27 @@ builder.Services.AddDbContext<ApplicationContext>(
             {
                 opt.UseSeeding((context, _) =>
                 {
-                    User? admin = context.Set<User>().FirstOrDefault(u => u.Email == "admin@leaderboards.gg");
-                    if (admin == null)
-                    {
-                        admin = new()
+                    User admin = context.Set<User>().FirstOrDefault(u => u.Email == "admin@leaderboards.gg")
+                        ?? context.Add(new User()
                         {
                             Email = "admin@leaderboards.gg",
                             Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
                             Username = "admin",
                             Role = UserRole.Administrator,
-                        };
-                        context.Add(admin);
-                    }
+                        }).Entity;
 
-                    User? user = context.Set<User>().FirstOrDefault(u => u.Email == "user1@leaderboards.gg");
-                    if (user == null)
-                    {
-                        user = new()
+                    User user = context.Set<User>().FirstOrDefault(u => u.Email == "user1@leaderboards.gg")
+                        ?? 
+                        context.Add(new User()
                         {
                             Email = "user1@leaderboards.gg",
                             Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
                             Username = "user1",
                             Role = UserRole.Confirmed,
-                        };
-                        context.Add(user);
-                    }
+                        }).Entity;
 
                     Leaderboard? board = context.Set<Leaderboard>().FirstOrDefault(b => b.Slug == "mario-64");
+
                     if (board == null)
                     {
                         board = new()
@@ -187,7 +181,7 @@ builder.Services.AddDbContext<ApplicationContext>(
                             Username = "user1",
                             Role = UserRole.Confirmed,
                         }).Entity;
-                        
+
                     Leaderboard? board = await context.Set<Leaderboard>().FirstOrDefaultAsync(b => b.Slug == "mario-64", cancellationToken);
 
                     if (board == null)
