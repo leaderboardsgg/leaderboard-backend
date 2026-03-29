@@ -105,7 +105,7 @@ builder.Services.AddDbContext<ApplicationContext>(
             {
                 opt.UseSeeding((context, _) =>
                 {
-                    User admin = context.Set<User>().FirstOrDefault(u => u.Email == "admin@leaderboards.gg")
+                    User admin = context.Set<User>().SingleOrDefault(u => u.Email == "admin@leaderboards.gg")
                         ?? context.Add(new User()
                         {
                             Email = "admin@leaderboards.gg",
@@ -114,7 +114,7 @@ builder.Services.AddDbContext<ApplicationContext>(
                             Role = UserRole.Administrator,
                         }).Entity;
 
-                    User user = context.Set<User>().FirstOrDefault(u => u.Email == "user1@leaderboards.gg")
+                    User user = context.Set<User>().SingleOrDefault(u => u.Email == "user1@leaderboards.gg")
                         ?? 
                         context.Add(new User()
                         {
@@ -124,7 +124,7 @@ builder.Services.AddDbContext<ApplicationContext>(
                             Role = UserRole.Confirmed,
                         }).Entity;
 
-                    if (context.Set<Leaderboard>().FirstOrDefault(b => b.Slug == "mario-64") is null)
+                    if (context.Set<Leaderboard>().SingleOrDefault(b => b.Slug == "mario-64") is null)
                     {
                         context.Add(new Leaderboard()
                         {
@@ -160,7 +160,7 @@ builder.Services.AddDbContext<ApplicationContext>(
                     context.SaveChanges();
                 }).UseAsyncSeeding(async (context, _, cancellationToken) =>
                 {
-                    User admin = await context.Set<User>().FirstOrDefaultAsync(u => u.Email == "admin@leaderboards.gg", cancellationToken)
+                    User admin = await context.Set<User>().SingleOrDefaultAsync(u => u.Email == "admin@leaderboards.gg", cancellationToken)
                         ?? context.Add(new User()
                         {
                             Email = "admin@leaderboards.gg",
@@ -169,7 +169,7 @@ builder.Services.AddDbContext<ApplicationContext>(
                             Role = UserRole.Administrator,
                         }).Entity;
 
-                    User user = await context.Set<User>().FirstOrDefaultAsync(u => u.Email == "user1@leaderboards.gg", cancellationToken)
+                    User user = await context.Set<User>().SingleOrDefaultAsync(u => u.Email == "user1@leaderboards.gg", cancellationToken)
                         ?? context.Add(new User()
                         {
                             Email = "user1@leaderboards.gg",
@@ -178,7 +178,7 @@ builder.Services.AddDbContext<ApplicationContext>(
                             Role = UserRole.Confirmed,
                         }).Entity;
 
-                    Leaderboard? board = await context.Set<Leaderboard>().FirstOrDefaultAsync(b => b.Slug == "mario-64", cancellationToken);
+                    Leaderboard? board = await context.Set<Leaderboard>().SingleOrDefaultAsync(b => b.Slug == "mario-64", cancellationToken);
 
                     if (board == null)
                     {
