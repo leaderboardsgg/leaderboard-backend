@@ -115,8 +115,7 @@ builder.Services.AddDbContext<ApplicationContext>(
                         }).Entity;
 
                     User user = context.Set<User>().SingleOrDefault(u => u.Email == "user1@leaderboards.gg")
-                        ?? 
-                        context.Add(new User()
+                        ?? context.Add(new User()
                         {
                             Email = "user1@leaderboards.gg",
                             Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
@@ -142,14 +141,14 @@ builder.Services.AddDbContext<ApplicationContext>(
                                         new()
                                         {
                                             Info = "WR!!!",
-                                            User = admin!,
+                                            User = admin,
                                             TimeOrScore = Duration.FromMinutes(90).ToInt64Nanoseconds(),
                                             PlayedOn = new(2026, 1, 4)
                                         },
                                         new()
                                         {
                                             Info = "Really good run. Will definitely improve on this soon.",
-                                            User = user!,
+                                            User = user,
                                             TimeOrScore = Duration.FromMinutes(100).ToInt64Nanoseconds(),
                                             PlayedOn = new(2025, 5, 25)
                                         },
@@ -274,7 +273,7 @@ builder.Services.AddDbContext<ApplicationContext>(
 
                     Leaderboard? board1 = await context.Set<Leaderboard>().SingleOrDefaultAsync(b => b.Slug == "mario-64", cancellationToken);
 
-                    if (board1 == null)
+                    if (board1 is null)
                     {
                         context.Add(new Leaderboard()
                         {
