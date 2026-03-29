@@ -144,12 +144,14 @@ builder.Services.AddDbContext<ApplicationContext>(
                                             Info = "WR!!!",
                                             User = admin!,
                                             TimeOrScore = Duration.FromMinutes(90).ToInt64Nanoseconds(),
+                                            PlayedOn = new(2026, 1, 4)
                                         },
                                         new()
                                         {
                                             Info = "Really good run. Will definitely improve on this soon.",
                                             User = user!,
                                             TimeOrScore = Duration.FromMinutes(100).ToInt64Nanoseconds(),
+                                            PlayedOn = new(2025, 5, 25)
                                         },
                                     ]
                                 },
@@ -164,13 +166,15 @@ builder.Services.AddDbContext<ApplicationContext>(
                                         new()
                                         {
                                             User = admin,
-                                            TimeOrScore = 146
+                                            TimeOrScore = 146,
+                                            PlayedOn = new(2021, 7, 2)
                                         },
                                         new()
                                         {
                                             User = user,
                                             TimeOrScore = 255,
-                                            Info = "I used cloning to get this score."
+                                            Info = "I used cloning to get this score.",
+                                            PlayedOn = new(2023, 8, 19)
                                         }
                                     ]
                                 }
@@ -220,13 +224,21 @@ builder.Services.AddDbContext<ApplicationContext>(
                                         {
                                             Info = "WR!!!",
                                             User = admin,
-                                            TimeOrScore = Duration.FromMinutes(90).ToInt64Nanoseconds()
+                                            TimeOrScore = Duration.FromMinutes(90).ToInt64Nanoseconds(),
+                                            PlayedOn = new(2026, 1, 4)
                                         },
                                         new()
                                         {
                                             Info = "Really good run. Will definitely improve on this soon.",
                                             User = user,
-                                            TimeOrScore = Duration.FromMinutes(100).ToInt64Nanoseconds()
+                                            TimeOrScore = Duration.FromMinutes(100).ToInt64Nanoseconds(),
+                                            PlayedOn = new(2025, 5, 25)
+                                        },
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 255,
+                                            PlayedOn = new (2023, 8, 24)
                                         }
                                     ]
                                 },
@@ -241,13 +253,21 @@ builder.Services.AddDbContext<ApplicationContext>(
                                         new()
                                         {
                                             User = admin,
-                                            TimeOrScore = 146
+                                            TimeOrScore = 146,
+                                            PlayedOn = new(2021, 7, 2)
                                         },
                                         new()
                                         {
                                             User = user,
                                             TimeOrScore = 255,
-                                            Info = "I used cloning to get this score."
+                                            Info = "I used cloning to get this score.",
+                                            PlayedOn = new(2023, 8, 19)
+                                        },
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 255,
+                                            PlayedOn = new (2023, 8, 24)
                                         }
                                     ]
                                 }
