@@ -134,22 +134,22 @@ builder.Services.AddDbContext<ApplicationContext>(
                             Categories = [
                                 new()
                                 {
-                                    Name = "category",
-                                    Slug = "category",
+                                    Name = "120 Stars",
+                                    Slug = "120-stars",
                                     SortDirection = SortDirection.Ascending,
                                     Type = RunType.Time,
                                     Runs = [
                                         new()
                                         {
-                                            Info = "Run attempt description.",
+                                            Info = "WR!!!",
                                             User = admin!,
-                                            TimeOrScore = 1000L,
+                                            TimeOrScore = Duration.FromMinutes(90).ToInt64Nanoseconds(),
                                         },
                                         new()
                                         {
-                                            Info = "Run attempt description.",
+                                            Info = "Really good run. Will definitely improve on this soon.",
                                             User = user!,
-                                            TimeOrScore = 1100L,
+                                            TimeOrScore = Duration.FromMinutes(100).ToInt64Nanoseconds(),
                                         },
                                     ]
                                 }
@@ -190,22 +190,22 @@ builder.Services.AddDbContext<ApplicationContext>(
                             Categories = [
                                 new()
                                 {
-                                    Name = "category",
-                                    Slug = "category",
+                                    Name = "120 Stars",
+                                    Slug = "120-stars",
                                     SortDirection = SortDirection.Ascending,
                                     Type = RunType.Time,
                                     Runs = [
                                         new()
                                         {
-                                            Info = "Run attempt description.",
+                                            Info = "WR!!!",
                                             User = admin,
-                                            TimeOrScore = 1000L,
+                                            TimeOrScore = Duration.FromMinutes(90).ToInt64Nanoseconds()
                                         },
                                         new()
                                         {
-                                            Info = "Run attempt description.",
+                                            Info = "Really good run. Will definitely improve on this soon.",
                                             User = user,
-                                            TimeOrScore = 1100L,
+                                            TimeOrScore = Duration.FromMinutes(100).ToInt64Nanoseconds()
                                         }
                                     ]
                                 }
