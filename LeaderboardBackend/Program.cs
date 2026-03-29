@@ -124,11 +124,9 @@ builder.Services.AddDbContext<ApplicationContext>(
                             Role = UserRole.Confirmed,
                         }).Entity;
 
-                    Leaderboard? board = context.Set<Leaderboard>().FirstOrDefault(b => b.Slug == "mario-64");
-
-                    if (board == null)
+                    if (context.Set<Leaderboard>().FirstOrDefault(b => b.Slug == "mario-64") is null)
                     {
-                        board = new()
+                        context.Add(new Leaderboard()
                         {
                             Name = "Mario 64",
                             Slug = "mario-64",
@@ -156,9 +154,7 @@ builder.Services.AddDbContext<ApplicationContext>(
                                     ]
                                 }
                             ]
-                        };
-
-                        context.Add(board);
+                        });
                     }
 
                     context.SaveChanges();
