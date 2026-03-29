@@ -100,6 +100,138 @@ builder.Services.AddDbContext<ApplicationContext>(
 
             opt.UseSnakeCaseNamingConvention();
             opt.UseValidationCheckConstraints();
+
+            if (builder.Environment.IsDevelopment())
+            {
+                opt.UseSeeding((context, _) =>
+                {
+                    Console.WriteLine("Creating users");
+                    User? admin = context.Set<User>().FirstOrDefault(u => u.Email == "admin@leaderboards.gg");
+                    if (admin == null)
+                    {
+                        admin = new()
+                        {
+                            Email = "admin@leaderboards.gg",
+                            Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
+                            Username = "admin",
+                            Role = UserRole.Administrator,
+                        };
+                        context.Add(admin);
+                    }
+
+                    User? user = context.Set<User>().FirstOrDefault(u => u.Email == "user1@leaderboards.gg");
+                    if (user == null)
+                    {
+                        user = new()
+                        {
+                            Email = "user1@leaderboards.gg",
+                            Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
+                            Username = "user1",
+                            Role = UserRole.Confirmed,
+                        };
+                        context.Add(user);
+                    }
+
+                    Console.WriteLine("Creating leaderboard");
+                    Leaderboard? board = context.Set<Leaderboard>().FirstOrDefault(b => b.Slug == "mario-64");
+                    if (board == null)
+                    {
+                        board = new()
+                        {
+                            Name = "Mario 64",
+                            Slug = "mario-64",
+                            Info = "Jump Man wahoos in 3D for the first time.",
+                            Categories = [
+                                new()
+                                {
+                                    Name = "category",
+                                    Slug = "category",
+                                    SortDirection = SortDirection.Ascending,
+                                    Type = RunType.Time,
+                                    Runs = [
+                                        new()
+                                        {
+                                            Info = "Run attempt description.",
+                                            User = admin!,
+                                            TimeOrScore = 1000L,
+                                        },
+                                        new()
+                                        {
+                                            Info = "Run attempt description.",
+                                            User = user!,
+                                            TimeOrScore = 1100L,
+                                        },
+                                    ]
+                                }
+                            ]
+                        };
+
+                        context.Add(board);
+                    }
+
+                    context.SaveChanges();
+                }).UseAsyncSeeding(async (context, _, cancellationToken) =>
+                {
+                    Console.WriteLine("Creating users");
+
+                    User admin = await context.Set<User>().FirstOrDefaultAsync(u => u.Email == "admin@leaderboards.gg", cancellationToken)
+                        ?? context.Add(new User()
+                        {
+                            Email = "admin@leaderboards.gg",
+                            Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
+                            Username = "admin",
+                            Role = UserRole.Administrator,
+                        }).Entity;
+
+                    User user = await context.Set<User>().FirstOrDefaultAsync(u => u.Email == "user1@leaderboards.gg", cancellationToken)
+                        ?? context.Add(new User()
+                        {
+                            Email = "user1@leaderboards.gg",
+                            Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
+                            Username = "user1",
+                            Role = UserRole.Confirmed,
+                        }).Entity;
+
+                    Console.WriteLine("Creating leaderboard");
+
+                    Leaderboard? board = await context.Set<Leaderboard>().FirstOrDefaultAsync(b => b.Slug == "mario-64", cancellationToken);
+
+                    if (board == null)
+                    {
+                        context.Add(new Leaderboard()
+                        {
+                            Name = "Mario 64",
+                            Slug = "mario-64",
+                            Info = "Jump Man wahoos in 3D for the first time.",
+                            Categories = [
+                                new()
+                                {
+                                    Name = "category",
+                                    Slug = "category",
+                                    SortDirection = SortDirection.Ascending,
+                                    Type = RunType.Time,
+                                    Runs = [
+                                        new()
+                                        {
+                                            Info = "Run attempt description.",
+                                            User = admin,
+                                            TimeOrScore = 1000L,
+                                        },
+                                        new()
+                                        {
+                                            Info = "Run attempt description.",
+                                            User = user,
+                                            TimeOrScore = 1100L,
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+                    }
+
+                    await context.SaveChangesAsync(cancellationToken);
+                });
+            }
         }
         else
         {
