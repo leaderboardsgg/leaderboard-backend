@@ -152,6 +152,27 @@ builder.Services.AddDbContext<ApplicationContext>(
                                             TimeOrScore = Duration.FromMinutes(100).ToInt64Nanoseconds(),
                                         },
                                     ]
+                                },
+                                new()
+                                {
+                                    Name = "Rainbow Ride Coins",
+                                    Slug = "rainbow-ride-coins",
+                                    SortDirection = SortDirection.Descending,
+                                    Type = RunType.Score,
+                                    Info = "Get as many coins as you can in rainbow ride. Only the number the game saves actually counts.",
+                                    Runs = [
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 146
+                                        },
+                                        new()
+                                        {
+                                            User = user,
+                                            TimeOrScore = 255,
+                                            Info = "I used cloning to get this score."
+                                        }
+                                    ]
                                 }
                             ]
                         });
@@ -206,6 +227,27 @@ builder.Services.AddDbContext<ApplicationContext>(
                                             Info = "Really good run. Will definitely improve on this soon.",
                                             User = user,
                                             TimeOrScore = Duration.FromMinutes(100).ToInt64Nanoseconds()
+                                        }
+                                    ]
+                                },
+                                new()
+                                {
+                                    Name = "Rainbow Ride Coins",
+                                    Slug = "rainbow-ride-coins",
+                                    SortDirection = SortDirection.Descending,
+                                    Type = RunType.Score,
+                                    Info = "Get as many coins as you can in rainbow ride. Only the number the game saves actually counts.",
+                                    Runs = [
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 146
+                                        },
+                                        new()
+                                        {
+                                            User = user,
+                                            TimeOrScore = 255,
+                                            Info = "I used cloning to get this score."
                                         }
                                     ]
                                 }
