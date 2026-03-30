@@ -100,6 +100,325 @@ builder.Services.AddDbContext<ApplicationContext>(
 
             opt.UseSnakeCaseNamingConvention();
             opt.UseValidationCheckConstraints();
+
+            if (builder.Environment.IsDevelopment())
+            {
+                opt.UseSeeding((context, _) =>
+                {
+                    User admin = context.Set<User>().SingleOrDefault(u => u.Email == "admin@leaderboards.gg")
+                        ?? context.Add(new User()
+                        {
+                            Email = "admin@leaderboards.gg",
+                            Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
+                            Username = "admin",
+                            Role = UserRole.Administrator,
+                        }).Entity;
+
+                    User user = context.Set<User>().SingleOrDefault(u => u.Email == "user1@leaderboards.gg")
+                        ?? context.Add(new User()
+                        {
+                            Email = "user1@leaderboards.gg",
+                            Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
+                            Username = "user1",
+                            Role = UserRole.Confirmed,
+                        }).Entity;
+
+                    if (context.Set<Leaderboard>().SingleOrDefault(b => b.Slug == "mario-64") is null)
+                    {
+                        context.Add(new Leaderboard()
+                        {
+                            Name = "Mario 64",
+                            Slug = "mario-64",
+                            Info = "Jump Man wahoos in 3D for the first time.",
+                            Categories = [
+                                new()
+                                {
+                                    Name = "120 Stars",
+                                    Slug = "120-stars",
+                                    SortDirection = SortDirection.Ascending,
+                                    Type = RunType.Time,
+                                    Runs = [
+                                        new()
+                                        {
+                                            Info = "WR!!!",
+                                            User = admin,
+                                            TimeOrScore = Duration.FromMinutes(90).ToInt64Nanoseconds(),
+                                            PlayedOn = new(2026, 1, 4)
+                                        },
+                                        new()
+                                        {
+                                            Info = "Really good run. Will definitely improve on this soon.",
+                                            User = user,
+                                            TimeOrScore = Duration.FromMinutes(100).ToInt64Nanoseconds(),
+                                            PlayedOn = new(2025, 5, 25)
+                                        },
+                                    ]
+                                },
+                                new()
+                                {
+                                    Name = "Rainbow Ride Coins",
+                                    Slug = "rainbow-ride-coins",
+                                    SortDirection = SortDirection.Descending,
+                                    Type = RunType.Score,
+                                    Info = "Get as many coins as you can in rainbow ride. Only the number the game saves actually counts.",
+                                    Runs = [
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 146,
+                                            PlayedOn = new(2021, 7, 2)
+                                        },
+                                        new()
+                                        {
+                                            User = user,
+                                            TimeOrScore = 255,
+                                            Info = "I used cloning to get this score.",
+                                            PlayedOn = new(2023, 8, 19)
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+                    }
+
+                    if (context.Set<Leaderboard>().SingleOrDefault(b => b.Slug == "worlds-hardest-game") is null)
+                    {
+                        context.Add(new Leaderboard()
+                        {
+                            Name = "The World's Hardest Game",
+                            Slug = "worlds-hardest-game",
+                            Categories = [
+                                new()
+                                {
+                                    Name = "Beat the Game (Fewest Deaths)",
+                                    Slug = "fewest-deaths",
+                                    SortDirection = SortDirection.Ascending,
+                                    Type = RunType.Score,
+                                    Info = "Beat the game while dying as few times as you can. Time doesn't matter.",
+                                    Runs = [
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 1,
+                                            PlayedOn = new(2008, 6, 7),
+                                            Info = "So close!"
+                                        },
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 0,
+                                            PlayedOn = new(2020, 12, 5),
+                                            Info = "Finally conquered this game from my childhood."
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+                    }
+
+                    if (context.Set<Leaderboard>().SingleOrDefault(b => b.Slug == "call-of-duty-black-ops") is null)
+                    {
+                        context.Add(new Leaderboard()
+                        {
+                            Name = "Call of Duty: Black Ops",
+                            Slug = "call-of-duty-black-ops",
+                            Categories = [
+                                new()
+                                {
+                                    Name = "Kino der Toten (High Round, Solo)",
+                                    Slug = "kino-highround-solo",
+                                    Info = "Reach the highest round you can on Kino der Toten. Singleplayer only.",
+                                    SortDirection = SortDirection.Descending,
+                                    Type = RunType.Score,
+                                    Runs = [
+                                        new()
+                                        {
+                                            User = user,
+                                            TimeOrScore = 50,
+                                            Info = "Could have gone higher but I got bored.",
+                                            PlayedOn = new(2019, 7, 15)
+                                        },
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 170,
+                                            PlayedOn = new(2022, 11, 11)
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+                    }
+
+                    context.SaveChanges();
+                }).UseAsyncSeeding(async (context, _, cancellationToken) =>
+                {
+                    User admin = await context.Set<User>().SingleOrDefaultAsync(u => u.Email == "admin@leaderboards.gg", cancellationToken)
+                        ?? context.Add(new User()
+                        {
+                            Email = "admin@leaderboards.gg",
+                            Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
+                            Username = "admin",
+                            Role = UserRole.Administrator,
+                        }).Entity;
+
+                    User user = await context.Set<User>().SingleOrDefaultAsync(u => u.Email == "user1@leaderboards.gg", cancellationToken)
+                        ?? context.Add(new User()
+                        {
+                            Email = "user1@leaderboards.gg",
+                            Password = BCrypt.Net.BCrypt.EnhancedHashPassword("P4ssword"),
+                            Username = "user1",
+                            Role = UserRole.Confirmed,
+                        }).Entity;
+
+                    Leaderboard? board1 = await context.Set<Leaderboard>().SingleOrDefaultAsync(b => b.Slug == "mario-64", cancellationToken);
+
+                    if (board1 is null)
+                    {
+                        context.Add(new Leaderboard()
+                        {
+                            Name = "Mario 64",
+                            Slug = "mario-64",
+                            Info = "Jump Man wahoos in 3D for the first time.",
+                            Categories = [
+                                new()
+                                {
+                                    Name = "120 Stars",
+                                    Slug = "120-stars",
+                                    SortDirection = SortDirection.Ascending,
+                                    Type = RunType.Time,
+                                    Runs = [
+                                        new()
+                                        {
+                                            Info = "WR!!!",
+                                            User = admin,
+                                            TimeOrScore = Duration.FromMinutes(90).ToInt64Nanoseconds(),
+                                            PlayedOn = new(2026, 1, 4)
+                                        },
+                                        new()
+                                        {
+                                            Info = "Really good run. Will definitely improve on this soon.",
+                                            User = user,
+                                            TimeOrScore = Duration.FromMinutes(100).ToInt64Nanoseconds(),
+                                            PlayedOn = new(2025, 5, 25)
+                                        },
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 255,
+                                            PlayedOn = new(2023, 8, 24)
+                                        }
+                                    ]
+                                },
+                                new()
+                                {
+                                    Name = "Rainbow Ride Coins",
+                                    Slug = "rainbow-ride-coins",
+                                    SortDirection = SortDirection.Descending,
+                                    Type = RunType.Score,
+                                    Info = "Get as many coins as you can in rainbow ride. Only the number the game saves actually counts.",
+                                    Runs = [
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 146,
+                                            PlayedOn = new(2021, 7, 2)
+                                        },
+                                        new()
+                                        {
+                                            User = user,
+                                            TimeOrScore = 255,
+                                            Info = "I used cloning to get this score.",
+                                            PlayedOn = new(2023, 8, 19)
+                                        },
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 255,
+                                            PlayedOn = new(2023, 8, 24)
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+                    }
+
+                    Leaderboard? board2 = await context.Set<Leaderboard>().SingleOrDefaultAsync(b => b.Slug == "worlds-hardest-game", cancellationToken);
+
+                    if (board2 is null)
+                    {
+                        context.Add(new Leaderboard()
+                        {
+                            Name = "The World's Hardest Game",
+                            Slug = "worlds-hardest-game",
+                            Categories = [
+                                new()
+                                {
+                                    Name = "Beat the Game (Fewest Deaths)",
+                                    Slug = "fewest-deaths",
+                                    SortDirection = SortDirection.Ascending,
+                                    Type = RunType.Score,
+                                    Info = "Beat the game while dying as few times as you can. Time doesn't matter.",
+                                    Runs = [
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 1,
+                                            PlayedOn = new(2008, 6, 7),
+                                            Info = "So close!"
+                                        },
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 0,
+                                            PlayedOn = new(2020, 12, 5),
+                                            Info = "Finally conquered this game from my childhood."
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+                    }
+
+                    Leaderboard? board3 = await context.Set<Leaderboard>().SingleOrDefaultAsync(b => b.Slug == "call-of-duty-black-ops", cancellationToken);
+
+                    if (board3 is null)
+                    {
+                        context.Add(new Leaderboard()
+                        {
+                            Name = "Call of Duty: Black Ops",
+                            Slug = "call-of-duty-black-ops",
+                            Categories = [
+                                new()
+                                {
+                                    Name = "Kino der Toten (High Round, Solo)",
+                                    Slug = "kino-highround-solo",
+                                    Info = "Reach the highest round you can on Kino der Toten. Singleplayer only.",
+                                    SortDirection = SortDirection.Descending,
+                                    Type = RunType.Score,
+                                    Runs = [
+                                        new()
+                                        {
+                                            User = user,
+                                            TimeOrScore = 50,
+                                            Info = "Could have gone higher but I got bored.",
+                                            PlayedOn = new(2019, 7, 15)
+                                        },
+                                        new()
+                                        {
+                                            User = admin,
+                                            TimeOrScore = 170,
+                                            PlayedOn = new(2022, 11, 11)
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+                    }
+
+                    await context.SaveChangesAsync(cancellationToken);
+                });
+            }
         }
         else
         {
