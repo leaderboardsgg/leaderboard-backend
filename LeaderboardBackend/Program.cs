@@ -23,7 +23,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
 using Npgsql;
@@ -62,6 +62,8 @@ builder.Services
     .BindConfiguration(ApplicationContextConfig.KEY)
     .ValidateDataAnnotationsRecursively()
     .ValidateOnStart();
+
+#region DBContext
 
 builder.Services.AddDbContext<ApplicationContext>(
     (services, opt) =>
@@ -107,6 +109,8 @@ builder.Services.AddDbContext<ApplicationContext>(
         }
     }
 );
+
+#endregion
 
 // Add services to the container.
 builder.Services.AddScoped<IUserService, UserService>();
@@ -184,25 +188,15 @@ builder.Services.AddSwaggerGen(c =>
             Scheme = JwtBearerDefaults.AuthenticationScheme
         }
     );
-    c.AddSecurityRequirement(
-        new OpenApiSecurityRequirement
+    c.AddSecurityRequirement(document =>
+        new ()
         {
-            {
-                new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = JwtBearerDefaults.AuthenticationScheme
-                    }
-                },
-                Array.Empty<string>()
-            }
+            [new OpenApiSecuritySchemeReference("Bearer", document)] = []
         }
     );
 
     c.SupportNonNullableReferenceTypes();
-    c.MapType<Guid>(() => new OpenApiSchema { Type = "string", Pattern = "^[a-zA-Z0-9-_]{22}$" });
+    c.MapType<Guid>(() => new OpenApiSchema { Type = JsonSchemaType.String, Pattern = "^[a-zA-Z0-9-_]{22}$" });
     c.ConfigureForNodaTimeWithSystemTextJson(jsonSerializerOptions, null, null, true, new(DateTimeZoneProviders.Tzdb)
     {
         Instant = Instant.FromUtc(1984, 1, 1, 0, 0),
