@@ -65,7 +65,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
         return r.Match<Results<Ok<ListView<CategoryViewModel>>, NotFound, UnprocessableEntity<ValidationProblemDetails>>>(
             categories => TypedResults.Ok(new ListView<CategoryViewModel>
             {
-                Data = [..categories.Items.Select(CategoryViewModel.MapFrom)],
+                Data = [.. categories.Items.Select(CategoryViewModel.MapFrom)],
                 Total = categories.ItemsTotal
             }),
             notFound => TypedResults.NotFound()

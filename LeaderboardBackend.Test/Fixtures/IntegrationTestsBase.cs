@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NUnit.Framework;
 
 namespace LeaderboardBackend.Test.Fixtures;
+
 public abstract class IntegrationTestsBase
 {
     protected HttpClient Client { get; private set; } = null!;

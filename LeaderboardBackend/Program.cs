@@ -189,7 +189,7 @@ builder.Services.AddSwaggerGen(c =>
         }
     );
     c.AddSecurityRequirement(document =>
-        new ()
+        new()
         {
             [new OpenApiSecuritySchemeReference("Bearer", document)] = []
         }
@@ -250,7 +250,7 @@ builder.Services.AddAuthorizationBuilder()
     .SetDefaultPolicy(new AuthorizationPolicyBuilder()
         .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
         .RequireAuthenticatedUser()
-        .AddRequirements(new[] { new UserTypeRequirement(UserTypes.USER) })
+        .AddRequirements([new UserTypeRequirement(UserTypes.USER)])
         .Build());
 
 builder.Services.AddSingleton<IValidatorInterceptor, LeaderboardBackend.Models.Validation.UseErrorCodeInterceptor>();
