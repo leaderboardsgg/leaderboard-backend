@@ -29,6 +29,9 @@
           "required": true
         },
         "responses": {
+          "202": {
+            "description": "The registration attempt was successfully received, and an email will\nbe sent to the provided address. If an account with that address does\nnot already exist, or if the account has not been confirmed yet, the\nemail will contain a link to confirm the account. Otherwise, the email\nwill inform the associated user that a registration attempt was made\nwith their address."
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -39,11 +42,15 @@
               }
             }
           },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "202": {
-            "description": "The registration attempt was successfully received, and an email will\nbe sent to the provided address. If an account with that address does\nnot already exist, or if the account has not been confirmed yet, the\nemail will contain a link to confirm the account. Otherwise, the email\nwill inform the associated user that a registration attempt was made\nwith their address."
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
           },
           "409": {
             "description": "A `User` with the specified username already exists. The validation\nerror code `UsernameTaken` will be returned.",
@@ -82,19 +89,6 @@
           "required": true
         },
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
             "description": "The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.",
             "content": {
@@ -105,11 +99,15 @@
               }
             }
           },
-          "401": {
-            "description": "The password given was incorrect, or no `User` could be found."
-          },
-          "403": {
-            "description": "The associated `User` is banned."
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           },
           "422": {
             "description": "The request contains errors.\nValidation error codes by property:\n- **Password**:\n  - **NotEmptyValidator**: No password was passed\n  - **PasswordFormat**: Invalid password format\n- **Email**:\n  - **NotEmptyValidator**: No email was passed\n  - **EmailValidator**: Invalid email format",
@@ -120,6 +118,12 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "The password given was incorrect, or no `User` could be found."
+          },
+          "403": {
+            "description": "The associated `User` is banned."
           }
         }
       }
@@ -132,27 +136,17 @@
         "summary": "Resends the account confirmation link.",
         "operationId": "resendConfirmationEmail",
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+          "200": {
+            "description": "A new confirmation link was generated."
+          },
+          "409": {
+            "description": "The `User`'s account has already been confirmed."
           },
           "500": {
             "description": "The account recovery email failed to be created."
           },
-          "200": {
-            "description": "A new confirmation link was generated."
-          },
           "401": {
             "description": "Unauthorized"
-          },
-          "409": {
-            "description": "The `User`'s account has already been confirmed."
           }
         }
       }
@@ -179,6 +173,9 @@
           }
         },
         "responses": {
+          "200": {
+            "description": "This endpoint returns 200 OK regardless of whether the email was sent successfully or not."
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -189,11 +186,15 @@
               }
             }
           },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "200": {
-            "description": "This endpoint returns 200 OK regardless of whether the email was sent successfully or not."
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
           }
         }
       }
@@ -218,19 +219,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
             "description": "The account was confirmed successfully."
           },
@@ -263,19 +251,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
             "description": "The token provided is valid."
           },
@@ -318,6 +293,9 @@
           "required": true
         },
         "responses": {
+          "200": {
+            "description": "The user's password was reset successfully."
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -327,15 +305,6 @@
                 }
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "200": {
-            "description": "The user's password was reset successfully."
-          },
-          "403": {
-            "description": "The user is banned."
           },
           "404": {
             "description": "The token provided is invalid or expired."
@@ -352,6 +321,9 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "The user is banned."
           }
         }
       }
@@ -375,19 +347,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
             "description": "OK",
             "content": {
@@ -431,28 +390,8 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoryViewModel"
-                }
-              }
-            }
+            "description": "OK"
           },
           "404": {
             "description": "The Category either doesn't exist for the Leaderboard, or it has been deleted.",
@@ -517,19 +456,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
             "description": "OK",
             "content": {
@@ -541,14 +467,7 @@
             }
           },
           "404": {
-            "description": "The Leaderboard with ID `id` could not be found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+            "description": "Not Found"
           },
           "422": {
             "description": "Unprocessable Content",
@@ -597,19 +516,6 @@
           "required": true
         },
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "201": {
             "description": "Created",
             "content": {
@@ -620,21 +526,8 @@
               }
             }
           },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "The requesting `User` is unauthorized to create Categories."
-          },
           "404": {
-            "description": "The Leaderboard with ID `id` could not be found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+            "description": "The Leaderboard with ID `id` could not be found."
           },
           "409": {
             "description": "A Category with the specified slug already exists.",
@@ -655,6 +548,22 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "The requesting `User` is unauthorized to create Categories."
           }
         }
       }
@@ -692,37 +601,11 @@
           "required": true
         },
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "204": {
             "description": "No Content"
           },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
           "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+            "description": "Not Found"
           },
           "409": {
             "description": "The specified slug is already in use by another category. Returns the conflicting category.",
@@ -743,6 +626,22 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
           }
         }
       },
@@ -764,27 +663,8 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "204": {
             "description": "No Content"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
           },
           "404": {
             "description": "The Category does not exist (Not Found) or was already deleted (Already Deleted).\nUse the `title` field of the response to differentiate between the two cases if necessary.",
@@ -795,6 +675,12 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
           }
         }
       }
@@ -818,19 +704,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
             "description": "OK",
             "content": {
@@ -865,19 +738,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
             "description": "OK",
             "content": {
@@ -949,19 +809,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
             "description": "OK",
             "content": {
@@ -1035,19 +882,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
             "description": "OK",
             "content": {
@@ -1094,19 +928,6 @@
           "required": true
         },
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "201": {
             "description": "Created",
             "content": {
@@ -1165,19 +986,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "204": {
             "description": "No Content"
           },
@@ -1231,19 +1039,6 @@
           "required": true
         },
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "204": {
             "description": "No Content"
           },
@@ -1305,19 +1100,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
             "description": "OK",
             "content": {
@@ -1385,19 +1167,6 @@
           "required": true
         },
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "201": {
             "description": "Created",
             "content": {
@@ -1421,6 +1190,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -1508,19 +1287,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
             "description": "OK",
             "content": {
@@ -1592,19 +1358,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
             "description": "OK",
             "content": {
@@ -1650,19 +1403,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
             "description": "OK",
             "content": {
@@ -1716,19 +1456,6 @@
           "required": true
         },
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "204": {
             "description": "No Content"
           },
@@ -1785,19 +1512,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "204": {
             "description": "No Content"
           },
@@ -1840,19 +1554,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
             "description": "The `User` was found and returned successfully.",
             "content": {
@@ -1911,19 +1612,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
             "description": "OK",
             "content": {
@@ -1962,19 +1650,6 @@
         "description": "Call this method with the 'Authorization' header. A valid JWT bearer token must be\npassed.\nExample: `{ 'Authorization': 'Bearer JWT' }`.",
         "operationId": "me",
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "200": {
             "description": "The `User` was found and returned successfully.",
             "content": {
@@ -2028,19 +1703,6 @@
           "required": true
         },
         "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
           "204": {
             "description": "No Content"
           },
