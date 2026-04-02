@@ -306,7 +306,3 @@ app.MapControllers();
 
 app.Run();
 #endregion
-
-#region Accessible Program class
-public partial class Program { }
-#endregion
