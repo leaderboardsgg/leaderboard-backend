@@ -47,7 +47,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime" Version="10.0.1" />
     <PackageReference Include="OneOf" Version="3.0.271" />
     <PackageReference Include="OneOf.SourceGenerator" Version="3.0.271" />
-    <PackageReference Include="ReHackt.Extensions.Options.Validation" Version="8.0.2" />
+    <PackageReference Include="ReHackt.Extensions.Options.Validation" Version="10.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="10.1.7" />
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="10.1.7" />
