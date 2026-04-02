@@ -6,17 +6,15 @@ namespace LeaderboardBackend.Models.Requests;
 
 public record Page
 {
-    private int _limit;
-
     /// <summary>
     ///     The maximum number of records to return. Fewer records may be returned.
     /// </summary>
     public int Limit
     {
-        get => _limit;
+        get => field;
         set
         {
-            _limit = value;
+            field = value;
             LimitSet = true;
         }
     }
