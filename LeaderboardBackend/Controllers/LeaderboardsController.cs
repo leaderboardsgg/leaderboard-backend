@@ -7,7 +7,6 @@ using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -22,16 +21,16 @@ public class LeaderboardsController(
     [SwaggerOperation("Gets a leaderboard by its ID.", OperationId = "getLeaderboard")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
-    public async Task<Results<Ok<LeaderboardViewModel>, NotFound>> GetLeaderboard([FromRoute] long id)
+    public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboard([FromRoute] long id)
     {
         LeaderboardWithStats? leaderboard = await leaderboardService.GetLeaderboard(id);
 
         if (leaderboard == null)
         {
-            return TypedResults.NotFound();
+            return NotFound();
         }
 
-        return TypedResults.Ok(LeaderboardViewModel.MapFrom(leaderboard));
+        return Ok(LeaderboardViewModel.MapFrom(leaderboard));
     }
 
     [AllowAnonymous]
@@ -39,35 +38,32 @@ public class LeaderboardsController(
     [SwaggerOperation("Gets a leaderboard by its slug. Will not return deleted boards.", OperationId = "getLeaderboardBySlug")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
-    public async Task<Results<Ok<LeaderboardViewModel>, NotFound>> GetLeaderboardBySlug([FromRoute] string slug)
+    public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboardBySlug([FromRoute] string slug)
     {
         LeaderboardWithStats? leaderboard = await leaderboardService.GetLeaderboardBySlug(slug);
 
         if (leaderboard == null)
         {
-            return TypedResults.NotFound();
+            return NotFound();
         }
 
-        return TypedResults.Ok(LeaderboardViewModel.MapFrom(leaderboard));
+        return Ok(LeaderboardViewModel.MapFrom(leaderboard));
     }
 
     [AllowAnonymous]
     [HttpGet("api/leaderboards")]
     [Paginated]
     [SwaggerOperation("Gets leaderboards. Includes deleted, if specified.", OperationId = "listLeaderboards")]
-    [SwaggerResponse(200, Type = typeof(ListView<LeaderboardViewModel>))]
+    [SwaggerResponse(200)]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
-    public async Task<Results<
-        Ok<ListView<LeaderboardViewModel>>,
-        UnprocessableEntity<ValidationProblemDetails>
-    >> GetLeaderboards(
+    public async Task<ActionResult<ListView<LeaderboardViewModel>>> GetLeaderboards(
         [FromQuery] Page page,
         [FromQuery] StatusFilter status = StatusFilter.Published,
         [FromQuery, SwaggerParameter("Sorts results by a leaderboard's field, tie-breaking with IDs if needed.")] SortLeaderboardsBy sortBy = SortLeaderboardsBy.Name_Asc
     )
     {
         ListResult<LeaderboardWithStats> result = await leaderboardService.ListLeaderboards(status, page, sortBy);
-        return TypedResults.Ok(new ListView<LeaderboardViewModel>()
+        return Ok(new ListView<LeaderboardViewModel>()
         {
             Data = [.. result.Items.Select(LeaderboardViewModel.MapFrom)],
             Total = result.ItemsTotal
@@ -80,10 +76,7 @@ public class LeaderboardsController(
     [SwaggerOperation("Search leaderboards by name or slug.", OperationId = "searchLeaderboards")]
     [SwaggerResponse(200, Type = typeof(ListView<LeaderboardViewModel>))]
     [SwaggerResponse(422, Type = typeof(ProblemDetails))]
-    public async Task<Results<
-        Ok<ListView<LeaderboardViewModel>>,
-        ProblemHttpResult
-    >>  SearchLeaderboards(
+    public async Task<ActionResult<ListView<LeaderboardViewModel>>> SearchLeaderboards(
         [
             FromQuery(Name = "q"),
             SwaggerParameter("The query string. Must not be empty.", Required = true)
@@ -94,12 +87,12 @@ public class LeaderboardsController(
     {
         if (string.IsNullOrWhiteSpace(query))
         {
-            return TypedResults.Problem(null, null, 422, "Empty Query");
+            return Problem(null, null, 422, "Empty Query");
         }
 
         ListResult<LeaderboardWithStats> result = await leaderboardService.SearchLeaderboards(query, status, page);
 
-        return TypedResults.Ok(new ListView<LeaderboardViewModel>()
+        return Ok(new ListView<LeaderboardViewModel>()
         {
             Data = [.. result.Items.Select(LeaderboardViewModel.MapFrom)],
             Total = result.ItemsTotal
@@ -114,35 +107,23 @@ public class LeaderboardsController(
     [SwaggerResponse(403, "The requesting `User` is unauthorized to create `Leaderboard`s.")]
     [SwaggerResponse(409, "A Leaderboard with the specified slug already exists and will be returned in the `conflicting` field.", typeof(ConflictDetails<LeaderboardViewModel>))]
     [SwaggerResponse(422, $"The request contains errors. The following errors can occur: NotEmptyValidator, {SlugRule.SLUG_FORMAT}", Type = typeof(ValidationProblemDetails))]
-    public async Task<Results<
-        CreatedAtRoute<LeaderboardViewModel>,
-        UnauthorizedHttpResult,
-        ForbidHttpResult,
-        Microsoft.AspNetCore.Http.HttpResults.Conflict<ProblemDetails>,
-        UnprocessableEntity<ValidationProblemDetails>
-    >> CreateLeaderboard(
+    public async Task<ActionResult<LeaderboardViewModel>> CreateLeaderboard(
         [FromBody, SwaggerRequestBody(Required = true)] CreateLeaderboardRequest request
     )
     {
         CreateLeaderboardResult r = await leaderboardService.CreateLeaderboard(request);
 
-        return r.Match<Results<
-            CreatedAtRoute<LeaderboardViewModel>,
-            UnauthorizedHttpResult,
-            ForbidHttpResult,
-            Microsoft.AspNetCore.Http.HttpResults.Conflict<ProblemDetails>,
-            UnprocessableEntity<ValidationProblemDetails>
-        >>(
-            lb => TypedResults.CreatedAtRoute<LeaderboardViewModel>(
-                LeaderboardViewModel.MapFrom(lb),
+        return r.Match<ActionResult<LeaderboardViewModel>>(
+            lb => CreatedAtAction(
                 nameof(GetLeaderboard),
-                new { id = lb.Id }
+                new { id = lb.Id },
+                LeaderboardViewModel.MapFrom(lb)
             ),
             conflict =>
             {
                 ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
                 problemDetails.Extensions.Add("conflicting", LeaderboardViewModel.MapFrom(conflict.Conflicting));
-                return TypedResults.Conflict(problemDetails);
+                return Conflict(problemDetails);
             }
         );
     }
@@ -161,26 +142,14 @@ public class LeaderboardsController(
         """,
         typeof(ProblemDetails)
     )]
-    public async Task<Results<
-        NoContent,
-        UnauthorizedHttpResult,
-        ForbidHttpResult,
-        NotFound,
-        ProblemHttpResult
-    >> DeleteLeaderboard([FromRoute] long id)
+    public async Task<ActionResult> DeleteLeaderboard([FromRoute] long id)
     {
         DeleteResult res = await leaderboardService.DeleteLeaderboard(id);
 
-        return res.Match<Results<
-            NoContent,
-            UnauthorizedHttpResult,
-            ForbidHttpResult,
-            NotFound,
-            ProblemHttpResult
-        >>(
-            success => TypedResults.NoContent(),
-            notFound => TypedResults.NotFound(),
-            alreadyDeleted => TypedResults.Problem(
+        return res.Match<ActionResult>(
+            success => NoContent(),
+            notFound => NotFound(),
+            alreadyDeleted => Problem(
                 null,
                 null,
                 404,
@@ -201,43 +170,29 @@ public class LeaderboardsController(
     [SwaggerResponse(400, Type = typeof(ProblemDetails))]
     [SwaggerResponse(401)]
     [SwaggerResponse(403)]
-    [SwaggerResponse(404)]
+    [SwaggerResponse(404, Type = typeof(ProblemDetails))]
     [SwaggerResponse(
         409,
         "The specified slug is already in use by another leaderboard. Returns the conflicting leaderboard.",
         typeof(ConflictDetails<LeaderboardViewModel>)
     )]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
-    public async Task<Results<
-        NoContent,
-        UnauthorizedHttpResult,
-        ForbidHttpResult,
-        NotFound,
-        Microsoft.AspNetCore.Http.HttpResults.Conflict<ProblemDetails>,
-        UnprocessableEntity<ValidationProblemDetails>
-    >> UpdateLeaderboard(
+    public async Task<ActionResult> UpdateLeaderboard(
         [FromRoute] long id,
         [FromBody, SwaggerRequestBody(Required = true)] UpdateLeaderboardRequest request
     )
     {
         UpdateResult<Leaderboard> result = await leaderboardService.UpdateLeaderboard(id, request);
 
-        return result.Match<Results<
-            NoContent,
-            UnauthorizedHttpResult,
-            ForbidHttpResult,
-            NotFound,
-            Microsoft.AspNetCore.Http.HttpResults.Conflict<ProblemDetails>,
-            UnprocessableEntity<ValidationProblemDetails>
-        >>(
+        return result.Match<ActionResult>(
             conflict =>
             {
                 ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
                 problemDetails.Extensions.Add("conflicting", LeaderboardViewModel.MapFrom(conflict.Conflicting));
-                return TypedResults.Conflict(problemDetails);
+                return Conflict(problemDetails);
             },
-            notfound => TypedResults.NotFound(),
-            success => TypedResults.NoContent()
+            notfound => NotFound(),
+            success => NoContent()
         );
     }
 }

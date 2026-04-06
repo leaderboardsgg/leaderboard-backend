@@ -6,7 +6,6 @@ using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -23,16 +22,16 @@ public class RunsController(
     [SwaggerOperation("Gets a Run by its ID.", OperationId = "getRun")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404, "The Run with ID `id` could not be found.", typeof(ProblemDetails))]
-    public async Task<Results<Ok<RunViewModel>, NotFound>> GetRun([FromRoute] Guid id)
+    public async Task<ActionResult<RunViewModel>> GetRun([FromRoute] Guid id)
     {
         Run? run = await runService.GetRun(id);
 
         if (run is null)
         {
-            return TypedResults.NotFound();
+            return NotFound();
         }
 
-        return TypedResults.Ok(RunViewModel.MapFrom(run));
+        return Ok(RunViewModel.MapFrom(run));
     }
 
     [Authorize]
@@ -44,12 +43,7 @@ public class RunsController(
     [SwaggerResponse(403, "The requesting User is unauthorized to create Runs.", typeof(ProblemDetails))]
     [SwaggerResponse(404, "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.", typeof(ProblemDetails))]
     [SwaggerResponse(422, Type = typeof(ProblemDetails))]
-    public async Task<Results<
-        UnauthorizedHttpResult,
-        ProblemHttpResult,
-        CreatedAtRoute<RunViewModel>,
-        ForbidHttpResult
-    >> CreateRun(
+    public async Task<ActionResult<RunViewModel>> CreateRun(
         [FromRoute] long id,
         [FromBody, SwaggerRequestBody(Required = true)] CreateRunRequest request
     )
@@ -58,14 +52,14 @@ public class RunsController(
 
         if (!res.IsT0)
         {
-            return TypedResults.Unauthorized();
+            return Unauthorized();
         }
 
         Category? category = await categoryService.GetCategory(id);
 
         if (category is null)
         {
-            return TypedResults.Problem(
+            return Problem(
                 null,
                 null,
                 404,
@@ -75,32 +69,28 @@ public class RunsController(
 
         if (category.DeletedAt is not null)
         {
-            return TypedResults.NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Category Is Deleted"));
-        }
-
-        if (category.Leaderboard?.DeletedAt is not null)
-        {
-            return TypedResults.NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Leaderboard Is Deleted"));
+            return Problem(
+                null,
+                null,
+                404,
+                "Category Is Deleted"
+            );
         }
 
         CreateRunResult r = await runService.CreateRun(res.AsT0, category, request);
 
-        return r.Match<Results<
-            UnauthorizedHttpResult,
-            ProblemHttpResult,
-            CreatedAtRoute<RunViewModel>,
-            ForbidHttpResult
-        >>(
+        return r.Match<ActionResult>(
             run =>
             {
-                return TypedResults.CreatedAtRoute(
-                    RunViewModel.MapFrom(run),
+                CreatedAtActionResult result = CreatedAtAction(
                     nameof(GetRun),
-                    new { id = run.Id.ToUrlSafeBase64String() }
+                    new { id = run.Id.ToUrlSafeBase64String() },
+                    RunViewModel.MapFrom(run)
                 );
+                return result;
             },
-            badRole => TypedResults.Forbid(),
-            badRunType => TypedResults.Problem(
+            badRole => Forbid(),
+            badRunType => Problem(
                 null,
                 null,
                 422,
@@ -116,10 +106,7 @@ public class RunsController(
     [SwaggerResponse(200)]
     [SwaggerResponse(404, "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.", Type = typeof(ProblemDetails))]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
-    public async Task<Results<
-        Ok<ListView<RunViewModel>>,
-        ProblemHttpResult
-    >> GetRunsForCategory(
+    public async Task<ActionResult<ListView<RunViewModel>>> GetRunsForCategory(
         [FromRoute] long id,
         [FromQuery] Page page,
         [FromQuery] StatusFilter status = StatusFilter.Published
@@ -127,16 +114,13 @@ public class RunsController(
     {
         GetRunsForCategoryResult result = await runService.GetRunsForCategory(id, status, page);
 
-        return result.Match<Results<
-            Ok<ListView<RunViewModel>>,
-            ProblemHttpResult
-        >>(
-            runs => TypedResults.Ok(new ListView<RunViewModel>()
+        return result.Match<ActionResult>(
+            runs => Ok(new ListView<RunViewModel>()
             {
                 Data = runs.Items.Select(RunViewModel.MapFrom).ToList(),
                 Total = runs.ItemsTotal
             }),
-            notFound => TypedResults.Problem(
+            notFound => Problem(
                 null,
                 null,
                 404,
@@ -152,28 +136,20 @@ public class RunsController(
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
-    public async Task<Results<
-        Ok<ListView<RunViewModel>>,
-        ProblemHttpResult,
-        UnprocessableEntity<ValidationProblemDetails>
-    >> GetRecordsForCategory(
+    public async Task<ActionResult<ListView<RunViewModel>>> GetRecordsForCategory(
         [FromRoute] long id,
         [FromQuery] Page page
     )
     {
         GetRecordsForCategoryResult result = await runService.GetRecordsForCategory(id, page);
 
-        return result.Match<Results<
-            Ok<ListView<RunViewModel>>,
-            ProblemHttpResult,
-            UnprocessableEntity<ValidationProblemDetails>
-        >>(
-            runs => TypedResults.Ok(new ListView<RunViewModel>()
+        return result.Match<ActionResult>(
+            runs => Ok(new ListView<RunViewModel>()
             {
                 Data = runs.Items.Select(RunViewModel.MapFrom).ToList(),
                 Total = runs.ItemsTotal
             }),
-            notFound => TypedResults.Problem(
+            notFound => Problem(
                 null,
                 null,
                 404,
@@ -187,26 +163,23 @@ public class RunsController(
     [SwaggerOperation("Gets the category a run belongs to.", OperationId = "getRunCategory")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404)]
-    public async Task<Results<
-        Ok<CategoryViewModel>,
-        NotFound<string>
-    >> GetCategoryForRun(Guid id)
+    public async Task<ActionResult<CategoryViewModel>> GetCategoryForRun(Guid id)
     {
         Run? run = await runService.GetRun(id);
 
         if (run is null)
         {
-            return TypedResults.NotFound("Run Not Found");
+            return NotFound("Run Not Found");
         }
 
         Category? category = await categoryService.GetCategoryForRun(run);
 
         if (category is null)
         {
-            return TypedResults.NotFound("Category Not Found");
+            return NotFound("Category Not Found");
         }
 
-        return TypedResults.Ok(CategoryViewModel.MapFrom(category));
+        return Ok(CategoryViewModel.MapFrom(category));
     }
 
     // TODO: Replace UserTypes with UserRole, i.e. reconfigure authZ policy infra
@@ -237,12 +210,7 @@ public class RunsController(
         "otherwise.",
         Type = typeof(ProblemDetails)
     )]
-    public async Task<Results<
-        NoContent,
-        UnauthorizedHttpResult,
-        ForbidHttpResult,
-        ProblemHttpResult
-    >> UpdateRun(
+    public async Task<ActionResult> UpdateRun(
         [FromRoute] Guid id,
         [FromBody, SwaggerRequestBody(Required = true)] UpdateRunRequest request
     )
@@ -251,31 +219,26 @@ public class RunsController(
 
         if (!userRes.IsT0)
         {
-            return TypedResults.Unauthorized();
+            return Unauthorized();
         }
 
         UpdateRunResult res = await runService.UpdateRun(userRes.AsT0, id, request);
 
-        return res.Match<Results<
-            NoContent,
-            UnauthorizedHttpResult,
-            ForbidHttpResult,
-            ProblemHttpResult
-        >>(
-            badRole => TypedResults.Forbid(),
-            userDoesNotOwnRun => TypedResults.Problem(
+        return res.Match<ActionResult>(
+            badRole => Forbid(),
+            userDoesNotOwnRun => Problem(
                 null,
                 null,
                 403,
                 "User Does Not Own Run"
             ),
-            userCannotChangeStatusOfRuns => TypedResults.Problem(
+            userCannotChangeStatusOfRuns => Problem(
                 null,
                 null,
                 403,
                 "User Cannot Change Status of Runs"
             ),
-            notFound => TypedResults.Problem(
+            notFound => Problem(
                 null,
                 null,
                 404,
@@ -300,7 +263,7 @@ public class RunsController(
                     title = "Run Is Deleted";
                 }
 
-                return TypedResults.Problem(
+                return Problem(
                     null,
                     null,
                     404,
@@ -308,13 +271,13 @@ public class RunsController(
                 );
             },
             badRunType =>
-                TypedResults.Problem(
+                Problem(
                     null,
                     null,
                     422,
                     "Incorrect Run Type"
                 ),
-            success => TypedResults.NoContent()
+            success => NoContent()
         );
     }
 
@@ -333,22 +296,14 @@ public class RunsController(
         """,
         typeof(ProblemDetails)
     )]
-    public async Task<Results<
-        NoContent,
-        NotFound,
-        ProblemHttpResult
-    >> DeleteRun(Guid id)
+    public async Task<ActionResult> DeleteRun(Guid id)
     {
         DeleteResult res = await runService.DeleteRun(id);
 
-        return res.Match<Results<
-            NoContent,
-            NotFound,
-            ProblemHttpResult
-        >>(
-            success => TypedResults.NoContent(),
-            notFound => TypedResults.NotFound(),
-            alreadyDeleted => TypedResults.Problem(
+        return res.Match<ActionResult>(
+            success => NoContent(),
+            notFound => NotFound(),
+            alreadyDeleted => Problem(
                 null,
                 null,
                 404,

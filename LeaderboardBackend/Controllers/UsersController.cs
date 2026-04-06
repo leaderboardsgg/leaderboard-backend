@@ -6,7 +6,6 @@ using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -19,7 +18,7 @@ public class UsersController(IUserService userService) : ApiController
     [SwaggerOperation("Gets a User by their ID.", OperationId = "getUser")]
     [SwaggerResponse(200, "The `User` was found and returned successfully.")]
     [SwaggerResponse(404, "No `User` with the requested ID could be found.")]
-    public async Task<Results<Ok<UserViewModel>, NotFound>> GetUserById(
+    public async Task<ActionResult<UserViewModel>> GetUserById(
         [SwaggerParameter("The ID of the `User` which should be retrieved.")] Guid id
     )
     {
@@ -27,10 +26,10 @@ public class UsersController(IUserService userService) : ApiController
 
         if (user is null)
         {
-            return TypedResults.NotFound();
+            return NotFound();
         }
 
-        return TypedResults.Ok(UserViewModel.MapFrom(user));
+        return Ok(UserViewModel.MapFrom(user));
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
@@ -41,12 +40,7 @@ public class UsersController(IUserService userService) : ApiController
     [SwaggerResponse(401)]
     [SwaggerResponse(403)]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
-    public async Task<Results<
-        Ok<ListView<UserViewModel>>,
-        UnauthorizedHttpResult,
-        ForbidHttpResult,
-        ProblemHttpResult
-    >> GetUsers(
+    public async Task<ActionResult<ListView<UserViewModel>>> GetUsers(
         [FromQuery] Page page,
         [
             FromQuery,
@@ -54,7 +48,7 @@ public class UsersController(IUserService userService) : ApiController
         ] UserRole role = UserRole.Confirmed | UserRole.Administrator)
     {
         ListResult<User> result = await userService.ListUsers(page, role);
-        return TypedResults.Ok(new ListView<UserViewModel>()
+        return Ok(new ListView<UserViewModel>()
         {
             Data = result.Items.Select(UserViewModel.MapFrom).ToList(),
             Total = result.ItemsTotal
@@ -70,18 +64,10 @@ public class UsersController(IUserService userService) : ApiController
     [SwaggerResponse(200, "The `User` was found and returned successfully.")]
     [SwaggerResponse(401, "An invalid JWT was passed in.")]
     [SwaggerResponse(404, "The user was not found in the database.")]
-    public async Task<Results<
-        Ok<UserViewModel>,
-        UnauthorizedHttpResult,
-        NotFound
-    >> Me() => (await userService.GetUserFromClaims(HttpContext.User)).Match<Results<
-        Ok<UserViewModel>,
-        UnauthorizedHttpResult,
-        NotFound
-    >>(
-            user => TypedResults.Ok(UserViewModel.MapFrom(user)),
-            badCredentials => TypedResults.Unauthorized(),
-            userNotFound => TypedResults.NotFound()
+    public async Task<ActionResult<UserViewModel>> Me() => (await userService.GetUserFromClaims(HttpContext.User)).Match<ActionResult<UserViewModel>>(
+            user => Ok(UserViewModel.MapFrom(user)),
+            badCredentials => Unauthorized(),
+            userNotFound => NotFound()
         );
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
@@ -101,36 +87,28 @@ public class UsersController(IUserService userService) : ApiController
     )]
     [SwaggerResponse(404, Type = typeof(ProblemDetails))]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
-    public async Task<Results<
-        NoContent,
-        NotFound,
-        ProblemHttpResult
-    >> UpdateUser(
+    public async Task<ActionResult> UpdateUser(
         [FromRoute] Guid id,
         [FromBody, SwaggerRequestBody(Required = true)] UpdateUserRequest request
     )
     {
         UpdateUserResult r = await userService.UpdateUser(id, request);
 
-        return r.Match<Results<
-            NoContent,
-            NotFound,
-            ProblemHttpResult
-        >>(
-            badRole => TypedResults.Problem(
+        return r.Match<ActionResult>(
+            badRole => Problem(
                 null,
                 null,
                 403,
                 "Banning Admins Forbidden"
             ),
-            roleChangeForbidden => TypedResults.Problem(
+            roleChangeForbidden => Problem(
                 null,
                 null,
                 403,
                 "Role Change Forbidden"
             ),
-            notFound => TypedResults.NotFound(),
-            success => TypedResults.NoContent()
+            notFound => NotFound(),
+            success => NoContent()
         );
     }
 }
