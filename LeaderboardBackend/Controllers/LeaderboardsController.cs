@@ -20,6 +20,8 @@ public class LeaderboardsController(
     [AllowAnonymous]
     [HttpGet("api/leaderboards/{id:long}")]
     [SwaggerOperation("Gets a leaderboard by its ID.", OperationId = "getLeaderboard")]
+    [SwaggerResponse(200)]
+    [SwaggerResponse(404)]
     public async Task<Results<Ok<LeaderboardViewModel>, NotFound>> GetLeaderboard([FromRoute] long id)
     {
         LeaderboardWithStats? leaderboard = await leaderboardService.GetLeaderboard(id);
@@ -35,6 +37,8 @@ public class LeaderboardsController(
     [AllowAnonymous]
     [HttpGet("api/leaderboards/{slug}")]
     [SwaggerOperation("Gets a leaderboard by its slug. Will not return deleted boards.", OperationId = "getLeaderboardBySlug")]
+    [SwaggerResponse(200)]
+    [SwaggerResponse(404)]
     public async Task<Results<Ok<LeaderboardViewModel>, NotFound>> GetLeaderboardBySlug([FromRoute] string slug)
     {
         LeaderboardWithStats? leaderboard = await leaderboardService.GetLeaderboardBySlug(slug);
@@ -51,6 +55,8 @@ public class LeaderboardsController(
     [HttpGet("api/leaderboards")]
     [Paginated]
     [SwaggerOperation("Gets leaderboards. Includes deleted, if specified.", OperationId = "listLeaderboards")]
+    [SwaggerResponse(200, Type = typeof(ListView<LeaderboardViewModel>))]
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<Results<
         Ok<ListView<LeaderboardViewModel>>,
         UnprocessableEntity<ValidationProblemDetails>
@@ -72,9 +78,11 @@ public class LeaderboardsController(
     [HttpGet("/api/search/leaderboards")]
     [Paginated]
     [SwaggerOperation("Search leaderboards by name or slug.", OperationId = "searchLeaderboards")]
+    [SwaggerResponse(200, Type = typeof(ListView<LeaderboardViewModel>))]
+    [SwaggerResponse(422, Type = typeof(ProblemDetails))]
     public async Task<Results<
         Ok<ListView<LeaderboardViewModel>>,
-        UnprocessableEntity<ProblemDetails>
+        ProblemHttpResult
     >>  SearchLeaderboards(
         [
             FromQuery(Name = "q"),
@@ -86,7 +94,7 @@ public class LeaderboardsController(
     {
         if (string.IsNullOrWhiteSpace(query))
         {
-            return TypedResults.UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 422, "Empty Query"));
+            return TypedResults.Problem(null, null, 422, "Empty Query");
         }
 
         ListResult<LeaderboardWithStats> result = await leaderboardService.SearchLeaderboards(query, status, page);
@@ -101,16 +109,16 @@ public class LeaderboardsController(
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
     [HttpPost("leaderboards")]
     [SwaggerOperation("Creates a new leaderboard. This request is restricted to Administrators.", OperationId = "createLeaderboard")]
+    [SwaggerResponse(201)]
     [SwaggerResponse(401)]
     [SwaggerResponse(403, "The requesting `User` is unauthorized to create `Leaderboard`s.")]
     [SwaggerResponse(409, "A Leaderboard with the specified slug already exists and will be returned in the `conflicting` field.", typeof(ConflictDetails<LeaderboardViewModel>))]
     [SwaggerResponse(422, $"The request contains errors. The following errors can occur: NotEmptyValidator, {SlugRule.SLUG_FORMAT}", Type = typeof(ValidationProblemDetails))]
     public async Task<Results<
         CreatedAtRoute<LeaderboardViewModel>,
-        BadRequest,
         UnauthorizedHttpResult,
         ForbidHttpResult,
-        Microsoft.AspNetCore.Http.HttpResults.Conflict<ConflictDetails<LeaderboardViewModel>>,
+        Microsoft.AspNetCore.Http.HttpResults.Conflict<ProblemDetails>,
         UnprocessableEntity<ValidationProblemDetails>
     >> CreateLeaderboard(
         [FromBody, SwaggerRequestBody(Required = true)] CreateLeaderboardRequest request
@@ -120,25 +128,29 @@ public class LeaderboardsController(
 
         return r.Match<Results<
             CreatedAtRoute<LeaderboardViewModel>,
-            BadRequest,
             UnauthorizedHttpResult,
             ForbidHttpResult,
-            Microsoft.AspNetCore.Http.HttpResults.Conflict<ConflictDetails<LeaderboardViewModel>>,
+            Microsoft.AspNetCore.Http.HttpResults.Conflict<ProblemDetails>,
             UnprocessableEntity<ValidationProblemDetails>
         >>(
-            lb => TypedResults.CreatedAtRoute(
+            lb => TypedResults.CreatedAtRoute<LeaderboardViewModel>(
                 LeaderboardViewModel.MapFrom(lb),
                 nameof(GetLeaderboard),
                 new { id = lb.Id }
             ),
             conflict =>
-                TypedResults.Conflict(CreateConflictDetails(LeaderboardViewModel.MapFrom(conflict.Conflicting)))
+            {
+                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
+                problemDetails.Extensions.Add("conflicting", LeaderboardViewModel.MapFrom(conflict.Conflicting));
+                return TypedResults.Conflict(problemDetails);
+            }
         );
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
     [HttpDelete("leaderboards/{id:long}")]
     [SwaggerOperation("Deletes a leaderboard. This request is restricted to Administrators.", OperationId = "deleteLeaderboard")]
+    [SwaggerResponse(204)]
     [SwaggerResponse(401)]
     [SwaggerResponse(403)]
     [SwaggerResponse(
@@ -153,7 +165,8 @@ public class LeaderboardsController(
         NoContent,
         UnauthorizedHttpResult,
         ForbidHttpResult,
-        NotFound<ProblemDetails>
+        NotFound,
+        ProblemHttpResult
     >> DeleteLeaderboard([FromRoute] long id)
     {
         DeleteResult res = await leaderboardService.DeleteLeaderboard(id);
@@ -162,16 +175,18 @@ public class LeaderboardsController(
             NoContent,
             UnauthorizedHttpResult,
             ForbidHttpResult,
-            NotFound<ProblemDetails>
+            NotFound,
+            ProblemHttpResult
         >>(
             success => TypedResults.NoContent(),
-            notFound => TypedResults.NotFound(ProblemDetailsFactory.CreateProblemDetails(
-                HttpContext,
-                404)),
-            alreadyDeleted => TypedResults.NotFound(ProblemDetailsFactory.CreateProblemDetails(
-                HttpContext,
+            notFound => TypedResults.NotFound(),
+            alreadyDeleted => TypedResults.Problem(
+                null,
+                null,
                 404,
-                "Already Deleted")));
+                "Already Deleted"
+            )
+        );
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
@@ -182,9 +197,11 @@ public class LeaderboardsController(
         "All fields of the request body are optional but you must specify at least one.",
         OperationId = "updateLeaderboard"
     )]
+    [SwaggerResponse(204)]
     [SwaggerResponse(400, Type = typeof(ProblemDetails))]
     [SwaggerResponse(401)]
     [SwaggerResponse(403)]
+    [SwaggerResponse(404)]
     [SwaggerResponse(
         409,
         "The specified slug is already in use by another leaderboard. Returns the conflicting leaderboard.",
@@ -196,7 +213,7 @@ public class LeaderboardsController(
         UnauthorizedHttpResult,
         ForbidHttpResult,
         NotFound,
-        Microsoft.AspNetCore.Http.HttpResults.Conflict<ConflictDetails<LeaderboardViewModel>>,
+        Microsoft.AspNetCore.Http.HttpResults.Conflict<ProblemDetails>,
         UnprocessableEntity<ValidationProblemDetails>
     >> UpdateLeaderboard(
         [FromRoute] long id,
@@ -210,10 +227,15 @@ public class LeaderboardsController(
             UnauthorizedHttpResult,
             ForbidHttpResult,
             NotFound,
-            Microsoft.AspNetCore.Http.HttpResults.Conflict<ConflictDetails<LeaderboardViewModel>>,
+            Microsoft.AspNetCore.Http.HttpResults.Conflict<ProblemDetails>,
             UnprocessableEntity<ValidationProblemDetails>
         >>(
-            conflict => TypedResults.Conflict(CreateConflictDetails(LeaderboardViewModel.MapFrom(conflict.Conflicting))),
+            conflict =>
+            {
+                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
+                problemDetails.Extensions.Add("conflicting", LeaderboardViewModel.MapFrom(conflict.Conflicting));
+                return TypedResults.Conflict(problemDetails);
+            },
             notfound => TypedResults.NotFound(),
             success => TypedResults.NoContent()
         );
