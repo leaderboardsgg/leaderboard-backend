@@ -16,7 +16,6 @@ internal record TestInitCommonFields
         JsonSerializerOptions = new(JsonSerializerDefaults.Web)
         {
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
         JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(null, false));
