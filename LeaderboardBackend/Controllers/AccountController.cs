@@ -81,11 +81,11 @@ public class AccountController(IUserService userService) : ApiController
     [FeatureGate(Features.LOGIN)]
     [HttpPost("/login")]
     [SwaggerOperation("Logs a User in.", OperationId = "login")]
-    // [SwaggerResponse(
-    //     200,
-    //     "The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.",
-    //     typeof(LoginResponse)
-    // )]
+    [SwaggerResponse(
+        200,
+        "The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.",
+        typeof(LoginResponse)
+    )]
     [SwaggerResponse(401, "The password given was incorrect, or no `User` could be found.")]
     [SwaggerResponse(403, "The associated `User` is banned.")]
     [SwaggerResponse(
@@ -134,6 +134,7 @@ public class AccountController(IUserService userService) : ApiController
     [Authorize]
     [HttpPost("confirm")]
     [SwaggerOperation("Resends the account confirmation link.", OperationId = "resendConfirmationEmail")]
+    [SwaggerResponse(200, "A new confirmation link was generated.")]
     [SwaggerResponse(401)]
     [SwaggerResponse(409, "The `User`'s account has already been confirmed.")]
     [SwaggerResponse(500, "The account recovery email failed to be created.")]
@@ -192,6 +193,7 @@ public class AccountController(IUserService userService) : ApiController
     [AllowAnonymous]
     [HttpPut("confirm/{id}")]
     [SwaggerOperation("Confirms a user account.", OperationId = "confirmAccount")]
+    [SwaggerResponse(200, "The account was confirmed successfully.")]
     [SwaggerResponse(404, "The token provided was invalid or expired.")]
     [SwaggerResponse(409, "the user's account was either already confirmed or banned.")]
     public async Task<Results<Ok, NotFound, Conflict>> ConfirmAccount(
@@ -236,6 +238,7 @@ public class AccountController(IUserService userService) : ApiController
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
     [HttpPost("recover/{id}")]
     [SwaggerOperation("Recover the user's account by resetting their password to a new value.", OperationId = "changePassword")]
+    [SwaggerResponse(200, "The user's password was reset successfully.")]
     [SwaggerResponse(403, "The user is banned.")]
     [SwaggerResponse(404, "The token provided is invalid or expired.")]
     [SwaggerResponse(409, "The new password is the same as the user's existing password.")]
