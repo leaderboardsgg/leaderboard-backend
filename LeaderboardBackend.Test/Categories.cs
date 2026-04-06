@@ -25,7 +25,7 @@ using NUnit.Framework;
 namespace LeaderboardBackend.Test;
 
 [TestFixture]
-internal class Categories
+public class Categories
 {
     private static TestApiClient _apiClient = null!;
     private static WebApplicationFactory<Program> _factory = null!;
