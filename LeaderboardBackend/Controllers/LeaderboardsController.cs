@@ -20,7 +20,7 @@ public class LeaderboardsController(
     [HttpGet("api/leaderboards/{id:long}")]
     [SwaggerOperation("Gets a leaderboard by its ID.", OperationId = "getLeaderboard")]
     [SwaggerResponse(200)]
-    [SwaggerResponse(404)]
+    [SwaggerResponse(404, Type = typeof(ProblemDetails))]
     public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboard([FromRoute] long id)
     {
         LeaderboardWithStats? leaderboard = await leaderboardService.GetLeaderboard(id);
@@ -37,7 +37,7 @@ public class LeaderboardsController(
     [HttpGet("api/leaderboards/{slug}")]
     [SwaggerOperation("Gets a leaderboard by its slug. Will not return deleted boards.", OperationId = "getLeaderboardBySlug")]
     [SwaggerResponse(200)]
-    [SwaggerResponse(404)]
+    [SwaggerResponse(404, Type = typeof(ProblemDetails))]
     public async Task<ActionResult<LeaderboardViewModel>> GetLeaderboardBySlug([FromRoute] string slug)
     {
         LeaderboardWithStats? leaderboard = await leaderboardService.GetLeaderboardBySlug(slug);
@@ -103,6 +103,7 @@ public class LeaderboardsController(
     [HttpPost("leaderboards")]
     [SwaggerOperation("Creates a new leaderboard. This request is restricted to Administrators.", OperationId = "createLeaderboard")]
     [SwaggerResponse(201)]
+    [SwaggerResponse(400, Type = typeof(ProblemDetails))]
     [SwaggerResponse(401)]
     [SwaggerResponse(403, "The requesting `User` is unauthorized to create `Leaderboard`s.")]
     [SwaggerResponse(409, "A Leaderboard with the specified slug already exists and will be returned in the `conflicting` field.", typeof(ConflictDetails<LeaderboardViewModel>))]
@@ -119,13 +120,7 @@ public class LeaderboardsController(
                 new { id = lb.Id },
                 LeaderboardViewModel.MapFrom(lb)
             ),
-            conflict =>
-            {
-                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
-                problemDetails.Extensions.Add("conflicting", LeaderboardViewModel.MapFrom(conflict.Conflicting));
-                return Conflict(problemDetails);
-            }
-        );
+            conflict => Conflict(CreateConflictDetails(LeaderboardViewModel.MapFrom(conflict.Conflicting))));
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
@@ -185,12 +180,7 @@ public class LeaderboardsController(
         UpdateResult<Leaderboard> result = await leaderboardService.UpdateLeaderboard(id, request);
 
         return result.Match<ActionResult>(
-            conflict =>
-            {
-                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
-                problemDetails.Extensions.Add("conflicting", LeaderboardViewModel.MapFrom(conflict.Conflicting));
-                return Conflict(problemDetails);
-            },
+            conflict => Conflict(CreateConflictDetails(LeaderboardViewModel.MapFrom(conflict.Conflicting))),
             notfound => NotFound(),
             success => NoContent()
         );
