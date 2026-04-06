@@ -33,8 +33,6 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     [AllowAnonymous]
     [HttpGet("api/leaderboards/{id:long}/categories/{slug}")]
     [SwaggerOperation("Gets a Category of Leaderboard `id` by its slug. Will not return deleted Categories.", OperationId = "getCategoryBySlug")]
-    [SwaggerResponse(200)]
-    [SwaggerResponse(404, "The Category either doesn't exist for the Leaderboard, or it has been deleted.", typeof(ProblemDetails))]
     public async Task<Results<Ok<CategoryViewModel>, NotFound>> GetCategoryBySlug(
         [FromRoute] long id,
         [FromRoute] string slug
@@ -81,7 +79,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     [SwaggerOperation("Creates a new Category for a Leaderboard with ID `id`. This request is restricted to Administrators.", OperationId = "createCategory")]
     [SwaggerResponse(400, Type = typeof(ProblemDetails))]
     [SwaggerResponse(401)]
-    [SwaggerResponse(403, "The requesting `User` is unauthorized to create Categories.")]
+    [SwaggerResponse(403)]
     [SwaggerResponse(404, "The Leaderboard with ID `id` could not be found.")]
     [SwaggerResponse(409, "A Category with the specified slug already exists.", typeof(ConflictDetails<CategoryViewModel>))]
     [SwaggerResponse(422, $"The request contains errors. The following errors can occur: NotEmptyValidator, {SlugRule.SLUG_FORMAT}", typeof(ValidationProblemDetails))]
@@ -90,7 +88,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
         UnauthorizedHttpResult,
         ForbidHttpResult,
         NotFound,
-        Microsoft.AspNetCore.Http.HttpResults.Conflict<ProblemDetails>,
+        Microsoft.AspNetCore.Http.HttpResults.Conflict<ConflictDetails<CategoryViewModel>>,
         UnprocessableEntity<ValidationProblemDetails>
     >> CreateCategory(
         [FromRoute] long id,
@@ -104,7 +102,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
             UnauthorizedHttpResult,
             ForbidHttpResult,
             NotFound,
-            Microsoft.AspNetCore.Http.HttpResults.Conflict<ProblemDetails>,
+            Microsoft.AspNetCore.Http.HttpResults.Conflict<ConflictDetails<CategoryViewModel>>,
             UnprocessableEntity<ValidationProblemDetails>
         >>(
             category => TypedResults.CreatedAtRoute(
@@ -112,11 +110,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
                 nameof(GetCategory),
                 new { id = category.Id }),
             conflict =>
-                {
-                    ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
-                    problemDetails.Extensions.Add("conflicting", CategoryViewModel.MapFrom(conflict.Conflicting));
-                    return TypedResults.Conflict(problemDetails);
-                },
+                TypedResults.Conflict(CreateConflictDetails(CategoryViewModel.MapFrom(conflict.Conflicting))),
             notFound => TypedResults.NotFound()
         );
     }
@@ -144,7 +138,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
         UnauthorizedHttpResult,
         ForbidHttpResult,
         NotFound,
-        Microsoft.AspNetCore.Http.HttpResults.Conflict<ProblemDetails>,
+        Microsoft.AspNetCore.Http.HttpResults.Conflict<ConflictDetails<CategoryViewModel>>,
         UnprocessableEntity<ValidationProblemDetails>
     >> UpdateCategory(
         [FromRoute] long id,
@@ -158,15 +152,11 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
             UnauthorizedHttpResult,
             ForbidHttpResult,
             NotFound,
-            Microsoft.AspNetCore.Http.HttpResults.Conflict<ProblemDetails>,
+            Microsoft.AspNetCore.Http.HttpResults.Conflict<ConflictDetails<CategoryViewModel>>,
             UnprocessableEntity<ValidationProblemDetails>
         >>(
             conflict =>
-            {
-                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
-                problemDetails.Extensions.Add("conflicting", CategoryViewModel.MapFrom(conflict.Conflicting));
-                return TypedResults.Conflict(problemDetails);
-            },
+                TypedResults.Conflict(CreateConflictDetails(CategoryViewModel.MapFrom(conflict.Conflicting))),
             notFound => TypedResults.NotFound(),
             success => TypedResults.NoContent()
         );
@@ -189,8 +179,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
         NoContent,
         UnauthorizedHttpResult,
         ForbidHttpResult,
-        ProblemHttpResult,
-        NotFound
+        NotFound<ProblemDetails>
     >> DeleteCategory([FromRoute] long id)
     {
         DeleteResult res = await categoryService.DeleteCategory(id);
@@ -199,17 +188,15 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
             NoContent,
             UnauthorizedHttpResult,
             ForbidHttpResult,
-            ProblemHttpResult,
-            NotFound
+            NotFound<ProblemDetails>
         >>(
             success => TypedResults.NoContent(),
-            notFound => TypedResults.NotFound(),
-            alreadyDeleted => TypedResults.Problem(
-                null,
-                null,
+            notFound => TypedResults.NotFound(ProblemDetailsFactory.CreateProblemDetails(
+                HttpContext,
+                404)),
+            alreadyDeleted => TypedResults.NotFound(ProblemDetailsFactory.CreateProblemDetails(
+                HttpContext,
                 404,
-                "Already Deleted"
-            )
-        );
+                "Already Deleted")));
     }
 }
