@@ -21,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
 using NodaTime.Testing;
 using NUnit.Framework;
+using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace LeaderboardBackend.Test;
 
@@ -56,7 +57,7 @@ public class Users
     {
         IServiceScope scope = _factory.Services.CreateScope();
         ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        context.Users.Where(u => u != TestInitCommonFields.Admin).ExecuteDelete();
+        await context.Users.Where(u => u.Id != TestInitCommonFields.Admin.Id).ExecuteDeleteAsync();
 
         // Breaking standard pattern here because doing otherwise would be
         // unnecessarily tedious - zysim
@@ -64,32 +65,32 @@ public class Users
             new()
             {
                 Email = "getusers.ok@example.com",
-                Password = "P4ssword",
+                Password = BCryptNet.EnhancedHashPassword("P4ssword"),
                 Username = "GetUsersOk",
             },
             new()
             {
                 Email = "getusers.ok1@example.com",
-                Password = "P4ssword",
+                Password = BCryptNet.EnhancedHashPassword("P4ssword"),
                 Username = "GetUsersOk1",
             },
             new()
             {
                 Email = "getusers.ok2@example.com",
-                Password = "P4ssword",
+                Password = BCryptNet.EnhancedHashPassword("P4ssword"),
                 Username = "GetUsersOk2",
                 Role = UserRole.Banned,
             },
             new()
             {
                 Email = "getusers.ok3@example.com",
-                Password = "P4ssword",
+                Password = BCryptNet.EnhancedHashPassword("P4ssword"),
                 Username = "GetUsersOk3",
             },
             new()
             {
                 Email = "getusers.ok4@example.com",
-                Password = "P4ssword",
+                Password = BCryptNet.EnhancedHashPassword("P4ssword"),
                 Username = "GetUsersOk4",
             },
         ]);

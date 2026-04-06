@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using LeaderboardBackend.Test.Lib;
@@ -64,9 +65,7 @@ public class TestApiClient(HttpClient client)
 
     private static async Task<T> ReadFromResponseBody<T>(HttpResponseMessage response)
     {
-        string rawJson = await response.Content.ReadAsStringAsync();
-        T? obj = JsonSerializer.Deserialize<T>(rawJson, TestInitCommonFields.JsonSerializerOptions);
-
+        T? obj = await response.Content.ReadFromJsonAsync<T>(TestInitCommonFields.JsonSerializerOptions);
         obj.Should().NotBeNull();
 
         return obj!;
