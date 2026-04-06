@@ -346,7 +346,7 @@ public class Categories
         createdCategory.CreatedAt.Should().Be(_clock.GetCurrentInstant());
 
         CategoryViewModel retrievedCategory = await _apiClient.Get<CategoryViewModel>(
-            $"/api/categories/{createdCategory?.Id}", new() { }
+            $"/api/categories/{createdCategory.Id}", new() { }
         );
 
         retrievedCategory.Should().BeEquivalentTo(request);
