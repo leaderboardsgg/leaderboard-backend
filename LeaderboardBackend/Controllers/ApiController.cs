@@ -1,6 +1,5 @@
 using LeaderboardBackend.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace LeaderboardBackend.Controllers;
 
