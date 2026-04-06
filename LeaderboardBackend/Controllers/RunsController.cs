@@ -21,8 +21,6 @@ public class RunsController(
     [AllowAnonymous]
     [HttpGet("api/runs/{id}")]
     [SwaggerOperation("Gets a Run by its ID.", OperationId = "getRun")]
-    [SwaggerResponse(200)]
-    [SwaggerResponse(404, "The Run with ID `id` could not be found.", typeof(ProblemDetails))]
     public async Task<Results<Ok<RunViewModel>, NotFound>> GetRun([FromRoute] Guid id)
     {
         Run? run = await runService.GetRun(id);
@@ -38,17 +36,16 @@ public class RunsController(
     [Authorize]
     [HttpPost("/categories/{id:long}/runs")]
     [SwaggerOperation("Creates a new Run for a Category with ID `id`. This request is restricted to confirmed Users and Administrators.", OperationId = "createRun")]
-    [SwaggerResponse(201)]
     [SwaggerResponse(401, "The client is not logged in.", typeof(ProblemDetails))]
-    [SwaggerResponse(400, Type = typeof(ValidationProblemDetails))]
-    [SwaggerResponse(403, "The requesting User is unauthorized to create Runs.", typeof(ProblemDetails))]
+    [SwaggerResponse(403)]
     [SwaggerResponse(404, "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.", typeof(ProblemDetails))]
-    [SwaggerResponse(422, Type = typeof(ProblemDetails))]
     public async Task<Results<
         UnauthorizedHttpResult,
-        ProblemHttpResult,
+        BadRequest<ProblemDetails>,
         CreatedAtRoute<RunViewModel>,
-        ForbidHttpResult
+        ForbidHttpResult,
+        NotFound<ProblemDetails>,
+        UnprocessableEntity<ProblemDetails>
     >> CreateRun(
         [FromRoute] long id,
         [FromBody, SwaggerRequestBody(Required = true)] CreateRunRequest request
@@ -65,55 +62,47 @@ public class RunsController(
 
         if (category is null)
         {
-            return TypedResults.Problem(
-                null,
-                null,
-                404,
-                "Category Not Found"
-            );
+            return TypedResults.NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Category Not Found"));
         }
 
         if (category.DeletedAt is not null)
         {
-            return TypedResults.Problem(
-                null,
-                null,
-                404,
-                "Category Is Deleted"
-            );
+            return TypedResults.NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Category Is Deleted"));
+        }
+
+        if (category.Leaderboard?.DeletedAt is not null)
+        {
+            return TypedResults.NotFound(ProblemDetailsFactory.CreateProblemDetails(HttpContext, 404, "Leaderboard Is Deleted"));
         }
 
         CreateRunResult r = await runService.CreateRun(res.AsT0, category, request);
 
         return r.Match<Results<
             UnauthorizedHttpResult,
-            ProblemHttpResult,
+            BadRequest<ProblemDetails>,
             CreatedAtRoute<RunViewModel>,
-            ForbidHttpResult
+            ForbidHttpResult,
+            NotFound<ProblemDetails>,
+            UnprocessableEntity<ProblemDetails>
         >>(
             run =>
-            {
-                return TypedResults.CreatedAtRoute(
+                TypedResults.CreatedAtRoute(
                     RunViewModel.MapFrom(run),
                     nameof(GetRun),
-                    new { id = run.Id.ToUrlSafeBase64String() }
-                );
-            },
+                    new { id = run.Id.ToUrlSafeBase64String() }),
             badRole => TypedResults.Forbid(),
-            badRunType => TypedResults.Problem(
-                null,
-                null,
+            badRunType => TypedResults.UnprocessableEntity(ProblemDetailsFactory.CreateProblemDetails(
+                HttpContext,
                 422,
-                "The request's runType does not match the category's."
-            )
-        );
+                "Mismatched Run Type",
+                null,
+                "The request's runType does not match the category's.")));
     }
 
     [AllowAnonymous]
     [HttpGet("/api/categories/{id:long}/runs")]
     [Paginated]
     [SwaggerOperation("Gets all Runs submitted by users for a Category. To get only the personal bests of every user instead, call `GetRecordsForCategory`.", OperationId = "getRunsForCategory")]
-    [SwaggerResponse(200)]
     [SwaggerResponse(404, "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.", Type = typeof(ProblemDetails))]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<Results<

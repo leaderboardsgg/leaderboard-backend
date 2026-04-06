@@ -1114,17 +1114,24 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
-          },
-          "404": {
-            "description": "The Run with ID `id` could not be found.",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/TimedRunViewModel"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScoredRunViewModel"
+                    }
+                  ]
                 }
               }
             }
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -1166,35 +1173,29 @@
           "required": true
         },
         "responses": {
-          "201": {
-            "description": "Created"
-          },
-          "401": {
-            "description": "The client is not logged in.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Bad Request",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
           },
-          "403": {
-            "description": "The requesting User is unauthorized to create Runs.",
+          "201": {
+            "description": "Created",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/TimedRunViewModel"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScoredRunViewModel"
+                    }
+                  ]
                 }
               }
             }
@@ -1218,6 +1219,19 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "The client is not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
           }
         }
       }
@@ -1273,7 +1287,14 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunViewModelListView"
+                }
+              }
+            }
           },
           "404": {
             "description": "The Category with ID `id` could not be found, or has been deleted. Read `title` for more information.",
@@ -2277,6 +2298,160 @@
         ],
         "type": "string"
       },
+      "RunViewModel": {
+        "required": [
+          "categoryId",
+          "createdAt",
+          "deletedAt",
+          "id",
+          "info",
+          "playedOn",
+          "runType",
+          "status",
+          "updatedAt",
+          "user"
+        ],
+        "type": "object",
+        "properties": {
+          "runType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunType"
+              }
+            ]
+          },
+          "id": {
+            "pattern": "^[a-zA-Z0-9-_]{22}$",
+            "type": "string",
+            "description": "The unique identifier of the `Run`.\n\nGenerated on creation."
+          },
+          "info": {
+            "type": "string",
+            "description": "User-provided details about the run.",
+            "nullable": true
+          },
+          "playedOn": {
+            "type": "string",
+            "description": "The date the run was done, *not* when it was submitted.",
+            "format": "date",
+            "example": "2000-01-01"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The time the run was submitted to the DB.",
+            "format": "date-time",
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "The last time the run was updated or null.",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "deletedAt": {
+            "type": "string",
+            "description": "The time at which the run was deleted, or null if the run has not been deleted.",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "categoryId": {
+            "type": "integer",
+            "description": "The ID of the `Category` for `Run`.",
+            "format": "int64"
+          },
+          "user": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserViewModel"
+              }
+            ],
+            "description": "The user who submitted this run."
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Status"
+              }
+            ]
+          },
+          "rank": {
+            "type": "integer",
+            "description": "The run's rank within its category.",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false,
+        "discriminator": {
+          "propertyName": "runType",
+          "mapping": {
+            "Time": "#/components/schemas/TimedRunViewModel",
+            "Score": "#/components/schemas/ScoredRunViewModel"
+          }
+        }
+      },
+      "RunViewModelListView": {
+        "required": [
+          "data",
+          "limitDefault",
+          "limitMax",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/TimedRunViewModel"
+                },
+                {
+                  "$ref": "#/components/schemas/ScoredRunViewModel"
+                }
+              ]
+            }
+          },
+          "total": {
+            "type": "integer",
+            "description": "The total number of records matching the given criteria that\nexist in the database, NOT the total number of records returned.",
+            "format": "int64"
+          },
+          "limitDefault": {
+            "type": "integer",
+            "description": "The default limit that will be applied for this resource type\nif the client does not specify one in the query string.",
+            "format": "int32"
+          },
+          "limitMax": {
+            "type": "integer",
+            "description": "The maximum value the client is allowed to specify as a limt for\nendpoints return a paginated list of resources of this type.\nExceeding this value will result in an error.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ScoredRunViewModel": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RunViewModel"
+          },
+          {
+            "required": [
+              "score"
+            ],
+            "type": "object",
+            "properties": {
+              "score": {
+                "type": "integer",
+                "description": "The score achieved during the run.",
+                "format": "int64"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
       "SortDirection": {
         "enum": [
           "Ascending",
@@ -2310,6 +2485,27 @@
           "Any"
         ],
         "type": "string"
+      },
+      "TimedRunViewModel": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RunViewModel"
+          },
+          {
+            "required": [
+              "time"
+            ],
+            "type": "object",
+            "properties": {
+              "time": {
+                "type": "string",
+                "description": "The duration of the run.",
+                "example": "25:01:01.001"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
       },
       "UpdateCategoryRequest": {
         "type": "object",
@@ -2464,6 +2660,40 @@
           "Banned"
         ],
         "type": "string"
+      },
+      "UserViewModel": {
+        "required": [
+          "createdAt",
+          "id",
+          "role",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^[a-zA-Z0-9-_]{22}$",
+            "type": "string",
+            "description": "The unique identifier of the `User`.\n\nGenerated on creation."
+          },
+          "username": {
+            "type": "string",
+            "description": "The username of the `User`. It:\n<ul><li>must be [2, 25] in length;</li><li>must be made up of alphanumeric characters around zero or one of:</li><ul><li>hyphen;</li><li>underscore; or</li><li>apostrophe</li></ul></ul>\nUsernames are saved case-sensitively, but matcehd against case-insensitively.\nA `User` may not register with the name 'Cool' when another `User` with the name 'cool'\nexists.",
+            "example": "J'on-Doe"
+          },
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserRole"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "1984-01-01T00:00:00Z"
+          }
+        },
+        "additionalProperties": false
       },
       "ValidationProblemDetails": {
         "type": "object",
