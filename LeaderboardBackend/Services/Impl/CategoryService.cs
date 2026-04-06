@@ -12,7 +12,7 @@ namespace LeaderboardBackend.Services;
 public class CategoryService(ApplicationContext applicationContext, IClock clock) : ICategoryService
 {
     public async Task<Category?> GetCategory(long id) =>
-        await applicationContext.Categories.FindAsync(id);
+        await applicationContext.Categories.Include(cat => cat.Leaderboard).SingleOrDefaultAsync();
 
     public async Task<Category?> GetCategoryBySlug(long leaderboardId, string slug) =>
         await applicationContext.Categories
