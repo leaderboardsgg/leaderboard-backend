@@ -17,7 +17,7 @@ public class UsersController(IUserService userService) : ApiController
     [HttpGet("api/users/{id}")]
     [SwaggerOperation("Gets a User by their ID.", OperationId = "getUser")]
     [SwaggerResponse(200, "The `User` was found and returned successfully.")]
-    [SwaggerResponse(404, "No `User` with the requested ID could be found.")]
+    [SwaggerResponse(404, "No `User` with the requested ID could be found.", typeof(ProblemDetails))]
     public async Task<ActionResult<UserViewModel>> GetUserById(
         [SwaggerParameter("The ID of the `User` which should be retrieved.")] Guid id
     )
@@ -63,7 +63,7 @@ public class UsersController(IUserService userService) : ApiController
     )]
     [SwaggerResponse(200, "The `User` was found and returned successfully.")]
     [SwaggerResponse(401, "An invalid JWT was passed in.")]
-    [SwaggerResponse(404, "The user was not found in the database.")]
+    [SwaggerResponse(404, "The user was not found in the database.", typeof(ProblemDetails))]
     public async Task<ActionResult<UserViewModel>> Me() => (await userService.GetUserFromClaims(HttpContext.User)).Match<ActionResult<UserViewModel>>(
             user => Ok(UserViewModel.MapFrom(user)),
             badCredentials => Unauthorized(),
@@ -78,6 +78,7 @@ public class UsersController(IUserService userService) : ApiController
         OperationId = "updateUser"
     )]
     [SwaggerResponse(204)]
+    [SwaggerResponse(400, Type = typeof(ValidationProblemDetails))]
     [SwaggerResponse(401)]
     [SwaggerResponse(
         403,
