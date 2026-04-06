@@ -99,7 +99,13 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
                 new { id = category.Id },
                 CategoryViewModel.MapFrom(category)
             ),
-            conflict => Conflict(CreateConflictDetails(CategoryViewModel.MapFrom(conflict.Conflicting))),
+            conflict => Problem(
+                null,
+                null,
+                409,
+                null,
+                null,
+                new Dictionary<string, object?>{{"conflicting", CategoryViewModel.MapFrom(conflict.Conflicting)}}),
             notFound => Problem(
                 null,
                 null,
@@ -137,7 +143,13 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
         UpdateResult<Category> res = await categoryService.UpdateCategory(id, request);
 
         return res.Match<ActionResult>(
-            conflict => Conflict(CreateConflictDetails(CategoryViewModel.MapFrom(conflict.Conflicting))),
+            conflict => Problem(
+                null,
+                null,
+                409,
+                null,
+                null,
+                new Dictionary<string, object?>{{"conflicting", CategoryViewModel.MapFrom(conflict.Conflicting)}}),
             notFound => NotFound(),
             success => NoContent()
         );

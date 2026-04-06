@@ -120,7 +120,17 @@ public class LeaderboardsController(
                 new { id = lb.Id },
                 LeaderboardViewModel.MapFrom(lb)
             ),
-            conflict => Conflict(CreateConflictDetails(LeaderboardViewModel.MapFrom(conflict.Conflicting))));
+            conflict => Problem(
+                null,
+                null,
+                409,
+                null,
+                null,
+                new Dictionary<string, object?>()
+                {
+                    { "conflicting", LeaderboardViewModel.MapFrom(conflict.Conflicting) }
+                }
+            ));
     }
 
     [Authorize(Policy = UserTypes.ADMINISTRATOR)]
@@ -180,7 +190,17 @@ public class LeaderboardsController(
         UpdateResult<Leaderboard> result = await leaderboardService.UpdateLeaderboard(id, request);
 
         return result.Match<ActionResult>(
-            conflict => Conflict(CreateConflictDetails(LeaderboardViewModel.MapFrom(conflict.Conflicting))),
+            conflict => Problem(
+                null,
+                null,
+                409,
+                null,
+                null,
+                new Dictionary<string, object?>()
+                {
+                    { "conflicting", LeaderboardViewModel.MapFrom(conflict.Conflicting) }
+                }
+            ),
             notfound => NotFound(),
             success => NoContent()
         );
