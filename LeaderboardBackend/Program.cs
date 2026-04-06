@@ -157,12 +157,19 @@ builder.Services
     .AddJsonOptions(opt =>
     {
         opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(null, false));
         opt.JsonSerializerOptions.Converters.Add(new GuidJsonConverter());
         opt.JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
         jsonSerializerOptions = opt.JsonSerializerOptions;
     });
+
+builder.Services.ConfigureHttpJsonOptions(opts =>
+{
+   opts.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+   opts.SerializerOptions.Converters.Add(new JsonStringEnumConverter(null, false));
+   opts.SerializerOptions.Converters.Add(new GuidJsonConverter());
+   opts.SerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
