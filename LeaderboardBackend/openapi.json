@@ -90,7 +90,7 @@
         },
         "responses": {
           "200": {
-            "description": "The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -137,7 +137,7 @@
         "operationId": "resendConfirmationEmail",
         "responses": {
           "200": {
-            "description": "A new confirmation link was generated."
+            "description": "OK"
           },
           "409": {
             "description": "The `User`'s account has already been confirmed."
@@ -220,7 +220,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The account was confirmed successfully."
+            "description": "OK"
           },
           "404": {
             "description": "The token provided was invalid or expired."
@@ -294,7 +294,7 @@
         },
         "responses": {
           "200": {
-            "description": "The user's password was reset successfully."
+            "description": "OK"
           },
           "400": {
             "description": "Bad Request",
