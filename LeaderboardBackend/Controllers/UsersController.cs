@@ -17,8 +17,6 @@ public class UsersController(IUserService userService) : ApiController
     [AllowAnonymous]
     [HttpGet("api/users/{id}")]
     [SwaggerOperation("Gets a User by their ID.", OperationId = "getUser")]
-    [SwaggerResponse(200, "The `User` was found and returned successfully.")]
-    [SwaggerResponse(404, "No `User` with the requested ID could be found.")]
     public async Task<Results<Ok<UserViewModel>, NotFound>> GetUserById(
         [SwaggerParameter("The ID of the `User` which should be retrieved.")] Guid id
     )
@@ -37,15 +35,13 @@ public class UsersController(IUserService userService) : ApiController
     [HttpGet("/users")]
     [Paginated]
     [SwaggerOperation("Gets users, filtered by role.", OperationId = "listUsers")]
-    [SwaggerResponse(200)]
     [SwaggerResponse(401)]
     [SwaggerResponse(403)]
-    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<Results<
         Ok<ListView<UserViewModel>>,
         UnauthorizedHttpResult,
         ForbidHttpResult,
-        ProblemHttpResult
+        UnprocessableEntity<ValidationProblemDetails>
     >> GetUsers(
         [FromQuery] Page page,
         [
@@ -65,16 +61,9 @@ public class UsersController(IUserService userService) : ApiController
     [HttpGet("users/me")]
     [SwaggerOperation(
         "Gets the currently logged-in User.",
-        """
-        Call this method with the 'Authorization' header. A valid JWT bearer token must be
-        passed.
-        Example: `{ 'Authorization': 'Bearer JWT' }`.
-        """,
         OperationId = "me"
     )]
-    [SwaggerResponse(200, "The `User` was found and returned successfully.")]
-    [SwaggerResponse(401, "An invalid JWT was passed in.")]
-    [SwaggerResponse(404, "The user was not found in the database.")]
+    [SwaggerResponse(401)]
     public async Task<Results<
         Ok<UserViewModel>,
         UnauthorizedHttpResult,
@@ -96,7 +85,6 @@ public class UsersController(IUserService userService) : ApiController
         "only for banning/unbanning users.",
         OperationId = "updateUser"
     )]
-    [SwaggerResponse(204)]
     [SwaggerResponse(401)]
     [SwaggerResponse(
         403,
@@ -104,12 +92,11 @@ public class UsersController(IUserService userService) : ApiController
         "role provided was neither BANNED nor CONFIRMED.",
         typeof(ProblemDetails)
     )]
-    [SwaggerResponse(404, Type = typeof(ProblemDetails))]
-    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<Results<
         NoContent,
-        NotFound,
-        ProblemHttpResult
+        ForbidHttpResult,
+        ProblemHttpResult,
+        NotFound
     >> UpdateUser(
         [FromRoute] Guid id,
         [FromBody, SwaggerRequestBody(Required = true)] UpdateUserRequest request
@@ -119,8 +106,9 @@ public class UsersController(IUserService userService) : ApiController
 
         return r.Match<Results<
             NoContent,
-            NotFound,
-            ProblemHttpResult
+            ForbidHttpResult,
+            ProblemHttpResult,
+            NotFound
         >>(
             badRole => TypedResults.Problem(
                 null,
