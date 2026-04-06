@@ -107,7 +107,7 @@ public class LeaderboardsController(
     [SwaggerResponse(422, $"The request contains errors. The following errors can occur: NotEmptyValidator, {SlugRule.SLUG_FORMAT}", Type = typeof(ValidationProblemDetails))]
     public async Task<Results<
         CreatedAtRoute<LeaderboardViewModel>,
-        BadRequest,
+        BadRequest<ProblemDetails>,
         UnauthorizedHttpResult,
         ForbidHttpResult,
         Microsoft.AspNetCore.Http.HttpResults.Conflict<ConflictDetails<LeaderboardViewModel>>,
@@ -120,7 +120,7 @@ public class LeaderboardsController(
 
         return r.Match<Results<
             CreatedAtRoute<LeaderboardViewModel>,
-            BadRequest,
+            BadRequest<ProblemDetails>,
             UnauthorizedHttpResult,
             ForbidHttpResult,
             Microsoft.AspNetCore.Http.HttpResults.Conflict<ConflictDetails<LeaderboardViewModel>>,
@@ -182,7 +182,7 @@ public class LeaderboardsController(
         "All fields of the request body are optional but you must specify at least one.",
         OperationId = "updateLeaderboard"
     )]
-    [SwaggerResponse(400)]
+    [SwaggerResponse(400, Type = typeof(ProblemDetails))]
     [SwaggerResponse(401)]
     [SwaggerResponse(403)]
     [SwaggerResponse(
@@ -190,7 +190,6 @@ public class LeaderboardsController(
         "The specified slug is already in use by another leaderboard. Returns the conflicting leaderboard.",
         typeof(ConflictDetails<LeaderboardViewModel>)
     )]
-    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<Results<
         NoContent,
         UnauthorizedHttpResult,
