@@ -705,7 +705,14 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
+                }
+              }
+            }
           },
           "404": {
             "description": "Not Found"
@@ -732,7 +739,14 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
+                }
+              }
+            }
           },
           "404": {
             "description": "Not Found"
@@ -915,7 +929,17 @@
         },
         "responses": {
           "201": {
-            "description": "Created"
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "409": {
             "description": "A Leaderboard with the specified slug already exists and will be returned in the `conflicting` field.",
@@ -1043,6 +1067,9 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "401": {
             "description": "Unauthorized"
