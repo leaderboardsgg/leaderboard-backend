@@ -45,7 +45,7 @@ public class RegistrationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveStatusCode(HttpStatusCode.Accepted);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.Accepted);
 
         emailSenderMock.Verify(x =>
             x.EnqueueEmailAsync(
@@ -83,7 +83,7 @@ public class RegistrationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveStatusCode(HttpStatusCode.UnprocessableEntity);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.UnprocessableEntity);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
@@ -109,7 +109,7 @@ public class RegistrationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveStatusCode(HttpStatusCode.Accepted);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.Accepted);
     }
 
     [Test]
@@ -119,7 +119,7 @@ public class RegistrationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveStatusCode(HttpStatusCode.UnprocessableEntity);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.UnprocessableEntity);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
@@ -135,7 +135,7 @@ public class RegistrationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveStatusCode(HttpStatusCode.UnprocessableEntity);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.UnprocessableEntity);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
@@ -164,7 +164,7 @@ public class RegistrationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveStatusCode(HttpStatusCode.Conflict);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.Conflict);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
@@ -189,7 +189,7 @@ public class RegistrationTests : IntegrationTestsBase
         RegisterRequest request = _registerReqFaker.Generate() with { Email = createExistingUserReq.Email.ToLower() };
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveStatusCode(HttpStatusCode.Accepted);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.Accepted);
 
         emailSender.Verify(s =>
             s.EnqueueEmailAsync(
@@ -234,7 +234,7 @@ public class RegistrationTests : IntegrationTestsBase
         RegisterRequest request = _registerReqFaker.Generate() with { Email = $"testregister.emailused.{role}@example.com" };
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveStatusCode(HttpStatusCode.Accepted);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.Accepted);
 
         emailSender.Verify(s =>
             s.EnqueueEmailAsync(
@@ -280,7 +280,7 @@ public class RegistrationTests : IntegrationTestsBase
         RegisterRequest request = _registerReqFaker.Generate() with { Email = "testregister.emailused.servicefailed@example.com" };
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveStatusCode(HttpStatusCode.Accepted);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.Accepted);
 
         emailSender.Verify(s =>
             s.EnqueueEmailAsync(

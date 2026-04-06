@@ -64,7 +64,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             }
         );
 
-        res.Should().HaveStatusCode(HttpStatusCode.BadRequest);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.BadRequest);
         context.ChangeTracker.Clear();
 
         AccountRecovery? recovery = await context.AccountRecoveries.FirstOrDefaultAsync(
@@ -109,7 +109,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             }
         );
 
-        res.Should().HaveStatusCode(HttpStatusCode.BadRequest);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.BadRequest);
         context.ChangeTracker.Clear();
 
         AccountRecovery? recovery = await context.AccountRecoveries.FirstOrDefaultAsync(
@@ -157,7 +157,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             }
         );
 
-        res.Should().HaveStatusCode(HttpStatusCode.OK);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.OK);
         context.ChangeTracker.Clear();
 
         AccountRecovery? recovery = await context.AccountRecoveries.SingleOrDefaultAsync(
@@ -191,7 +191,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             }
         );
 
-        res.Should().HaveStatusCode(HttpStatusCode.OK);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.OK);
 
         emailSenderMock.Verify(m => m.EnqueueEmailAsync(
             It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
@@ -233,7 +233,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             }
         );
 
-        res.Should().HaveStatusCode(HttpStatusCode.OK);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.OK);
         context.ChangeTracker.Clear();
 
         AccountRecovery? recovery = await context.AccountRecoveries.FirstOrDefaultAsync(

@@ -43,7 +43,7 @@ public class SendConfirmationTests : IntegrationTestsBase
     public async Task ResendConfirmation_Unauthorised()
     {
         HttpResponseMessage res = await Client.PostAsync(Routes.RESEND_CONFIRMATION, null);
-        res.Should().HaveStatusCode(HttpStatusCode.Unauthorized);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.Unauthorized);
     }
 
     [Test]
@@ -59,7 +59,7 @@ public class SendConfirmationTests : IntegrationTestsBase
         Client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
         HttpResponseMessage res = await Client.PostAsync(Routes.RESEND_CONFIRMATION, null);
 
-        res.Should().HaveStatusCode(HttpStatusCode.Unauthorized);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.Unauthorized);
     }
 
     [Test]
@@ -81,7 +81,7 @@ public class SendConfirmationTests : IntegrationTestsBase
         Client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
         HttpResponseMessage res = await Client.PostAsync(Routes.RESEND_CONFIRMATION, null);
 
-        res.Should().HaveStatusCode(HttpStatusCode.Conflict);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.Conflict);
     }
 
     [Test]
@@ -109,7 +109,7 @@ public class SendConfirmationTests : IntegrationTestsBase
 
         client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
         HttpResponseMessage res = await client.PostAsync(Routes.RESEND_CONFIRMATION, null);
-        res.Should().HaveStatusCode(HttpStatusCode.InternalServerError);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.InternalServerError);
     }
 
     [Test]
@@ -135,7 +135,7 @@ public class SendConfirmationTests : IntegrationTestsBase
 
         client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
         HttpResponseMessage res = await client.PostAsync(Routes.RESEND_CONFIRMATION, null);
-        res.Should().HaveStatusCode(HttpStatusCode.OK);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.OK);
         emailSenderMock.Verify(x =>
             x.EnqueueEmailAsync(
                 "test@email.com",

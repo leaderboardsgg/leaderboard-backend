@@ -188,7 +188,7 @@ public class ConfirmAccountTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         _clock.AdvanceMinutes(5);
         HttpResponseMessage res = await _client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
-        res.Should().HaveStatusCode(HttpStatusCode.OK);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.OK);
         context.ChangeTracker.Clear();
         AccountConfirmation? conf = await context.AccountConfirmations.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == confirmation.Id);
         conf!.UsedAt.Should().Be(now.Plus(Duration.FromMinutes(5)));

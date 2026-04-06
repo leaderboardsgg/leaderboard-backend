@@ -766,7 +766,7 @@ public class Leaderboards
         context.ChangeTracker.Clear();
         _clock.AdvanceMinutes(1);
         HttpResponseMessage res = await _apiClient.Delete($"/leaderboards/{lb.Id}", new() { Jwt = _jwt });
-        res.Should().HaveStatusCode(HttpStatusCode.NoContent);
+        res.Should().HaveHttpStatusCode(HttpStatusCode.NoContent);
         Leaderboard? found = await context.Leaderboards.FindAsync(lb.Id);
         found.Should().NotBeNull();
         found!.DeletedAt.Should().NotBeNull();
