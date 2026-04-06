@@ -1540,17 +1540,10 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserViewModel"
-                }
-              }
-            }
+            "description": "The `User` was found and returned successfully."
           },
           "404": {
-            "description": "Not Found"
+            "description": "No `User` with the requested ID could be found."
           }
         }
       }
@@ -1598,14 +1591,13 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserViewModelListView"
-                }
-              }
-            }
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
           },
           "422": {
             "description": "Unprocessable Content",
@@ -1616,12 +1608,6 @@
                 }
               }
             }
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
           }
         }
       }
@@ -1632,23 +1618,17 @@
           "Users"
         ],
         "summary": "Gets the currently logged-in User.",
+        "description": "Call this method with the 'Authorization' header. A valid JWT bearer token must be\npassed.\nExample: `{ 'Authorization': 'Bearer JWT' }`.",
         "operationId": "me",
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserViewModel"
-                }
-              }
-            }
+            "description": "The `User` was found and returned successfully."
           },
           "404": {
-            "description": "Not Found"
+            "description": "The user was not found in the database."
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "An invalid JWT was passed in."
           }
         }
       }
@@ -1691,7 +1671,14 @@
             "description": "No Content"
           },
           "404": {
-            "description": "Not Found"
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized"
@@ -1702,6 +1689,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -2694,39 +2691,6 @@
             "type": "string",
             "format": "date-time",
             "example": "1984-01-01T00:00:00Z"
-          }
-        },
-        "additionalProperties": false
-      },
-      "UserViewModelListView": {
-        "required": [
-          "data",
-          "limitDefault",
-          "limitMax",
-          "total"
-        ],
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserViewModel"
-            }
-          },
-          "total": {
-            "type": "integer",
-            "description": "The total number of records matching the given criteria that\nexist in the database, NOT the total number of records returned.",
-            "format": "int64"
-          },
-          "limitDefault": {
-            "type": "integer",
-            "description": "The default limit that will be applied for this resource type\nif the client does not specify one in the query string.",
-            "format": "int32"
-          },
-          "limitMax": {
-            "type": "integer",
-            "description": "The maximum value the client is allowed to specify as a limt for\nendpoints return a paginated list of resources of this type.\nExceeding this value will result in an error.",
-            "format": "int32"
           }
         },
         "additionalProperties": false
