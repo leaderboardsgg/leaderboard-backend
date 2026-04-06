@@ -391,17 +391,17 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "OK"
+          },
+          "404": {
+            "description": "The Category either doesn't exist for the Leaderboard, or it has been deleted.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CategoryViewModel"
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
-          },
-          "404": {
-            "description": "Not Found"
           }
         }
       }
@@ -563,7 +563,7 @@
             "description": "Unauthorized"
           },
           "403": {
-            "description": "Forbidden"
+            "description": "The requesting `User` is unauthorized to create Categories."
           }
         }
       }
