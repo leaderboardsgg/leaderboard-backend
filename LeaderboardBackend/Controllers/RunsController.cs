@@ -77,6 +77,16 @@ public class RunsController(
             );
         }
 
+        if (category.Leaderboard?.DeletedAt is not null)
+        {
+            return Problem(
+                null,
+                null,
+                404,
+                "Leaderboard Is Deleted"
+            );
+        }
+
         CreateRunResult r = await runService.CreateRun(res.AsT0, category, request);
 
         return r.Match<ActionResult>(
@@ -134,7 +144,7 @@ public class RunsController(
     [Paginated]
     [SwaggerOperation("Gets the records for a category, a.k.a. the personal bests of every user, ranked best-first.", OperationId = "getRecordsForCategory")]
     [SwaggerResponse(200)]
-    [SwaggerResponse(404)]
+    [SwaggerResponse(404, Type = typeof(ProblemDetails))]
     [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<ListView<RunViewModel>>> GetRecordsForCategory(
         [FromRoute] long id,
@@ -162,7 +172,7 @@ public class RunsController(
     [HttpGet("/api/runs/{id}/category")]
     [SwaggerOperation("Gets the category a run belongs to.", OperationId = "getRunCategory")]
     [SwaggerResponse(200)]
-    [SwaggerResponse(404)]
+    [SwaggerResponse(404, Type = typeof(ProblemDetails))]
     public async Task<ActionResult<CategoryViewModel>> GetCategoryForRun(Guid id)
     {
         Run? run = await runService.GetRun(id);
@@ -202,6 +212,7 @@ public class RunsController(
         "or the user attempted to change the status of a run.",
         Type = typeof(ProblemDetails)
     )]
+    [SwaggerResponse(400, Type = typeof(ValidationProblemDetails))]
     [SwaggerResponse(404, "The Run with ID `id` could not be found, or has been deleted. Read `title` for more information.", Type = typeof(ProblemDetails))]
     [SwaggerResponse(
         422,
