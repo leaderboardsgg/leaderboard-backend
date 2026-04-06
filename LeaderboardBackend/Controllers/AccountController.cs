@@ -74,7 +74,7 @@ public class AccountController(IUserService userService) : ApiController
         }
 
         ModelState.AddModelError(nameof(request.Username), "UsernameTaken");
-        return TypedResults.Conflict(new ValidationProblemDetails(ModelState));
+        return TypedResults.Conflict(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState, 409));
     }
 
     [AllowAnonymous]
