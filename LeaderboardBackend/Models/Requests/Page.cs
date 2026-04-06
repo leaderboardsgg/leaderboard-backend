@@ -11,7 +11,7 @@ public record Page
     /// </summary>
     public int Limit
     {
-        get => field;
+        get;
         set
         {
             field = value;
