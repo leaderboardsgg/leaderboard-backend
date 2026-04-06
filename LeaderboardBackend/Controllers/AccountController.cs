@@ -1,9 +1,9 @@
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
+using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using OneOf;
@@ -37,12 +37,7 @@ public class AccountController(IUserService userService) : ApiController
         """,
         typeof(ValidationProblemDetails)
     )]
-    public async Task<Results<
-        Accepted,
-        BadRequest<ProblemDetails>,
-        UnprocessableEntity<ValidationProblemDetails>,
-        Microsoft.AspNetCore.Http.HttpResults.Conflict<ValidationProblemDetails>
-    >> Register(
+    public async Task<ActionResult> Register(
         [FromBody, SwaggerRequestBody(
             "The `RegisterRequest` instance from which to register the `User`.",
             Required = true
@@ -62,7 +57,7 @@ public class AccountController(IUserService userService) : ApiController
         if (possiblyExistingUser is not null)
         {
             await confirmationService.EmailExistingUserOfRegistrationAttempt(possiblyExistingUser);
-            return TypedResults.Accepted((string?)null);
+            return Accepted();
         }
 
         CreateUserResult result = await userService.CreateUser(request);
@@ -70,11 +65,11 @@ public class AccountController(IUserService userService) : ApiController
         if (result.TryPickT0(out User user, out CreateUserConflicts _))
         {
             await confirmationService.CreateConfirmationAndSendEmail(user);
-            return TypedResults.Accepted((string?)null);
+            return Accepted();
         }
 
         ModelState.AddModelError(nameof(request.Username), "UsernameTaken");
-        return TypedResults.Conflict(new ValidationProblemDetails(ModelState));
+        return Conflict(new ValidationProblemDetails(ModelState));
     }
 
     [AllowAnonymous]
@@ -102,13 +97,7 @@ public class AccountController(IUserService userService) : ApiController
         """,
         typeof(ValidationProblemDetails)
     )]
-    public async Task<Results<
-        Ok<LoginResponse>,
-        BadRequest<ProblemDetails>,
-        UnauthorizedHttpResult,
-        ForbidHttpResult,
-        UnprocessableEntity<ValidationProblemDetails>
-    >> Login(
+    public async Task<ActionResult<LoginResponse>> Login(
         [FromBody, SwaggerRequestBody(
             "The `LoginRequest` instance with which to perform the login.",
             Required = true
@@ -117,17 +106,11 @@ public class AccountController(IUserService userService) : ApiController
     {
         LoginResult result = await userService.LoginByEmailAndPassword(request.Email, request.Password);
 
-        return result.Match<Results<
-            Ok<LoginResponse>,
-            BadRequest<ProblemDetails>,
-            UnauthorizedHttpResult,
-            ForbidHttpResult,
-            UnprocessableEntity<ValidationProblemDetails>
-        >>(
-            loginToken => TypedResults.Ok(new LoginResponse { Token = loginToken }),
-            notFound => TypedResults.Unauthorized(),
-            banned => TypedResults.Forbid(),
-            badCredentials => TypedResults.Unauthorized()
+        return result.Match<ActionResult<LoginResponse>>(
+            loginToken => Ok(new LoginResponse { Token = loginToken }),
+            notFound => Unauthorized(),
+            banned => Forbid(),
+            badCredentials => Unauthorized()
         );
     }
 
@@ -138,7 +121,7 @@ public class AccountController(IUserService userService) : ApiController
     [SwaggerResponse(401)]
     [SwaggerResponse(409, "The `User`'s account has already been confirmed.")]
     [SwaggerResponse(500, "The account recovery email failed to be created.")]
-    public async Task<Results<Ok, UnauthorizedHttpResult, Conflict, InternalServerError>> ResendConfirmation(
+    public async Task<ActionResult> ResendConfirmation(
         [FromServices] IAccountConfirmationService confirmationService
     )
     {
@@ -150,17 +133,17 @@ public class AccountController(IUserService userService) : ApiController
         {
             CreateConfirmationResult r = await confirmationService.CreateConfirmationAndSendEmail(user);
 
-            return r.Match<Results<Ok, UnauthorizedHttpResult, Conflict, InternalServerError>>(
-                confirmation => TypedResults.Ok(),
-                badRole => TypedResults.Conflict(),
-                emailFailed => TypedResults.InternalServerError()
+            return r.Match<ActionResult>(
+                confirmation => Ok(),
+                badRole => Conflict(),
+                emailFailed => StatusCode(StatusCodes.Status500InternalServerError)
             );
         }
 
-        return errors.Match<Results<Ok, UnauthorizedHttpResult, Conflict, InternalServerError>>(
-            badCredentials => TypedResults.Unauthorized(),
+        return errors.Match<ActionResult>(
+            badCredentials => Unauthorized(),
             // Shouldn't be possible; throw 401
-            notFound => TypedResults.Unauthorized()
+            notFound => Unauthorized()
         );
     }
 
@@ -169,7 +152,7 @@ public class AccountController(IUserService userService) : ApiController
     [SwaggerOperation("Sends an account recovery email.", OperationId = "sendRecoveryEmail")]
     [SwaggerResponse(200, "This endpoint returns 200 OK regardless of whether the email was sent successfully or not.")]
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
-    public async Task<Results<Ok, BadRequest<ProblemDetails>, UnprocessableEntity<ValidationProblemDetails>>> RecoverAccount(
+    public async Task<ActionResult> RecoverAccount(
         [FromServices] IAccountRecoveryService recoveryService,
         [FromServices] ILogger<AccountController> logger,
         [FromBody, SwaggerRequestBody("The account recovery request.")] RecoverAccountRequest request
@@ -187,7 +170,7 @@ public class AccountController(IUserService userService) : ApiController
             await recoveryService.CreateRecoveryAndSendEmail(user);
         }
 
-        return TypedResults.Ok();
+        return Ok();
     }
 
     [AllowAnonymous]
@@ -196,19 +179,19 @@ public class AccountController(IUserService userService) : ApiController
     [SwaggerResponse(200, "The account was confirmed successfully.")]
     [SwaggerResponse(404, "The token provided was invalid or expired.")]
     [SwaggerResponse(409, "the user's account was either already confirmed or banned.")]
-    public async Task<Results<Ok, NotFound, Conflict>> ConfirmAccount(
+    public async Task<ActionResult> ConfirmAccount(
         [SwaggerParameter("The confirmation token.")] Guid id,
         [FromServices] IAccountConfirmationService confirmationService
     )
     {
         ConfirmAccountResult result = await confirmationService.ConfirmAccount(id);
 
-        return result.Match<Results<Ok, NotFound, Conflict>>(
-            confirmed => TypedResults.Ok(),
-            alreadyUsed => TypedResults.NotFound(),
-            badRole => TypedResults.Conflict(),
-            notFound => TypedResults.NotFound(),
-            expired => TypedResults.NotFound()
+        return result.Match<ActionResult>(
+            confirmed => Ok(),
+            alreadyUsed => NotFound(),
+            badRole => Conflict(),
+            notFound => NotFound(),
+            expired => NotFound()
         );
     }
 
@@ -218,19 +201,19 @@ public class AccountController(IUserService userService) : ApiController
     [SwaggerResponse(200, "The token provided is valid.")]
     [SwaggerResponse(404, "The token provided is invalid or expired, or the user is banned.")]
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
-    public async Task<Results<Ok, NotFound>> TestRecovery(
+    public async Task<ActionResult> TestRecovery(
         [SwaggerParameter("The recovery token.")] Guid id,
         [FromServices] IAccountRecoveryService recoveryService
     )
     {
         TestRecoveryResult result = await recoveryService.TestRecovery(id);
 
-        return result.Match<Results<Ok, NotFound>>(
-            alreadyUsed => TypedResults.NotFound(),
-            badRole => TypedResults.NotFound(),
-            expired => TypedResults.NotFound(),
-            notFound => TypedResults.NotFound(),
-            success => TypedResults.Ok()
+        return result.Match<ActionResult>(
+            alreadyUsed => NotFound(),
+            badRole => NotFound(),
+            expired => NotFound(),
+            notFound => NotFound(),
+            success => Ok()
         );
     }
 
@@ -250,14 +233,7 @@ public class AccountController(IUserService userService) : ApiController
         """,
         typeof(ValidationProblemDetails)
     )]
-    public async Task<Results<
-        Ok,
-        BadRequest<ProblemDetails>,
-        ForbidHttpResult,
-        NotFound,
-        Conflict,
-        UnprocessableEntity<ValidationProblemDetails>
-    >> ResetPassword(
+    public async Task<ActionResult> ResetPassword(
         [SwaggerParameter("The recovery token.")] Guid id,
         [FromBody, SwaggerRequestBody("The password recovery request object.", Required = true)] ChangePasswordRequest request,
         [FromServices] IAccountRecoveryService recoveryService
@@ -265,20 +241,13 @@ public class AccountController(IUserService userService) : ApiController
     {
         ResetPasswordResult result = await recoveryService.ResetPassword(id, request.Password);
 
-        return result.Match<Results<
-            Ok,
-            BadRequest<ProblemDetails>,
-            ForbidHttpResult,
-            NotFound,
-            Conflict,
-            UnprocessableEntity<ValidationProblemDetails>
-        >>(
-            alreadyUsed => TypedResults.NotFound(),
-            badRole => TypedResults.Forbid(),
-            expired => TypedResults.NotFound(),
-            notFound => TypedResults.NotFound(),
-            samePassword => TypedResults.Conflict(),
-            success => TypedResults.Ok()
+        return result.Match<ActionResult>(
+            alreadyUsed => NotFound(),
+            badRole => Forbid(),
+            expired => NotFound(),
+            notFound => NotFound(),
+            samePassword => Conflict(),
+            success => Ok()
         );
     }
 }
