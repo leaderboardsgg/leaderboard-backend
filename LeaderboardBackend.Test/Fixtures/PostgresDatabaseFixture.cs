@@ -21,7 +21,7 @@ public class PostgresDatabaseFixture
     public static async Task OneTimeSetup()
     {
         PostgresContainer = new PostgreSqlBuilder("postgres:18")
-            .WithTmpfsMount("/var/lib/postgresql/data") // db files in-memory
+            .WithTmpfsMount("/var/lib/postgresql") // db files in-memory
             .Build();
         await PostgresContainer.StartAsync();
 
