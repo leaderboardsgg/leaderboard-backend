@@ -11,8 +11,8 @@ namespace LeaderboardBackend.Services;
 
 public class RunService(ApplicationContext applicationContext, IClock clock) : IRunService
 {
-    public async Task<Run?> GetRun(Guid id) =>
-        await applicationContext.Runs
+    public Task<Run?> GetRun(Guid id) =>
+        applicationContext.Runs
             .Include(run => run.Category)
             .Include(run => run.User)
             .SingleOrDefaultAsync(run => run.Id == id);
