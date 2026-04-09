@@ -105,7 +105,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
                 409,
                 null,
                 null,
-                new Dictionary<string, object?>{{"conflicting", CategoryViewModel.MapFrom(conflict.Conflicting)}}),
+                new Dictionary<string, object?> { { "conflicting", CategoryViewModel.MapFrom(conflict.Conflicting) } }),
             notFound => Problem(
                 null,
                 null,
@@ -149,7 +149,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
                 409,
                 null,
                 null,
-                new Dictionary<string, object?>{{"conflicting", CategoryViewModel.MapFrom(conflict.Conflicting)}}),
+                new Dictionary<string, object?> { { "conflicting", CategoryViewModel.MapFrom(conflict.Conflicting) } }),
             notFound => NotFound(),
             success => NoContent()
         );

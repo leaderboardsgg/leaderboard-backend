@@ -66,21 +66,21 @@ internal static class UserApiExtensions
         string email,
         string password
     ) => client.PostAsJsonAsync(Routes.REGISTER, new RegisterRequest()
-        {
-            Username = username,
-            Password = password,
-            Email = email,
-        }, TestInitCommonFields.JsonSerializerOptions);
+    {
+        Username = username,
+        Password = password,
+        Email = email,
+    }, TestInitCommonFields.JsonSerializerOptions);
 
     public static Task<HttpResponseMessage> LoginUser(
         this HttpClient client,
         string email,
         string password
     ) => client.PostAsJsonAsync(Routes.LOGIN, new LoginRequest()
-        {
-            Email = email,
-            Password = password
-        }, TestInitCommonFields.JsonSerializerOptions);
+    {
+        Email = email,
+        Password = password
+    }, TestInitCommonFields.JsonSerializerOptions);
 
     public static Task<HttpResponseMessage> LoginAdminUser(
         this HttpClient client) => client.PostAsJsonAsync(

@@ -138,12 +138,12 @@ public class Categories
 
         response.Should().Be200Ok().And.BeAs(
             CategoryViewModel.MapFrom(created) with
-        {
-            CreatedAt = _clock.GetCurrentInstant(),
-            UpdatedAt = null,
-            DeletedAt = null,
-            Status = Status.Published
-        });
+            {
+                CreatedAt = _clock.GetCurrentInstant(),
+                UpdatedAt = null,
+                DeletedAt = null,
+                Status = Status.Published
+            });
     }
 
     [Test]
@@ -825,7 +825,7 @@ public class Categories
         cat.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
 
         HttpResponseMessage response = await _client.PatchAsJsonAsync(
             $"categories/{cat.Id}",
@@ -858,7 +858,7 @@ public class Categories
         cat.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
         HttpResponseMessage response = await _client.DeleteCategory(cat.Id);
         response.Should().Be204NoContent();
 
@@ -949,7 +949,7 @@ public class Categories
     [Test]
     public async Task DeleteCategory_NotFound()
     {
-        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
         HttpResponseMessage response = await _client.DeleteCategory(int.MaxValue);
 
         response.Should().Be404NotFound().And.Satisfy<ProblemDetails>(
@@ -976,7 +976,7 @@ public class Categories
         cat.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
         HttpResponseMessage response = await _client.DeleteCategory(cat.Id);
 
         response.Should().Be404NotFound().And.Satisfy<ProblemDetails>(
@@ -1007,7 +1007,7 @@ public class Categories
         cat.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
 
         await _client.UpdateCategory(cat.Id, new()
         {
@@ -1108,7 +1108,7 @@ public class Categories
     [Test]
     public async Task RestoreCategory_NotFound()
     {
-        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
 
         HttpResponseMessage response = await _client.UpdateCategory(int.MaxValue, new()
         {
@@ -1138,7 +1138,7 @@ public class Categories
         await context.SaveChangesAsync();
         cat.Id.Should().NotBe(default);
 
-        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
 
         HttpResponseMessage response = await _client.UpdateCategory(cat.Id, new()
         {
@@ -1179,7 +1179,7 @@ public class Categories
         conflicting.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
 
         HttpResponseMessage response = await _client.UpdateCategory(deleted.Id, new()
         {
@@ -1239,7 +1239,7 @@ public class Categories
         notConflicting.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
 
         await _client.UpdateCategory(notConflicting.Id, new()
         {

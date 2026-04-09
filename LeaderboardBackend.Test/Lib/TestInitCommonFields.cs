@@ -31,7 +31,7 @@ internal record TestInitCommonFields
         {
             Username = "AyyLmaoGaming",
             Email = "ayylmaogaming@alg.gg",
-            Password =  BcryptNet.EnhancedHashPassword("P4ssword"),
+            Password = BcryptNet.EnhancedHashPassword("P4ssword"),
             Role = UserRole.Administrator,
         };
 }
