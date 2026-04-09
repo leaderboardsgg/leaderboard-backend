@@ -4,6 +4,7 @@ using LeaderboardBackend.Converters;
 using LeaderboardBackend.Models.Entities;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
+using BcryptNet = BCrypt.Net.BCrypt;
 
 namespace LeaderboardBackend.Test.Lib;
 
@@ -21,15 +22,16 @@ internal record TestInitCommonFields
         JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(null, false));
         JsonSerializerOptions.Converters.Add(new GuidJsonConverter());
         JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
+        SystemTextJsonSerializerConfig.Options.Converters.Add(new GuidJsonConverter());
+        SystemTextJsonSerializerConfig.Options.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
     }
 
     public static User Admin { get; } =
         new()
         {
-            Id = System.Guid.NewGuid(),
             Username = "AyyLmaoGaming",
             Email = "ayylmaogaming@alg.gg",
-            Password = "P4ssword",
+            Password =  BcryptNet.EnhancedHashPassword("P4ssword"),
             Role = UserRole.Administrator,
         };
 }
