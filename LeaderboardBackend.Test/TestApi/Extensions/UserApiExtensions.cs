@@ -1,3 +1,5 @@
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
@@ -57,4 +59,37 @@ internal static class UserApiExtensions
             }
         );
     }
+
+    public static Task<HttpResponseMessage> RegisterUser(
+        this HttpClient client,
+        string username,
+        string email,
+        string password
+    ) => client.PostAsJsonAsync(Routes.REGISTER, new RegisterRequest()
+        {
+            Username = username,
+            Password = password,
+            Email = email,
+        }, TestInitCommonFields.JsonSerializerOptions);
+
+    public static Task<HttpResponseMessage> LoginUser(
+        this HttpClient client,
+        string email,
+        string password
+    ) => client.PostAsJsonAsync(Routes.LOGIN, new LoginRequest()
+        {
+            Email = email,
+            Password = password
+        }, TestInitCommonFields.JsonSerializerOptions);
+
+    public static Task<HttpResponseMessage> LoginAdminUser(
+        this HttpClient client) => client.PostAsJsonAsync(
+            Routes.LOGIN,
+            new LoginRequest()
+            {
+                Email = TestInitCommonFields.Admin.Email,
+                Password = TestInitCommonFields.Admin.Password,
+            },
+            TestInitCommonFields.JsonSerializerOptions
+        );
 }

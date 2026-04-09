@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using FluentAssertions.Specialized;
 using LeaderboardBackend.Models;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
@@ -27,11 +26,11 @@ namespace LeaderboardBackend.Test;
 [TestFixture]
 public class Categories
 {
-    private static TestApiClient _apiClient = null!;
+    private HttpClient _client;
     private static WebApplicationFactory<Program> _factory = null!;
     private static readonly FakeClock _clock = new(new Instant());
-    private static string? _jwt;
-    private static LeaderboardViewModel _createdLeaderboard = null!;
+    private static string _jwt;
+    private static LeaderboardViewModel _leaderboard = null!;
 
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
@@ -41,29 +40,42 @@ public class Categories
                 services.AddSingleton<IClock, FakeClock>(_ => _clock)
             )
         );
-        _apiClient = new TestApiClient(_factory.CreateClient());
+
+        _client = _factory.CreateClient();
         using IServiceScope scope = _factory.Services.CreateScope();
         ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         await TestApiFactory.ResetDatabase(context);
 
-        _jwt = (await _apiClient.LoginAdminUser()).Token;
+        HttpResponseMessage response = await _client.LoginAdminUser();
+        LoginResponse? loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>(TestInitCommonFields.JsonSerializerOptions);
+        _jwt = loginResponse!.Token;
 
-        _createdLeaderboard = await _apiClient.Post<LeaderboardViewModel>(
+        // TODO: Rely on seed data instead.
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+        HttpResponseMessage response2 = await _client.PostAsJsonAsync(
             "/leaderboards",
-            new()
+            new CreateLeaderboardRequest()
             {
-                Body = new CreateLeaderboardRequest()
-                {
-                    Name = "Super Mario Bros.",
-                    Slug = "super_mario_bros",
-                },
-                Jwt = _jwt
-            }
-        );
+                Name = "Super Mario Bros.",
+                Slug = "super_mario_bros",
+            },
+            TestInitCommonFields.JsonSerializerOptions);
+
+        _leaderboard = (await response2.Content.ReadFromJsonAsync<LeaderboardViewModel>(TestInitCommonFields.JsonSerializerOptions))!;
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown() => _factory.Dispose();
+    public void OneTimeTearDown()
+    {
+        _client.Dispose();
+        _factory.Dispose();
+    }
+
+    [SetUp]
+    public void Setup()
+    {
+        _client.DefaultRequestHeaders.Authorization = null;
+    }
 
     [Test]
     public async Task GetCategoryByID_OK()
@@ -75,7 +87,7 @@ public class Categories
         {
             Name = "get ok",
             Slug = "getcategory-ok",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
         };
@@ -84,22 +96,10 @@ public class Categories
         await context.SaveChangesAsync();
         created.Id.Should().NotBe(default);
 
-        await _apiClient.Awaiting(
-            a => a.Get<CategoryViewModel>(
-                $"api/categories/{created.Id}",
-                new() { }
-            )
-        ).Should()
-        .NotThrowAsync()
-        .WithResult(new()
+        HttpResponseMessage response = await _client.GetCategory(created.Id);
+
+        response.Should().Be200Ok().And.BeAs(CategoryViewModel.MapFrom(created) with
         {
-            Id = created.Id,
-            Name = "get ok",
-            Slug = "getcategory-ok",
-            Info = "",
-            Type = RunType.Score,
-            SortDirection = SortDirection.Ascending,
-            LeaderboardId = _createdLeaderboard.Id,
             CreatedAt = _clock.GetCurrentInstant(),
             UpdatedAt = null,
             DeletedAt = null,
@@ -109,15 +109,11 @@ public class Categories
 
     [TestCase("NotANumber")]
     [TestCase("69")]
-    public async Task GetCategoryByID_NotFound(object id) =>
-        await _apiClient.Awaiting(
-            a => a.Get<CategoryViewModel>(
-                $"/api/categories/{id}",
-                new() { Jwt = _jwt }
-            )
-        ).Should()
-        .ThrowAsync<RequestFailureException>()
-        .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+    public async Task GetCategoryByID_NotFound(object id)
+    {
+        HttpResponseMessage response = await _client.GetAsync($"/api/categories/{id}");
+        response.Should().Be404NotFound();
+    }
 
     [Test]
     public async Task GetCategoryBySlug_OK()
@@ -129,7 +125,7 @@ public class Categories
         {
             Name = "get slug ok",
             Slug = "getcategory-slug-ok",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
         };
@@ -137,23 +133,12 @@ public class Categories
         context.Add(created);
         await context.SaveChangesAsync();
         created.Id.Should().NotBe(default);
+        HttpResponseMessage response = await _client.GetCategory(
+            _leaderboard.Id, created.Slug);
 
-        await _apiClient.Awaiting(
-            a => a.Get<CategoryViewModel>(
-                $"api/leaderboards/{_createdLeaderboard.Id}/categories/getcategory-slug-ok",
-                new() { }
-            )
-        ).Should()
-        .NotThrowAsync()
-        .WithResult(new()
+        response.Should().Be200Ok().And.BeAs(
+            CategoryViewModel.MapFrom(created) with
         {
-            Id = created.Id,
-            Name = "get slug ok",
-            Slug = "getcategory-slug-ok",
-            Info = "",
-            Type = RunType.Score,
-            SortDirection = SortDirection.Ascending,
-            LeaderboardId = _createdLeaderboard.Id,
             CreatedAt = _clock.GetCurrentInstant(),
             UpdatedAt = null,
             DeletedAt = null,
@@ -162,15 +147,14 @@ public class Categories
     }
 
     [Test]
-    public async Task GetCategoryBySlug_NotFound_WrongSlug() =>
-        await _apiClient.Awaiting(
-            a => a.Get<CategoryViewModel>(
-                $"api/leaderboards/{_createdLeaderboard.Id}/categories/wrong-slug",
-                new() { }
-            )
-        ).Should()
-        .ThrowAsync<RequestFailureException>()
-        .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+    public async Task GetCategoryBySlug_NotFound_WrongSlug()
+    {
+        HttpResponseMessage response = await _client.GetCategory(
+            _leaderboard.Id, "wrong-slug"
+        );
+
+        response.Should().Be404NotFound();
+    }
 
     [Test]
     public async Task GetCategoryBySlug_NotFound_WrongLeaderboardID()
@@ -182,7 +166,7 @@ public class Categories
         {
             Name = "get slug not found",
             Slug = "getcategory-slug-wrong-board-id",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
             DeletedAt = _clock.GetCurrentInstant(),
@@ -192,14 +176,8 @@ public class Categories
         await context.SaveChangesAsync();
         created.Id.Should().NotBe(default);
 
-        await _apiClient.Awaiting(
-            a => a.Get<CategoryViewModel>(
-                $"api/leaderboards/{short.MaxValue}/categories/{created.Slug}",
-                new() { }
-            )
-        ).Should()
-        .ThrowAsync<RequestFailureException>()
-        .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+        HttpResponseMessage response = await _client.GetCategory(short.MaxValue, created.Slug);
+        response.Should().Be404NotFound();
     }
 
     [Test]
@@ -212,7 +190,7 @@ public class Categories
         {
             Name = "get slug not found",
             Slug = "getcategory-slug-deleted",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
             DeletedAt = _clock.GetCurrentInstant(),
@@ -222,14 +200,10 @@ public class Categories
         await context.SaveChangesAsync();
         created.Id.Should().NotBe(default);
 
-        await _apiClient.Awaiting(
-            a => a.Get<CategoryViewModel>(
-                $"api/leaderboards/{_createdLeaderboard.Id}/categories/{created.Slug}",
-                new() { }
-            )
-        ).Should()
-        .ThrowAsync<RequestFailureException>()
-        .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+        HttpResponseMessage response = await _client.GetCategory(
+            _leaderboard.Id, created.Slug);
+
+        response.Should().Be404NotFound();
     }
 
     [Test]
@@ -271,56 +245,47 @@ public class Categories
         context.Add(board);
         await context.SaveChangesAsync();
         board.Id.Should().NotBe(default);
+        HttpResponseMessage response = await _client.GetCategoriesForLeaderboard(board.Id, 99999999);
 
-        ListView<CategoryViewModel> resultSansDeleted = await _apiClient.Get<ListView<CategoryViewModel>>(
-            $"api/leaderboards/{board.Id}/categories?limit=99999999",
-            new() { }
-        );
-        resultSansDeleted.Data.Should().BeEquivalentTo(board.Categories.Take(2), opts => opts.ExcludingMissingMembers());
-        resultSansDeleted.Total.Should().Be(2);
-        resultSansDeleted.LimitDefault.Should().Be(64);
+        response.Should().Be200Ok().And.Satisfy<ListView<CategoryViewModel>>(model =>
+        {
+            model.Data.Should().BeEquivalentTo(board.Categories.Take(2), opts => opts.ExcludingMissingMembers());
+            model.Total.Should().Be(2);
+            model.LimitDefault.Should().Be(64);
+        });
 
-        ListView<CategoryViewModel> resultWithDeleted = await _apiClient.Get<ListView<CategoryViewModel>>(
-            $"api/leaderboards/{board.Id}/categories?status=any",
-            new() { }
-        );
+        HttpResponseMessage response2 = await _client.GetCategoriesForLeaderboard(board.Id, null, null, StatusFilter.Any);
 
-        resultWithDeleted.Data.Should().BeEquivalentTo(board.Categories, options => options.ExcludingMissingMembers());
-        resultWithDeleted.Total.Should().Be(3);
+        response2.Should().Be200Ok().And.Satisfy<ListView<CategoryViewModel>>(model =>
+        {
+            model.Data.Should().BeEquivalentTo(board.Categories, options => options.ExcludingMissingMembers());
+            model.Total.Should().Be(3);
+        });
+
         board.Categories.ElementAt(0).DeletedAt = _clock.GetCurrentInstant();
         board.Categories.ElementAt(1).DeletedAt = _clock.GetCurrentInstant();
         await context.SaveChangesAsync();
 
-        ListView<CategoryViewModel> resultEmpty = await _apiClient.Get<ListView<CategoryViewModel>>(
-            $"api/leaderboards/{board.Id}/categories",
-            new() { }
-        );
-
-        resultEmpty.Data.Should().BeEmpty();
+        HttpResponseMessage response3 = await _client.GetCategoriesForLeaderboard(board.Id);
+        response3.Should().Be200Ok().And.Satisfy<ListView<CategoryViewModel>>(model => model.Data.Should().BeEmpty());
     }
 
     [TestCase(-1, 0)]
     [TestCase(1024, -1)]
-    public async Task GetCategoriesForLeaderboard_BadPageData(int limit, int offset) =>
-        await _apiClient.Awaiting(
-            a => a.Get<ListView<CategoryViewModel>>(
-                $"/api/leaderboards/54/categories?limit={limit}&offset={offset}",
-                new()
-            )
-        ).Should()
-        .ThrowAsync<RequestFailureException>()
-        .Where(ex => ex.Response.StatusCode == HttpStatusCode.UnprocessableContent);
+    public async Task GetCategoriesForLeaderboard_BadPageData(int limit, int offset)
+    {
+        HttpResponseMessage response = await _client.GetCategoriesForLeaderboard(54, limit, offset);
+        response.Should().Be422UnprocessableEntity();
+    }
 
     [Test]
-    public async Task GetCategoriesForLeaderboard_NotFound() =>
-        await _apiClient.Awaiting(
-            a => a.Get<CategoryViewModel>(
-                $"api/leaderboards/{short.MaxValue}/categories",
-                new() { }
-            )
-        ).Should()
-        .ThrowAsync<RequestFailureException>()
-        .Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+    public async Task GetCategoriesForLeaderboard_NotFound()
+    {
+        HttpResponseMessage response = await _client.GetCategoriesForLeaderboard(
+            short.MaxValue);
+
+        response.Should().Be404NotFound();
+    }
 
     [Test]
     public async Task CreateCategory_GetCategory_OK()
@@ -334,22 +299,18 @@ public class Categories
             Type = RunType.Time
         };
 
-        CategoryViewModel createdCategory = await _apiClient.Post<CategoryViewModel>(
-            $"/leaderboards/{_createdLeaderboard.Id}/categories",
-            new()
-            {
-                Body = request,
-                Jwt = _jwt
-            }
-        );
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+        HttpResponseMessage response = await _client.CreateCategory(_leaderboard.Id, request);
 
-        createdCategory.CreatedAt.Should().Be(_clock.GetCurrentInstant());
+        long id = default;
+        response.Should().Be201Created().And.Satisfy<CategoryViewModel>(model =>
+        {
+            id = model.Id;
+            model.CreatedAt.Should().Be(_clock.GetCurrentInstant());
+        });
 
-        CategoryViewModel retrievedCategory = await _apiClient.Get<CategoryViewModel>(
-            $"/api/categories/{createdCategory.Id}", new() { }
-        );
-
-        retrievedCategory.Should().BeEquivalentTo(request);
+        HttpResponseMessage response2 = await _client.GetCategory(id);
+        response2.Should().Be200Ok().And.Satisfy<CategoryViewModel>(model => model.Should().BeEquivalentTo(request));
     }
 
     [Test]
@@ -364,13 +325,8 @@ public class Categories
             Type = RunType.Time
         };
 
-        await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
-            $"/leaderboards/{_createdLeaderboard.Id}/categories",
-            new()
-            {
-                Body = request,
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+        HttpResponseMessage response = await _client.CreateCategory(_leaderboard.Id, request);
+        response.Should().Be401Unauthorized();
     }
 
     [TestCase(UserRole.Banned)]
@@ -392,9 +348,12 @@ public class Categories
         };
 
         CreateUserResult createUserResult = await userService.CreateUser(registerRequest);
-        LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
-
         createUserResult.IsT0.Should().BeTrue();
+
+        HttpResponseMessage response = await _client.LoginUser(email, registerRequest.Password);
+        LoginResponse res = (await response.Content.ReadFromJsonAsync<LoginResponse>(TestInitCommonFields.JsonSerializerOptions))!;
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", res.Token);
+
         User user = createUserResult.AsT0;
         context.Update(user);
         user.Role = role;
@@ -409,14 +368,8 @@ public class Categories
             Type = RunType.Time
         };
 
-        await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
-            $"/leaderboards/{_createdLeaderboard.Id}/categories",
-            new()
-            {
-                Body = request,
-                Jwt = res.Token,
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+        HttpResponseMessage response2 = await _client.CreateCategory(_leaderboard.Id, request);
+        response2.Should().Be403Forbidden();
     }
 
     [Test]
@@ -431,18 +384,11 @@ public class Categories
             Type = RunType.Time
         };
 
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
-            "/leaderboards/1000/categories",
-            new()
-            {
-                Body = request,
-                Jwt = _jwt,
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+        HttpResponseMessage response = await _client.CreateCategory(1000, request);
 
-        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-        problemDetails.Should().NotBeNull();
-        problemDetails!.Title.Should().Be("Leaderboard Not Found");
+        response.Should().Be404NotFound().And.Satisfy<ProblemDetails>(
+            details => details.Title.Should().Be("Leaderboard Not Found"));
     }
 
     [Test]
@@ -454,7 +400,7 @@ public class Categories
         {
             Name = "First",
             Slug = "should-not-conflict",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
             DeletedAt = _clock.GetCurrentInstant(),
@@ -473,14 +419,9 @@ public class Categories
             Type = RunType.Time
         };
 
-        await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
-            $"/leaderboards/{_createdLeaderboard.Id}/categories",
-            new()
-            {
-                Body = request,
-                Jwt = _jwt
-            }
-        )).Should().NotThrowAsync();
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+        HttpResponseMessage response = await _client.CreateCategory(_leaderboard.Id, request);
+        response.Should().Be201Created();
     }
 
     [Test]
@@ -495,27 +436,18 @@ public class Categories
             Type = RunType.Time
         };
 
-        CategoryViewModel created = await _apiClient.Post<CategoryViewModel>(
-            $"/leaderboards/{_createdLeaderboard.Id}/categories",
-            new()
-            {
-                Body = request,
-                Jwt = _jwt
-            }
-        );
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+        HttpResponseMessage response = await _client.CreateCategory(_leaderboard.Id, request);
 
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
-            $"/leaderboards/{_createdLeaderboard.Id}/categories",
-            new()
-            {
-                Body = request,
-                Jwt = _jwt,
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Conflict);
+        CategoryViewModel created = (await response.Content.ReadFromJsonAsync<CategoryViewModel>(
+            TestInitCommonFields.JsonSerializerOptions))!;
 
-        ConflictDetails<CategoryViewModel>? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ConflictDetails<CategoryViewModel>>(TestInitCommonFields.JsonSerializerOptions);
-        problemDetails!.Title.Should().Be("Conflict");
-        problemDetails!.Conflicting.Should().BeEquivalentTo(created);
+        HttpResponseMessage response2 = await _client.CreateCategory(_leaderboard.Id, request);
+        response2.Should().Be409Conflict().And.Satisfy<ConflictDetails<CategoryViewModel>>(details =>
+        {
+            details.Title.Should().Be("Conflict");
+            details.Conflicting.Should().BeEquivalentTo(created);
+        });
     }
 
     [TestCase(null, "bad-data", SortDirection.Ascending, RunType.Score, HttpStatusCode.UnprocessableContent)]
@@ -532,18 +464,15 @@ public class Categories
             Slug = slug,
         };
 
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Post<CategoryViewModel>(
-            $"/leaderboards/{_createdLeaderboard.Id}/categories",
-            new()
-            {
-                Body = request,
-                Jwt = _jwt,
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == expectedCode);
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
 
-        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-        problemDetails.Should().NotBeNull();
-        problemDetails!.Title.Should().Be("One or more validation errors occurred.");
+        HttpResponseMessage response = await _client.PostAsJsonAsync(
+            $"/leaderboards/{_leaderboard.Id}/categories",
+            request,
+            TestInitCommonFields.JsonSerializerOptions);
+
+        response.Should().HaveHttpStatusCode(expectedCode).And.Satisfy<ProblemDetails>(
+            details => details.Title.Should().Be("One or more validation errors occurred."));
     }
 
     [Test]
@@ -556,7 +485,7 @@ public class Categories
         {
             Name = "update ok",
             Slug = "update-ok",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
         };
@@ -566,21 +495,17 @@ public class Categories
         created.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        HttpResponseMessage response = await _apiClient.Patch(
-            $"categories/{created.Id}",
-            new()
-            {
-                Body = new UpdateCategoryRequest()
-                {
-                    Name = "new update",
-                    Slug = "new-update",
-                    Info = "new info",
-                    SortDirection = SortDirection.Descending,
-                },
-                Jwt = _jwt,
-            }
-        );
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+
+        HttpResponseMessage response = await _client.UpdateCategory(created.Id, new()
+        {
+            Name = "new update",
+            Slug = "new-update",
+            Info = "new info",
+            SortDirection = SortDirection.Descending,
+        });
+
+        response.Should().Be204NoContent();
 
         Category? retrieved = await context.FindAsync<Category>(created.Id);
         retrieved!.Name.Should().Be("new update");
@@ -600,7 +525,7 @@ public class Categories
         {
             Name = "Update Cat UnauthN",
             Slug = "updatecat-unauth",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Time,
         };
@@ -610,17 +535,12 @@ public class Categories
         cat.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"categories/{cat.Id}",
-            new()
-            {
-                Body = new UpdateCategoryRequest
-                {
-                    Name = "should not work"
-                }
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+        HttpResponseMessage response = await _client.UpdateCategory(cat.Id, new()
+        {
+            Name = "should not work"
+        });
 
+        response.Should().Be401Unauthorized();
         Category? retrieved = await context.FindAsync<Category>(cat.Id);
         retrieved!.Name.Should().Be("Update Cat UnauthN");
     }
@@ -638,7 +558,7 @@ public class Categories
         {
             Name = "Update Cat UnauthZ",
             Slug = $"updatecat-unauthz-{role}",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Time,
         };
@@ -658,7 +578,12 @@ public class Categories
         };
 
         CreateUserResult createUserResult = await userService.CreateUser(registerRequest);
-        LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+        HttpResponseMessage response = await _client.LoginUser(registerRequest.Email, registerRequest.Password);
+
+        LoginResponse res = (await response.Content.ReadFromJsonAsync<LoginResponse>(
+            TestInitCommonFields.JsonSerializerOptions))!;
+
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", res.Token);
 
         createUserResult.IsT0.Should().BeTrue();
         User user = createUserResult.AsT0;
@@ -666,35 +591,29 @@ public class Categories
         user.Role = role;
         await context.SaveChangesAsync();
 
-        await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"categories/{cat.Id}",
-            new()
-            {
-                Body = new UpdateCategoryRequest
-                {
-                    Name = "should not work",
-                },
-                Jwt = res.Token,
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+        HttpResponseMessage response2 = await _client.UpdateCategory(cat.Id, new()
+        {
+            Name = "should not work",
+        });
+
+        response2.Should().Be403Forbidden();
 
         Category? retrieved = await context.FindAsync<Category>(cat.Id);
         retrieved!.Name.Should().Be("Update Cat UnauthZ");
     }
 
     [Test]
-    public async Task UpdateCategory_CategoryNotFound() =>
-        await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"categories/{int.MaxValue}",
-            new()
-            {
-                Body = new UpdateCategoryRequest
-                {
-                    Name = "should not work",
-                },
-                Jwt = _jwt,
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+    public async Task UpdateCategory_CategoryNotFound()
+    {
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+
+        HttpResponseMessage response = await _client.UpdateCategory(int.MaxValue, new()
+        {
+            Name = "should not work"
+        });
+
+        response.Should().Be404NotFound();
+    }
 
     [Test]
     public async Task UpdateCategory_Conflict()
@@ -706,7 +625,7 @@ public class Categories
         {
             Name = "Update First",
             Slug = "updatecat-first",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
         };
@@ -715,7 +634,7 @@ public class Categories
         {
             Name = "To conflict",
             Slug = "updatecat-to-conflict",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
         };
@@ -726,21 +645,18 @@ public class Categories
         toConflict.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"categories/{toConflict.Id}",
-            new()
-            {
-                Body = new UpdateCategoryRequest()
-                {
-                    Slug = "updatecat-first",
-                },
-                Jwt = _jwt,
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Conflict);
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
 
-        ConflictDetails<CategoryViewModel>? conflictDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ConflictDetails<CategoryViewModel>>(TestInitCommonFields.JsonSerializerOptions);
-        conflictDetails!.Title.Should().Be("Conflict");
-        conflictDetails!.Conflicting!.Id.Should().Be(first.Id);
+        HttpResponseMessage response = await _client.UpdateCategory(toConflict.Id, new()
+        {
+            Slug = "updatecat-first"
+        });
+
+        response.Should().Be409Conflict().And.Satisfy<ConflictDetails<CategoryViewModel>>(details =>
+        {
+            details.Title.Should().Be("Conflict");
+            details.Conflicting.Id.Should().Be(first.Id);
+        });
 
         Category? toConflictRetrieved = await context.FindAsync<Category>(toConflict.Id);
         toConflictRetrieved!.Slug.Should().Be("updatecat-to-conflict");
@@ -756,7 +672,7 @@ public class Categories
         {
             Name = "Update Deleted",
             Slug = "updatecat-deleted",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
             DeletedAt = _clock.GetCurrentInstant(),
@@ -766,7 +682,7 @@ public class Categories
         {
             Name = "Update Should Not Conflict Deleted",
             Slug = "updatecat-no-conflict-deleted",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
         };
@@ -777,17 +693,14 @@ public class Categories
         toNotConflict.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"categories/{toNotConflict.Id}",
-            new()
-            {
-                Body = new UpdateCategoryRequest()
-                {
-                    Slug = "updatecat-deleted"
-                },
-                Jwt = _jwt
-            }
-        )).Should().NotThrowAsync();
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+
+        HttpResponseMessage response = await _client.UpdateCategory(toNotConflict.Id, new()
+        {
+            Slug = "updatecat-deleted"
+        });
+
+        response.Should().Be204NoContent();
 
         Category? toNotConflictRetrieved = await context.FindAsync<Category>(toNotConflict.Id);
         toNotConflictRetrieved!.Slug.Should().Be("updatecat-deleted");
@@ -803,7 +716,7 @@ public class Categories
         {
             Name = "Update No Conflict",
             Slug = "updatecat-no-conflict-different-board",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
         };
@@ -832,17 +745,14 @@ public class Categories
         toNotConflict.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"categories/{toNotConflict.Id}",
-            new()
-            {
-                Body = new UpdateCategoryRequest()
-                {
-                    Slug = first.Slug,
-                },
-                Jwt = _jwt,
-            }
-        )).Should().NotThrowAsync();
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+
+        HttpResponseMessage response = await _client.UpdateCategory(toNotConflict.Id, new()
+        {
+            Slug = first.Slug
+        });
+
+        response.Should().Be204NoContent();
 
         Category? toNotConflictRetrieved = await context.FindAsync<Category>(toNotConflict.Id);
         toNotConflictRetrieved!.Slug.Should().Be(first.Slug);
@@ -860,7 +770,7 @@ public class Categories
         {
             Name = "Update Bad Data",
             Slug = $"updatecat-bad-data-{index}",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
         };
@@ -877,26 +787,19 @@ public class Categories
             updateRequest.Slug = slug;
         }
 
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"categories/{cat.Id}",
-            new()
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+        HttpResponseMessage response = await _client.UpdateCategory(cat.Id, updateRequest);
+        response.Should().Be422UnprocessableEntity().And.Satisfy<ValidationProblemDetails>(details =>
+        {
+            if (slug is not null)
             {
-                Body = updateRequest,
-                Jwt = _jwt,
+                details.Errors["Slug"].Should().Equal([SlugRule.SLUG_FORMAT]);
             }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableEntity);
-
-        ValidationProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ValidationProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-        problemDetails.Should().NotBeNull();
-
-        if (slug is not null)
-        {
-            problemDetails!.Errors["Slug"].Should().Equal([SlugRule.SLUG_FORMAT]);
-        }
-        else
-        {
-            problemDetails!.Errors[""].Should().Equal(["PredicateValidator"]);
-        }
+            else
+            {
+                details.Errors[""].Should().Equal(["PredicateValidator"]);
+            }
+        });
 
         Category? retrieved = await context.FindAsync<Category>(cat.Id);
         retrieved!.Slug.Should().Be(cat.Slug);
@@ -912,7 +815,7 @@ public class Categories
         {
             Name = "Update Field Not Allowed",
             Slug = $"updatecat-field-not-allowed",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
         };
@@ -922,17 +825,17 @@ public class Categories
         cat.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        await FluentActions.Awaiting(() => _apiClient.Patch(
+        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
+
+        HttpResponseMessage response = await _client.PatchAsJsonAsync(
             $"categories/{cat.Id}",
-            new()
+            new
             {
-                Body = new
-                {
-                    Type = RunType.Time,
-                },
-                Jwt = _jwt,
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableEntity);
+                Type = RunType.Time
+            },
+            TestInitCommonFields.JsonSerializerOptions);
+
+        response.Should().Be422UnprocessableEntity();
     }
 
     [Test]
@@ -945,7 +848,7 @@ public class Categories
         {
             Name = "Delete Cat OK",
             Slug = "deletecat-ok",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Time
         };
@@ -955,14 +858,9 @@ public class Categories
         cat.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        HttpResponseMessage response = await _apiClient.Delete(
-            $"/categories/{cat.Id}",
-            new()
-            {
-                Jwt = _jwt
-            }
-        );
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
+        HttpResponseMessage response = await _client.DeleteCategory(cat.Id);
+        response.Should().Be204NoContent();
 
         Category? deleted = await context.FindAsync<Category>(cat.Id);
 
@@ -981,7 +879,7 @@ public class Categories
         {
             Name = "Delete Cat UnauthN",
             Slug = "deletecat-unauthn",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
         };
@@ -991,10 +889,8 @@ public class Categories
         cat.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"categories/{cat.Id}",
-            new() { }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+        HttpResponseMessage response = await _client.DeleteCategory(cat.Id);
+        response.Should().Be401Unauthorized();
 
         Category? retrieved = await context.FindAsync<Category>(cat.Id);
         retrieved!.DeletedAt.Should().BeNull();
@@ -1019,7 +915,10 @@ public class Categories
         };
 
         CreateUserResult createUserResult = await userService.CreateUser(registerRequest);
-        LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+
+        HttpResponseMessage response = await _client.LoginUser(registerRequest.Email, registerRequest.Password);
+        LoginResponse res = (await response.Content.ReadFromJsonAsync<LoginResponse>(TestInitCommonFields.JsonSerializerOptions))!;
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", res.Token);
 
         createUserResult.IsT0.Should().BeTrue();
         User user = createUserResult.AsT0;
@@ -1030,7 +929,7 @@ public class Categories
         {
             Name = "Bad Role",
             Slug = $"deletecat-bad-role-{role}",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Time,
         };
@@ -1040,13 +939,8 @@ public class Categories
         cat.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"/categories/{cat.Id}",
-            new()
-            {
-                Jwt = res.Token
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+        HttpResponseMessage response2 = await _client.DeleteCategory(cat.Id);
+        response2.Should().Be403Forbidden();
 
         Category? retrieved = await context.FindAsync<Category>(cat.Id);
         retrieved!.DeletedAt.Should().BeNull();
@@ -1055,16 +949,11 @@ public class Categories
     [Test]
     public async Task DeleteCategory_NotFound()
     {
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"/categories/{int.MaxValue}",
-            new()
-            {
-                Jwt = _jwt,
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
+        HttpResponseMessage response = await _client.DeleteCategory(int.MaxValue);
 
-        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-        problemDetails!.Title.Should().Be("Not Found");
+        response.Should().Be404NotFound().And.Satisfy<ProblemDetails>(
+            details => details.Title.Should().Be("Not Found"));
     }
 
     [Test]
@@ -1076,7 +965,7 @@ public class Categories
         {
             Name = "Deleted",
             Slug = "deletedcat-already-deleted",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
             DeletedAt = _clock.GetCurrentInstant(),
@@ -1087,16 +976,11 @@ public class Categories
         cat.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Delete(
-            $"/categories/{cat.Id}",
-            new()
-            {
-                Jwt = _jwt,
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
+        HttpResponseMessage response = await _client.DeleteCategory(cat.Id);
 
-        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-        problemDetails!.Title.Should().Be("Already Deleted");
+        response.Should().Be404NotFound().And.Satisfy<ProblemDetails>(
+            details => details.Title.Should().Be("Already Deleted"));
 
         Category? retrieved = await context.FindAsync<Category>(cat.Id);
         retrieved!.UpdatedAt.Should().BeNull();
@@ -1112,7 +996,7 @@ public class Categories
         {
             Name = "Deleted",
             Slug = "deletedcat-already-deleted",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
             DeletedAt = _clock.GetCurrentInstant(),
@@ -1123,17 +1007,12 @@ public class Categories
         cat.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        await _apiClient.Patch(
-            $"categories/{cat.Id}",
-            new()
-            {
-                Body = new UpdateCategoryRequest()
-                {
-                    Status = Status.Published
-                },
-                Jwt = _jwt
-            }
-        );
+        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
+
+        await _client.UpdateCategory(cat.Id, new()
+        {
+            Status = Status.Published
+        });
 
         Category? verify = await context.FindAsync<Category>(cat.Id);
         verify!.DeletedAt.Should().BeNull();
@@ -1149,7 +1028,7 @@ public class Categories
         {
             Name = "Restore Cat UnauthN",
             Slug = "restorecat-unauthn",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
             DeletedAt = _clock.GetCurrentInstant(),
@@ -1160,16 +1039,12 @@ public class Categories
         cat.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"categories/{cat.Id}",
-            new()
-            {
-                Body = new UpdateCategoryRequest()
-                {
-                    Status = Status.Published
-                }
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+        HttpResponseMessage response = await _client.UpdateCategory(cat.Id, new()
+        {
+            Status = Status.Published
+        });
+
+        response.Should().Be401Unauthorized();
 
         Category? verify = await context.FindAsync<Category>(cat.Id);
         verify!.DeletedAt.Should().Be(_clock.GetCurrentInstant());
@@ -1188,7 +1063,7 @@ public class Categories
         {
             Name = "Restore Cat UnauthZ",
             Slug = $"restorecat-unauthz-{role}",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
             DeletedAt = _clock.GetCurrentInstant(),
@@ -1209,7 +1084,9 @@ public class Categories
         };
 
         CreateUserResult createUserResult = await userService.CreateUser(registerRequest);
-        LoginResponse res = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
+        HttpResponseMessage response = await _client.LoginUser(registerRequest.Email, registerRequest.Password);
+        LoginResponse res = (await response.Content.ReadFromJsonAsync<LoginResponse>(TestInitCommonFields.JsonSerializerOptions))!;
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", res.Token);
 
         createUserResult.IsT0.Should().BeTrue();
         User user = createUserResult.AsT0;
@@ -1217,17 +1094,12 @@ public class Categories
         user.Role = role;
         await context.SaveChangesAsync();
 
-        await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"categories/{cat.Id}",
-            new()
-            {
-                Body = new UpdateCategoryRequest()
-                {
-                    Status = Status.Published
-                },
-                Jwt = res.Token
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+        HttpResponseMessage response2 = await _client.UpdateCategory(cat.Id, new()
+        {
+            Status = Status.Published
+        });
+
+        response2.Should().Be403Forbidden();
 
         Category? retrieved = await context.FindAsync<Category>(cat.Id);
         retrieved!.DeletedAt.Should().Be(_clock.GetCurrentInstant());
@@ -1236,20 +1108,15 @@ public class Categories
     [Test]
     public async Task RestoreCategory_NotFound()
     {
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"categories/{int.MaxValue}",
-            new()
-            {
-                Body = new UpdateCategoryRequest()
-                {
-                    Status = Status.Published
-                },
-                Jwt = _jwt
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
 
-        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-        problemDetails!.Title.Should().Be("Not Found");
+        HttpResponseMessage response = await _client.UpdateCategory(int.MaxValue, new()
+        {
+            Status = Status.Published
+        });
+
+        response.Should().Be404NotFound().And.Satisfy<ProblemDetails>(
+            details => details.Title.Should().Be("Not Found"));
     }
 
     [Test]
@@ -1262,7 +1129,7 @@ public class Categories
         {
             Name = "Restore Cat Never Deleted",
             Slug = "restorecat-never-deleted",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
         };
@@ -1271,19 +1138,14 @@ public class Categories
         await context.SaveChangesAsync();
         cat.Id.Should().NotBe(default);
 
-        AndWhichConstraint<GenericAsyncFunctionAssertions<HttpResponseMessage>, HttpResponseMessage> assert = await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"categories/{cat.Id}",
-            new()
-            {
-                Body = new UpdateCategoryRequest()
-                {
-                    Status = Status.Published
-                },
-                Jwt = _jwt
-            }
-        )).Should().NotThrowAsync();
+        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
 
-        assert.Which.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        HttpResponseMessage response = await _client.UpdateCategory(cat.Id, new()
+        {
+            Status = Status.Published
+        });
+
+        response.Should().Be204NoContent();
     }
 
     [Test]
@@ -1296,7 +1158,7 @@ public class Categories
         {
             Name = "Restore Cat To Conflict",
             Slug = "restorecat-to-conflict",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
             DeletedAt = _clock.GetCurrentInstant(),
@@ -1306,7 +1168,7 @@ public class Categories
         {
             Name = "Restore Cat Conflicting",
             Slug = "restorecat-to-conflict",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
         };
@@ -1317,21 +1179,18 @@ public class Categories
         conflicting.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        ExceptionAssertions<RequestFailureException> exAssert = await FluentActions.Awaiting(() => _apiClient.Patch(
-            $"categories/{deleted.Id}",
-            new()
-            {
-                Body = new UpdateCategoryRequest()
-                {
-                    Status = Status.Published
-                },
-                Jwt = _jwt,
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Conflict);
+        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
 
-        ConflictDetails<CategoryViewModel>? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ConflictDetails<CategoryViewModel>>(TestInitCommonFields.JsonSerializerOptions);
-        problemDetails!.Title.Should().Be("Conflict");
-        problemDetails!.Conflicting.Should().BeEquivalentTo(CategoryViewModel.MapFrom(conflicting));
+        HttpResponseMessage response = await _client.UpdateCategory(deleted.Id, new()
+        {
+            Status = Status.Published
+        });
+
+        response.Should().Be409Conflict().And.Satisfy<ConflictDetails<CategoryViewModel>>(detail =>
+        {
+            detail.Title.Should().Be("Conflict");
+            detail.Conflicting.Should().BeEquivalentTo(CategoryViewModel.MapFrom(conflicting));
+        });
 
         Category? verify = await context.FindAsync<Category>(deleted.Id);
         verify!.DeletedAt.Should().Be(_clock.GetCurrentInstant());
@@ -1348,7 +1207,7 @@ public class Categories
         {
             Name = "Restore Cat Should Not Conflict",
             Slug = "restorecat-should-not-conflict",
-            LeaderboardId = _createdLeaderboard.Id,
+            LeaderboardId = _leaderboard.Id,
             SortDirection = SortDirection.Ascending,
             Type = RunType.Score,
             DeletedAt = _clock.GetCurrentInstant(),
@@ -1362,7 +1221,7 @@ public class Categories
 
         context.AddRange(deleted, board);
         await context.SaveChangesAsync();
-        deleted.Id.Should().NotBe(default).And.NotBe(_createdLeaderboard.Id);
+        deleted.Id.Should().NotBe(default).And.NotBe(_leaderboard.Id);
         board.Id.Should().NotBe(default);
 
         Category notConflicting = new()
@@ -1380,17 +1239,12 @@ public class Categories
         notConflicting.Id.Should().NotBe(default);
         context.ChangeTracker.Clear();
 
-        await _apiClient.Patch(
-            $"categories/{notConflicting.Id}",
-            new()
-            {
-                Body = new UpdateCategoryRequest()
-                {
-                    Status = Status.Published
-                },
-                Jwt = _jwt
-            }
-        );
+        _client.DefaultRequestHeaders.Authorization = new ("Bearer", _jwt);
+
+        await _client.UpdateCategory(notConflicting.Id, new()
+        {
+            Status = Status.Published
+        });
 
         Category? verify = await context.FindAsync<Category>(notConflicting.Id);
         verify!.DeletedAt.Should().BeNull();
