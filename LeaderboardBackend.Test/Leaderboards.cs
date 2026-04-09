@@ -137,7 +137,7 @@ public class Leaderboards
 
         ConflictDetails<LeaderboardViewModel>? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ConflictDetails<LeaderboardViewModel>>(TestInitCommonFields.JsonSerializerOptions);
         problemDetails!.Title.Should().Be("Conflict");
-        problemDetails!.Conflicting!.Slug.Should().Be(req.Slug);
+        problemDetails!.Conflicting.Slug.Should().Be(req.Slug);
     }
 
     [Test]

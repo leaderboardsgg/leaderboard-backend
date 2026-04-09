@@ -1967,6 +1967,9 @@
         "description": "Represents a `Category` tied to a `Leaderboard`."
       },
       "CategoryViewModelConflictDetails": {
+        "required": [
+          "conflicting"
+        ],
         "type": "object",
         "properties": {
           "type": {
@@ -2278,6 +2281,9 @@
         "description": "Represents a collection of `Leaderboard` entities."
       },
       "LeaderboardViewModelConflictDetails": {
+        "required": [
+          "conflicting"
+        ],
         "type": "object",
         "properties": {
           "type": {
