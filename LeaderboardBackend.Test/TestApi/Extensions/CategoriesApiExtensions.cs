@@ -11,58 +11,47 @@ namespace LeaderboardBackend.Test.TestApi.Extensions;
 
 public static class CategoriesApiExtensions
 {
-    public static Task<HttpResponseMessage> GetCategory(
-        this HttpClient client,
-        long id) => client.GetAsync($"/api/categories/{id}");
-
-    public static Task<HttpResponseMessage> GetCategory(
-        this HttpClient client,
-        long lbId,
-        string slug) =>
-    client.GetAsync($"/api/leaderboards/{lbId}/categories/{slug}");
-
-    public static Task<HttpResponseMessage> GetCategoriesForLeaderboard(
-        this HttpClient client,
-        long lbId,
-        int? limit = null,
-        int? offset = null,
-        StatusFilter? filter = null)
+    extension(HttpClient client)
     {
-        Dictionary<string, object?> qParams = new()
-        {
-            { "limit", limit },
-            { "offset", offset },
-            { "status", filter}
-        };
+        public Task<HttpResponseMessage> GetCategory(
+            long id) => client.GetAsync($"/api/categories/{id}");
 
-        UriBuilder uriBuilder = new()
-        {
-            Query = string.Join('&', qParams.SelectMany<KeyValuePair<string, object?>, string>(
-                    pair => pair.Value is null ? [] : [$"{pair.Key}={pair.Value}"]))
-        };
+        public Task<HttpResponseMessage> GetCategory(
+            long lbId,
+            string slug) =>
+        client.GetAsync($"/api/leaderboards/{lbId}/categories/{slug}");
 
-        return client.GetAsync($"/api/leaderboards/{lbId}/categories" + uriBuilder.Query);
+        public Task<HttpResponseMessage> GetCategoriesForLeaderboard(
+            long lbId,
+            int? limit = null,
+            int? offset = null,
+            StatusFilter? filter = null)
+        {
+            QueryParam[] qParams = [
+                new("limit", limit),
+                new("offset", offset),
+                new("status", filter)];
+
+            return client.GetAsync($"/api/leaderboards/{lbId}/categories" + qParams.ToUrlString());
+        }
+
+        public Task<HttpResponseMessage> CreateCategory(
+            long lbId,
+            CreateCategoryRequest request
+        ) => client.PostAsJsonAsync(
+            $"/leaderboards/{lbId}/categories",
+            request, TestInitCommonFields.JsonSerializerOptions);
+
+        public Task<HttpResponseMessage> UpdateCategory(
+            long id,
+            UpdateCategoryRequest request
+        ) => client.PatchAsJsonAsync(
+            $"/categories/{id}",
+            request,
+            TestInitCommonFields.JsonSerializerOptions);
+
+        public Task<HttpResponseMessage> DeleteCategory(
+            long id
+        ) => client.DeleteAsync($"/categories/{id}");
     }
-
-    public static Task<HttpResponseMessage> CreateCategory(
-        this HttpClient client,
-        long lbId,
-        CreateCategoryRequest request
-    ) => client.PostAsJsonAsync(
-        $"/leaderboards/{lbId}/categories",
-        request, TestInitCommonFields.JsonSerializerOptions);
-
-    public static Task<HttpResponseMessage> UpdateCategory(
-        this HttpClient client,
-        long id,
-        UpdateCategoryRequest request
-    ) => client.PatchAsJsonAsync(
-        $"/categories/{id}",
-        request,
-        TestInitCommonFields.JsonSerializerOptions);
-
-    public static Task<HttpResponseMessage> DeleteCategory(
-        this HttpClient client,
-        long id
-    ) => client.DeleteAsync($"/categories/{id}");
 }
