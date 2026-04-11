@@ -39,8 +39,11 @@ public class TestRecoveryTests : IntegrationTestsBase
         await TestApiFactory.ResetDatabase(context);
     }
 
+    [OneTimeTearDown]
+    public void OneTimeTearDown() => _client.Dispose();
+
     [TearDown]
-    public void TearDown() => _scope.Dispose();
+    public new void TearDown() => _scope.Dispose();
 
     [TestCase("not_a_guid")]
     [TestCase("L8msfy9wd0qWbDJMZwwgQg")]

@@ -48,7 +48,7 @@ public class ResetPasswordTests : IntegrationTestsBase
     }
 
     [TearDown]
-    public void TearDown()
+    public new void TearDown()
     {
         _scope.Dispose();
     }

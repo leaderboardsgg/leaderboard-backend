@@ -38,11 +38,12 @@ public class ConfirmAccountTests : IntegrationTestsBase
     }
 
     [TearDown]
-    public async Task TearDown()
+    public async new Task TearDown()
     {
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         await TestApiFactory.ResetDatabase(context);
         _scope.Dispose();
+        _client.Dispose();
     }
 
     [Test]

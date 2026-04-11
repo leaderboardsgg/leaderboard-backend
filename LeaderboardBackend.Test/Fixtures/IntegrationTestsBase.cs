@@ -14,5 +14,8 @@ public abstract class IntegrationTestsBase
     [SetUp]
     public void SetUp() => Client = _factory.CreateClient();
 
+    [TearDown]
+    public void TearDown() => Client.Dispose();
+
     protected void SetClientBearer(string token) => Client.DefaultRequestHeaders.Authorization = new(JwtBearerDefaults.AuthenticationScheme, token);
 }
