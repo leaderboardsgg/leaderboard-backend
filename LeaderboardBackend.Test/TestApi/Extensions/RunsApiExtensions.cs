@@ -17,10 +17,19 @@ public static class RunsApiExtensions
 
         public Task<HttpResponseMessage> CreateRun(
             long catId,
-            CreateRunRequest request) => client.PostAsJsonAsync(
-                $"/categories/{catId}/runs",
-                request,
-                TestInitCommonFields.JsonSerializerOptions);
+            CreateRunRequest request,
+            string? jwt = null)
+        {
+            if (jwt is not null)
+            {
+                client.DefaultRequestHeaders.Authorization = new("Bearer", jwt);
+            }
+
+            return client.PostAsJsonAsync(
+            $"/categories/{catId}/runs",
+            request,
+            TestInitCommonFields.JsonSerializerOptions);
+        }
 
         public Task<HttpResponseMessage> GetRunsForCategory(
             long catId,
@@ -52,13 +61,27 @@ public static class RunsApiExtensions
         public Task<HttpResponseMessage> GetCategoryForRun(Guid id) =>
             client.GetAsync($"/api/runs/{id.ToUrlSafeBase64String()}/category");
 
-        public Task<HttpResponseMessage> UpdateRun(Guid id, UpdateRunRequest request) =>
-            client.PatchAsJsonAsync(
+        public Task<HttpResponseMessage> UpdateRun(Guid id, UpdateRunRequest request, string? jwt = null)
+        {
+            if (jwt is not null)
+            {
+                client.DefaultRequestHeaders.Authorization = new("Bearer", jwt);
+            }
+
+            return client.PatchAsJsonAsync(
                 $"/runs/{id}",
                 request,
                 TestInitCommonFields.JsonSerializerOptions);
+        }
 
-        public Task<HttpResponseMessage> DeleteRun(Guid id) =>
-            client.DeleteAsync($"/runs/{id}");
+        public Task<HttpResponseMessage> DeleteRun(Guid id, string? jwt = null)
+        {
+            if (jwt is not null)
+            {
+                client.DefaultRequestHeaders.Authorization = new("Bearer", jwt);
+            }
+
+            return client.DeleteAsync($"/runs/{id}");
+        }
     }
 }
