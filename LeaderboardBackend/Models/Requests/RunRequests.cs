@@ -8,17 +8,14 @@ using NodaTime;
 namespace LeaderboardBackend.Models.Requests;
 
 /// <summary>
-///     Request sent when creating a Run. Set `runType` to `"Time"` for a timed
-///     request, and `"Score"` for a scored one. `runType` *must* be at the top
-///     of the request object.
+///     Request sent when creating a Run. Set <c>"time"</c> for a timed request
+///     and <c>"score"</c> for a scored one.
 /// </summary>
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "runType")]
+[JsonPolymorphic(UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor)]
 [JsonDerivedType(typeof(CreateTimedRunRequest), nameof(RunType.Time))]
 [JsonDerivedType(typeof(CreateScoredRunRequest), nameof(RunType.Score))]
 public abstract record CreateRunRequest
 {
-    [Required]
-    public RunType RunType { get; set; }
 
     /// <inheritdoc cref="Entities.Run.Info" />
     public string Info { get; set; }
@@ -30,9 +27,6 @@ public abstract record CreateRunRequest
     public LocalDate PlayedOn { get; set; }
 }
 
-/// <summary>
-///     `runType: "Time"`
-/// </summary>
 public record CreateTimedRunRequest : CreateRunRequest
 {
     /// <summary>
@@ -43,9 +37,6 @@ public record CreateTimedRunRequest : CreateRunRequest
     public Duration Time { get; set; }
 }
 
-/// <summary>
-///     `runType: "Score"`
-/// </summary>
 public record CreateScoredRunRequest : CreateRunRequest
 {
     /// <summary>
@@ -59,14 +50,11 @@ public record CreateScoredRunRequest : CreateRunRequest
 ///     Request sent when updating a run.
 ///     All fields are optional but you must specify at least one.
 /// </summary>
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "runType")]
+[JsonPolymorphic(UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor)]
 [JsonDerivedType(typeof(UpdateTimedRunRequest), nameof(RunType.Time))]
 [JsonDerivedType(typeof(UpdateScoredRunRequest), nameof(RunType.Score))]
 public abstract record UpdateRunRequest
 {
-    [Required]
-    public RunType RunType { get; set; }
-
     /// <inheritdoc cref="Entities.Run.Info" />
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string Info { get; set; }

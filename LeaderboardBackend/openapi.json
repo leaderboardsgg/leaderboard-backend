@@ -2123,18 +2123,10 @@
       },
       "CreateRunRequest": {
         "required": [
-          "playedOn",
-          "runType"
+          "playedOn"
         ],
         "type": "object",
         "properties": {
-          "runType": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/RunType"
-              }
-            ]
-          },
           "info": {
             "type": "string"
           },
@@ -2146,14 +2138,7 @@
           }
         },
         "additionalProperties": false,
-        "description": "Request sent when creating a Run. Set `runType` to `\"Time\"` for a timed\nrequest, and `\"Score\"` for a scored one. `runType` *must* be at the top\nof the request object.",
-        "discriminator": {
-          "propertyName": "runType",
-          "mapping": {
-            "Time": "#/components/schemas/CreateTimedRunRequest",
-            "Score": "#/components/schemas/CreateScoredRunRequest"
-          }
-        }
+        "description": "Request sent when creating a Run. Set `runType` to `\"Time\"` for a timed\nrequest, and `\"Score\"` for a scored one. `runType` *must* be at the top\nof the request object."
       },
       "CreateScoredRunRequest": {
         "allOf": [

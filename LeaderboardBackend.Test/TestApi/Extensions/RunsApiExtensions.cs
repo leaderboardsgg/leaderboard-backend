@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -13,7 +12,7 @@ public static class RunsApiExtensions
     extension(HttpClient client)
     {
         public Task<HttpResponseMessage> GetRun(Guid id) =>
-            client.GetAsync($"/api/runs{id.ToUrlSafeBase64String()}");
+            client.GetAsync($"/api/runs/{id.ToUrlSafeBase64String()}");
 
         public Task<HttpResponseMessage> CreateRun(
             long catId,
@@ -31,7 +30,7 @@ public static class RunsApiExtensions
             TestInitCommonFields.JsonSerializerOptions);
         }
 
-        public Task<HttpResponseMessage> GetRunsForCategory(
+        public async Task<HttpResponseMessage> GetRunsForCategory(
             long catId,
             int? limit = null,
             int? offset = null,
@@ -42,7 +41,7 @@ public static class RunsApiExtensions
                 new("offset", offset),
                 new("status", filter)];
 
-            return client.GetAsync($"/api/categories/{catId}/runs" + qParams.ToUrlString());
+            return await client.GetAsync($"/api/categories/{catId}/runs{qParams.ToUrlString()}");
         }
 
         public Task<HttpResponseMessage> GetRecordsForCategory(
@@ -69,7 +68,7 @@ public static class RunsApiExtensions
             }
 
             return client.PatchAsJsonAsync(
-                $"/runs/{id}",
+                $"/runs/{id.ToUrlSafeBase64String()}",
                 request,
                 TestInitCommonFields.JsonSerializerOptions);
         }
@@ -81,7 +80,7 @@ public static class RunsApiExtensions
                 client.DefaultRequestHeaders.Authorization = new("Bearer", jwt);
             }
 
-            return client.DeleteAsync($"/runs/{id}");
+            return client.DeleteAsync($"/runs/{id.ToUrlSafeBase64String()}");
         }
     }
 }

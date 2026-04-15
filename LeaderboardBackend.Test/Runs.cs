@@ -190,7 +190,7 @@ namespace LeaderboardBackend.Test
 
             response.Should().Be200Ok().And.Satisfy<ListView<TimedRunViewModel>>(listView =>
             {
-                listView.Data.Should().BeEquivalentTo(runs.Take(2).Select(RunViewModel.MapFrom));
+                listView.Data.Should().BeEquivalentTo(runs.Take(2).Select(TimedRunViewModel.MapFrom));
                 listView.Total.Should().Be(2);
             });
 
@@ -217,10 +217,10 @@ namespace LeaderboardBackend.Test
                 listView.Data.Should().BeEquivalentTo(new Run[]
                 {
                     runs[0],
-                    runs[2],
-                    runs[1]}.Select(RunViewModel.MapFrom), config => config.WithStrictOrdering());
+                    runs[1]
+                }.Select(RunViewModel.MapFrom), config => config.WithStrictOrdering());
 
-                listView.Total.Should().Be(3);
+                listView.Total.Should().Be(2);
             });
 
             HttpResponseMessage response4 = await _apiClient.GetRunsForCategory(_categoryIds[0], 1);
@@ -408,7 +408,6 @@ namespace LeaderboardBackend.Test
                 _categoryIds[0],
                 new CreateTimedRunRequest
                 {
-                    RunType = RunType.Time,
                     Info = "",
                     PlayedOn = new(2025, 1, 1),
                     Time = Duration.FromTimeSpan(new(0, 0, 10, 22, 111)),
@@ -440,7 +439,6 @@ namespace LeaderboardBackend.Test
         {
             HttpResponseMessage response = await _apiClient.CreateRun(_categoryIds[0], new CreateTimedRunRequest()
             {
-                RunType = RunType.Time,
                 PlayedOn = new(2025, 1, 1),
                 Info = ""
             });
@@ -476,7 +474,6 @@ namespace LeaderboardBackend.Test
 
             HttpResponseMessage response2 = await _apiClient.CreateRun(_categoryIds[0], new CreateTimedRunRequest
             {
-                RunType = RunType.Time,
                 PlayedOn = new(2025, 1, 1),
                 Time = Duration.FromMinutes(10)
             });
@@ -491,7 +488,6 @@ namespace LeaderboardBackend.Test
 
             HttpResponseMessage response = await _apiClient.CreateRun(0, new CreateTimedRunRequest()
             {
-                RunType = RunType.Time,
                 PlayedOn = new(2025, 1, 1),
                 Info = "",
                 Time = Duration.FromMinutes(1)
@@ -528,7 +524,6 @@ namespace LeaderboardBackend.Test
                 deleted.Id,
                 new CreateTimedRunRequest()
                 {
-                    RunType = RunType.Time,
                     PlayedOn = new(2025, 1, 1),
                     Info = "",
                     Time = Duration.FromMinutes(39)
@@ -549,13 +544,14 @@ namespace LeaderboardBackend.Test
 
             HttpResponseMessage response = await _apiClient.PostAsJsonAsync(
                 $"/categories/{_categoryIds[0]}/runs",
-                new
+                $$"""
                 {
-                    runType = nameof(RunType.Time),
-                    playedOn = playedOn,
-                    info = info,
-                    time = time
-                },
+                    "$type": "Time",
+                    "playedOn": {{playedOn}},
+                    "info": {{info}},
+                    "time": {{time}}
+                }
+                """,
                 TestInitCommonFields.JsonSerializerOptions);
 
             response.Should().Be400BadRequest();
@@ -568,7 +564,6 @@ namespace LeaderboardBackend.Test
                 _categoryIds[0],
                 new CreateTimedRunRequest
                 {
-                    RunType = RunType.Time,
                     PlayedOn = LocalDate.MinIsoValue,
                     Info = "",
                     Time = Duration.FromMilliseconds(390000),
@@ -576,7 +571,7 @@ namespace LeaderboardBackend.Test
                 _jwt
             );
 
-            RunViewModel? createdRun = await runResponse.Content.ReadFromJsonAsync<RunViewModel>(TestInitCommonFields.JsonSerializerOptions);
+            TimedRunViewModel? createdRun = await runResponse.Content.ReadFromJsonAsync<TimedRunViewModel>(TestInitCommonFields.JsonSerializerOptions);
 
             HttpResponseMessage categoryResponse = await _apiClient.GetCategoryForRun(
                 createdRun!.Id
@@ -611,7 +606,6 @@ namespace LeaderboardBackend.Test
                 run.Id,
                 new UpdateTimedRunRequest
                 {
-                    RunType = RunType.Time,
                     Info = "new info",
                 },
                 _jwt
@@ -666,7 +660,6 @@ namespace LeaderboardBackend.Test
                 run.Id,
                 new UpdateTimedRunRequest
                 {
-                    RunType = RunType.Time,
                     Info = "new info",
                 },
                 userLoginResponse!.Token
@@ -702,7 +695,6 @@ namespace LeaderboardBackend.Test
                 created.Id,
                 new UpdateTimedRunRequest
                 {
-                    RunType = RunType.Time,
                     Info = "won't work",
                 }
             );
@@ -755,7 +747,6 @@ namespace LeaderboardBackend.Test
                 created.Id,
                 new UpdateTimedRunRequest
                 {
-                    RunType = RunType.Time,
                     Info = "should not work",
                 },
                 res!.Token
@@ -806,7 +797,6 @@ namespace LeaderboardBackend.Test
                 created.Id,
                 new UpdateTimedRunRequest
                 {
-                    RunType = RunType.Time,
                     Info = "should not work",
                 },
                 res!.Token
@@ -869,7 +859,6 @@ namespace LeaderboardBackend.Test
                 created.Id,
                 new UpdateTimedRunRequest
                 {
-                    RunType = RunType.Time,
                     Status = Status.Published,
                 },
                 res!.Token
@@ -884,7 +873,6 @@ namespace LeaderboardBackend.Test
                 created1.Id,
                 new UpdateTimedRunRequest
                 {
-                    RunType = RunType.Time,
                     Status = Status.Published,
                 },
                 res!.Token
@@ -903,7 +891,6 @@ namespace LeaderboardBackend.Test
                 Guid.Empty,
                 new UpdateTimedRunRequest
                 {
-                    RunType = RunType.Time,
                     Info = "should not work",
                 },
                 _jwt
@@ -953,7 +940,6 @@ namespace LeaderboardBackend.Test
                 created.Id,
                 new UpdateTimedRunRequest
                 {
-                    RunType = RunType.Time,
                     Info = "should not work"
                 },
                 res!.Token
@@ -1021,7 +1007,6 @@ namespace LeaderboardBackend.Test
                 created.Id,
                 new UpdateTimedRunRequest
                 {
-                    RunType = RunType.Time,
                     Info = "should not work",
                 },
                 res!.Token
@@ -1055,7 +1040,6 @@ namespace LeaderboardBackend.Test
                 created.Id,
                 new UpdateScoredRunRequest
                 {
-                    RunType = RunType.Score,
                     Score = 1L,
                 },
                 _jwt

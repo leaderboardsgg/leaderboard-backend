@@ -4,7 +4,9 @@ using NodaTime;
 
 namespace LeaderboardBackend.Models.ViewModels;
 
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "runType")]
+// We need the UnknownDerivedTypeHandling here solely because our base is abstract. This
+// is true for all the others we have. - zysim
+[JsonPolymorphic(UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor)]
 [JsonDerivedType(typeof(TimedRunViewModel), "Time")]
 [JsonDerivedType(typeof(ScoredRunViewModel), "Score")]
 public abstract record RunViewModel
