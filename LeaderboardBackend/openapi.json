@@ -1251,7 +1251,7 @@
                     "$ref": "#/components/schemas/CreateScoredRunRequest"
                   }
                 ],
-                "description": "Request sent when creating a Run. Set `runType` to `\"Time\"` for a timed\nrequest, and `\"Score\"` for a scored one. `runType` *must* be at the top\nof the request object."
+                "description": "Request sent when creating a Run. Set `\"time\"` for a timed request\nand `\"score\"` for a scored one."
               }
             }
           },
@@ -2123,10 +2123,14 @@
       },
       "CreateRunRequest": {
         "required": [
+          "$type",
           "playedOn"
         ],
         "type": "object",
         "properties": {
+          "$type": {
+            "type": "string"
+          },
           "info": {
             "type": "string"
           },
@@ -2138,7 +2142,14 @@
           }
         },
         "additionalProperties": false,
-        "description": "Request sent when creating a Run. Set `runType` to `\"Time\"` for a timed\nrequest, and `\"Score\"` for a scored one. `runType` *must* be at the top\nof the request object."
+        "description": "Request sent when creating a Run. Set `\"time\"` for a timed request\nand `\"score\"` for a scored one.",
+        "discriminator": {
+          "propertyName": "$type",
+          "mapping": {
+            "Time": "#/components/schemas/CreateTimedRunRequest",
+            "Score": "#/components/schemas/CreateScoredRunRequest"
+          }
+        }
       },
       "CreateScoredRunRequest": {
         "allOf": [
@@ -2159,8 +2170,7 @@
             },
             "additionalProperties": false
           }
-        ],
-        "description": "`runType: \"Score\"`"
+        ]
       },
       "CreateTimedRunRequest": {
         "allOf": [
@@ -2181,8 +2191,7 @@
             },
             "additionalProperties": false
           }
-        ],
-        "description": "`runType: \"Time\"`"
+        ]
       },
       "LeaderboardStats": {
         "type": "object",
@@ -2463,6 +2472,7 @@
       },
       "RunViewModel": {
         "required": [
+          "$type",
           "categoryId",
           "createdAt",
           "deletedAt",
@@ -2476,17 +2486,20 @@
         ],
         "type": "object",
         "properties": {
+          "$type": {
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^[a-zA-Z0-9-_]{22}$",
+            "type": "string",
+            "description": "The unique identifier of the `Run`.\n\nGenerated on creation."
+          },
           "runType": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/RunType"
               }
             ]
-          },
-          "id": {
-            "pattern": "^[a-zA-Z0-9-_]{22}$",
-            "type": "string",
-            "description": "The unique identifier of the `Run`.\n\nGenerated on creation."
           },
           "info": {
             "type": "string",
@@ -2547,7 +2560,7 @@
         },
         "additionalProperties": false,
         "discriminator": {
-          "propertyName": "runType",
+          "propertyName": "$type",
           "mapping": {
             "Time": "#/components/schemas/TimedRunViewModel",
             "Score": "#/components/schemas/ScoredRunViewModel"
@@ -2726,16 +2739,12 @@
       },
       "UpdateRunRequest": {
         "required": [
-          "runType"
+          "$type"
         ],
         "type": "object",
         "properties": {
-          "runType": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/RunType"
-              }
-            ]
+          "$type": {
+            "type": "string"
           },
           "info": {
             "type": "string"
@@ -2758,7 +2767,7 @@
         "additionalProperties": false,
         "description": "Request sent when updating a run.\nAll fields are optional but you must specify at least one.",
         "discriminator": {
-          "propertyName": "runType",
+          "propertyName": "$type",
           "mapping": {
             "Time": "#/components/schemas/UpdateTimedRunRequest",
             "Score": "#/components/schemas/UpdateScoredRunRequest"

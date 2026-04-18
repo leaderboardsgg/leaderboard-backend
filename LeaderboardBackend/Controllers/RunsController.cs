@@ -127,7 +127,7 @@ public class RunsController(
         return result.Match<ActionResult>(
             runs => Ok(new ListView<RunViewModel>()
             {
-                Data = [..runs.Items.Select(RunViewModel.MapFrom)],
+                Data = [.. runs.Items.Select(RunViewModel.MapFrom)],
                 Total = runs.ItemsTotal
             }),
             notFound => Problem(

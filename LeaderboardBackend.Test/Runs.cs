@@ -27,7 +27,7 @@ namespace LeaderboardBackend.Test
     [TestFixture]
     public class Runs
     {
-        private static HttpClient _apiClient;
+        private static HttpClient? _apiClient;
         private static WebApplicationFactory<Program> _factory = null!;
         private static string _jwt = null!;
         private static long[] _categoryIds = [];
