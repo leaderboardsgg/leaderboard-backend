@@ -2479,7 +2479,6 @@
           "id",
           "info",
           "playedOn",
-          "runType",
           "status",
           "updatedAt",
           "user"
@@ -2493,13 +2492,6 @@
             "pattern": "^[a-zA-Z0-9-_]{22}$",
             "type": "string",
             "description": "The unique identifier of the `Run`.\n\nGenerated on creation."
-          },
-          "runType": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/RunType"
-              }
-            ]
           },
           "info": {
             "type": "string",
