@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using FluentAssertions.Specialized;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Models.ViewModels;
-using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
@@ -28,7 +26,7 @@ namespace LeaderboardBackend.Test;
 [TestFixture]
 public class Users
 {
-    private static TestApiClient _apiClient = null!;
+    private static HttpClient _apiClient = null!;
     private static WebApplicationFactory<Program> _factory = null!;
     private static readonly FakeClock _clock = new(new());
     private static string? _jwt;
@@ -42,15 +40,27 @@ public class Users
             )
         );
 
-        _apiClient = new TestApiClient(_factory.CreateClient());
+        _apiClient = _factory.CreateClient();
         using IServiceScope scope = _factory.Services.CreateScope();
         ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         await TestApiFactory.ResetDatabase(context);
-        _jwt = (await _apiClient.LoginAdminUser()).Token;
+        HttpResponseMessage responseMessage = await _apiClient.LoginAdminUser();
+        LoginResponse? loginResponse = await responseMessage.Content.ReadFromJsonAsync<LoginResponse?>(TestInitCommonFields.JsonSerializerOptions);
+        _jwt = loginResponse!.Token;
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown() => _factory.Dispose();
+    public void OneTimeTearDown()
+    {
+        _apiClient.Dispose();
+        _factory.Dispose();
+    }
+
+    [SetUp]
+    public void Setup()
+    {
+        _apiClient.DefaultRequestHeaders.Authorization = null;
+    }
 
     [Test]
     public async Task GetUsers_OK()
@@ -99,44 +109,39 @@ public class Users
         IEnumerable<UserViewModel> users = context.Users.Select(UserViewModel.MapFrom).OrderBy(u => u.Username);
 
         IEnumerable<UserViewModel> expected = users.Where(u => u.Role != UserRole.Banned);
-        ListView<UserViewModel> result = await _apiClient.Get<ListView<UserViewModel>>("/users?role=Administrator,Registered", new()
-        {
-            Jwt = _jwt,
-        });
-        result.Total.Should().Be(5);
+
+        _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+
+        ListView<UserViewModel>? result = await _apiClient.GetAsync("/users?role=Administrator,Registered")
+            .Result.Content.ReadFromJsonAsync<ListView<UserViewModel>>(TestInitCommonFields.JsonSerializerOptions);
+        result!.Total.Should().Be(5);
         result.LimitDefault.Should().Be(64);
         result.Data.Should().BeEquivalentTo(expected, config => config.WithStrictOrdering());
 
         IEnumerable<UserViewModel> expected1 = users.Where(u => u.Role == UserRole.Banned);
-        ListView<UserViewModel> result1 = await _apiClient.Get<ListView<UserViewModel>>("/users?role=banned", new()
-        {
-            Jwt = _jwt,
-        });
-        result1.Total.Should().Be(1);
+        ListView<UserViewModel>? result1 = await _apiClient.GetAsync("/users?role=banned")
+            .Result.Content.ReadFromJsonAsync<ListView<UserViewModel>>(TestInitCommonFields.JsonSerializerOptions);
+        result1!.Total.Should().Be(1);
         result1.Data.Should().BeEquivalentTo(expected1);
 
-        ListView<UserViewModel> result2 = await _apiClient.Get<ListView<UserViewModel>>("/users?role=banned,registered,confirmed,administrator", new()
-        {
-            Jwt = _jwt,
-        });
-        result2.Total.Should().Be(6);
+        ListView<UserViewModel>? result2 = await _apiClient.GetAsync("/users?role=banned,registered,confirmed,administrator")
+            .Result.Content.ReadFromJsonAsync<ListView<UserViewModel>>(TestInitCommonFields.JsonSerializerOptions);
+        result2!.Total.Should().Be(6);
         result2.Data.Should().BeEquivalentTo(users, config => config.WithStrictOrdering());
 
         IEnumerable<UserViewModel> expected3 = users.Where(u => u.Role != UserRole.Banned).TakeLast(2);
-        ListView<UserViewModel> result3 = await _apiClient.Get<ListView<UserViewModel>>("/users?limit=2&offset=3&role=Registered,Administrator", new()
-        {
-            Jwt = _jwt,
-        });
-        result3.Total.Should().Be(5);
+        ListView<UserViewModel>? result3 = await _apiClient.GetAsync("/users?limit=2&offset=3&role=Registered,Administrator")
+            .Result.Content.ReadFromJsonAsync<ListView<UserViewModel>>(TestInitCommonFields.JsonSerializerOptions);
+        result3!.Total.Should().Be(5);
         result3.Data.Should().BeEquivalentTo(expected3, config => config.WithStrictOrdering());
     }
 
     [Test]
-    public async Task GetUsers_Unauthorized() =>
-        await _apiClient.Awaiting(a => a.Get<ListResult<UserViewModel>>(
-            "/users",
-            new() { }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+    public async Task GetUsers_Unauthorized()
+    {
+        HttpResponseMessage response = await _apiClient.GetAsync("/users");
+        response.Should().Be401Unauthorized();
+    }
 
     [TestCase(UserRole.Banned)]
     [TestCase(UserRole.Confirmed)]
@@ -162,30 +167,20 @@ public class Users
         user.Role = role;
         await context.SaveChangesAsync();
 
-        await _apiClient.Awaiting(
-            a => a.Get<ListResult<UserViewModel>>(
-                "/users",
-                new()
-                {
-                    Jwt = loginResult.AsT0,
-                }
-            )
-        ).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+        _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", loginResult.AsT0);
+        HttpResponseMessage response = await _apiClient.GetAsync("/users");
+        response.Should().Be403Forbidden();
     }
 
     [TestCase("role=invalid&limit=10")]
     [TestCase("offset=-1")]
     [TestCase("limit=-1")]
-    public async Task GetUsers_UnprocessableEntity(string query) =>
-        await _apiClient.Awaiting(
-            a => a.Get<ListResult<UserViewModel>>(
-                $"/users?{query}",
-                new()
-                {
-                    Jwt = _jwt,
-                }
-            )
-        ).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.UnprocessableEntity);
+    public async Task GetUsers_UnprocessableEntity(string query)
+    {
+        _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+        HttpResponseMessage response = await _apiClient.GetAsync($"/users?{query}");
+        response.Should().Be422UnprocessableEntity();
+    }
 
     [Test]
     public async Task BanUser_OK()
@@ -206,14 +201,15 @@ public class Users
         User user = createUserResult.AsT0;
         context.ChangeTracker.Clear();
 
-        await _apiClient.Patch($"/users/{user.Id.ToUrlSafeBase64String()}", new()
-        {
-            Body = new
+        _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+        await _apiClient.PatchAsJsonAsync<UpdateUserRequest>(
+            $"/users/{user.Id.ToUrlSafeBase64String()}",
+            new()
             {
                 Role = UserRole.Banned,
             },
-            Jwt = _jwt
-        });
+            TestInitCommonFields.JsonSerializerOptions
+        );
 
         User? res = await context.Users.FindAsync(user.Id);
         res!.Role.Should().Be(UserRole.Banned);
@@ -229,7 +225,7 @@ public class Users
         RegisterRequest registerRequest = new()
         {
             Email = "testuser.banuser.unauthn@example.com",
-            Password = "Passw0rd",
+            Password = BCrypt.Net.BCrypt.EnhancedHashPassword("Passw0rd"),
             Username = "BanUserTestUnauthN"
         };
 
@@ -238,16 +234,15 @@ public class Users
         User user = createUserResult.AsT0;
         context.ChangeTracker.Clear();
 
-        await _apiClient.Awaiting(a => a.Patch(
+        HttpResponseMessage response = await _apiClient.PatchAsJsonAsync<UpdateUserRequest>(
             $"/users/{user.Id.ToUrlSafeBase64String()}",
             new()
             {
-                Body = new
-                {
-                    Role = UserRole.Banned,
-                }
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Unauthorized);
+                Role = UserRole.Banned
+            },
+            TestInitCommonFields.JsonSerializerOptions
+        );
+        response.Should().Be401Unauthorized();
     }
 
     [TestCase(UserRole.Confirmed)]
@@ -280,25 +275,25 @@ public class Users
         User userToBan = createUserToBanResult.AsT0;
         User userToBeBanned = createUserToBeBannedResult.AsT0;
 
-        LoginResponse res = await _apiClient.LoginUser(
+        LoginResponse? res = await _apiClient.LoginUser(
             registerRequestToBan.Email,
             registerRequestToBan.Password
-        );
+        ).Result.Content.ReadFromJsonAsync<LoginResponse>(TestInitCommonFields.JsonSerializerOptions);
+
+        _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", res!.Token);
 
         userToBan.Role = role;
         await context.SaveChangesAsync();
 
-        ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Patch(
+        HttpResponseMessage response = await _apiClient.PatchAsJsonAsync<UpdateUserRequest>(
             $"/users/{userToBeBanned.Id.ToUrlSafeBase64String()}",
             new()
             {
-                Body = new
-                {
-                    Role = UserRole.Banned,
-                },
-                Jwt = res.Token
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+                Role = UserRole.Banned
+            },
+            TestInitCommonFields.JsonSerializerOptions
+        );
+        response.Should().Be403Forbidden();
     }
 
     [Test]
@@ -322,19 +317,19 @@ public class Users
         user.Role = UserRole.Administrator;
         await context.SaveChangesAsync();
 
-        ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Patch(
+        _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+
+        HttpResponseMessage response = await _apiClient.PatchAsJsonAsync<UpdateUserRequest>(
             $"/users/{user.Id.ToUrlSafeBase64String()}",
             new()
             {
-                Body = new
-                {
-                    Role = UserRole.Banned,
-                },
-                Jwt = _jwt
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+                Role = UserRole.Banned
+            },
+            TestInitCommonFields.JsonSerializerOptions
+        );
+        response.Should().Be403Forbidden();
 
-        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+        ProblemDetails? problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
         problemDetails.Should().NotBeNull();
         problemDetails!.Title.Should().Be("Banning Admins Forbidden");
     }
@@ -358,36 +353,37 @@ public class Users
         createUserResult.IsT0.Should().BeTrue();
         User user = createUserResult.AsT0;
 
-        ExceptionAssertions<RequestFailureException> exAssert = await _apiClient.Awaiting(a => a.Patch(
+        _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+        HttpResponseMessage response = await _apiClient.PatchAsJsonAsync<UpdateUserRequest>(
             $"/users/{user.Id.ToUrlSafeBase64String()}",
             new()
             {
-                Body = new
-                {
-                    Role = role,
-                },
-                Jwt = _jwt
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.Forbidden);
+                Role = role
+            },
+            TestInitCommonFields.JsonSerializerOptions
+        );
 
-        ProblemDetails? problemDetails = await exAssert.Which.Response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
+        response.Should().Be403Forbidden();
+
+        ProblemDetails? problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
         problemDetails.Should().NotBeNull();
         problemDetails!.Title.Should().Be("Role Change Forbidden");
     }
 
     [Test]
-    public async Task BanUser_NotFound() =>
-        await _apiClient.Awaiting(a => a.Patch(
+    public async Task BanUser_NotFound()
+    {
+        _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+        HttpResponseMessage response = await _apiClient.PatchAsJsonAsync<UpdateUserRequest>(
             $"/users/{Guid.NewGuid().ToUrlSafeBase64String()}",
             new()
             {
-                Body = new UpdateUserRequest()
-                {
-                    Role = UserRole.Banned
-                },
-                Jwt = _jwt
-            }
-        )).Should().ThrowAsync<RequestFailureException>().Where(e => e.Response.StatusCode == HttpStatusCode.NotFound);
+                Role = UserRole.Banned
+            },
+            TestInitCommonFields.JsonSerializerOptions
+        );
+        response.Should().Be404NotFound();
+    }
 
     [Test]
     public async Task BanUser_UserAlreadyBanned_OK()
@@ -410,16 +406,15 @@ public class Users
         user.Role = UserRole.Banned;
         await context.SaveChangesAsync();
 
-        await _apiClient.Awaiting(a => a.Patch(
+        _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+
+        await _apiClient.Awaiting(a => a.PatchAsJsonAsync<UpdateUserRequest>(
             $"/users/{user.Id.ToUrlSafeBase64String()}",
             new()
             {
-                Body = new
-                {
-                    Role = UserRole.Banned,
-                },
-                Jwt = _jwt
-            }
+                Role = UserRole.Banned,
+            },
+            TestInitCommonFields.JsonSerializerOptions
         )).Should().NotThrowAsync();
     }
 
@@ -445,14 +440,16 @@ public class Users
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
-        await _apiClient.Patch($"/users/{user.Id.ToUrlSafeBase64String()}", new()
-        {
-            Body = new
+        _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+
+        await _apiClient.PatchAsJsonAsync<UpdateUserRequest>(
+            $"/users/{user.Id.ToUrlSafeBase64String()}",
+            new()
             {
                 Role = UserRole.Confirmed,
             },
-            Jwt = _jwt
-        });
+            TestInitCommonFields.JsonSerializerOptions
+        );
 
         User? res = await context.Users.FindAsync(user.Id);
         res!.Role.Should().Be(UserRole.Confirmed);
