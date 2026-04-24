@@ -28,4 +28,4 @@ jobs:
             diff --brief LeaderboardBackend/openapi.json /tmp/committed-openapi.json \
                 || (echo "LeaderboardBackend/openapi.json is outdated. Please build the project and commit the auto-generated file."; exit 1)
         - name: Run tests
-          run: dotnet test LeaderboardBackend.Test --no-restore
+          run: dotnet test --project LeaderboardBackend.Test --no-restore
