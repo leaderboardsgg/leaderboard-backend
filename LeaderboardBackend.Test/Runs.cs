@@ -27,7 +27,7 @@ namespace LeaderboardBackend.Test
     [TestFixture]
     public class Runs
     {
-        private static HttpClient? _apiClient;
+        private static HttpClient _apiClient = null!;
         private static WebApplicationFactory<Program> _factory = null!;
         private static string _jwt = null!;
         private static long[] _categoryIds = [];
@@ -428,7 +428,6 @@ namespace LeaderboardBackend.Test
                 CreatedAt = _clock.GetCurrentInstant(),
                 DeletedAt = null,
                 Id = created.Id,
-                RunType = RunType.Time,
                 Status = Status.Published,
                 UpdatedAt = null
             });

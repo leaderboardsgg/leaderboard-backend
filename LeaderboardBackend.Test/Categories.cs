@@ -26,7 +26,7 @@ namespace LeaderboardBackend.Test;
 [TestFixture]
 public class Categories
 {
-    private HttpClient? _client;
+    private HttpClient _client = null!;
     private static WebApplicationFactory<Program> _factory = null!;
     private static readonly FakeClock _clock = new(new Instant());
     private static string? _jwt;
