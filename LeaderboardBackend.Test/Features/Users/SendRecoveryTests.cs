@@ -43,6 +43,7 @@ public class SendRecoveryTests : IntegrationTestsBase
         _scope.Dispose();
     }
 
+    [Test]
     public async Task SendRecoveryEmail_MalformedMissingUsername()
     {
         Mock<IEmailSender> emailSenderMock = new();
@@ -88,6 +89,7 @@ public class SendRecoveryTests : IntegrationTestsBase
         );
     }
 
+    [Test]
     public async Task SendRecoveryEmail_MalformedMissingEmail()
     {
         Mock<IEmailSender> emailSenderMock = new();
