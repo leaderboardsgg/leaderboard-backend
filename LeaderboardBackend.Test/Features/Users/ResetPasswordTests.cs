@@ -50,7 +50,7 @@ public class ResetPasswordTests : IntegrationTestsBase
             Password = "AValidP4ssword"
         });
 
-        res.Should().HaveHttpStatusCode(System.Net.HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
     }
 
     [Test]
@@ -81,7 +81,7 @@ public class ResetPasswordTests : IntegrationTestsBase
             Password = "AValidP4ssword"
         });
 
-        res.Should().HaveHttpStatusCode(System.Net.HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().BeNull();
@@ -127,7 +127,7 @@ public class ResetPasswordTests : IntegrationTestsBase
             Password = "AValidP4ssword"
         });
 
-        res.Should().HaveHttpStatusCode(System.Net.HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
         context.ChangeTracker.Clear();
         recovery1 = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery1.Id);
         recovery1.UsedAt.Should().BeNull();
@@ -162,7 +162,7 @@ public class ResetPasswordTests : IntegrationTestsBase
             Password = "AValidP4ssword"
         });
 
-        res.Should().HaveHttpStatusCode(System.Net.HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().Be(_clock.GetCurrentInstant() - Duration.FromMinutes(1));
@@ -195,7 +195,7 @@ public class ResetPasswordTests : IntegrationTestsBase
             Password = "AValidP4ssword"
         });
 
-        res.Should().HaveHttpStatusCode(System.Net.HttpStatusCode.Forbidden);
+        res.Should().Be403Forbidden();
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().BeNull();
@@ -233,7 +233,7 @@ public class ResetPasswordTests : IntegrationTestsBase
             Password = pwd
         });
 
-        res.Should().HaveHttpStatusCode(System.Net.HttpStatusCode.UnprocessableEntity);
+        res.Should().Be422UnprocessableEntity();
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         content.Should().NotBeNull();
 
@@ -274,7 +274,7 @@ public class ResetPasswordTests : IntegrationTestsBase
             Password = "P4ssword"
         });
 
-        res.Should().HaveHttpStatusCode(System.Net.HttpStatusCode.Conflict);
+        res.Should().Be409Conflict();
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().BeNull();
@@ -309,7 +309,7 @@ public class ResetPasswordTests : IntegrationTestsBase
             Password = "AValidP4ssword"
         });
 
-        res.Should().HaveHttpStatusCode(System.Net.HttpStatusCode.OK);
+        res.Should().Be200Ok();
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().Be(_clock.GetCurrentInstant());

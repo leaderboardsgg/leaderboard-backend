@@ -48,7 +48,7 @@ public class SendConfirmationTests : IntegrationTestsBase
     public async Task ResendConfirmation_Unauthorised()
     {
         HttpResponseMessage res = await _client.PostAsync(Routes.RESEND_CONFIRMATION, null);
-        res.Should().HaveHttpStatusCode(HttpStatusCode.Unauthorized);
+        res.Should().Be401Unauthorized();
     }
 
     [Test]
@@ -66,7 +66,7 @@ public class SendConfirmationTests : IntegrationTestsBase
         _client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
         HttpResponseMessage res = await _client.PostAsync(Routes.RESEND_CONFIRMATION, null);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.Unauthorized);
+        res.Should().Be401Unauthorized();
     }
 
     [Test]
@@ -90,7 +90,7 @@ public class SendConfirmationTests : IntegrationTestsBase
         _client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
         HttpResponseMessage res = await _client.PostAsync(Routes.RESEND_CONFIRMATION, null);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.Conflict);
+        res.Should().Be409Conflict();
     }
 
     [Test]
@@ -120,7 +120,7 @@ public class SendConfirmationTests : IntegrationTestsBase
 
         client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
         HttpResponseMessage res = await client.PostAsync(Routes.RESEND_CONFIRMATION, null);
-        res.Should().HaveHttpStatusCode(HttpStatusCode.InternalServerError);
+        res.Should().Be500InternalServerError();
     }
 
     [Test]
@@ -148,7 +148,7 @@ public class SendConfirmationTests : IntegrationTestsBase
 
         client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
         HttpResponseMessage res = await client.PostAsync(Routes.RESEND_CONFIRMATION, null);
-        res.Should().HaveHttpStatusCode(HttpStatusCode.OK);
+        res.Should().Be200Ok();
         emailSenderMock.Verify(x =>
             x.EnqueueEmailAsync(
                 "test@email.com",

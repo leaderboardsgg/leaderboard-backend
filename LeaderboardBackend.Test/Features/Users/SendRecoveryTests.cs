@@ -169,7 +169,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             }
         );
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.OK);
+        res.Should().Be200Ok();
         context.ChangeTracker.Clear();
 
         AccountRecovery? recovery = await context.AccountRecoveries.SingleOrDefaultAsync(
@@ -203,7 +203,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             }
         );
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.OK);
+        res.Should().Be200Ok();
 
         emailSenderMock.Verify(m => m.EnqueueEmailAsync(
             It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
@@ -245,7 +245,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             }
         );
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.OK);
+        res.Should().Be200Ok();
         context.ChangeTracker.Clear();
 
         AccountRecovery? recovery = await context.AccountRecoveries.FirstOrDefaultAsync(

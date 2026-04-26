@@ -53,7 +53,7 @@ public class RegistrationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.Accepted);
+        res.Should().Be202Accepted();
 
         emailSenderMock.Verify(x =>
             x.EnqueueEmailAsync(
@@ -91,7 +91,7 @@ public class RegistrationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.UnprocessableEntity);
+        res.Should().Be422UnprocessableEntity();
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
@@ -117,7 +117,7 @@ public class RegistrationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.Accepted);
+        res.Should().Be202Accepted();
     }
 
     [Test]
@@ -127,7 +127,7 @@ public class RegistrationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.UnprocessableEntity);
+        res.Should().Be422UnprocessableEntity();
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
@@ -143,7 +143,7 @@ public class RegistrationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.UnprocessableEntity);
+        res.Should().Be422UnprocessableEntity();
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
@@ -172,7 +172,7 @@ public class RegistrationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.Conflict);
+        res.Should().Be409Conflict();
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
@@ -197,7 +197,7 @@ public class RegistrationTests : IntegrationTestsBase
         RegisterRequest request = _registerReqFaker.Generate() with { Email = createExistingUserReq.Email.ToLower() };
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.Accepted);
+        res.Should().Be202Accepted();
 
         emailSender.Verify(s =>
             s.EnqueueEmailAsync(
@@ -242,7 +242,7 @@ public class RegistrationTests : IntegrationTestsBase
         RegisterRequest request = _registerReqFaker.Generate() with { Email = $"testregister.emailused.{role}@example.com" };
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.Accepted);
+        res.Should().Be202Accepted();
 
         emailSender.Verify(s =>
             s.EnqueueEmailAsync(
@@ -288,7 +288,7 @@ public class RegistrationTests : IntegrationTestsBase
         RegisterRequest request = _registerReqFaker.Generate() with { Email = "testregister.emailused.servicefailed@example.com" };
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.Accepted);
+        res.Should().Be202Accepted();
 
         emailSender.Verify(s =>
             s.EnqueueEmailAsync(

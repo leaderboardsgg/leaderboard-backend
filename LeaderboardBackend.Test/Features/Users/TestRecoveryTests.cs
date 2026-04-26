@@ -43,7 +43,7 @@ public class TestRecoveryTests : IntegrationTestsBase
     public async Task TestRecovery_BadRecoveryId(string id)
     {
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(id));
-        res.Should().HaveHttpStatusCode(HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
     }
 
     [Test]
@@ -104,7 +104,7 @@ public class TestRecoveryTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         _clock.AdvanceMinutes(1);
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery1.Id));
-        res.Should().HaveHttpStatusCode(HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
     }
 
     [Test]
@@ -129,7 +129,7 @@ public class TestRecoveryTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         _clock.AdvanceMinutes(2);
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery.Id));
-        res.Should().HaveHttpStatusCode(HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
     }
 
     [TestCase(UserRole.Administrator, HttpStatusCode.OK)]

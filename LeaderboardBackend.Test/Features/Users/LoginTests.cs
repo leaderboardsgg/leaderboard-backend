@@ -59,7 +59,7 @@ public class LoginTests : IntegrationTestsBase
 
         HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.LOGIN, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.OK);
+        res.Should().Be200Ok();
         LoginResponse? content = await res.Content.ReadFromJsonAsync<LoginResponse>();
         content.Should().NotBeNull();
 
@@ -88,7 +88,7 @@ public class LoginTests : IntegrationTestsBase
 
         HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.LOGIN, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.UnprocessableEntity);
+        res.Should().Be422UnprocessableEntity();
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         content.Should().NotBeNull();
         if (emailErrorCode is not null)
@@ -109,7 +109,7 @@ public class LoginTests : IntegrationTestsBase
             Routes.LOGIN,
             new StringContent("\"", new MediaTypeHeaderValue("application/json"))
         );
-        res.Should().HaveHttpStatusCode(HttpStatusCode.BadRequest);
+        res.Should().Be400BadRequest();
     }
 
     [TestCase("valid@user.com", "Inc0rrectPassword", HttpStatusCode.Unauthorized, Description = "Wrong password")]
