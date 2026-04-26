@@ -167,3 +167,12 @@ public class UpdateUserValidator : AbstractValidator<UpdateUserRequest>
 {
     public UpdateUserValidator() => RuleFor(x => x.Role).IsInEnum();
 }
+
+public class RecoverAccountValidator : AbstractValidator<RecoverAccountRequest>
+{
+    public RecoverAccountValidator()
+    {
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        RuleFor(x => x.Username).Username();
+    }
+}
