@@ -75,7 +75,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             }
         );
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.BadRequest);
+        res.Should().Be422UnprocessableEntity();
         context.ChangeTracker.Clear();
 
         AccountRecovery? recovery = await context.AccountRecoveries.FirstOrDefaultAsync(
@@ -113,7 +113,7 @@ public class SendRecoveryTests : IntegrationTestsBase
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
             Routes.RECOVER_ACCOUNT,
             new
             {
@@ -121,7 +121,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             }
         );
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.BadRequest);
+        res.Should().Be422UnprocessableEntity();
         context.ChangeTracker.Clear();
 
         AccountRecovery? recovery = await context.AccountRecoveries.FirstOrDefaultAsync(
