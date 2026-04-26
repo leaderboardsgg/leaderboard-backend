@@ -21,13 +21,13 @@ namespace LeaderboardBackend.Test.Features.Users;
 public class SendConfirmationTests : IntegrationTestsBase
 {
     private IServiceScope _scope = null!;
-    private IAuthService _authService = null!;
 
-    [SetUp]
+    [OneTimeSetUp]
     public void Init()
     {
+        _factory = new TestApiFactory();
+        _client = _factory.CreateClient();
         _scope = _factory.Services.CreateScope();
-        _authService = _scope.ServiceProvider.GetRequiredService<IAuthService>();
     }
 
     [TearDown]
@@ -36,28 +36,35 @@ public class SendConfirmationTests : IntegrationTestsBase
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         await context.Users.ExecuteDeleteAsync();
         await context.AccountConfirmations.ExecuteDeleteAsync();
+    }
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
         _scope.Dispose();
     }
 
     [Test]
     public async Task ResendConfirmation_Unauthorised()
     {
-        HttpResponseMessage res = await Client.PostAsync(Routes.RESEND_CONFIRMATION, null);
+        HttpResponseMessage res = await _client.PostAsync(Routes.RESEND_CONFIRMATION, null);
         res.Should().HaveHttpStatusCode(HttpStatusCode.Unauthorized);
     }
 
     [Test]
     public async Task ResendConfirmation_NotFound_ShouldGet401()
     {
-        string token = _authService.GenerateJSONWebToken(new()
+        IAuthService authService = _scope.ServiceProvider.GetRequiredService<IAuthService>();
+
+        string token = authService.GenerateJSONWebToken(new()
         {
             Email = "unknown@user.com",
             Password = "password",
             Username = "username",
         });
 
-        Client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
-        HttpResponseMessage res = await Client.PostAsync(Routes.RESEND_CONFIRMATION, null);
+        _client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
+        HttpResponseMessage res = await _client.PostAsync(Routes.RESEND_CONFIRMATION, null);
 
         res.Should().HaveHttpStatusCode(HttpStatusCode.Unauthorized);
     }
@@ -67,6 +74,8 @@ public class SendConfirmationTests : IntegrationTestsBase
     {
         // TODO: Call UserService instead, once we're able to set a user's role with it.
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+        IAuthService authService = _scope.ServiceProvider.GetRequiredService<IAuthService>();
+
         User user = new()
         {
             Email = "test@email.com",
@@ -76,10 +85,10 @@ public class SendConfirmationTests : IntegrationTestsBase
         };
         context.Add(user);
         context.SaveChanges();
-        string token = _authService.GenerateJSONWebToken(user);
+        string token = authService.GenerateJSONWebToken(user);
 
-        Client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
-        HttpResponseMessage res = await Client.PostAsync(Routes.RESEND_CONFIRMATION, null);
+        _client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
+        HttpResponseMessage res = await _client.PostAsync(Routes.RESEND_CONFIRMATION, null);
 
         res.Should().HaveHttpStatusCode(HttpStatusCode.Conflict);
     }
@@ -105,7 +114,9 @@ public class SendConfirmationTests : IntegrationTestsBase
             Password = "password",
             Username = "username",
         });
-        string token = _authService.GenerateJSONWebToken(result.AsT0);
+
+        IAuthService authService = _scope.ServiceProvider.GetRequiredService<IAuthService>();
+        string token = authService.GenerateJSONWebToken(result.AsT0);
 
         client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
         HttpResponseMessage res = await client.PostAsync(Routes.RESEND_CONFIRMATION, null);
@@ -131,7 +142,9 @@ public class SendConfirmationTests : IntegrationTestsBase
             Password = "password",
             Username = "username",
         });
-        string token = _authService.GenerateJSONWebToken(result.AsT0);
+
+        IAuthService authService = _scope.ServiceProvider.GetRequiredService<IAuthService>();
+        string token = authService.GenerateJSONWebToken(result.AsT0);
 
         client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
         HttpResponseMessage res = await client.PostAsync(Routes.RESEND_CONFIRMATION, null);

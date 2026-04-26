@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Fixtures;
+using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -20,43 +21,24 @@ namespace LeaderboardBackend.Test.Features.Users;
 public class ResetPasswordTests : IntegrationTestsBase
 {
     private IServiceScope _scope = null!;
-    private FakeClock _clock = null!;
-    private HttpClient _client = null!;
-    private int _userNumber;
+    private readonly FakeClock _clock = new(Instant.FromUnixTimeSeconds(10) + Duration.FromHours(1));
+    private int _userNumber = 0;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        _userNumber = 0;
-        _clock = new(Instant.FromUnixTimeSeconds(10) + Duration.FromHours(1));
-
-        _client = _factory.WithWebHostBuilder(
+        _factory = new TestApiFactory().WithWebHostBuilder(
             builder => builder.ConfigureTestServices(
-                services => services.AddSingleton<IClock, FakeClock>(_ => _clock)
-            )
-        ).CreateClient();
-    }
+                services => services.AddSingleton<IClock, FakeClock>(_ => _clock)));
 
-    [SetUp]
-    public void Init()
-    {
-        _scope = _factory.WithWebHostBuilder(
-            builder => builder.ConfigureTestServices(
-                services => services.AddSingleton<IClock, FakeClock>(_ => _clock)
-            )
-        ).Services.CreateScope();
-    }
-
-    [TearDown]
-    public new void TearDown()
-    {
-        _scope.Dispose();
+        _client = _factory.CreateClient();
+        _scope = _factory.Services.CreateScope();
     }
 
     [OneTimeTearDown]
     public void OneTimeTearDown()
     {
-        _client.Dispose();
+        _scope.Dispose();
     }
 
     [TestCase("not_an_id")]

@@ -9,6 +9,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Fixtures;
+using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,13 @@ public class RegistrationTests : IntegrationTestsBase
         .RuleFor(x => x.Username, b => "TestUser" + b.Random.Number(99999))
         .RuleFor(x => x.Password, b => "c00l_pAssword")
         .RuleFor(x => x.Email, b => "TestUser" + b.Internet.Email());
+
+    [OneTimeSetUp]
+    public void Init()
+    {
+        _factory = new TestApiFactory();
+        _client = _factory.CreateClient();
+    }
 
     [Test]
     public async Task Register_ValidRequest()
@@ -81,7 +89,7 @@ public class RegistrationTests : IntegrationTestsBase
     {
         RegisterRequest request = _registerReqFaker.Generate() with { Email = "not_an_email" };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.REGISTER, request);
 
         res.Should().HaveHttpStatusCode(HttpStatusCode.UnprocessableEntity);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -117,7 +125,7 @@ public class RegistrationTests : IntegrationTestsBase
     {
         RegisterRequest request = _registerReqFaker.Generate() with { Username = "山" };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.REGISTER, request);
 
         res.Should().HaveHttpStatusCode(HttpStatusCode.UnprocessableEntity);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -133,7 +141,7 @@ public class RegistrationTests : IntegrationTestsBase
     {
         RegisterRequest request = _registerReqFaker.Generate() with { Password = "a" };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.REGISTER, request);
 
         res.Should().HaveHttpStatusCode(HttpStatusCode.UnprocessableEntity);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -154,7 +162,7 @@ public class RegistrationTests : IntegrationTestsBase
             Username = "Todd"
         };
 
-        await Client.PostAsJsonAsync(Routes.REGISTER, createExistingUserReq);
+        await _client.PostAsJsonAsync(Routes.REGISTER, createExistingUserReq);
         RegisterRequest request = new()
         {
             Email = "toddjones@example.com",
@@ -162,7 +170,7 @@ public class RegistrationTests : IntegrationTestsBase
             Username = "todd"
         };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.REGISTER, request);
 
         res.Should().HaveHttpStatusCode(HttpStatusCode.Conflict);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();

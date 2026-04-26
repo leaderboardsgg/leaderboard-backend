@@ -24,6 +24,8 @@ public class LoginTests : IntegrationTestsBase
     {
         // TODO: Swap to creating users via the UserService instead of calling the DB, once
         // it has the ability to change a user's roles.
+        _factory = new TestApiFactory();
+        _client = _factory.CreateClient();
         using IServiceScope s = _factory.Services.CreateScope();
         ApplicationContext dbContext = s.ServiceProvider.GetRequiredService<ApplicationContext>();
         await TestApiFactory.ResetDatabase(dbContext);
@@ -55,7 +57,7 @@ public class LoginTests : IntegrationTestsBase
             Password = TestInitCommonFields.Admin.Password,
         };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.LOGIN, request);
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.LOGIN, request);
 
         res.Should().HaveHttpStatusCode(HttpStatusCode.OK);
         LoginResponse? content = await res.Content.ReadFromJsonAsync<LoginResponse>();
@@ -84,7 +86,7 @@ public class LoginTests : IntegrationTestsBase
             Password = password!,
         };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.LOGIN, request);
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.LOGIN, request);
 
         res.Should().HaveHttpStatusCode(HttpStatusCode.UnprocessableEntity);
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -103,7 +105,7 @@ public class LoginTests : IntegrationTestsBase
     [Test]
     public async Task Login_InvalidRequest_Returns400()
     {
-        HttpResponseMessage res = await Client.PostAsync(
+        HttpResponseMessage res = await _client.PostAsync(
             Routes.LOGIN,
             new StringContent("\"", new MediaTypeHeaderValue("application/json"))
         );
@@ -122,7 +124,7 @@ public class LoginTests : IntegrationTestsBase
             Password = password,
         };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.LOGIN, request);
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.LOGIN, request);
 
         res.Should().HaveHttpStatusCode(statusCode);
     }

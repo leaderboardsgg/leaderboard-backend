@@ -15,35 +15,28 @@ namespace LeaderboardBackend.Test.Features.Users;
 public class TestRecoveryTests : IntegrationTestsBase
 {
     private IServiceScope _scope = null!;
-    private HttpClient _client = null!;
     private readonly FakeClock _clock = new(Instant.FromUnixTimeSeconds(1));
 
     [OneTimeSetUp]
-    public void OneTimeSetUp() =>
-        _client = _factory.WithWebHostBuilder(builder =>
+    public void OneTimeSetUp()
+    {
+        _factory = new TestApiFactory().WithWebHostBuilder(builder =>
             builder.ConfigureTestServices(services =>
-                services.AddSingleton<IClock, FakeClock>(_ => _clock)
-            )
-        ).CreateClient();
+                services.AddSingleton<IClock, FakeClock>(_ => _clock)));
+
+        _client = _factory.CreateClient();
+        _scope = _factory.Services.CreateScope();
+    }
 
     [SetUp]
     public async Task Init()
     {
-        _scope = _factory.WithWebHostBuilder(builder =>
-            builder.ConfigureTestServices(services =>
-                services.AddSingleton<IClock, FakeClock>(_ => _clock)
-            )
-        ).Services.CreateScope();
-
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         await TestApiFactory.ResetDatabase(context);
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown() => _client.Dispose();
-
-    [TearDown]
-    public new void TearDown() => _scope.Dispose();
+    public void OneTimeTearDown() => _scope.Dispose();
 
     [TestCase("not_a_guid")]
     [TestCase("L8msfy9wd0qWbDJMZwwgQg")]

@@ -19,22 +19,22 @@ public class ConfirmAccountTests : IntegrationTestsBase
 {
     private IServiceScope _scope = null!;
     private readonly FakeClock _clock = new(Instant.FromUnixTimeSeconds(1));
-    private HttpClient _client = null!;
 
-    [SetUp]
+    [OneTimeSetUp]
     public void Init()
     {
-        _scope = _factory.WithWebHostBuilder(builder =>
+        _factory = new TestApiFactory().WithWebHostBuilder(builder =>
             builder.ConfigureTestServices(services =>
-                services.AddSingleton<IClock, FakeClock>(_ => _clock)
-            )
-        ).Services.CreateScope();
+                services.AddSingleton<IClock, FakeClock>(_ => _clock)));
 
-        _client = _factory.WithWebHostBuilder(builder =>
-            builder.ConfigureTestServices(services =>
-                services.AddSingleton<IClock, FakeClock>(_ => _clock)
-            )
-        ).CreateClient();
+        _scope = _factory.Services.CreateScope();
+        _client = _factory.CreateClient();
+    }
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
+        _scope.Dispose();
     }
 
     [TearDown]
@@ -42,8 +42,6 @@ public class ConfirmAccountTests : IntegrationTestsBase
     {
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         await TestApiFactory.ResetDatabase(context);
-        _scope.Dispose();
-        _client.Dispose();
     }
 
     [Test]

@@ -22,14 +22,24 @@ public class SendRecoveryTests : IntegrationTestsBase
 {
     private IServiceScope _scope = null!;
 
-    [SetUp]
-    public void Init() => _scope = _factory.Services.CreateScope();
+    [OneTimeSetUp]
+    public void Init()
+    {
+        _factory = new TestApiFactory();
+        _client = _factory.CreateClient();
+        _scope = _factory.Services.CreateScope();
+    }
 
     [TearDown]
-    public async new Task TearDown()
+    public async Task SRT_TearDown()
     {
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         await TestApiFactory.ResetDatabase(context);
+    }
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
         _scope.Dispose();
     }
 
@@ -56,7 +66,7 @@ public class SendRecoveryTests : IntegrationTestsBase
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
             Routes.RECOVER_ACCOUNT,
             new
             {
@@ -148,7 +158,7 @@ public class SendRecoveryTests : IntegrationTestsBase
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
             Routes.RECOVER_ACCOUNT,
             new RecoverAccountRequest
             {
