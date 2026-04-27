@@ -22,17 +22,28 @@ public class SendRecoveryTests : IntegrationTestsBase
 {
     private IServiceScope _scope = null!;
 
-    [SetUp]
-    public void Init() => _scope = _factory.Services.CreateScope();
+    [OneTimeSetUp]
+    public void Init()
+    {
+        _factory = new TestApiFactory();
+        _client = _factory.CreateClient();
+        _scope = _factory.Services.CreateScope();
+    }
 
     [TearDown]
-    public async new Task TearDown()
+    public async Task SRT_TearDown()
     {
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         await TestApiFactory.ResetDatabase(context);
+    }
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
         _scope.Dispose();
     }
 
+    [Test]
     public async Task SendRecoveryEmail_MalformedMissingUsername()
     {
         Mock<IEmailSender> emailSenderMock = new();
@@ -56,7 +67,7 @@ public class SendRecoveryTests : IntegrationTestsBase
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
             Routes.RECOVER_ACCOUNT,
             new
             {
@@ -64,7 +75,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             }
         );
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.BadRequest);
+        res.Should().Be422UnprocessableEntity();
         context.ChangeTracker.Clear();
 
         AccountRecovery? recovery = await context.AccountRecoveries.FirstOrDefaultAsync(
@@ -78,6 +89,7 @@ public class SendRecoveryTests : IntegrationTestsBase
         );
     }
 
+    [Test]
     public async Task SendRecoveryEmail_MalformedMissingEmail()
     {
         Mock<IEmailSender> emailSenderMock = new();
@@ -101,7 +113,7 @@ public class SendRecoveryTests : IntegrationTestsBase
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
             Routes.RECOVER_ACCOUNT,
             new
             {
@@ -109,7 +121,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             }
         );
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.BadRequest);
+        res.Should().Be422UnprocessableEntity();
         context.ChangeTracker.Clear();
 
         AccountRecovery? recovery = await context.AccountRecoveries.FirstOrDefaultAsync(
@@ -148,7 +160,7 @@ public class SendRecoveryTests : IntegrationTestsBase
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
             Routes.RECOVER_ACCOUNT,
             new RecoverAccountRequest
             {
@@ -157,7 +169,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             }
         );
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.OK);
+        res.Should().Be200Ok();
         context.ChangeTracker.Clear();
 
         AccountRecovery? recovery = await context.AccountRecoveries.SingleOrDefaultAsync(
@@ -191,7 +203,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             }
         );
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.OK);
+        res.Should().Be200Ok();
 
         emailSenderMock.Verify(m => m.EnqueueEmailAsync(
             It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
@@ -233,7 +245,7 @@ public class SendRecoveryTests : IntegrationTestsBase
             }
         );
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.OK);
+        res.Should().Be200Ok();
         context.ChangeTracker.Clear();
 
         AccountRecovery? recovery = await context.AccountRecoveries.FirstOrDefaultAsync(

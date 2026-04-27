@@ -19,22 +19,22 @@ public class ConfirmAccountTests : IntegrationTestsBase
 {
     private IServiceScope _scope = null!;
     private readonly FakeClock _clock = new(Instant.FromUnixTimeSeconds(1));
-    private HttpClient _client = null!;
 
-    [SetUp]
+    [OneTimeSetUp]
     public void Init()
     {
-        _scope = _factory.WithWebHostBuilder(builder =>
+        _factory = new TestApiFactory().WithWebHostBuilder(builder =>
             builder.ConfigureTestServices(services =>
-                services.AddSingleton<IClock, FakeClock>(_ => _clock)
-            )
-        ).Services.CreateScope();
+                services.AddSingleton<IClock, FakeClock>(_ => _clock)));
 
-        _client = _factory.WithWebHostBuilder(builder =>
-            builder.ConfigureTestServices(services =>
-                services.AddSingleton<IClock, FakeClock>(_ => _clock)
-            )
-        ).CreateClient();
+        _scope = _factory.Services.CreateScope();
+        _client = _factory.CreateClient();
+    }
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
+        _scope.Dispose();
     }
 
     [TearDown]
@@ -42,8 +42,6 @@ public class ConfirmAccountTests : IntegrationTestsBase
     {
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         await TestApiFactory.ResetDatabase(context);
-        _scope.Dispose();
-        _client.Dispose();
     }
 
     [Test]
@@ -189,7 +187,7 @@ public class ConfirmAccountTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         _clock.AdvanceMinutes(5);
         HttpResponseMessage res = await _client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
-        res.Should().HaveHttpStatusCode(HttpStatusCode.OK);
+        res.Should().Be200Ok();
         context.ChangeTracker.Clear();
         AccountConfirmation? conf = await context.AccountConfirmations.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == confirmation.Id);
         conf!.UsedAt.Should().Be(now.Plus(Duration.FromMinutes(5)));

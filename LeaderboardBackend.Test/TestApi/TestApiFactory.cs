@@ -57,6 +57,7 @@ public class TestApiFactory : WebApplicationFactory<Program>
         }
     }
 
+    // TODO: Use seeding instead.
     private static void Seed(ApplicationContext dbContext)
     {
         Leaderboard leaderboard =

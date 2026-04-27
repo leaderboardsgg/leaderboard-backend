@@ -9,6 +9,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Fixtures;
+using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,13 @@ public class RegistrationTests : IntegrationTestsBase
         .RuleFor(x => x.Username, b => "TestUser" + b.Random.Number(99999))
         .RuleFor(x => x.Password, b => "c00l_pAssword")
         .RuleFor(x => x.Email, b => "TestUser" + b.Internet.Email());
+
+    [OneTimeSetUp]
+    public void Init()
+    {
+        _factory = new TestApiFactory();
+        _client = _factory.CreateClient();
+    }
 
     [Test]
     public async Task Register_ValidRequest()
@@ -45,7 +53,7 @@ public class RegistrationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.Accepted);
+        res.Should().Be202Accepted();
 
         emailSenderMock.Verify(x =>
             x.EnqueueEmailAsync(
@@ -81,9 +89,9 @@ public class RegistrationTests : IntegrationTestsBase
     {
         RegisterRequest request = _registerReqFaker.Generate() with { Email = "not_an_email" };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.UnprocessableEntity);
+        res.Should().Be422UnprocessableEntity();
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
@@ -109,7 +117,7 @@ public class RegistrationTests : IntegrationTestsBase
 
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.Accepted);
+        res.Should().Be202Accepted();
     }
 
     [Test]
@@ -117,9 +125,9 @@ public class RegistrationTests : IntegrationTestsBase
     {
         RegisterRequest request = _registerReqFaker.Generate() with { Username = "山" };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.UnprocessableEntity);
+        res.Should().Be422UnprocessableEntity();
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
@@ -133,9 +141,9 @@ public class RegistrationTests : IntegrationTestsBase
     {
         RegisterRequest request = _registerReqFaker.Generate() with { Password = "a" };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.UnprocessableEntity);
+        res.Should().Be422UnprocessableEntity();
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
@@ -154,7 +162,7 @@ public class RegistrationTests : IntegrationTestsBase
             Username = "Todd"
         };
 
-        await Client.PostAsJsonAsync(Routes.REGISTER, createExistingUserReq);
+        await _client.PostAsJsonAsync(Routes.REGISTER, createExistingUserReq);
         RegisterRequest request = new()
         {
             Email = "toddjones@example.com",
@@ -162,9 +170,9 @@ public class RegistrationTests : IntegrationTestsBase
             Username = "todd"
         };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.REGISTER, request);
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.Conflict);
+        res.Should().Be409Conflict();
         ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         content.Should().NotBeNull();
         content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
@@ -189,7 +197,7 @@ public class RegistrationTests : IntegrationTestsBase
         RegisterRequest request = _registerReqFaker.Generate() with { Email = createExistingUserReq.Email.ToLower() };
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.Accepted);
+        res.Should().Be202Accepted();
 
         emailSender.Verify(s =>
             s.EnqueueEmailAsync(
@@ -234,7 +242,7 @@ public class RegistrationTests : IntegrationTestsBase
         RegisterRequest request = _registerReqFaker.Generate() with { Email = $"testregister.emailused.{role}@example.com" };
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.Accepted);
+        res.Should().Be202Accepted();
 
         emailSender.Verify(s =>
             s.EnqueueEmailAsync(
@@ -280,7 +288,7 @@ public class RegistrationTests : IntegrationTestsBase
         RegisterRequest request = _registerReqFaker.Generate() with { Email = "testregister.emailused.servicefailed@example.com" };
         HttpResponseMessage res = await client.PostAsJsonAsync(Routes.REGISTER, request);
 
-        res.Should().HaveHttpStatusCode(HttpStatusCode.Accepted);
+        res.Should().Be202Accepted();
 
         emailSender.Verify(s =>
             s.EnqueueEmailAsync(
