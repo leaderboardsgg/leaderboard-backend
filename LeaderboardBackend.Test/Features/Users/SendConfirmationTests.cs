@@ -63,7 +63,7 @@ public class SendConfirmationTests : IntegrationTestsBase
             Username = "username",
         });
 
-        _client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
+        SetClientBearer(token);
         HttpResponseMessage res = await _client.PostAsync(Routes.RESEND_CONFIRMATION, null);
 
         res.Should().Be401Unauthorized();
@@ -84,10 +84,10 @@ public class SendConfirmationTests : IntegrationTestsBase
             Role = UserRole.Confirmed,
         };
         context.Add(user);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
         string token = authService.GenerateJSONWebToken(user);
 
-        _client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
+        SetClientBearer(token);
         HttpResponseMessage res = await _client.PostAsync(Routes.RESEND_CONFIRMATION, null);
 
         res.Should().Be409Conflict();
@@ -118,7 +118,7 @@ public class SendConfirmationTests : IntegrationTestsBase
         IAuthService authService = _scope.ServiceProvider.GetRequiredService<IAuthService>();
         string token = authService.GenerateJSONWebToken(result.AsT0);
 
-        client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
+        client.DefaultRequestHeaders.Authorization = new("Bearer", token);
         HttpResponseMessage res = await client.PostAsync(Routes.RESEND_CONFIRMATION, null);
         res.Should().Be500InternalServerError();
     }
@@ -146,7 +146,7 @@ public class SendConfirmationTests : IntegrationTestsBase
         IAuthService authService = _scope.ServiceProvider.GetRequiredService<IAuthService>();
         string token = authService.GenerateJSONWebToken(result.AsT0);
 
-        client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse($"Bearer {token}");
+        client.DefaultRequestHeaders.Authorization = new("Bearer", token);
         HttpResponseMessage res = await client.PostAsync(Routes.RESEND_CONFIRMATION, null);
         res.Should().Be200Ok();
         emailSenderMock.Verify(x =>
@@ -159,8 +159,7 @@ public class SendConfirmationTests : IntegrationTestsBase
         );
 
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-        AccountConfirmation confirmation = context.AccountConfirmations.First(c => c.UserId == result.AsT0.Id);
-        confirmation.Should().NotBeNull();
+        AccountConfirmation confirmation = await context.AccountConfirmations.SingleAsync(c => c.UserId == result.AsT0.Id);
         confirmation.CreatedAt.ToUnixTimeSeconds().Should().Be(1);
         confirmation.UsedAt.Should().BeNull();
         Instant.Subtract(confirmation.ExpiresAt, confirmation.CreatedAt).Should().Be(Duration.FromHours(1));
