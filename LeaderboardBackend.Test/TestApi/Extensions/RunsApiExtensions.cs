@@ -21,32 +21,23 @@ public static class RunsApiExtensions
                 request,
                 TestInitCommonFields.JsonSerializerOptions);
 
-        public async Task<HttpResponseMessage> GetRunsForCategory(
+        public Task<HttpResponseMessage> GetRunsForCategory(
             long catId,
             int? limit = null,
             int? offset = null,
-            StatusFilter? filter = null)
-        {
-            QueryParam[] qParams = [
-                new("limit", limit),
-                new("offset", offset),
-                new("status", filter)];
-
-            return await client.GetAsync($"/api/categories/{catId}/runs{qParams.ToUrlString()}");
-        }
+            StatusFilter? filter = null) => client.GetAsync(
+                $"/api/categories/{catId}/runs{QueryParams.Format(
+                    ("limit", limit),
+                    ("offset", offset),
+                    ("status", filter))}");
 
         public Task<HttpResponseMessage> GetRecordsForCategory(
             long catId,
             int? limit = null,
-            int? offset = null)
-        {
-            QueryParam[] qParams = [
-                new("limit", limit),
-                new("offset", offset)];
-
-            return client.GetAsync(
-                $"/api/categories/{catId}/records" + qParams.ToUrlString());
-        }
+            int? offset = null) => client.GetAsync(
+                $"/api/categories/{catId}/records{QueryParams.Format(
+                    ("limit", limit),
+                    ("offset", offset))}");
 
         public Task<HttpResponseMessage> GetCategoryForRun(Guid id) =>
             client.GetAsync($"/api/runs/{id.ToUrlSafeBase64String()}/category");

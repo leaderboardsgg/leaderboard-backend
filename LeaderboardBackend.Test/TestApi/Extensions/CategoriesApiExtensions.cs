@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -25,15 +23,11 @@ public static class CategoriesApiExtensions
             long lbId,
             int? limit = null,
             int? offset = null,
-            StatusFilter? filter = null)
-        {
-            QueryParam[] qParams = [
-                new("limit", limit),
-                new("offset", offset),
-                new("status", filter)];
-
-            return client.GetAsync($"/api/leaderboards/{lbId}/categories" + qParams.ToUrlString());
-        }
+            StatusFilter? filter = null) => client.GetAsync(
+                $"/api/leaderboards/{lbId}/categories{QueryParams.Format(
+                    ("limit", limit),
+                    ("offset", offset),
+                    ("status", filter))}");
 
         public Task<HttpResponseMessage> CreateCategory(
             long lbId,

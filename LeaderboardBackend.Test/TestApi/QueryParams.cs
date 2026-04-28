@@ -1,20 +1,14 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace LeaderboardBackend.Test.TestApi;
 
-public record QueryParam(string Key, object? Value);
-
-public static class QueryParamExtensions
+public static class QueryParams
 {
-    extension(IEnumerable<QueryParam> queryParams)
-    {
-        public string ToUrlString() => new UriBuilder
+    public static string Format(params (string key, object? value)[] qParams) => new UriBuilder
         {
-            Query = string.Join('&', from pair in queryParams
-                                     where pair.Value != null
-                                     select $"{pair.Key}={pair.Value}")
+            Query = string.Join('&', from pair in qParams
+                                     where pair.value != null
+                                     select $"{pair.key}={pair.value}")
         }.Query;
-    }
 }
