@@ -6,6 +6,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Fixtures;
+using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -22,17 +23,28 @@ public class SendRecoveryTests : IntegrationTestsBase
 {
     private IServiceScope _scope = null!;
 
-    [SetUp]
-    public void Init() => _scope = _factory.Services.CreateScope();
+    [OneTimeSetUp]
+    public void Init()
+    {
+        _factory = new TestApiFactory();
+        _client = _factory.CreateClient();
+        _scope = _factory.Services.CreateScope();
+    }
 
     [TearDown]
-    public async Task TearDown()
+    public async Task SRT_TearDown()
     {
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         await TestApiFactory.ResetDatabase(context);
+    }
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
         _scope.Dispose();
     }
 
+    [Test]
     public async Task SendRecoveryEmail_MalformedMissingUsername()
     {
         Mock<IEmailSender> emailSenderMock = new();
@@ -56,15 +68,15 @@ public class SendRecoveryTests : IntegrationTestsBase
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
             Routes.RECOVER_ACCOUNT,
             new
             {
                 Email = user.Email
-            }
-        );
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
-        res.Should().HaveStatusCode(HttpStatusCode.BadRequest);
+        res.Should().Be422UnprocessableEntity();
         context.ChangeTracker.Clear();
 
         AccountRecovery? recovery = await context.AccountRecoveries.FirstOrDefaultAsync(
@@ -78,6 +90,7 @@ public class SendRecoveryTests : IntegrationTestsBase
         );
     }
 
+    [Test]
     public async Task SendRecoveryEmail_MalformedMissingEmail()
     {
         Mock<IEmailSender> emailSenderMock = new();
@@ -101,15 +114,15 @@ public class SendRecoveryTests : IntegrationTestsBase
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
             Routes.RECOVER_ACCOUNT,
             new
             {
                 Username = "username"
-            }
-        );
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
-        res.Should().HaveStatusCode(HttpStatusCode.BadRequest);
+        res.Should().Be422UnprocessableEntity();
         context.ChangeTracker.Clear();
 
         AccountRecovery? recovery = await context.AccountRecoveries.FirstOrDefaultAsync(
@@ -148,16 +161,16 @@ public class SendRecoveryTests : IntegrationTestsBase
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
             Routes.RECOVER_ACCOUNT,
             new RecoverAccountRequest
             {
                 Email = "test@email.com",
                 Username = "username"
-            }
-        );
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
-        res.Should().HaveStatusCode(HttpStatusCode.OK);
+        res.Should().Be200Ok();
         context.ChangeTracker.Clear();
 
         AccountRecovery? recovery = await context.AccountRecoveries.SingleOrDefaultAsync(
@@ -188,10 +201,10 @@ public class SendRecoveryTests : IntegrationTestsBase
             {
                 Email = "test@email.com",
                 Username = "username"
-            }
-        );
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
-        res.Should().HaveStatusCode(HttpStatusCode.OK);
+        res.Should().Be200Ok();
 
         emailSenderMock.Verify(m => m.EnqueueEmailAsync(
             It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
@@ -230,19 +243,18 @@ public class SendRecoveryTests : IntegrationTestsBase
             {
                 Email = "test@email.com",
                 Username = "username"
-            }
-        );
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
-        res.Should().HaveStatusCode(HttpStatusCode.OK);
+        res.Should().Be200Ok();
         context.ChangeTracker.Clear();
 
-        AccountRecovery? recovery = await context.AccountRecoveries.FirstOrDefaultAsync(
+        AccountRecovery recovery = await context.AccountRecoveries.SingleAsync(
             ar => ar.UserId == user.Id
         );
 
-        recovery.Should().NotBeNull();
-        recovery!.CreatedAt.Should().Be(Instant.FromUnixTimeSeconds(0));
-        recovery!.ExpiresAt.Should().Be(Instant.FromUnixTimeSeconds(0) + Duration.FromHours(1));
+        recovery.CreatedAt.Should().Be(Instant.FromUnixTimeSeconds(0));
+        recovery.ExpiresAt.Should().Be(Instant.FromUnixTimeSeconds(0) + Duration.FromHours(1));
 
         emailSenderMock.Verify(
             m => m.EnqueueEmailAsync(user.Email, It.IsAny<string>(), It.IsAny<string>()),

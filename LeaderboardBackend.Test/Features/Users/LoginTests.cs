@@ -24,6 +24,8 @@ public class LoginTests : IntegrationTestsBase
     {
         // TODO: Swap to creating users via the UserService instead of calling the DB, once
         // it has the ability to change a user's roles.
+        _factory = new TestApiFactory();
+        _client = _factory.CreateClient();
         using IServiceScope s = _factory.Services.CreateScope();
         ApplicationContext dbContext = s.ServiceProvider.GetRequiredService<ApplicationContext>();
         await TestApiFactory.ResetDatabase(dbContext);
@@ -55,9 +57,9 @@ public class LoginTests : IntegrationTestsBase
             Password = TestInitCommonFields.Admin.Password,
         };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.LOGIN, request);
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.LOGIN, request);
 
-        res.Should().HaveStatusCode(HttpStatusCode.OK);
+        res.Should().Be200Ok();
         LoginResponse? content = await res.Content.ReadFromJsonAsync<LoginResponse>();
         content.Should().NotBeNull();
 
@@ -84,30 +86,30 @@ public class LoginTests : IntegrationTestsBase
             Password = password!,
         };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.LOGIN, request);
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.LOGIN, request, TestInitCommonFields.JsonSerializerOptions);
 
-        res.Should().HaveStatusCode(HttpStatusCode.UnprocessableEntity);
-        ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
-        content.Should().NotBeNull();
-        if (emailErrorCode is not null)
+        res.Should().Be422UnprocessableEntity().And.Satisfy<ValidationProblemDetails>(content =>
         {
-            content!.Errors[nameof(LoginRequest.Email)].Should().Equal(emailErrorCode);
-        }
+            if (emailErrorCode is not null)
+            {
+                content!.Errors[nameof(LoginRequest.Email)].Should().Equal(emailErrorCode);
+            }
 
-        if (passwordErrorCode is not null)
-        {
-            content!.Errors[nameof(LoginRequest.Password)].Should().Equal(passwordErrorCode);
-        }
+            if (passwordErrorCode is not null)
+            {
+                content!.Errors[nameof(LoginRequest.Password)].Should().Equal(passwordErrorCode);
+            }
+        });
     }
 
     [Test]
     public async Task Login_InvalidRequest_Returns400()
     {
-        HttpResponseMessage res = await Client.PostAsync(
+        HttpResponseMessage res = await _client.PostAsync(
             Routes.LOGIN,
             new StringContent("\"", new MediaTypeHeaderValue("application/json"))
         );
-        res.Should().HaveStatusCode(HttpStatusCode.BadRequest);
+        res.Should().Be400BadRequest();
     }
 
     [TestCase("valid@user.com", "Inc0rrectPassword", HttpStatusCode.Unauthorized, Description = "Wrong password")]
@@ -122,8 +124,8 @@ public class LoginTests : IntegrationTestsBase
             Password = password,
         };
 
-        HttpResponseMessage res = await Client.PostAsJsonAsync(Routes.LOGIN, request);
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.LOGIN, request);
 
-        res.Should().HaveStatusCode(statusCode);
+        res.Should().HaveHttpStatusCode(statusCode);
     }
 }

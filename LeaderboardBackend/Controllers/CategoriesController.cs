@@ -18,7 +18,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     [HttpGet("api/categories/{id:long}")]
     [SwaggerOperation("Gets a Category by its ID.", OperationId = "getCategory")]
     [SwaggerResponse(200)]
-    [SwaggerResponse(404)]
+    [SwaggerResponse(404, Type = typeof(ProblemDetails))]
     public async Task<ActionResult<CategoryViewModel>> GetCategory([FromRoute] long id)
     {
         Category? category = await categoryService.GetCategory(id);
@@ -69,7 +69,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
         return r.Match<ActionResult<ListView<CategoryViewModel>>>(
             categories => Ok(new ListView<CategoryViewModel>
             {
-                Data = categories.Items.Select(CategoryViewModel.MapFrom).ToList(),
+                Data = [.. categories.Items.Select(CategoryViewModel.MapFrom)],
                 Total = categories.ItemsTotal
             }),
             notFound => NotFound()
@@ -80,9 +80,10 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
     [HttpPost("leaderboards/{id:long}/categories")]
     [SwaggerOperation("Creates a new Category for a Leaderboard with ID `id`. This request is restricted to Administrators.", OperationId = "createCategory")]
     [SwaggerResponse(201)]
+    [SwaggerResponse(400, Type = typeof(ProblemDetails))]
     [SwaggerResponse(401)]
-    [SwaggerResponse(403, "The requesting `User` is unauthorized to create Categories.")]
-    [SwaggerResponse(404, "The Leaderboard with ID `id` could not be found.", typeof(ProblemDetails))]
+    [SwaggerResponse(403)]
+    [SwaggerResponse(404, Type = typeof(ProblemDetails))]
     [SwaggerResponse(409, "A Category with the specified slug already exists.", typeof(ConflictDetails<CategoryViewModel>))]
     [SwaggerResponse(422, $"The request contains errors. The following errors can occur: NotEmptyValidator, {SlugRule.SLUG_FORMAT}", typeof(ValidationProblemDetails))]
     public async Task<ActionResult<CategoryViewModel>> CreateCategory(
@@ -98,12 +99,13 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
                 new { id = category.Id },
                 CategoryViewModel.MapFrom(category)
             ),
-            conflict =>
-                {
-                    ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
-                    problemDetails.Extensions.Add("conflicting", CategoryViewModel.MapFrom(conflict.Conflicting));
-                    return Conflict(problemDetails);
-                },
+            conflict => Problem(
+                null,
+                null,
+                409,
+                null,
+                null,
+                new Dictionary<string, object?> { { "conflicting", CategoryViewModel.MapFrom(conflict.Conflicting) } }),
             notFound => Problem(
                 null,
                 null,
@@ -123,6 +125,7 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
         OperationId = "updateCategory"
     )]
     [SwaggerResponse(204)]
+    [SwaggerResponse(400, Type = typeof(ProblemDetails))]
     [SwaggerResponse(401)]
     [SwaggerResponse(403)]
     [SwaggerResponse(404, Type = typeof(ProblemDetails))]
@@ -140,12 +143,13 @@ public class CategoriesController(ICategoryService categoryService) : ApiControl
         UpdateResult<Category> res = await categoryService.UpdateCategory(id, request);
 
         return res.Match<ActionResult>(
-            conflict =>
-            {
-                ProblemDetails problemDetails = ProblemDetailsFactory.CreateProblemDetails(HttpContext, StatusCodes.Status409Conflict);
-                problemDetails.Extensions.Add("conflicting", CategoryViewModel.MapFrom(conflict.Conflicting));
-                return Conflict(problemDetails);
-            },
+            conflict => Problem(
+                null,
+                null,
+                409,
+                null,
+                null,
+                new Dictionary<string, object?> { { "conflicting", CategoryViewModel.MapFrom(conflict.Conflicting) } }),
             notFound => NotFound(),
             success => NoContent()
         );

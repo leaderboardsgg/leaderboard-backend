@@ -15,39 +15,35 @@ namespace LeaderboardBackend.Test.Features.Users;
 public class TestRecoveryTests : IntegrationTestsBase
 {
     private IServiceScope _scope = null!;
-    private HttpClient _client = null!;
     private readonly FakeClock _clock = new(Instant.FromUnixTimeSeconds(1));
 
     [OneTimeSetUp]
-    public void OneTimeSetUp() =>
-        _client = _factory.WithWebHostBuilder(builder =>
+    public void OneTimeSetUp()
+    {
+        _factory = new TestApiFactory().WithWebHostBuilder(builder =>
             builder.ConfigureTestServices(services =>
-                services.AddSingleton<IClock, FakeClock>(_ => _clock)
-            )
-        ).CreateClient();
+                services.AddSingleton<IClock, FakeClock>(_ => _clock)));
+
+        _client = _factory.CreateClient();
+        _scope = _factory.Services.CreateScope();
+    }
 
     [SetUp]
     public async Task Init()
     {
-        _scope = _factory.WithWebHostBuilder(builder =>
-            builder.ConfigureTestServices(services =>
-                services.AddSingleton<IClock, FakeClock>(_ => _clock)
-            )
-        ).Services.CreateScope();
-
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         await TestApiFactory.ResetDatabase(context);
     }
 
-    [TearDown]
-    public void TearDown() => _scope.Dispose();
+    [OneTimeTearDown]
+    public void OneTimeTearDown() => _scope.Dispose();
 
     [TestCase("not_a_guid")]
     [TestCase("L8msfy9wd0qWbDJMZwwgQg")]
     public async Task TestRecovery_BadRecoveryId(string id)
     {
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(id));
-        res.Should().HaveStatusCode(HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
     }
 
     [Test]
@@ -71,7 +67,7 @@ public class TestRecoveryTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         _clock.AdvanceHours(2);
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery.Id));
-        res.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
     }
 
     [Test]
@@ -108,7 +104,7 @@ public class TestRecoveryTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         _clock.AdvanceMinutes(1);
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery1.Id));
-        res.Should().HaveStatusCode(HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
     }
 
     [Test]
@@ -133,7 +129,7 @@ public class TestRecoveryTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         _clock.AdvanceMinutes(2);
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery.Id));
-        res.Should().HaveStatusCode(HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
     }
 
     [TestCase(UserRole.Administrator, HttpStatusCode.OK)]
@@ -160,6 +156,6 @@ public class TestRecoveryTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         recovery.CreatedAt.Should().Be(_clock.GetCurrentInstant());
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery.Id));
-        res.Should().HaveStatusCode(expected);
+        res.Should().HaveHttpStatusCode(expected);
     }
 }

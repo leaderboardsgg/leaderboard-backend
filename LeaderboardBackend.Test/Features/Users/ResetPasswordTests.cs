@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Test.Fixtures;
+using LeaderboardBackend.Test.Lib;
+using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -20,55 +22,39 @@ namespace LeaderboardBackend.Test.Features.Users;
 public class ResetPasswordTests : IntegrationTestsBase
 {
     private IServiceScope _scope = null!;
-    private FakeClock _clock = null!;
-    private HttpClient _client = null!;
-    private int _userNumber;
+    private readonly FakeClock _clock = new(Instant.FromUnixTimeSeconds(10) + Duration.FromHours(1));
+    private int _userNumber = 0;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        _userNumber = 0;
-        _clock = new(Instant.FromUnixTimeSeconds(10) + Duration.FromHours(1));
-
-        _client = _factory.WithWebHostBuilder(
+        _factory = new TestApiFactory().WithWebHostBuilder(
             builder => builder.ConfigureTestServices(
-                services => services.AddSingleton<IClock, FakeClock>(_ => _clock)
-            )
-        ).CreateClient();
-    }
+                services => services.AddSingleton<IClock, FakeClock>(_ => _clock)));
 
-    [SetUp]
-    public void Init()
-    {
-        _scope = _factory.WithWebHostBuilder(
-            builder => builder.ConfigureTestServices(
-                services => services.AddSingleton<IClock, FakeClock>(_ => _clock)
-            )
-        ).Services.CreateScope();
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        _scope.Dispose();
+        _client = _factory.CreateClient();
+        _scope = _factory.Services.CreateScope();
     }
 
     [OneTimeTearDown]
     public void OneTimeTearDown()
     {
-        _client.Dispose();
+        _scope.Dispose();
     }
 
     [TestCase("not_an_id")]
     [TestCase("4BZgqaqRPEC7CKykWc0b2g")]
     public async Task ResetPassword_BadId(string id)
     {
-        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(id), new ChangePasswordRequest
-        {
-            Password = "AValidP4ssword"
-        });
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
+            Routes.RecoverAccount(id),
+            new ChangePasswordRequest
+            {
+                Password = "AValidP4ssword"
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
-        res.Should().HaveStatusCode(System.Net.HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
     }
 
     [Test]
@@ -94,12 +80,15 @@ public class ResetPasswordTests : IntegrationTestsBase
 
         _clock.AdvanceHours(2);
 
-        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
-        {
-            Password = "AValidP4ssword"
-        });
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
+            Routes.RecoverAccount(recovery.Id),
+            new ChangePasswordRequest
+            {
+                Password = "AValidP4ssword"
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
-        res.Should().HaveStatusCode(System.Net.HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().BeNull();
@@ -140,12 +129,15 @@ public class ResetPasswordTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         _clock.AdvanceMinutes(1);
 
-        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery1.Id), new ChangePasswordRequest
-        {
-            Password = "AValidP4ssword"
-        });
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
+            Routes.RecoverAccount(recovery1.Id),
+            new ChangePasswordRequest
+            {
+                Password = "AValidP4ssword"
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
-        res.Should().HaveStatusCode(System.Net.HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
         context.ChangeTracker.Clear();
         recovery1 = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery1.Id);
         recovery1.UsedAt.Should().BeNull();
@@ -175,12 +167,15 @@ public class ResetPasswordTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         _clock.AdvanceMinutes(2);
 
-        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
-        {
-            Password = "AValidP4ssword"
-        });
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
+            Routes.RecoverAccount(recovery.Id),
+            new ChangePasswordRequest
+            {
+                Password = "AValidP4ssword"
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
-        res.Should().HaveStatusCode(System.Net.HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().Be(_clock.GetCurrentInstant() - Duration.FromMinutes(1));
@@ -208,12 +203,15 @@ public class ResetPasswordTests : IntegrationTestsBase
         context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
-        {
-            Password = "AValidP4ssword"
-        });
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
+            Routes.RecoverAccount(recovery.Id),
+            new ChangePasswordRequest
+            {
+                Password = "AValidP4ssword"
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
-        res.Should().HaveStatusCode(System.Net.HttpStatusCode.Forbidden);
+        res.Should().Be403Forbidden();
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().BeNull();
@@ -246,19 +244,19 @@ public class ResetPasswordTests : IntegrationTestsBase
         context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
-        {
-            Password = pwd
-        });
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
+            Routes.RecoverAccount(recovery.Id),
+            new ChangePasswordRequest
+            {
+                Password = pwd
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
-        res.Should().HaveStatusCode(System.Net.HttpStatusCode.UnprocessableEntity);
-        ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
-        content.Should().NotBeNull();
-
-        content!.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
-        {
-            { nameof(RegisterRequest.Password), new[] { "PasswordFormat" } }
-        });
+        res.Should().Be422UnprocessableEntity().And.Satisfy<ValidationProblemDetails>(content =>
+            content.Errors.Should().BeEquivalentTo(new Dictionary<string, string[]>
+            {
+                { nameof(RegisterRequest.Password), new[] { "PasswordFormat" } }
+            }));
 
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
@@ -287,12 +285,15 @@ public class ResetPasswordTests : IntegrationTestsBase
         context.AccountRecoveries.Add(recovery);
         await context.SaveChangesAsync();
 
-        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
-        {
-            Password = "P4ssword"
-        });
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
+            Routes.RecoverAccount(recovery.Id),
+            new ChangePasswordRequest
+            {
+                Password = "P4ssword"
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
-        res.Should().HaveStatusCode(System.Net.HttpStatusCode.Conflict);
+        res.Should().Be409Conflict();
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().BeNull();
@@ -322,12 +323,15 @@ public class ResetPasswordTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         _clock.AdvanceMinutes(1);
 
-        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.RecoverAccount(recovery.Id), new ChangePasswordRequest
-        {
-            Password = "AValidP4ssword"
-        });
+        HttpResponseMessage res = await _client.PostAsJsonAsync(
+            Routes.RecoverAccount(recovery.Id),
+            new ChangePasswordRequest
+            {
+                Password = "AValidP4ssword"
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
-        res.Should().HaveStatusCode(System.Net.HttpStatusCode.OK);
+        res.Should().Be200Ok();
         context.ChangeTracker.Clear();
         recovery = await context.AccountRecoveries.Include(ar => ar.User).SingleAsync(ar => ar.Id == recovery.Id);
         recovery.UsedAt.Should().Be(_clock.GetCurrentInstant());

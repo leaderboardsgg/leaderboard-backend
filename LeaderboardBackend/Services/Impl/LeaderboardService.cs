@@ -12,19 +12,19 @@ namespace LeaderboardBackend.Services;
 
 public class LeaderboardService(ApplicationContext applicationContext, IClock clock) : ILeaderboardService
 {
-    public async Task<LeaderboardWithStats?> GetLeaderboard(long id) =>
-        await applicationContext.Leaderboards.WithStats().FirstOrDefaultAsync(lb => lb.Leaderboard.Id == id);
+    public Task<LeaderboardWithStats?> GetLeaderboard(long id) =>
+        applicationContext.Leaderboards.WithStats().FirstOrDefaultAsync(lb => lb.Leaderboard.Id == id);
 
-    public async Task<LeaderboardWithStats?> GetLeaderboardBySlug(string slug) =>
-        await applicationContext.Leaderboards
+    public Task<LeaderboardWithStats?> GetLeaderboardBySlug(string slug) =>
+        applicationContext.Leaderboards
             .WithStats()
             .FirstOrDefaultAsync(b => b.Leaderboard.Slug == slug && b.Leaderboard.DeletedAt == null);
 
-    public async Task<ListResult<LeaderboardWithStats>> ListLeaderboards(StatusFilter statusFilter, Page page, SortLeaderboardsBy sortBy)
+    public Task<ListResult<LeaderboardWithStats>> ListLeaderboards(StatusFilter statusFilter, Page page, SortLeaderboardsBy sortBy)
     {
         IQueryable<LeaderboardWithStats> query = applicationContext.Leaderboards.FilterByStatus(statusFilter).WithStatsAndCount();
 
-        query = sortBy switch
+        IOrderedQueryable<LeaderboardWithStats> ordered = sortBy switch
         {
             SortLeaderboardsBy.Name_Asc => query.OrderBy(lb => lb.Leaderboard.Name),
             SortLeaderboardsBy.Name_Desc => query.OrderByDescending(lb => lb.Leaderboard.Name),
@@ -35,7 +35,7 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
             _ => throw new InvalidEnumArgumentException(nameof(SortLeaderboardsBy), (int)sortBy, typeof(SortLeaderboardsBy)),
         };
 
-        return await query
+        return ordered
             .Skip(page.Offset)
             .Take(page.Limit)
             .ToListResult();
@@ -182,8 +182,8 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
         return new Success();
     }
 
-    public async Task<ListResult<LeaderboardWithStats>> SearchLeaderboards(string query, StatusFilter statusFilter, Page page) =>
-        await applicationContext.Leaderboards
+    public Task<ListResult<LeaderboardWithStats>> SearchLeaderboards(string query, StatusFilter statusFilter, Page page) =>
+        applicationContext.Leaderboards
             .FilterByStatus(statusFilter)
             .Search(query)
             .Rank(query)

@@ -1,6 +1,5 @@
 using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
-using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Result;
 using LeaderboardBackend.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -29,6 +28,7 @@ public class AccountController(IUserService userService) : ApiController
         with their address.
         """
     )]
+    [SwaggerResponse(400, Type = typeof(ProblemDetails))]
     [SwaggerResponse(
         409,
         """
@@ -37,6 +37,7 @@ public class AccountController(IUserService userService) : ApiController
         """,
         typeof(ValidationProblemDetails)
     )]
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult> Register(
         [FromBody, SwaggerRequestBody(
             "The `RegisterRequest` instance from which to register the `User`.",
@@ -69,7 +70,10 @@ public class AccountController(IUserService userService) : ApiController
         }
 
         ModelState.AddModelError(nameof(request.Username), "UsernameTaken");
-        return Conflict(new ValidationProblemDetails(ModelState));
+        return Conflict(ProblemDetailsFactory.CreateValidationProblemDetails(
+            HttpContext,
+            ModelState,
+            409));
     }
 
     [AllowAnonymous]
@@ -81,6 +85,7 @@ public class AccountController(IUserService userService) : ApiController
         "The `User` was logged in successfully. A `LoginResponse` is returned, containing a token.",
         typeof(LoginResponse)
     )]
+    [SwaggerResponse(400, Type = typeof(ProblemDetails))]
     [SwaggerResponse(401, "The password given was incorrect, or no `User` could be found.")]
     [SwaggerResponse(403, "The associated `User` is banned.")]
     [SwaggerResponse(
@@ -151,11 +156,13 @@ public class AccountController(IUserService userService) : ApiController
     [HttpPost("recover")]
     [SwaggerOperation("Sends an account recovery email.", OperationId = "sendRecoveryEmail")]
     [SwaggerResponse(200, "This endpoint returns 200 OK regardless of whether the email was sent successfully or not.")]
+    [SwaggerResponse(400, Type = typeof(ProblemDetails))]
+    [SwaggerResponse(422, Type = typeof(ValidationProblemDetails))]
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
     public async Task<ActionResult> RecoverAccount(
         [FromServices] IAccountRecoveryService recoveryService,
         [FromServices] ILogger<AccountController> logger,
-        [FromBody, SwaggerRequestBody("The account recovery request.")] RecoverAccountRequest request
+        [FromBody, SwaggerRequestBody("The account recovery request.", Required = true)] RecoverAccountRequest request
     )
     {
         User? user = await userService.GetUserByNameAndEmail(request.Username, request.Email);
@@ -177,7 +184,7 @@ public class AccountController(IUserService userService) : ApiController
     [HttpPut("confirm/{id}")]
     [SwaggerOperation("Confirms a user account.", OperationId = "confirmAccount")]
     [SwaggerResponse(200, "The account was confirmed successfully.")]
-    [SwaggerResponse(404, "The token provided was invalid or expired.")]
+    [SwaggerResponse(404, "The token provided was invalid or expired.", typeof(ProblemDetails))]
     [SwaggerResponse(409, "the user's account was either already confirmed or banned.")]
     public async Task<ActionResult> ConfirmAccount(
         [SwaggerParameter("The confirmation token.")] Guid id,
@@ -199,7 +206,7 @@ public class AccountController(IUserService userService) : ApiController
     [HttpGet("recover/{id}")]
     [SwaggerOperation("Tests an account recovery token for validity.", OperationId = "testRecoveryToken")]
     [SwaggerResponse(200, "The token provided is valid.")]
-    [SwaggerResponse(404, "The token provided is invalid or expired, or the user is banned.")]
+    [SwaggerResponse(404, "The token provided is invalid or expired, or the user is banned.", typeof(ProblemDetails))]
     [FeatureGate(Features.ACCOUNT_RECOVERY)]
     public async Task<ActionResult> TestRecovery(
         [SwaggerParameter("The recovery token.")] Guid id,
@@ -222,8 +229,9 @@ public class AccountController(IUserService userService) : ApiController
     [HttpPost("recover/{id}")]
     [SwaggerOperation("Recover the user's account by resetting their password to a new value.", OperationId = "changePassword")]
     [SwaggerResponse(200, "The user's password was reset successfully.")]
+    [SwaggerResponse(400, Type = typeof(ProblemDetails))]
     [SwaggerResponse(403, "The user is banned.")]
-    [SwaggerResponse(404, "The token provided is invalid or expired.")]
+    [SwaggerResponse(404, "The token provided is invalid or expired.", typeof(ProblemDetails))]
     [SwaggerResponse(409, "The new password is the same as the user's existing password.")]
     [SwaggerResponse(
         422,

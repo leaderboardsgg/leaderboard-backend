@@ -19,30 +19,29 @@ public class ConfirmAccountTests : IntegrationTestsBase
 {
     private IServiceScope _scope = null!;
     private readonly FakeClock _clock = new(Instant.FromUnixTimeSeconds(1));
-    private HttpClient _client = null!;
 
-    [SetUp]
+    [OneTimeSetUp]
     public void Init()
     {
-        _scope = _factory.WithWebHostBuilder(builder =>
+        _factory = new TestApiFactory().WithWebHostBuilder(builder =>
             builder.ConfigureTestServices(services =>
-                services.AddSingleton<IClock, FakeClock>(_ => _clock)
-            )
-        ).Services.CreateScope();
+                services.AddSingleton<IClock, FakeClock>(_ => _clock)));
 
-        _client = _factory.WithWebHostBuilder(builder =>
-            builder.ConfigureTestServices(services =>
-                services.AddSingleton<IClock, FakeClock>(_ => _clock)
-            )
-        ).CreateClient();
+        _scope = _factory.Services.CreateScope();
+        _client = _factory.CreateClient();
+    }
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
+        _scope.Dispose();
     }
 
     [TearDown]
-    public async Task TearDown()
+    public async Task CAT_TearDown()
     {
         ApplicationContext context = _scope.ServiceProvider.GetRequiredService<ApplicationContext>();
         await TestApiFactory.ResetDatabase(context);
-        _scope.Dispose();
     }
 
     [Test]
@@ -66,10 +65,11 @@ public class ConfirmAccountTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         confirmation.CreatedAt.Should().Be(now);
         HttpResponseMessage res = await _client.PutAsync(Routes.ConfirmAccount(Guid.NewGuid()), null);
-        res.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
         context.ChangeTracker.Clear();
         User? user = await context.Users.FindAsync(confirmation.UserId);
-        user!.Role.Should().Be(UserRole.Registered);
+        user.Should().NotBeNull();
+        user.Role.Should().Be(UserRole.Registered);
     }
 
     [Test]
@@ -77,7 +77,7 @@ public class ConfirmAccountTests : IntegrationTestsBase
     {
         _clock.Reset(Instant.FromUnixTimeSeconds(1));
         HttpResponseMessage res = await _client.PutAsync("/account/confirm/not_a_guid", null);
-        res.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
     }
 
     [Test]
@@ -102,10 +102,11 @@ public class ConfirmAccountTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         confirmation.CreatedAt.Should().Be(now);
         HttpResponseMessage res = await _client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
-        res.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        res.Should().Be409Conflict();
         context.ChangeTracker.Clear();
         AccountConfirmation? conf = await context.AccountConfirmations.FindAsync(confirmation.Id);
-        conf!.UsedAt.Should().BeNull();
+        conf.Should().NotBeNull();
+        conf.UsedAt.Should().BeNull();
     }
 
     [Test]
@@ -130,11 +131,11 @@ public class ConfirmAccountTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         _clock.Reset(now + Duration.FromHours(2));
         HttpResponseMessage res = await _client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
-        res.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
         context.ChangeTracker.Clear();
-        AccountConfirmation? conf = await context.AccountConfirmations.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == confirmation.Id);
-        conf!.UsedAt.Should().BeNull();
-        conf!.User.Role.Should().Be(UserRole.Registered);
+        AccountConfirmation conf = await context.AccountConfirmations.Include(c => c.User).SingleAsync(c => c.Id == confirmation.Id);
+        conf.UsedAt.Should().BeNull();
+        conf.User.Role.Should().Be(UserRole.Registered);
     }
 
     [Test]
@@ -160,10 +161,11 @@ public class ConfirmAccountTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         _clock.AdvanceMinutes(1);
         HttpResponseMessage res = await _client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
-        res.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
         context.ChangeTracker.Clear();
         User? user = await context.Users.FindAsync(confirmation.UserId);
-        user!.Role.Should().Be(UserRole.Registered);
+        user.Should().NotBeNull();
+        user.Role.Should().Be(UserRole.Registered);
     }
 
     [Test]
@@ -188,10 +190,10 @@ public class ConfirmAccountTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         _clock.AdvanceMinutes(5);
         HttpResponseMessage res = await _client.PutAsync(Routes.ConfirmAccount(confirmation.Id), null);
-        res.Should().HaveStatusCode(HttpStatusCode.OK);
+        res.Should().Be200Ok();
         context.ChangeTracker.Clear();
-        AccountConfirmation? conf = await context.AccountConfirmations.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == confirmation.Id);
-        conf!.UsedAt.Should().Be(now.Plus(Duration.FromMinutes(5)));
-        conf!.User.Role.Should().Be(UserRole.Confirmed);
+        AccountConfirmation conf = await context.AccountConfirmations.Include(c => c.User).SingleAsync(c => c.Id == confirmation.Id);
+        conf.UsedAt.Should().Be(now.Plus(Duration.FromMinutes(5)));
+        conf.User.Role.Should().Be(UserRole.Confirmed);
     }
 }

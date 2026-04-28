@@ -47,12 +47,6 @@ public class TestApiFactory : WebApplicationFactory<Program>
         });
     }
 
-    public TestApiClient CreateTestApiClient()
-    {
-        HttpClient client = CreateClient();
-        return new TestApiClient(client);
-    }
-
     public static void InitializeDatabase(ApplicationContext dbContext)
     {
         if (!PostgresDatabaseFixture.IsInitialized)
@@ -63,6 +57,7 @@ public class TestApiFactory : WebApplicationFactory<Program>
         }
     }
 
+    // TODO: Use seeding instead.
     private static void Seed(ApplicationContext dbContext)
     {
         Leaderboard leaderboard =
@@ -71,7 +66,6 @@ public class TestApiFactory : WebApplicationFactory<Program>
         User admin =
             new()
             {
-                Id = TestInitCommonFields.Admin.Id,
                 Username = TestInitCommonFields.Admin.Username,
                 Email = TestInitCommonFields.Admin.Email,
                 Password = BCryptNet.EnhancedHashPassword(TestInitCommonFields.Admin.Password),
@@ -81,6 +75,7 @@ public class TestApiFactory : WebApplicationFactory<Program>
         dbContext.Add(admin);
         dbContext.Add(leaderboard);
         dbContext.SaveChanges();
+        TestInitCommonFields.Admin.Id = admin.Id;
     }
 
     /// <summary>
@@ -92,6 +87,8 @@ public class TestApiFactory : WebApplicationFactory<Program>
         await context.AccountConfirmations.ExecuteDeleteAsync();
         await context.AccountRecoveries.ExecuteDeleteAsync();
         await context.Categories.ExecuteDeleteAsync();
+        await context.AccountConfirmations.ExecuteDeleteAsync();
+        await context.AccountRecoveries.ExecuteDeleteAsync();
         await context.Users.ExecuteDeleteAsync();
         await context.Leaderboards.ExecuteDeleteAsync();
         Seed(context);
