@@ -1,4 +1,3 @@
-using LeaderboardBackend.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeaderboardBackend.Controllers;
