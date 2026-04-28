@@ -24,7 +24,7 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
     {
         IQueryable<LeaderboardWithStats> query = applicationContext.Leaderboards.FilterByStatus(statusFilter).WithStatsAndCount();
 
-        query = sortBy switch
+        IOrderedQueryable<LeaderboardWithStats> ordered = sortBy switch
         {
             SortLeaderboardsBy.Name_Asc => query.OrderBy(lb => lb.Leaderboard.Name),
             SortLeaderboardsBy.Name_Desc => query.OrderByDescending(lb => lb.Leaderboard.Name),
@@ -35,7 +35,7 @@ public class LeaderboardService(ApplicationContext applicationContext, IClock cl
             _ => throw new InvalidEnumArgumentException(nameof(SortLeaderboardsBy), (int)sortBy, typeof(SortLeaderboardsBy)),
         };
 
-        return query
+        return ordered
             .Skip(page.Offset)
             .Take(page.Limit)
             .ToListResult();
