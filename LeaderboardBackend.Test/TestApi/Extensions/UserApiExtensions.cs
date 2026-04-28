@@ -2,7 +2,6 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using LeaderboardBackend.Models.Requests;
-using LeaderboardBackend.Models.ViewModels;
 using LeaderboardBackend.Test.Lib;
 
 namespace LeaderboardBackend.Test.TestApi.Extensions;
