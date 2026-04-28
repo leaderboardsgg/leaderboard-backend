@@ -6,6 +6,7 @@ using LeaderboardBackend.Models.Entities;
 using LeaderboardBackend.Models.Requests;
 using LeaderboardBackend.Services;
 using LeaderboardBackend.Test.Fixtures;
+using LeaderboardBackend.Test.Lib;
 using LeaderboardBackend.Test.TestApi;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -72,8 +73,8 @@ public class SendRecoveryTests : IntegrationTestsBase
             new
             {
                 Email = user.Email
-            }
-        );
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
         res.Should().Be422UnprocessableEntity();
         context.ChangeTracker.Clear();
@@ -118,8 +119,8 @@ public class SendRecoveryTests : IntegrationTestsBase
             new
             {
                 Username = "username"
-            }
-        );
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
         res.Should().Be422UnprocessableEntity();
         context.ChangeTracker.Clear();
@@ -166,8 +167,8 @@ public class SendRecoveryTests : IntegrationTestsBase
             {
                 Email = "test@email.com",
                 Username = "username"
-            }
-        );
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
         res.Should().Be200Ok();
         context.ChangeTracker.Clear();
@@ -200,8 +201,8 @@ public class SendRecoveryTests : IntegrationTestsBase
             {
                 Email = "test@email.com",
                 Username = "username"
-            }
-        );
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
         res.Should().Be200Ok();
 
@@ -242,19 +243,18 @@ public class SendRecoveryTests : IntegrationTestsBase
             {
                 Email = "test@email.com",
                 Username = "username"
-            }
-        );
+            },
+            TestInitCommonFields.JsonSerializerOptions);
 
         res.Should().Be200Ok();
         context.ChangeTracker.Clear();
 
-        AccountRecovery? recovery = await context.AccountRecoveries.FirstOrDefaultAsync(
+        AccountRecovery recovery = await context.AccountRecoveries.SingleAsync(
             ar => ar.UserId == user.Id
         );
 
-        recovery.Should().NotBeNull();
-        recovery!.CreatedAt.Should().Be(Instant.FromUnixTimeSeconds(0));
-        recovery!.ExpiresAt.Should().Be(Instant.FromUnixTimeSeconds(0) + Duration.FromHours(1));
+        recovery.CreatedAt.Should().Be(Instant.FromUnixTimeSeconds(0));
+        recovery.ExpiresAt.Should().Be(Instant.FromUnixTimeSeconds(0) + Duration.FromHours(1));
 
         emailSenderMock.Verify(
             m => m.EnqueueEmailAsync(user.Email, It.IsAny<string>(), It.IsAny<string>()),

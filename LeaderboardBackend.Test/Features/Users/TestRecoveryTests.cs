@@ -67,7 +67,7 @@ public class TestRecoveryTests : IntegrationTestsBase
         await context.SaveChangesAsync();
         _clock.AdvanceHours(2);
         HttpResponseMessage res = await _client.GetAsync(Routes.RecoverAccount(recovery.Id));
-        res.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        res.Should().Be404NotFound();
     }
 
     [Test]
