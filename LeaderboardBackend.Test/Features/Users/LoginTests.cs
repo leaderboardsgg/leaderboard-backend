@@ -86,20 +86,20 @@ public class LoginTests : IntegrationTestsBase
             Password = password!,
         };
 
-        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.LOGIN, request);
+        HttpResponseMessage res = await _client.PostAsJsonAsync(Routes.LOGIN, request, TestInitCommonFields.JsonSerializerOptions);
 
-        res.Should().Be422UnprocessableEntity();
-        ValidationProblemDetails? content = await res.Content.ReadFromJsonAsync<ValidationProblemDetails>();
-        content.Should().NotBeNull();
-        if (emailErrorCode is not null)
+        res.Should().Be422UnprocessableEntity().And.Satisfy<ValidationProblemDetails>(content =>
         {
-            content!.Errors[nameof(LoginRequest.Email)].Should().Equal(emailErrorCode);
-        }
+            if (emailErrorCode is not null)
+            {
+                content!.Errors[nameof(LoginRequest.Email)].Should().Equal(emailErrorCode);
+            }
 
-        if (passwordErrorCode is not null)
-        {
-            content!.Errors[nameof(LoginRequest.Password)].Should().Equal(passwordErrorCode);
-        }
+            if (passwordErrorCode is not null)
+            {
+                content!.Errors[nameof(LoginRequest.Password)].Should().Equal(passwordErrorCode);
+            }
+        });
     }
 
     [Test]
