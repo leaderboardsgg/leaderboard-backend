@@ -390,7 +390,7 @@ public class Leaderboards
         });
 
         HttpResponseMessage response5 = await _client.GetLeaderboards(
-            limit:1, offset:1, status: StatusFilter.Any);
+            limit: 1, offset: 1, status: StatusFilter.Any);
 
         response5.Should().Be200Ok().And.Satisfy<ListView<LeaderboardViewModel>>(listView =>
         {
