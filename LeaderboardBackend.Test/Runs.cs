@@ -92,10 +92,7 @@ namespace LeaderboardBackend.Test
         }
 
         [SetUp]
-        public void Setup()
-        {
-            _apiClient.DefaultRequestHeaders.Authorization = null;
-        }
+        public void Setup() => _apiClient.DefaultRequestHeaders.Authorization = null;
 
         [Test]
         public async Task GetRun_OK()
@@ -227,7 +224,7 @@ namespace LeaderboardBackend.Test
 
             response4.Should().Be200Ok().And.Satisfy<ListView<TimedRunViewModel>>(listView =>
             {
-                listView.Data.Single().Should().BeEquivalentTo(RunViewModel.MapFrom(runs[0]));
+                listView.Data.Should().ContainSingle().Which.Should().BeEquivalentTo(RunViewModel.MapFrom(runs[0]));
                 listView.Total.Should().Be(2);
             });
 
@@ -239,7 +236,7 @@ namespace LeaderboardBackend.Test
 
             response5.Should().Be200Ok().And.Satisfy<ListView<TimedRunViewModel>>(listView =>
             {
-                listView.Data.Single().Should().BeEquivalentTo(RunViewModel.MapFrom(runs[2]));
+                listView.Data.Should().ContainSingle().Which.Should().BeEquivalentTo(RunViewModel.MapFrom(runs[2]));
                 listView.Total.Should().Be(3);
             });
         }
@@ -258,9 +255,7 @@ namespace LeaderboardBackend.Test
             HttpResponseMessage response = await _apiClient.GetRunsForCategory(0);
 
             response.Should().Be404NotFound().And.Satisfy<ProblemDetails>(details =>
-            {
-                details.Title.Should().Be("Category Not Found");
-            });
+                details.Title.Should().Be("Category Not Found"));
         }
 
         [Test]
@@ -396,7 +391,7 @@ namespace LeaderboardBackend.Test
             result.IsT0.Should().BeTrue();
             User user = result.AsT0;
             context.Update(user);
-            user!.Role = role;
+            user.Role = role;
 
             await context.SaveChangesAsync();
 
@@ -493,9 +488,7 @@ namespace LeaderboardBackend.Test
             });
 
             response.Should().Be404NotFound().And.Satisfy<ProblemDetails>(details =>
-            {
-                details.Title.Should().Be("Category Not Found");
-            });
+                details.Title.Should().Be("Category Not Found"));
         }
 
         [Test]
@@ -559,6 +552,8 @@ namespace LeaderboardBackend.Test
         [Test]
         public async Task GetCategoryForRun_OK()
         {
+            _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+
             HttpResponseMessage runResponse = await _apiClient.CreateRun(
                 _categoryIds[0],
                 new CreateTimedRunRequest
@@ -566,9 +561,7 @@ namespace LeaderboardBackend.Test
                     PlayedOn = LocalDate.MinIsoValue,
                     Info = "",
                     Time = Duration.FromMilliseconds(390000),
-                },
-                _jwt
-            );
+                });
 
             TimedRunViewModel? createdRun = await runResponse.Content.ReadFromJsonAsync<TimedRunViewModel>(TestInitCommonFields.JsonSerializerOptions);
 
@@ -576,10 +569,8 @@ namespace LeaderboardBackend.Test
                 createdRun!.Id
             );
 
-            CategoryViewModel? category = await categoryResponse.Content.ReadFromJsonAsync<CategoryViewModel>(TestInitCommonFields.JsonSerializerOptions);
-
-            category.Should().NotBeNull();
-            category.Id.Should().Be(_categoryIds[0]);
+            categoryResponse.Should().Be200Ok().And.Satisfy<CategoryViewModel>(cat =>
+                cat.Id.Should().Be(_categoryIds[0]));
         }
 
         [Test]
@@ -601,20 +592,22 @@ namespace LeaderboardBackend.Test
             run.Id.Should().NotBe(Guid.Empty);
             context.ChangeTracker.Clear();
 
+            _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+
             HttpResponseMessage response = await _apiClient.UpdateRun(
                 run.Id,
                 new UpdateTimedRunRequest
                 {
                     Info = "new info",
-                },
-                _jwt
-            );
+                });
+
             response.Should().Be204NoContent();
 
             Run? updated = await context.FindAsync<Run>(run.Id);
-            updated!.Info.Should().Be("new info");
-            updated!.CreatedAt.Should().Be(_clock.GetCurrentInstant());
-            updated!.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
+            updated.Should().NotBeNull();
+            updated.Info.Should().Be("new info");
+            updated.CreatedAt.Should().Be(_clock.GetCurrentInstant());
+            updated.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
         }
 
         [Test]
@@ -635,14 +628,14 @@ namespace LeaderboardBackend.Test
             createUserResult.IsT0.Should().BeTrue();
             User user = createUserResult.AsT0;
             context.Update(user);
-            user!.Role = UserRole.Confirmed;
+            user.Role = UserRole.Confirmed;
 
             Run run = new()
             {
                 CategoryId = _categoryIds[0],
                 PlayedOn = LocalDate.MinIsoValue,
                 Time = Duration.FromSeconds(390),
-                User = user!,
+                User = user,
             };
 
             context.Add(run);
@@ -655,20 +648,22 @@ namespace LeaderboardBackend.Test
                 "updaterun.ok@example.com", "Passw0rd");
             LoginResponse? userLoginResponse = await userLoginResponseMessage.Content.ReadFromJsonAsync<LoginResponse>(TestInitCommonFields.JsonSerializerOptions);
 
+            _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", userLoginResponse!.Token);
+
             HttpResponseMessage userResponse = await _apiClient.UpdateRun(
                 run.Id,
                 new UpdateTimedRunRequest
                 {
                     Info = "new info",
-                },
-                userLoginResponse!.Token
-            );
-            userResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+                });
+
+            userResponse.Should().Be204NoContent();
 
             Run? updated = await context.FindAsync<Run>(run.Id);
-            updated!.Info.Should().Be("new info");
-            updated!.CreatedAt.Should().Be(_clock.GetCurrentInstant());
-            updated!.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
+            updated.Should().NotBeNull();
+            updated.Info.Should().Be("new info");
+            updated.CreatedAt.Should().Be(_clock.GetCurrentInstant());
+            updated.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
         }
 
         [Test]
@@ -695,12 +690,13 @@ namespace LeaderboardBackend.Test
                 new UpdateTimedRunRequest
                 {
                     Info = "won't work",
-                }
-            );
+                });
+
             response.Should().Be401Unauthorized();
 
             Run? retrieved = await context.FindAsync<Run>(created.Id);
-            retrieved!.Info.Should().BeEmpty();
+            retrieved.Should().NotBeNull();
+            retrieved.Info.Should().BeEmpty();
         }
 
         [TestCase(UserRole.Banned)]
@@ -741,20 +737,20 @@ namespace LeaderboardBackend.Test
             context.Update(user);
             user.Role = role;
             await context.SaveChangesAsync();
+            _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", res!.Token);
 
             HttpResponseMessage response = await _apiClient.UpdateRun(
                 created.Id,
                 new UpdateTimedRunRequest
                 {
                     Info = "should not work",
-                },
-                res!.Token
-            );
+                });
             response.Should().Be403Forbidden();
 
             context.ChangeTracker.Clear();
             Run? retrieved = await context.FindAsync<Run>(created.Id);
-            retrieved!.Info.Should().BeEmpty();
+            retrieved.Should().NotBeNull();
+            retrieved.Info.Should().BeEmpty();
         }
 
         [Test]
@@ -791,20 +787,17 @@ namespace LeaderboardBackend.Test
 
             HttpResponseMessage loginResponseMessage = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
             LoginResponse? res = await loginResponseMessage.Content.ReadFromJsonAsync<LoginResponse>(TestInitCommonFields.JsonSerializerOptions);
+            _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", res!.Token);
 
             HttpResponseMessage response = await _apiClient.UpdateRun(
                 created.Id,
                 new UpdateTimedRunRequest
                 {
                     Info = "should not work",
-                },
-                res!.Token
-            );
-            response.Should().Be403Forbidden();
+                });
 
-            ProblemDetails? problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-            problemDetails.Should().NotBeNull();
-            problemDetails!.Title.Should().Be("User Does Not Own Run");
+            response.Should().Be403Forbidden().And.Satisfy<ProblemDetails>(problemDetails =>
+                problemDetails.Title.Should().Be("User Does Not Own Run"));
         }
 
         [Test]
@@ -853,47 +846,40 @@ namespace LeaderboardBackend.Test
 
             HttpResponseMessage loginResponseMessage = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
             LoginResponse? res = await loginResponseMessage.Content.ReadFromJsonAsync<LoginResponse>(TestInitCommonFields.JsonSerializerOptions);
+            _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", res!.Token);
 
             HttpResponseMessage response = await _apiClient.UpdateRun(
                 created.Id,
                 new UpdateTimedRunRequest
                 {
                     Status = Status.Published,
-                },
-                res!.Token
-            );
-            response.Should().Be403Forbidden();
+                });
 
-            ProblemDetails? problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-            problemDetails.Should().NotBeNull();
-            problemDetails!.Title.Should().Be("User Cannot Change Status of Runs");
+            response.Should().Be403Forbidden().And.Satisfy<ProblemDetails>(problemDetails =>
+                problemDetails.Title.Should().Be("User Cannot Change Status of Runs"));
 
             HttpResponseMessage response1 = await _apiClient.UpdateRun(
                 created1.Id,
                 new UpdateTimedRunRequest
                 {
                     Status = Status.Published,
-                },
-                res!.Token
-            );
-            response.Should().Be403Forbidden();
+                });
 
-            ProblemDetails? problemDetails1 = await response1.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-            problemDetails1.Should().NotBeNull();
-            problemDetails1!.Title.Should().Be("User Cannot Change Status of Runs");
+            response1.Should().Be403Forbidden().And.Satisfy<ProblemDetails>(problemDetails =>
+                problemDetails.Title.Should().Be("User Cannot Change Status of Runs"));
         }
 
         [Test]
         public async Task UpdateRun_NotFound()
         {
+            _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+
             HttpResponseMessage response = await _apiClient.UpdateRun(
                 Guid.Empty,
                 new UpdateTimedRunRequest
                 {
                     Info = "should not work",
-                },
-                _jwt
-            );
+                });
             response.Should().Be404NotFound();
         }
 
@@ -934,19 +920,17 @@ namespace LeaderboardBackend.Test
 
             HttpResponseMessage loginResponseMessage = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
             LoginResponse? res = await loginResponseMessage.Content.ReadFromJsonAsync<LoginResponse>(TestInitCommonFields.JsonSerializerOptions);
+            _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", res!.Token);
 
             HttpResponseMessage response = await _apiClient.UpdateRun(
                 created.Id,
                 new UpdateTimedRunRequest
                 {
                     Info = "should not work"
-                },
-                res!.Token
-            );
-            response.Should().Be404NotFound();
+                });
 
-            ProblemDetails? problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-            problemDetails!.Title.Should().Be("Run Is Deleted");
+            response.Should().Be404NotFound().And.Satisfy<ProblemDetails>(problemDetails =>
+                problemDetails.Title.Should().Be("Run Is Deleted"));
         }
 
         [Test]
@@ -1001,19 +985,17 @@ namespace LeaderboardBackend.Test
 
             HttpResponseMessage loginResponseMessage = await _apiClient.LoginUser(registerRequest.Email, registerRequest.Password);
             LoginResponse? res = await loginResponseMessage.Content.ReadFromJsonAsync<LoginResponse>(TestInitCommonFields.JsonSerializerOptions);
+            _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", res!.Token);
 
             HttpResponseMessage response = await _apiClient.UpdateRun(
                 created.Id,
                 new UpdateTimedRunRequest
                 {
                     Info = "should not work",
-                },
-                res!.Token
-            );
-            response.Should().Be404NotFound();
+                });
 
-            ProblemDetails? problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-            problemDetails!.Title.Should().Be("Leaderboard Is Deleted");
+            response.Should().Be404NotFound().And.Satisfy<ProblemDetails>(problemDetails =>
+                problemDetails.Title.Should().Be("Leaderboard Is Deleted"));
         }
 
         [Test]
@@ -1034,19 +1016,17 @@ namespace LeaderboardBackend.Test
             await context.SaveChangesAsync();
             created.Id.Should().NotBe(Guid.Empty);
             context.ChangeTracker.Clear();
+            _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
 
             HttpResponseMessage response = await _apiClient.UpdateRun(
                 created.Id,
                 new UpdateScoredRunRequest
                 {
                     Score = 1L,
-                },
-                _jwt
-            );
-            response.Should().Be422UnprocessableEntity();
+                });
 
-            ProblemDetails? problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-            problemDetails!.Title.Should().Be("Incorrect Run Type");
+            response.Should().Be422UnprocessableEntity().And.Satisfy<ProblemDetails>(problemDetails =>
+                problemDetails.Title.Should().Be("Incorrect Run Type"));
         }
 
         [Test]
@@ -1067,16 +1047,17 @@ namespace LeaderboardBackend.Test
             await context.SaveChangesAsync();
             created.Id.Should().NotBe(Guid.Empty);
             context.ChangeTracker.Clear();
+            _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
 
             HttpResponseMessage message = await _apiClient.DeleteRun(
-                created.Id,
-                _jwt
-            );
+                created.Id);
+
             message.Should().Be204NoContent();
 
             Run? deleted = await context.FindAsync<Run>(created.Id);
-            deleted!.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
-            deleted!.DeletedAt.Should().Be(_clock.GetCurrentInstant());
+            deleted.Should().NotBeNull();
+            deleted.UpdatedAt.Should().Be(_clock.GetCurrentInstant());
+            deleted.DeletedAt.Should().Be(_clock.GetCurrentInstant());
         }
 
         [Test]
@@ -1102,7 +1083,8 @@ namespace LeaderboardBackend.Test
             response.Should().Be401Unauthorized();
 
             Run? retrieved = await context.FindAsync<Run>(run.Id);
-            retrieved!.DeletedAt.Should().BeNull();
+            retrieved.Should().NotBeNull();
+            retrieved.DeletedAt.Should().BeNull();
         }
 
         [TestCase(UserRole.Banned)]
@@ -1143,28 +1125,26 @@ namespace LeaderboardBackend.Test
             await context.SaveChangesAsync();
             run.Id.Should().NotBe(Guid.Empty);
             context.ChangeTracker.Clear();
+            _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", res!.Token);
 
             HttpResponseMessage response = await _apiClient.DeleteRun(
-                run.Id,
-                res!.Token
-            );
+                run.Id);
+
             response.Should().Be403Forbidden();
 
             Run? retrieved = await context.FindAsync<Run>(run.Id);
-            retrieved!.DeletedAt.Should().BeNull();
+            retrieved.Should().NotBeNull();
+            retrieved.DeletedAt.Should().BeNull();
         }
 
         [Test]
         public async Task DeleteRun_NotFound()
         {
-            HttpResponseMessage response = await _apiClient.DeleteRun(
-                Guid.Empty,
-                _jwt
-            );
-            response.Should().Be404NotFound();
+            _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+            HttpResponseMessage response = await _apiClient.DeleteRun(Guid.Empty);
 
-            ProblemDetails? problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-            problemDetails!.Title.Should().Be("Not Found");
+            response.Should().Be404NotFound().And.Satisfy<ProblemDetails>(problemDetails =>
+                problemDetails.Title.Should().Be("Not Found"));
         }
 
         [Test]
@@ -1187,18 +1167,15 @@ namespace LeaderboardBackend.Test
             run.Id.Should().NotBe(Guid.Empty);
             run.DeletedAt.Should().NotBeNull();
             context.ChangeTracker.Clear();
+            _apiClient.DefaultRequestHeaders.Authorization = new("Bearer", _jwt);
+            HttpResponseMessage response = await _apiClient.DeleteRun(run.Id);
 
-            HttpResponseMessage response = await _apiClient.DeleteRun(
-                run.Id,
-                _jwt
-            );
-            response.Should().Be404NotFound();
-
-            ProblemDetails? problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>(TestInitCommonFields.JsonSerializerOptions);
-            problemDetails!.Title.Should().Be("Already Deleted");
+            response.Should().Be404NotFound().And.Satisfy<ProblemDetails>(problemDetails =>
+                problemDetails.Title.Should().Be("Already Deleted"));
 
             Run? retrieved = await context.FindAsync<Run>(run.Id);
-            retrieved!.UpdatedAt.Should().BeNull();
+            retrieved.Should().NotBeNull();
+            retrieved.UpdatedAt.Should().BeNull();
         }
     }
 }
