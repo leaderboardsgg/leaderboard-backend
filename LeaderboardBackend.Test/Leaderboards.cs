@@ -444,7 +444,7 @@ public class Leaderboards
 
             problemDetails.Errors.Should().ContainKey("status")
                 .WhoseValue.Should().ContainSingle()
-                .Which.Should().Be("The value 'invalid' is not valid.");
+                .Which.Should().Be("The value 'alsoinvalid' is not valid.");
         });
     }
 
