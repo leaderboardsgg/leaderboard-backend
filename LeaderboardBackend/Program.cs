@@ -106,6 +106,9 @@ builder.Services.AddDbContext<ApplicationContext>(
             {
                 opt.UseSeeding((context, _) =>
                 {
+                    // https://github.com/npgsql/efcore.pg/issues/292
+                    ((NpgsqlConnection)context.Database.GetDbConnection()).ReloadTypes();
+
                     User admin = context.Set<User>().SingleOrDefault(u => u.Email == "admin@leaderboards.gg")
                         ?? context.Add(new User()
                         {
@@ -254,6 +257,9 @@ builder.Services.AddDbContext<ApplicationContext>(
                     context.SaveChanges();
                 }).UseAsyncSeeding(async (context, _, cancellationToken) =>
                 {
+                    // https://github.com/npgsql/efcore.pg/issues/292
+                    await ((NpgsqlConnection)context.Database.GetDbConnection()).ReloadTypesAsync();
+
                     User admin = await context.Set<User>().SingleOrDefaultAsync(u => u.Email == "admin@leaderboards.gg", cancellationToken)
                         ?? context.Add(new User()
                         {
