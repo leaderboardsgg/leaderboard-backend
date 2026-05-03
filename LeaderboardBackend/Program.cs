@@ -96,6 +96,7 @@ builder.Services.AddDbContext<ApplicationContext>(
                 o.MapEnum<RunType>();
                 o.UseNodaTime();
                 o.UseWindowFunctions();
+                o.SetPostgresVersion(18, 0);
             });
 
             opt.UseSnakeCaseNamingConvention();
