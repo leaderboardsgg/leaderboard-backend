@@ -102,7 +102,7 @@ builder.Services.AddDbContext<ApplicationContext>(
             opt.UseSnakeCaseNamingConvention();
             opt.UseValidationCheckConstraints();
 
-            if (builder.Environment.IsDevelopment())
+            if (builder.Environment.IsDevelopment() && appConfig.UseSeedData)
             {
                 opt.UseSeeding((context, _) =>
                 {
