@@ -7,6 +7,7 @@ public class ApplicationContextConfig : IValidatableObject
     public const string KEY = "ApplicationContext";
 
     public bool MigrateDb { get; set; } = false;
+    public bool UseSeedData { get; set; } = true;
     public PostgresConfig? Pg { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext context)
@@ -15,7 +16,7 @@ public class ApplicationContextConfig : IValidatableObject
         {
             yield return new ValidationResult(
                 "Missing database configuration.",
-                new[] { nameof(Pg) }
+                [nameof(Pg)]
             );
         }
     }
