@@ -43,9 +43,9 @@ public abstract record RunViewModel
     public required Instant? DeletedAt { get; set; }
 
     /// <summary>
-    /// 	The ID of the `Category` for `Run`.
+    /// 	The `Category` for the `Run`.
     /// </summary>
-    public required long CategoryId { get; set; }
+    public required CategoryViewModel Category { get; set; }
 
     /// <summary>
     ///     The user who submitted this run.
@@ -65,7 +65,7 @@ public abstract record RunViewModel
         RunType.Time => new TimedRunViewModel
         {
             Id = run.Id,
-            CategoryId = run.CategoryId,
+            Category = CategoryViewModel.MapFrom(run.Category),
             User = UserViewModel.MapFrom(run.User),
             PlayedOn = run.PlayedOn,
             CreatedAt = run.CreatedAt,
@@ -78,7 +78,7 @@ public abstract record RunViewModel
         RunType.Score => new ScoredRunViewModel
         {
             Id = run.Id,
-            CategoryId = run.CategoryId,
+            Category = CategoryViewModel.MapFrom(run.Category),
             User = UserViewModel.MapFrom(run.User),
             PlayedOn = run.PlayedOn,
             CreatedAt = run.CreatedAt,

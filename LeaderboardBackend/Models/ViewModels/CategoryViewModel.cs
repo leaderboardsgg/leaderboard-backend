@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using LeaderboardBackend.Models.Entities;
 using NodaTime;
 
@@ -40,6 +41,10 @@ public record CategoryViewModel
     /// <inheritdoc cref="Category.LeaderboardId" />
     public required long LeaderboardId { get; set; }
 
+    /// <inheritdoc cref="Category.Leaderboard" />
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public required LeaderboardViewModel? Leaderboard { get; set; }
+
     /// <inheritdoc cref="Category.CreatedAt" />
     public required Instant CreatedAt { get; set; }
 
@@ -60,6 +65,7 @@ public record CategoryViewModel
         SortDirection = category.SortDirection,
         Type = category.Type,
         LeaderboardId = category.LeaderboardId,
+        Leaderboard = category.Leaderboard != null ? LeaderboardViewModel.MapFrom(category.Leaderboard) : null,
         CreatedAt = category.CreatedAt,
         UpdatedAt = category.UpdatedAt,
         DeletedAt = category.DeletedAt,

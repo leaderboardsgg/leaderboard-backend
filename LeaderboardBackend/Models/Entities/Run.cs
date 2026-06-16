@@ -56,7 +56,7 @@ public class Run : IHasUpdateTimestamp, IHasDeletionTimestamp
     public Instant? DeletedAt { get; set; }
 
     /// <summary>
-    /// 	The ID of the `Category` for `Run`.
+    /// 	The ID of the `Category` for the `Run`.
     /// </summary>
     public long CategoryId { get; set; }
 

@@ -1889,6 +1889,7 @@
           "deletedAt",
           "id",
           "info",
+          "leaderboard",
           "leaderboardId",
           "name",
           "slug",
@@ -1937,6 +1938,15 @@
           "leaderboardId": {
             "type": "integer",
             "format": "int64"
+          },
+          "leaderboard": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LeaderboardViewModel"
+              }
+            ],
+            "description": "Represents a collection of `Leaderboard` entities.",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -2473,7 +2483,7 @@
       "RunViewModel": {
         "required": [
           "$type",
-          "categoryId",
+          "category",
           "createdAt",
           "deletedAt",
           "id",
@@ -2524,10 +2534,13 @@
             "nullable": true,
             "example": "1984-01-01T00:00:00Z"
           },
-          "categoryId": {
-            "type": "integer",
-            "description": "The ID of the `Category` for `Run`.",
-            "format": "int64"
+          "category": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CategoryViewModel"
+              }
+            ],
+            "description": "The `Category` for the `Run`."
           },
           "user": {
             "allOf": [
