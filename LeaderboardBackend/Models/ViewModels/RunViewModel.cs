@@ -43,9 +43,9 @@ public abstract record RunViewModel
     public required Instant? DeletedAt { get; set; }
 
     /// <summary>
-    /// 	The `Category` for the `Run`.
+    /// 	The ID of the `Category` for `Run`.
     /// </summary>
-    public required CategoryViewModel Category { get; set; }
+    public required long CategoryId { get; set; }
 
     /// <summary>
     ///     The user who submitted this run.
@@ -65,7 +65,7 @@ public abstract record RunViewModel
         RunType.Time => new TimedRunViewModel
         {
             Id = run.Id,
-            Category = CategoryViewModel.MapFrom(run.Category),
+            CategoryId = run.CategoryId,
             User = UserViewModel.MapFrom(run.User),
             PlayedOn = run.PlayedOn,
             CreatedAt = run.CreatedAt,
@@ -78,7 +78,7 @@ public abstract record RunViewModel
         RunType.Score => new ScoredRunViewModel
         {
             Id = run.Id,
-            Category = CategoryViewModel.MapFrom(run.Category),
+            CategoryId = run.CategoryId,
             User = UserViewModel.MapFrom(run.User),
             PlayedOn = run.PlayedOn,
             CreatedAt = run.CreatedAt,
@@ -112,5 +112,58 @@ public record ScoredRunViewModel : RunViewModel
     /// <summary>
     ///     The score achieved during the run.
     /// </summary>
+    public required long Score { get; set; }
+}
+
+[JsonPolymorphic(UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor)]
+[JsonDerivedType(typeof(TimedRunViewModelWithRelations), "Time")]
+[JsonDerivedType(typeof(ScoredRunViewModelWithRelations), "Score")]
+public record RunViewModelWithRelations : RunViewModel
+{
+    public CategoryViewModel Category { get; set; } = null!;
+
+    public static new RunViewModelWithRelations MapFrom(Run run) => run.Type switch
+    {
+        RunType.Time => new TimedRunViewModelWithRelations
+        {
+            Id = run.Id,
+            CategoryId = run.CategoryId,
+            Category = CategoryViewModel.MapFrom(run.Category),
+            User = UserViewModel.MapFrom(run.User),
+            PlayedOn = run.PlayedOn,
+            CreatedAt = run.CreatedAt,
+            UpdatedAt = run.UpdatedAt,
+            DeletedAt = run.DeletedAt,
+            Info = run.Info,
+            Time = run.Time,
+            Status = run.Status()
+        },
+        RunType.Score => new ScoredRunViewModelWithRelations
+        {
+            Id = run.Id,
+            CategoryId = run.CategoryId,
+            Category = CategoryViewModel.MapFrom(run.Category),
+            User = UserViewModel.MapFrom(run.User),
+            PlayedOn = run.PlayedOn,
+            CreatedAt = run.CreatedAt,
+            UpdatedAt = run.UpdatedAt,
+            DeletedAt = run.DeletedAt,
+            Info = run.Info,
+            Score = run.TimeOrScore,
+            Status = run.Status()
+        },
+        _ => throw new NotImplementedException(),
+    };
+}
+
+public record TimedRunViewModelWithRelations : RunViewModelWithRelations
+{
+    /// <inheritdoc cref="TimedRunViewModel.Time" />
+    public required Duration Time { get; set; }
+}
+
+public record ScoredRunViewModelWithRelations : RunViewModelWithRelations
+{
+    /// <inheritdoc cref="ScoredRunViewModel.Score" />
     public required long Score { get; set; }
 }

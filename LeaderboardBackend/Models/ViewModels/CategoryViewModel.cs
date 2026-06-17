@@ -65,7 +65,7 @@ public record CategoryViewModel
         SortDirection = category.SortDirection,
         Type = category.Type,
         LeaderboardId = category.LeaderboardId,
-        Leaderboard = category.Leaderboard != null ? LeaderboardViewModel.MapFrom(category.Leaderboard) : null,
+        Leaderboard = LeaderboardViewModel.MapFrom(category.Leaderboard!),
         CreatedAt = category.CreatedAt,
         UpdatedAt = category.UpdatedAt,
         DeletedAt = category.DeletedAt,

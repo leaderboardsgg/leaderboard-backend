@@ -415,12 +415,13 @@ namespace LeaderboardBackend.Test
 
             Category? category = await context.Categories.Include(c => c.Leaderboard).SingleAsync(c => c.Id == _categoryIds[0]);
 
-            response3.Should().Be200Ok().And.BeAs(created).And.BeAs(new TimedRunViewModel()
+            response3.Should().Be200Ok().And.BeAs(created).And.BeAs(new TimedRunViewModelWithRelations()
             {
                 PlayedOn = new(2025, 1, 1),
                 Info = "",
                 Time = Duration.FromTimeSpan(new(0, 0, 10, 22, 111)),
                 User = UserViewModel.MapFrom(user),
+                CategoryId = _categoryIds[0],
                 Category = CategoryViewModel.MapFrom(category!),
                 CreatedAt = _clock.GetCurrentInstant(),
                 DeletedAt = null,

@@ -22,7 +22,7 @@ public class RunsController(
     [SwaggerOperation("Gets a Run by its ID.", OperationId = "getRun")]
     [SwaggerResponse(200)]
     [SwaggerResponse(404, "The Run with ID `id` could not be found.", typeof(ProblemDetails))]
-    public async Task<ActionResult<RunViewModel>> GetRun([FromRoute] Guid id)
+    public async Task<ActionResult<RunViewModelWithRelations>> GetRun([FromRoute] Guid id)
     {
         Run? run = await runService.GetRun(id);
 
@@ -31,7 +31,7 @@ public class RunsController(
             return NotFound();
         }
 
-        return Ok(RunViewModel.MapFrom(run));
+        return Ok(RunViewModelWithRelations.MapFrom(run));
     }
 
     [Authorize]
