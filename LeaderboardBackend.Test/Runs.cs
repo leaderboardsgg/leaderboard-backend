@@ -422,7 +422,7 @@ namespace LeaderboardBackend.Test
                 Time = Duration.FromTimeSpan(new(0, 0, 10, 22, 111)),
                 User = UserViewModel.MapFrom(user),
                 CategoryId = _categoryIds[0],
-                Category = CategoryViewModel.MapFrom(category!),
+                Category = CategoryViewModelWithRelations.MapFrom(category!),
                 CreatedAt = _clock.GetCurrentInstant(),
                 DeletedAt = null,
                 Id = created.Id,

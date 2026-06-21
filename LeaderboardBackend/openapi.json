@@ -1892,7 +1892,6 @@
           "deletedAt",
           "id",
           "info",
-          "leaderboard",
           "leaderboardId",
           "name",
           "slug",
@@ -1941,15 +1940,6 @@
           "leaderboardId": {
             "type": "integer",
             "format": "int64"
-          },
-          "leaderboard": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LeaderboardViewModel"
-              }
-            ],
-            "description": "Represents a collection of `Leaderboard` entities.",
-            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -2047,6 +2037,96 @@
             "type": "integer",
             "description": "The maximum value the client is allowed to specify as a limt for\nendpoints return a paginated list of resources of this type.\nExceeding this value will result in an error.",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CategoryViewModelWithRelations": {
+        "required": [
+          "createdAt",
+          "deletedAt",
+          "id",
+          "info",
+          "leaderboardId",
+          "name",
+          "slug",
+          "sortDirection",
+          "status",
+          "type",
+          "updatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the `Category`.\n",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "description": "The display name of the `Category`.",
+            "example": "Foo Bar Baz%"
+          },
+          "slug": {
+            "type": "string",
+            "description": "The URL-scoped unique identifier of the `Category`.\n",
+            "example": "foo-bar-baz"
+          },
+          "info": {
+            "type": "string",
+            "description": "Information pertaining to the `Category`.",
+            "nullable": true,
+            "example": "Video proof is required."
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunType"
+              }
+            ]
+          },
+          "sortDirection": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SortDirection"
+              }
+            ]
+          },
+          "leaderboardId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Status"
+              }
+            ]
+          },
+          "leaderboard": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LeaderboardViewModel"
+              }
+            ],
+            "description": "Represents a collection of `Leaderboard` entities."
           }
         },
         "additionalProperties": false
@@ -2694,10 +2774,9 @@
           "category": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/CategoryViewModel"
+                "$ref": "#/components/schemas/CategoryViewModelWithRelations"
               }
-            ],
-            "description": "Represents a `Category` tied to a `Leaderboard`."
+            ]
           }
         },
         "additionalProperties": false,

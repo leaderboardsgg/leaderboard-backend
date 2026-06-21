@@ -41,10 +41,6 @@ public record CategoryViewModel
     /// <inheritdoc cref="Category.LeaderboardId" />
     public required long LeaderboardId { get; set; }
 
-    /// <inheritdoc cref="Category.Leaderboard" />
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public required LeaderboardViewModel? Leaderboard { get; set; }
-
     /// <inheritdoc cref="Category.CreatedAt" />
     public required Instant CreatedAt { get; set; }
 
@@ -57,6 +53,27 @@ public record CategoryViewModel
     public required Status Status { get; set; }
 
     public static CategoryViewModel MapFrom(Category category) => new()
+    {
+        Id = category.Id,
+        Name = category.Name,
+        Slug = category.Slug,
+        Info = category.Info,
+        SortDirection = category.SortDirection,
+        Type = category.Type,
+        LeaderboardId = category.LeaderboardId,
+        CreatedAt = category.CreatedAt,
+        UpdatedAt = category.UpdatedAt,
+        DeletedAt = category.DeletedAt,
+        Status = category.Status()
+    };
+}
+
+public record CategoryViewModelWithRelations : CategoryViewModel
+{
+    /// <inheritdoc cref="Category.Leaderboard" />
+    public LeaderboardViewModel Leaderboard { get; set; } = null!;
+
+    public static new CategoryViewModelWithRelations MapFrom(Category category) => new()
     {
         Id = category.Id,
         Name = category.Name,

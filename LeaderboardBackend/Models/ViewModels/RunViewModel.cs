@@ -120,7 +120,7 @@ public record ScoredRunViewModel : RunViewModel
 [JsonDerivedType(typeof(ScoredRunViewModelWithRelations), "Score")]
 public record RunViewModelWithRelations : RunViewModel
 {
-    public CategoryViewModel Category { get; set; } = null!;
+    public CategoryViewModelWithRelations Category { get; set; } = null!;
 
     public static new RunViewModelWithRelations MapFrom(Run run) => run.Type switch
     {
@@ -128,7 +128,7 @@ public record RunViewModelWithRelations : RunViewModel
         {
             Id = run.Id,
             CategoryId = run.CategoryId,
-            Category = CategoryViewModel.MapFrom(run.Category),
+            Category = CategoryViewModelWithRelations.MapFrom(run.Category),
             User = UserViewModel.MapFrom(run.User),
             PlayedOn = run.PlayedOn,
             CreatedAt = run.CreatedAt,
@@ -142,7 +142,7 @@ public record RunViewModelWithRelations : RunViewModel
         {
             Id = run.Id,
             CategoryId = run.CategoryId,
-            Category = CategoryViewModel.MapFrom(run.Category),
+            Category = CategoryViewModelWithRelations.MapFrom(run.Category),
             User = UserViewModel.MapFrom(run.User),
             PlayedOn = run.PlayedOn,
             CreatedAt = run.CreatedAt,
