@@ -1198,15 +1198,16 @@
                 "schema": {
                   "oneOf": [
                     {
-                      "$ref": "#/components/schemas/RunViewModelWithRelations"
+                      "$ref": "#/components/schemas/RunViewModelFull"
                     },
                     {
-                      "$ref": "#/components/schemas/TimedRunViewModelWithRelations"
+                      "$ref": "#/components/schemas/TimedRunViewModelFull"
                     },
                     {
-                      "$ref": "#/components/schemas/ScoredRunViewModelWithRelations"
+                      "$ref": "#/components/schemas/ScoredRunViewModelFull"
                     }
-                  ]
+                  ],
+                  "description": "A LeaderboardBackend.Models.ViewModels.RunViewModel with relations attached."
                 }
               }
             }
@@ -2008,45 +2009,13 @@
         },
         "additionalProperties": { }
       },
-      "CategoryViewModelListView": {
-        "required": [
-          "data",
-          "limitDefault",
-          "limitMax",
-          "total"
-        ],
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CategoryViewModel"
-            }
-          },
-          "total": {
-            "type": "integer",
-            "description": "The total number of records matching the given criteria that\nexist in the database, NOT the total number of records returned.",
-            "format": "int64"
-          },
-          "limitDefault": {
-            "type": "integer",
-            "description": "The default limit that will be applied for this resource type\nif the client does not specify one in the query string.",
-            "format": "int32"
-          },
-          "limitMax": {
-            "type": "integer",
-            "description": "The maximum value the client is allowed to specify as a limt for\nendpoints return a paginated list of resources of this type.\nExceeding this value will result in an error.",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "CategoryViewModelWithRelations": {
+      "CategoryViewModelFull": {
         "required": [
           "createdAt",
           "deletedAt",
           "id",
           "info",
+          "leaderboard",
           "leaderboardId",
           "name",
           "slug",
@@ -2127,6 +2096,40 @@
               }
             ],
             "description": "Represents a collection of `Leaderboard` entities."
+          }
+        },
+        "additionalProperties": false,
+        "description": "A LeaderboardBackend.Models.ViewModels.CategoryViewModel with relations attached."
+      },
+      "CategoryViewModelListView": {
+        "required": [
+          "data",
+          "limitDefault",
+          "limitMax",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryViewModel"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "description": "The total number of records matching the given criteria that\nexist in the database, NOT the total number of records returned.",
+            "format": "int64"
+          },
+          "limitDefault": {
+            "type": "integer",
+            "description": "The default limit that will be applied for this resource type\nif the client does not specify one in the query string.",
+            "format": "int32"
+          },
+          "limitMax": {
+            "type": "integer",
+            "description": "The maximum value the client is allowed to specify as a limt for\nendpoints return a paginated list of resources of this type.\nExceeding this value will result in an error.",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -2652,49 +2655,10 @@
           }
         }
       },
-      "RunViewModelListView": {
-        "required": [
-          "data",
-          "limitDefault",
-          "limitMax",
-          "total"
-        ],
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "oneOf": [
-                {
-                  "$ref": "#/components/schemas/TimedRunViewModel"
-                },
-                {
-                  "$ref": "#/components/schemas/ScoredRunViewModel"
-                }
-              ]
-            }
-          },
-          "total": {
-            "type": "integer",
-            "description": "The total number of records matching the given criteria that\nexist in the database, NOT the total number of records returned.",
-            "format": "int64"
-          },
-          "limitDefault": {
-            "type": "integer",
-            "description": "The default limit that will be applied for this resource type\nif the client does not specify one in the query string.",
-            "format": "int32"
-          },
-          "limitMax": {
-            "type": "integer",
-            "description": "The maximum value the client is allowed to specify as a limt for\nendpoints return a paginated list of resources of this type.\nExceeding this value will result in an error.",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "RunViewModelWithRelations": {
+      "RunViewModelFull": {
         "required": [
           "$type",
+          "category",
           "categoryId",
           "createdAt",
           "deletedAt",
@@ -2774,19 +2738,61 @@
           "category": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/CategoryViewModelWithRelations"
+                "$ref": "#/components/schemas/CategoryViewModelFull"
               }
-            ]
+            ],
+            "description": "A LeaderboardBackend.Models.ViewModels.CategoryViewModel with relations attached."
           }
         },
         "additionalProperties": false,
+        "description": "A LeaderboardBackend.Models.ViewModels.RunViewModel with relations attached.",
         "discriminator": {
           "propertyName": "$type",
           "mapping": {
-            "Time": "#/components/schemas/TimedRunViewModelWithRelations",
-            "Score": "#/components/schemas/ScoredRunViewModelWithRelations"
+            "Time": "#/components/schemas/TimedRunViewModelFull",
+            "Score": "#/components/schemas/ScoredRunViewModelFull"
           }
         }
+      },
+      "RunViewModelListView": {
+        "required": [
+          "data",
+          "limitDefault",
+          "limitMax",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/TimedRunViewModel"
+                },
+                {
+                  "$ref": "#/components/schemas/ScoredRunViewModel"
+                }
+              ]
+            }
+          },
+          "total": {
+            "type": "integer",
+            "description": "The total number of records matching the given criteria that\nexist in the database, NOT the total number of records returned.",
+            "format": "int64"
+          },
+          "limitDefault": {
+            "type": "integer",
+            "description": "The default limit that will be applied for this resource type\nif the client does not specify one in the query string.",
+            "format": "int32"
+          },
+          "limitMax": {
+            "type": "integer",
+            "description": "The maximum value the client is allowed to specify as a limt for\nendpoints return a paginated list of resources of this type.\nExceeding this value will result in an error.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
       },
       "ScoredRunViewModel": {
         "allOf": [
@@ -2809,10 +2815,10 @@
           }
         ]
       },
-      "ScoredRunViewModelWithRelations": {
+      "ScoredRunViewModelFull": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/RunViewModelWithRelations"
+            "$ref": "#/components/schemas/RunViewModelFull"
           },
           {
             "required": [
@@ -2827,7 +2833,8 @@
             },
             "additionalProperties": false
           }
-        ]
+        ],
+        "description": "A LeaderboardBackend.Models.ViewModels.ScoredRunViewModel with relations attached."
       },
       "SortDirection": {
         "enum": [
@@ -2884,10 +2891,10 @@
           }
         ]
       },
-      "TimedRunViewModelWithRelations": {
+      "TimedRunViewModelFull": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/RunViewModelWithRelations"
+            "$ref": "#/components/schemas/RunViewModelFull"
           },
           {
             "required": [
@@ -2902,7 +2909,8 @@
             },
             "additionalProperties": false
           }
-        ]
+        ],
+        "description": "A LeaderboardBackend.Models.ViewModels.TimedRunViewModel with relations attached."
       },
       "UpdateCategoryRequest": {
         "type": "object",

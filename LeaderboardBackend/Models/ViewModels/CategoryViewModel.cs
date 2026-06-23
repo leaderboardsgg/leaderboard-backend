@@ -68,12 +68,15 @@ public record CategoryViewModel
     };
 }
 
-public record CategoryViewModelWithRelations : CategoryViewModel
+/// <summary>
+/// A <see cref="CategoryViewModel"/> with relations attached.
+/// </summary>
+public record CategoryViewModelFull : CategoryViewModel
 {
     /// <inheritdoc cref="Category.Leaderboard" />
-    public LeaderboardViewModel Leaderboard { get; set; } = null!;
+    public required LeaderboardViewModel Leaderboard { get; set; }
 
-    public static new CategoryViewModelWithRelations MapFrom(Category category) => new()
+    public static new CategoryViewModelFull MapFrom(Category category) => new()
     {
         Id = category.Id,
         Name = category.Name,
