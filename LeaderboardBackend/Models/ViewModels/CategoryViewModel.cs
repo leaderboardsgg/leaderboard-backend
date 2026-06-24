@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using LeaderboardBackend.Models.Entities;
 using NodaTime;
 
@@ -60,6 +61,31 @@ public record CategoryViewModel
         SortDirection = category.SortDirection,
         Type = category.Type,
         LeaderboardId = category.LeaderboardId,
+        CreatedAt = category.CreatedAt,
+        UpdatedAt = category.UpdatedAt,
+        DeletedAt = category.DeletedAt,
+        Status = category.Status()
+    };
+}
+
+/// <summary>
+/// A <see cref="CategoryViewModel"/> with relations attached.
+/// </summary>
+public record CategoryViewModelFull : CategoryViewModel
+{
+    /// <inheritdoc cref="Category.Leaderboard" />
+    public required LeaderboardViewModel Leaderboard { get; set; }
+
+    public static new CategoryViewModelFull MapFrom(Category category) => new()
+    {
+        Id = category.Id,
+        Name = category.Name,
+        Slug = category.Slug,
+        Info = category.Info,
+        SortDirection = category.SortDirection,
+        Type = category.Type,
+        LeaderboardId = category.LeaderboardId,
+        Leaderboard = LeaderboardViewModel.MapFrom(category.Leaderboard!),
         CreatedAt = category.CreatedAt,
         UpdatedAt = category.UpdatedAt,
         DeletedAt = category.DeletedAt,

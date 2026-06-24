@@ -413,13 +413,16 @@ namespace LeaderboardBackend.Test
 
             HttpResponseMessage response3 = await _apiClient.GetRun(created!.Id);
 
-            response3.Should().Be200Ok().And.BeAs(created).And.BeAs(new TimedRunViewModel()
+            Category? category = await context.Categories.Include(c => c.Leaderboard).SingleAsync(c => c.Id == _categoryIds[0]);
+
+            response3.Should().Be200Ok().And.BeAs(created).And.BeAs(new TimedRunViewModelFull()
             {
                 PlayedOn = new(2025, 1, 1),
                 Info = "",
                 Time = Duration.FromTimeSpan(new(0, 0, 10, 22, 111)),
                 User = UserViewModel.MapFrom(user),
                 CategoryId = _categoryIds[0],
+                Category = CategoryViewModelFull.MapFrom(category!),
                 CreatedAt = _clock.GetCurrentInstant(),
                 DeletedAt = null,
                 Id = created.Id,

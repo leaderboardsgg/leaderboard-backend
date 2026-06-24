@@ -1198,12 +1198,16 @@
                 "schema": {
                   "oneOf": [
                     {
-                      "$ref": "#/components/schemas/TimedRunViewModel"
+                      "$ref": "#/components/schemas/RunViewModelFull"
                     },
                     {
-                      "$ref": "#/components/schemas/ScoredRunViewModel"
+                      "$ref": "#/components/schemas/TimedRunViewModelFull"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScoredRunViewModelFull"
                     }
-                  ]
+                  ],
+                  "description": "A LeaderboardBackend.Models.ViewModels.RunViewModel with relations attached."
                 }
               }
             }
@@ -2005,6 +2009,98 @@
         },
         "additionalProperties": { }
       },
+      "CategoryViewModelFull": {
+        "required": [
+          "createdAt",
+          "deletedAt",
+          "id",
+          "info",
+          "leaderboard",
+          "leaderboardId",
+          "name",
+          "slug",
+          "sortDirection",
+          "status",
+          "type",
+          "updatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the `Category`.\n",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "description": "The display name of the `Category`.",
+            "example": "Foo Bar Baz%"
+          },
+          "slug": {
+            "type": "string",
+            "description": "The URL-scoped unique identifier of the `Category`.\n",
+            "example": "foo-bar-baz"
+          },
+          "info": {
+            "type": "string",
+            "description": "Information pertaining to the `Category`.",
+            "nullable": true,
+            "example": "Video proof is required."
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunType"
+              }
+            ]
+          },
+          "sortDirection": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SortDirection"
+              }
+            ]
+          },
+          "leaderboardId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Status"
+              }
+            ]
+          },
+          "leaderboard": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LeaderboardViewModel"
+              }
+            ],
+            "description": "Represents a collection of `Leaderboard` entities."
+          }
+        },
+        "additionalProperties": false,
+        "description": "A LeaderboardBackend.Models.ViewModels.CategoryViewModel with relations attached."
+      },
       "CategoryViewModelListView": {
         "required": [
           "data",
@@ -2559,6 +2655,105 @@
           }
         }
       },
+      "RunViewModelFull": {
+        "required": [
+          "$type",
+          "category",
+          "categoryId",
+          "createdAt",
+          "deletedAt",
+          "id",
+          "info",
+          "playedOn",
+          "status",
+          "updatedAt",
+          "user"
+        ],
+        "type": "object",
+        "properties": {
+          "$type": {
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^[a-zA-Z0-9-_]{22}$",
+            "type": "string",
+            "description": "The unique identifier of the `Run`.\n\nGenerated on creation."
+          },
+          "info": {
+            "type": "string",
+            "description": "User-provided details about the run.",
+            "nullable": true
+          },
+          "playedOn": {
+            "type": "string",
+            "description": "The date the run was done, *not* when it was submitted.",
+            "format": "date",
+            "example": "2000-01-01"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The time the run was submitted to the DB.",
+            "format": "date-time",
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "The last time the run was updated or null.",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "deletedAt": {
+            "type": "string",
+            "description": "The time at which the run was deleted, or null if the run has not been deleted.",
+            "format": "date-time",
+            "nullable": true,
+            "example": "1984-01-01T00:00:00Z"
+          },
+          "categoryId": {
+            "type": "integer",
+            "description": "The ID of the `Category` for `Run`.",
+            "format": "int64"
+          },
+          "user": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserViewModel"
+              }
+            ],
+            "description": "The user who submitted this run."
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Status"
+              }
+            ]
+          },
+          "rank": {
+            "type": "integer",
+            "description": "The run's rank within its category.",
+            "format": "int64"
+          },
+          "category": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CategoryViewModelFull"
+              }
+            ],
+            "description": "A LeaderboardBackend.Models.ViewModels.CategoryViewModel with relations attached."
+          }
+        },
+        "additionalProperties": false,
+        "description": "A LeaderboardBackend.Models.ViewModels.RunViewModel with relations attached.",
+        "discriminator": {
+          "propertyName": "$type",
+          "mapping": {
+            "Time": "#/components/schemas/TimedRunViewModelFull",
+            "Score": "#/components/schemas/ScoredRunViewModelFull"
+          }
+        }
+      },
       "RunViewModelListView": {
         "required": [
           "data",
@@ -2620,6 +2815,27 @@
           }
         ]
       },
+      "ScoredRunViewModelFull": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RunViewModelFull"
+          },
+          {
+            "required": [
+              "score"
+            ],
+            "type": "object",
+            "properties": {
+              "score": {
+                "type": "integer",
+                "format": "int64"
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "description": "A LeaderboardBackend.Models.ViewModels.ScoredRunViewModel with relations attached."
+      },
       "SortDirection": {
         "enum": [
           "Ascending",
@@ -2674,6 +2890,27 @@
             "additionalProperties": false
           }
         ]
+      },
+      "TimedRunViewModelFull": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RunViewModelFull"
+          },
+          {
+            "required": [
+              "time"
+            ],
+            "type": "object",
+            "properties": {
+              "time": {
+                "type": "string",
+                "example": "25:01:01.001"
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "description": "A LeaderboardBackend.Models.ViewModels.TimedRunViewModel with relations attached."
       },
       "UpdateCategoryRequest": {
         "type": "object",

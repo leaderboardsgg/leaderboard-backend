@@ -14,6 +14,7 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
     public Task<Run?> GetRun(Guid id) =>
         applicationContext.Runs
             .Include(run => run.Category)
+            .ThenInclude(cat => cat.Leaderboard)
             .Include(run => run.User)
             .SingleOrDefaultAsync(run => run.Id == id);
 

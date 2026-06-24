@@ -114,3 +114,66 @@ public record ScoredRunViewModel : RunViewModel
     /// </summary>
     public required long Score { get; set; }
 }
+
+/// <summary>
+/// A <see cref="RunViewModel"/> with relations attached.
+/// </summary>
+
+[JsonPolymorphic(UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor)]
+[JsonDerivedType(typeof(TimedRunViewModelFull), "Time")]
+[JsonDerivedType(typeof(ScoredRunViewModelFull), "Score")]
+public record RunViewModelFull : RunViewModel
+{
+    public required CategoryViewModelFull Category { get; set; }
+
+    public static new RunViewModelFull MapFrom(Run run) => run.Type switch
+    {
+        RunType.Time => new TimedRunViewModelFull
+        {
+            Id = run.Id,
+            CategoryId = run.CategoryId,
+            Category = CategoryViewModelFull.MapFrom(run.Category),
+            User = UserViewModel.MapFrom(run.User),
+            PlayedOn = run.PlayedOn,
+            CreatedAt = run.CreatedAt,
+            UpdatedAt = run.UpdatedAt,
+            DeletedAt = run.DeletedAt,
+            Info = run.Info,
+            Time = run.Time,
+            Status = run.Status()
+        },
+        RunType.Score => new ScoredRunViewModelFull
+        {
+            Id = run.Id,
+            CategoryId = run.CategoryId,
+            Category = CategoryViewModelFull.MapFrom(run.Category),
+            User = UserViewModel.MapFrom(run.User),
+            PlayedOn = run.PlayedOn,
+            CreatedAt = run.CreatedAt,
+            UpdatedAt = run.UpdatedAt,
+            DeletedAt = run.DeletedAt,
+            Info = run.Info,
+            Score = run.TimeOrScore,
+            Status = run.Status()
+        },
+        _ => throw new NotImplementedException(),
+    };
+}
+
+/// <summary>
+/// A <see cref="TimedRunViewModel"/> with relations attached.
+/// </summary>
+public record TimedRunViewModelFull : RunViewModelFull
+{
+    /// <inheritdoc cref="TimedRunViewModel.Time" />
+    public required Duration Time { get; set; }
+}
+
+/// <summary>
+/// A <see cref="ScoredRunViewModel"/> with relations attached.
+/// </summary>
+public record ScoredRunViewModelFull : RunViewModelFull
+{
+    /// <inheritdoc cref="ScoredRunViewModel.Score" />
+    public required long Score { get; set; }
+}
