@@ -11,12 +11,36 @@ namespace LeaderboardBackend.Services;
 
 public class RunService(ApplicationContext applicationContext, IClock clock) : IRunService
 {
-    public Task<Run?> GetRun(Guid id) =>
-        applicationContext.Runs
+    public async Task<RankedRun?> GetRun(Guid id)
+    {
+        Run? unranked = await applicationContext.Runs
             .Include(run => run.Category)
             .ThenInclude(cat => cat.Leaderboard)
             .Include(run => run.User)
             .SingleOrDefaultAsync(run => run.Id == id);
+
+        if (unranked == null)
+        {
+            return null;
+        }
+
+        IQueryable<RankedRun> query = GetPersonalBests(unranked.Category);
+
+        RankedRun pb = await query.Where(r => r.Run.UserId == unranked.UserId)
+            .FirstAsync();
+
+        if (pb.Run.Id == unranked.Id)
+        {
+            return pb;
+        }
+
+        return new RankedRun
+        {
+            Count = pb.Count,
+            Rank = 0,
+            Run = unranked
+        };
+    }
 
     public async Task<GetRunsForCategoryResult> GetRunsForCategory(
         long id,
@@ -74,27 +98,7 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
 
         // Query the best run from each user.
 
-        IQueryable<RankedRun> query = applicationContext.Runs
-            .Include(r => r.Category)
-            .Include(r => r.User)
-            .Where(r => r.CategoryId == id && r.DeletedAt == null)
-            .Where(r => EF.Functions.RowNumber((
-                asc ?
-                EF.Functions.Over().PartitionBy(r.UserId).OrderBy(r.TimeOrScore) :
-                EF.Functions.Over().PartitionBy(r.UserId).OrderByDescending(r.TimeOrScore)
-            ).ThenBy(r.PlayedOn).ThenBy(r.CreatedAt)) == 1L)
-
-        // Assign each run a rank relative to the other users' best runs and count them up.
-
-            .Select(r => new RankedRun
-            {
-                Rank = EF.Functions.Rank(
-                    asc ?
-                    EF.Functions.Over().OrderBy(r.TimeOrScore) :
-                    EF.Functions.Over().OrderByDescending(r.TimeOrScore)),
-                Run = r,
-                Count = EF.Functions.Count<long>(EF.Functions.Over())
-            });
+        IQueryable<RankedRun> query = GetPersonalBests(cat);
 
         // Break ties and apply pagination.
 
@@ -311,5 +315,34 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
         run.DeletedAt = clock.GetCurrentInstant();
         await applicationContext.SaveChangesAsync();
         return new Success();
+    }
+
+    private IQueryable<RankedRun> GetPersonalBests(Category cat)
+    {
+        bool asc = cat.SortDirection == SortDirection.Ascending;
+
+        // Query the best run from each user.
+
+        return applicationContext.Runs
+            .Include(r => r.Category)
+            .Include(r => r.User)
+            .Where(r => r.CategoryId == cat.Id && r.DeletedAt == null)
+            .Where(r => EF.Functions.RowNumber((
+                asc ?
+                EF.Functions.Over().PartitionBy(r.UserId).OrderBy(r.TimeOrScore) :
+                EF.Functions.Over().PartitionBy(r.UserId).OrderByDescending(r.TimeOrScore)
+            ).ThenBy(r.PlayedOn).ThenBy(r.CreatedAt)) == 1L)
+
+        // Assign each run a rank relative to the other users' best runs and count them up.
+
+            .Select(r => new RankedRun
+            {
+                Rank = EF.Functions.Rank(
+                    asc ?
+                    EF.Functions.Over().OrderBy(r.TimeOrScore) :
+                    EF.Functions.Over().OrderByDescending(r.TimeOrScore)),
+                Run = r,
+                Count = EF.Functions.Count<long>(EF.Functions.Over())
+            });
     }
 }
