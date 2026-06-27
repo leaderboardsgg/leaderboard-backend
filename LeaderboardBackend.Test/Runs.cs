@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -58,7 +57,7 @@ namespace LeaderboardBackend.Test
             };
 
             Category[] categories = [
-                new ()
+                new()
                 {
                     Name = "120 Stars",
                     Slug = "120_stars",
@@ -67,7 +66,7 @@ namespace LeaderboardBackend.Test
                     Type = RunType.Time,
                     Leaderboard = board,
                 },
-                new ()
+                new()
                 {
                     Name = "Min Stars",
                     Slug = "min_stars",
@@ -100,7 +99,7 @@ namespace LeaderboardBackend.Test
             IServiceScope scope = _factory.Services.CreateScope();
             ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
-            Run run = new()
+            Run pb = new()
             {
                 CategoryId = _categoryIds[0],
                 Info = "",
@@ -109,16 +108,52 @@ namespace LeaderboardBackend.Test
                 UserId = TestInitCommonFields.Admin.Id,
             };
 
-            context.Add(run);
+            Run second = new()
+            {
+                CategoryId = _categoryIds[0],
+                Info = "",
+                PlayedOn = LocalDate.FromDateTime(new()),
+                TimeOrScore = Duration.FromSeconds(490).ToInt64Nanoseconds(),
+                UserId = TestInitCommonFields.Admin.Id,
+            };
+
+            context.AddRange(pb, second);
             await context.SaveChangesAsync();
             // Needed for resolving the run type for viewmodel mapping
-            await context.Entry(run).Reference(r => r.Category).LoadAsync();
-            await context.Entry(run).Reference(r => r.User).LoadAsync();
+            await context.Entry(pb).Reference(r => r.Category).LoadAsync();
+            await context.Entry(pb).Reference(r => r.User).LoadAsync();
+            await context.Entry(pb.Category).Reference(c => c.Leaderboard).LoadAsync();
+            await context.Entry(second).Reference(r => r.Category).LoadAsync();
+            await context.Entry(second).Reference(r => r.User).LoadAsync();
+            await context.Entry(second.Category).Reference(c => c.Leaderboard).LoadAsync();
 
-            HttpResponseMessage response = await _apiClient.GetRun(run.Id);
-            response.Should().Be200Ok().And.BeAs(
-                (TimedRunViewModel)RunViewModel.MapFrom(run)
-            );
+            HttpResponseMessage retrievedPb = await _apiClient.GetRun(pb.Id);
+
+            RankedRun expectedRetrievedPb = new()
+            {
+                Count = 2,
+                Rank = 1,
+                Run = pb,
+            };
+
+            retrievedPb.Should().Be200Ok().And.Satisfy<TimedRunViewModelFull>(rankedRun =>
+            {
+                rankedRun.Should().BeEquivalentTo(RunViewModelFull.MapFrom(expectedRetrievedPb));
+            });
+
+            HttpResponseMessage retrievedSecond = await _apiClient.GetRun(second.Id);
+
+            RankedRun expectedRetrievedSecond = new()
+            {
+                Count = 0,
+                Rank = 0,
+                Run = second,
+            };
+
+            retrievedSecond.Should().Be200Ok().And.Satisfy<TimedRunViewModelFull>(rankedRun =>
+            {
+                rankedRun.Should().BeEquivalentTo(RunViewModelFull.MapFrom(expectedRetrievedSecond));
+            });
         }
 
         [TestCase("1")]
@@ -427,7 +462,8 @@ namespace LeaderboardBackend.Test
                 DeletedAt = null,
                 Id = created.Id,
                 Status = Status.Published,
-                UpdatedAt = null
+                UpdatedAt = null,
+                Rank = 1
             });
         }
 

@@ -158,6 +158,13 @@ public record RunViewModelFull : RunViewModel
         },
         _ => throw new NotImplementedException(),
     };
+
+    public static new RunViewModelFull MapFrom(RankedRun ranked)
+    {
+        RunViewModelFull viewModel = MapFrom(ranked.Run);
+        viewModel.Rank = ranked.Rank;
+        return viewModel;
+    }
 }
 
 /// <summary>
