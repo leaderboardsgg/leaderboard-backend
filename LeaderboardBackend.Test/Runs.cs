@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -123,13 +122,12 @@ namespace LeaderboardBackend.Test
             // Needed for resolving the run type for viewmodel mapping
             await context.Entry(pb).Reference(r => r.Category).LoadAsync();
             await context.Entry(pb).Reference(r => r.User).LoadAsync();
+            await context.Entry(pb.Category).Reference(c => c.Leaderboard).LoadAsync();
             await context.Entry(second).Reference(r => r.Category).LoadAsync();
             await context.Entry(second).Reference(r => r.User).LoadAsync();
+            await context.Entry(second.Category).Reference(c => c.Leaderboard).LoadAsync();
 
-            TimedRunViewModel retrievedPb = await _apiClient.Get<TimedRunViewModel>(
-                $"/api/runs/{pb.Id.ToUrlSafeBase64String()}",
-                new() { }
-            );
+            HttpResponseMessage retrievedPb = await _apiClient.GetRun(pb.Id);
 
             RankedRun expectedRetrievedPb = new()
             {
@@ -138,12 +136,12 @@ namespace LeaderboardBackend.Test
                 Run = pb,
             };
 
-            retrievedPb.Should().BeEquivalentTo(RunViewModel.MapFrom(expectedRetrievedPb));
+            retrievedPb.Should().Be200Ok().And.Satisfy<TimedRunViewModelFull>(rankedRun =>
+            {
+                rankedRun.Should().BeEquivalentTo(RunViewModelFull.MapFrom(expectedRetrievedPb));
+            });
 
-            TimedRunViewModel retrievedSecond = await _apiClient.Get<TimedRunViewModel>(
-                $"/api/runs/{second.Id.ToUrlSafeBase64String()}",
-                new() { }
-            );
+            HttpResponseMessage retrievedSecond = await _apiClient.GetRun(second.Id);
 
             RankedRun expectedRetrievedSecond = new()
             {
@@ -152,7 +150,10 @@ namespace LeaderboardBackend.Test
                 Run = second,
             };
 
-            retrievedSecond.Should().BeEquivalentTo(RunViewModel.MapFrom(expectedRetrievedSecond));
+            retrievedSecond.Should().Be200Ok().And.Satisfy<TimedRunViewModelFull>(rankedRun =>
+            {
+                rankedRun.Should().BeEquivalentTo(RunViewModelFull.MapFrom(expectedRetrievedSecond));
+            });
         }
 
         [TestCase("1")]
@@ -461,7 +462,8 @@ namespace LeaderboardBackend.Test
                 DeletedAt = null,
                 Id = created.Id,
                 Status = Status.Published,
-                UpdatedAt = null
+                UpdatedAt = null,
+                Rank = 1
             });
         }
 
