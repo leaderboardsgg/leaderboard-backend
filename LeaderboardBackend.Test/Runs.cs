@@ -146,6 +146,10 @@ namespace LeaderboardBackend.Test
             RankedRun expectedRetrievedSecond = new()
             {
                 Count = 0,
+                // Rank doesn't actually get assigned in this case, but due to object design, we
+                // need to give it its default value. Remember that rank is also omitted on serialisation
+                // if it's 0. We can't assert this in this test case because our version of
+                // FluentAssertions isn't able to do so - zysim
                 Rank = 0,
                 Run = second,
             };
