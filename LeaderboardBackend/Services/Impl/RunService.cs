@@ -13,32 +13,48 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
 {
     public async Task<RankedRun?> GetRun(Guid id)
     {
-        Run? unranked = await applicationContext.Runs
+        Run? run = await applicationContext.Runs
             .Include(run => run.Category)
             .ThenInclude(cat => cat.Leaderboard)
             .Include(run => run.User)
             .SingleOrDefaultAsync(run => run.Id == id);
 
-        if (unranked == null)
+        if (run == null)
         {
             return null;
         }
 
-        IQueryable<RankedRun> query = GetPersonalBests(unranked.Category);
-
-        RankedRun pb = await query.Where(r => r.Run.UserId == unranked.UserId)
-            .FirstAsync();
-
-        if (pb.Run.Id == unranked.Id)
+        // Deleted runs cannot occupy a rank.
+        if (run.DeletedAt is not null)
         {
-            return pb;
+            return new RankedRun()
+            {
+                Run = run
+            };
         }
+
+        bool asc = run.Category.SortDirection == SortDirection.Ascending;
+
+        var runrank = await applicationContext.Runs
+            .Where(r => r.CategoryId == run.CategoryId)
+            .Where(r => EF.Functions.RowNumber((
+                asc ?
+                EF.Functions.Over().PartitionBy(r.UserId).OrderBy(r.TimeOrScore) :
+                EF.Functions.Over().PartitionBy(r.UserId).OrderByDescending(r.TimeOrScore)
+            ).ThenBy(r.PlayedOn).ThenBy(r.CreatedAt)) == 1L)
+            .Select(r => new
+            {
+                Id = r.Id,
+                Rank = EF.Functions.Rank(
+                    asc ?
+                    EF.Functions.Over().OrderBy(r.TimeOrScore) :
+                    EF.Functions.Over().OrderByDescending(r.TimeOrScore)),
+            }).SingleOrDefaultAsync(r => r.Id == id);
 
         return new RankedRun
         {
-            Count = 0,
-            Rank = 0,
-            Run = unranked
+            Rank = runrank?.Rank ?? 0,
+            Run = run
         };
     }
 
