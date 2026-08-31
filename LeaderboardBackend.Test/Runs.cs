@@ -128,36 +128,10 @@ namespace LeaderboardBackend.Test
             await context.Entry(second.Category).Reference(c => c.Leaderboard).LoadAsync();
 
             HttpResponseMessage retrievedPb = await _apiClient.GetRun(pb.Id);
-
-            RankedRun expectedRetrievedPb = new()
-            {
-                Count = 2,
-                Rank = 1,
-                Run = pb,
-            };
-
-            retrievedPb.Should().Be200Ok().And.Satisfy<TimedRunViewModelFull>(rankedRun =>
-            {
-                rankedRun.Should().BeEquivalentTo(RunViewModelFull.MapFrom(expectedRetrievedPb));
-            });
+            retrievedPb.Should().Be200Ok().And.BeAs(RunViewModelFull.MapFrom(pb) with { Rank = 1L });
 
             HttpResponseMessage retrievedSecond = await _apiClient.GetRun(second.Id);
-
-            RankedRun expectedRetrievedSecond = new()
-            {
-                Count = 0,
-                // Rank doesn't actually get assigned in this case, but due to object design, we
-                // need to give it its default value. Remember that rank is also omitted on serialisation
-                // if it's 0. We can't assert this in this test case because our version of
-                // FluentAssertions isn't able to do so - zysim
-                Rank = 0,
-                Run = second,
-            };
-
-            retrievedSecond.Should().Be200Ok().And.Satisfy<TimedRunViewModelFull>(rankedRun =>
-            {
-                rankedRun.Should().BeEquivalentTo(RunViewModelFull.MapFrom(expectedRetrievedSecond));
-            });
+            retrievedSecond.Should().Be200Ok().And.BeAs(RunViewModelFull.MapFrom(second));
         }
 
         [TestCase("1")]
