@@ -11,12 +11,52 @@ namespace LeaderboardBackend.Services;
 
 public class RunService(ApplicationContext applicationContext, IClock clock) : IRunService
 {
-    public Task<Run?> GetRun(Guid id) =>
-        applicationContext.Runs
+    public async Task<RankedRun?> GetRun(Guid id)
+    {
+        Run? run = await applicationContext.Runs
             .Include(run => run.Category)
             .ThenInclude(cat => cat.Leaderboard)
             .Include(run => run.User)
             .SingleOrDefaultAsync(run => run.Id == id);
+
+        if (run == null)
+        {
+            return null;
+        }
+
+        // Deleted runs cannot occupy a rank.
+        if (run.DeletedAt is not null)
+        {
+            return new RankedRun()
+            {
+                Run = run
+            };
+        }
+
+        bool asc = run.Category.SortDirection == SortDirection.Ascending;
+
+        var runrank = await applicationContext.Runs
+            .Where(r => r.CategoryId == run.CategoryId)
+            .Where(r => EF.Functions.RowNumber((
+                asc ?
+                EF.Functions.Over().PartitionBy(r.UserId).OrderBy(r.TimeOrScore) :
+                EF.Functions.Over().PartitionBy(r.UserId).OrderByDescending(r.TimeOrScore)
+            ).ThenBy(r.PlayedOn).ThenBy(r.CreatedAt)) == 1L)
+            .Select(r => new
+            {
+                Id = r.Id,
+                Rank = EF.Functions.Rank(
+                    asc ?
+                    EF.Functions.Over().OrderBy(r.TimeOrScore) :
+                    EF.Functions.Over().OrderByDescending(r.TimeOrScore)),
+            }).SingleOrDefaultAsync(r => r.Id == id);
+
+        return new RankedRun
+        {
+            Rank = runrank?.Rank ?? 0,
+            Run = run
+        };
+    }
 
     public async Task<GetRunsForCategoryResult> GetRunsForCategory(
         long id,
@@ -174,7 +214,29 @@ public class RunService(ApplicationContext applicationContext, IClock clock) : I
 
         applicationContext.Add(run);
         await applicationContext.SaveChangesAsync();
-        return run;
+        bool asc = category.SortDirection == SortDirection.Ascending;
+
+        var runrank = await applicationContext.Runs
+            .Where(r => r.CategoryId == category.Id)
+            .Where(r => EF.Functions.RowNumber((
+                asc ?
+                EF.Functions.Over().PartitionBy(r.UserId).OrderBy(r.TimeOrScore) :
+                EF.Functions.Over().PartitionBy(r.UserId).OrderByDescending(r.TimeOrScore)
+            ).ThenBy(r.PlayedOn).ThenBy(r.CreatedAt)) == 1L)
+            .Select(r => new
+            {
+                Id = r.Id,
+                Rank = EF.Functions.Rank(
+                    asc ?
+                    EF.Functions.Over().OrderBy(r.TimeOrScore) :
+                    EF.Functions.Over().OrderByDescending(r.TimeOrScore)),
+            }).SingleOrDefaultAsync(r => r.Id == run.Id);
+
+        return new RankedRun
+        {
+            Rank = runrank?.Rank ?? 0,
+            Run = run
+        };
     }
 
     public async Task<UpdateRunResult> UpdateRun(User user, Guid id, UpdateRunRequest request)
