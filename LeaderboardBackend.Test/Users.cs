@@ -424,7 +424,7 @@ public class Users
             },
             TestInitCommonFields.JsonSerializerOptions);
 
-        response.Should().BeSuccessful();
+        response.Should().Be2XXSuccessful();
     }
 
     [Test]
@@ -460,7 +460,7 @@ public class Users
             TestInitCommonFields.JsonSerializerOptions
         );
 
-        response.Should().BeSuccessful();
+        response.Should().Be2XXSuccessful();
 
         User? res = await context.Users.FindAsync(user.Id);
         res.Should().NotBeNull();
